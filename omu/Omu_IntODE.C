@@ -69,19 +69,18 @@ Omu_IntODE::~Omu_IntODE()
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntODE::init_stage(int k,
-			    const Omu_States &x, const Omu_Vector &u,
-			    bool sa)
+void Omu_IntODE::init(int k,
+		      const Omu_StateVec &xc, const Omu_Vec &q,
+		      const Omu_DependentVec &Fc, bool sa)
 {
-  if (!x.D_is_const) {
+  if (!(Fc.Jdx.is_scalar_constant())) {
     m_error(E_FORMAT,
-	    "Omu_IntODE::init_stage, which was called for non const dF/ddx");
+	    "Omu_IntODE::init, which was called for non scalar or non const dF/ddx");
   }
-  if (x.na > 0) {
+  if (_na > 0) {
     m_error(E_FORMAT,
-	    "Omu_IntODE::init_stage, which was called for algebraic states");
+	    "Omu_IntODE::init, which was called for algebraic states");
   }
-  Omu_Integrator::init_stage(k, x, u, sa);
   resize();
 }
 

@@ -88,6 +88,39 @@ void Omu_Integrator::setup_stages(const Omu_Program *sys)
 }
 
 //--------------------------------------------------------------------------
+void Omu_Integrator::init_dims(int k,
+			       const Omu_VariableVec &x,
+			       const Omu_VariableVec &u,
+			       const Omu_DependentVec &Ft)
+{
+  int i;
+
+  _k = k;
+  _nxt = x->dim;
+  _nv = _nxt - x.n();
+  _nx = _nxt - _nv;
+  _nu = u->dim;
+  _nq = _nx + _nu;
+
+  // number of discrete states
+  for (_nd = 0, i = 0; i < _nxt; i++) {
+    if (Ft.Jx.is_zero_row(i) && Ft.Ju.is_zero_row(i) && Ft.Jdx.is_zero_row(i))
+      _nd++;
+    else
+      break;
+  }
+
+  // number of algebraic states
+  for (_na = 0, i = _nd; i < _nxt; i++) {
+    if (Ft.Jdx.is_zero_column(i))
+      _na++;
+  }
+
+  _n = _nxt - _nd;	// number of states for integration
+  _m = _nd + _nu;	// number of control parameters for integration
+}
+
+//--------------------------------------------------------------------------
 void Omu_Integrator::setup_struct(int k,
 				  const Omu_VariableVec &x,
 				  const Omu_VariableVec &u,
@@ -100,30 +133,27 @@ void Omu_Integrator::setup_struct(int k,
 	    " that was called with wrong integrator setup");
   }
 
-  Omu_SVarVec &sx = (Omu_SVarVec &)x;
   int i;
-  int nd = sx.nd;
-  int n = x->dim - nd;
-  int nx = x->dim - sx.nv;
-  int nu = u->dim;
   Omu_DepVec &Fc = _Fcs[k];
 
-  Fc.size(n, n, 0, n, 0, nx+nu);
-  m_move(Ft.Jx, nd, nd, n, n, Fc.Jx, 0, 0);
-  m_move(Ft.Jdx, nd, nd, n, n, Fc.Jdx, 0, 0);
+  init_dims(k, x, u, Ft);
+
+  Fc.size(_n, _n, 0, _n, 0, _nx+_nu);
+  m_move(Ft.Jx, _nd, _nd, _n, _n, Fc.Jx, 0, 0);
+  m_move(Ft.Jdx, _nd, _nd, _n, _n, Fc.Jdx, 0, 0);
   m_zero(Fc.Jq); // zero Jq wrt. continuous states as Jx gets chained with Sx
-  m_move(Ft.Jx, nd, 0, n, nd, Fc.Jq, 0, 0);
-  m_move(Ft.Ju, nd, 0, n, nu, Fc.Jq, 0, nx);
+  m_move(Ft.Jx, _nd, 0, _n, _nd, Fc.Jq, 0, 0);
+  m_move(Ft.Ju, _nd, 0, _n, _nu, Fc.Jq, 0, _nx);
 
   Fc.c_setup = true;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < _n; i++) {
     int wrt = 0;
-    if (Ft.is_linear_element(nd + i, Omu_Dependent::WRT_x))
+    if (Ft.is_linear_element(_nd + i, Omu_Dependent::WRT_x))
       wrt |= Omu_Dependent::WRT_x;
-    if (Ft.is_linear_element(nd + i, Omu_Dependent::WRT_dx))
+    if (Ft.is_linear_element(_nd + i, Omu_Dependent::WRT_dx))
       wrt |= Omu_Dependent::WRT_dx;
-    if ((nd == 0 || Ft.is_linear_element(nd + i, Omu_Dependent::WRT_x)) &&
-	Ft.is_linear_element(nd + i, Omu_Dependent::WRT_u))
+    if ((_nd == 0 || Ft.is_linear_element(_nd + i, Omu_Dependent::WRT_x)) &&
+	Ft.is_linear_element(_nd + i, Omu_Dependent::WRT_u))
       wrt |= Omu_Dependent::WRT_q;
     Fc.set_linear_element(i, wrt);
   }
@@ -143,21 +173,10 @@ void Omu_Integrator::init_stage(int k,
 	    " that was called with wrong integrator setup");
   }
 
-  _k = k;
-
   // initialize dimensions
-  Omu_SVarVec &sx = (Omu_SVarVec &)x;
-  _nxt = x->dim;
-  _nd = sx.nd;
-  _nv = sx.nv;
-  _na = sx.na;
-  _nx = _nxt - _nv;
-  _nu = u->dim;
-  _nq = _nx + _nu;
-  _sa = sa;
+  init_dims(k, x, u, Ft);
 
-  _n = _nxt - _nd;	// number of states for integration
-  _m = _nd + _nu;	// number of control parameters for integration
+  _sa = sa;
 
   if ((int)(_Fcs[k]->dim) != _n) {
     m_error(E_INTERN, "Omu_Integrator::solve"
@@ -178,7 +197,7 @@ void Omu_Integrator::init_stage(int k,
   init(k, _xc, _q, _Fcs[k], sa);
 
   // call depreciated init_stage
-  init_stage(k, sx, u, sa);
+  init_stage(k, (Omu_SVarVec &)x, u, sa);
 }
 
 //--------------------------------------------------------------------------

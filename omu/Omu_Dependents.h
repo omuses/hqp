@@ -129,15 +129,15 @@ public:
 
   /** diagonal matrix */
   bool is_diagonal() const {
-    return _is_constant && _sbw_lower < 1 && _sbw_upper < 1;
+    return _sbw_lower < 1 && _sbw_upper < 1;
   }
 
   /** identity matrix */
   bool is_ident() const {return _is_ident;}
 
-  /** scalar matrix
-      (is_diagonal and J[i][i]==J[0][0], i = 1,...,min(nrows,ncols)-1) */
-  bool is_scalar() const {return _is_scalar;}
+  /** constant scalar matrix (is_constant and is_diagonal and
+      J[i][i]==J[0][0], i = 1,...,min(nrows,ncols)-1) */
+  bool is_scalar_constant() const {return _is_scalar_constant;}
 
   /** constant matrix */
   bool is_constant() const {return _is_constant;}
@@ -171,7 +171,7 @@ protected:
 
   bool _is_zero;
   bool _is_ident;
-  bool _is_scalar;
+  bool _is_scalar_constant;
   bool _is_constant;
   int _sbw_lower;
   int _sbw_upper;

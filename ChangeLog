@@ -1,3 +1,19 @@
+2003-05-07    <rfranke>
+
+
+	* omu/Omu_Vars.[hC]: declare Omu_SVarVec depreciated
+
+	* omu/Omu_Integrator.[hC]: remove dependency on Omu_SVarVec
+	  for obtaining structural infos
+
+	* omu/Omu_IntODE.[hC]: update init_stage method
+
+	* omu/Omu_Variables.[hC], omu/Omu_Vars.C:
+	  introduce n() for number of variables treated by optimizer
+
+	* omu/Omu_Dependents.[hC]: bug fixes for zero_rows/cols and is_diagonal
+
+
 2003-05-06    <rfranke>
 
 	* omu/Omu_Integrator.C (solve): bug fix for discrete states in

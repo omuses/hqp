@@ -37,23 +37,13 @@ Omu_VarVec::Omu_VarVec()
 //--------------------------------------------------------------------------
 void Omu_VarVec::alloc(int n, int n_expand)
 {
-  n_expand = max(n, n_expand);
-
   if (!c_setup)
     m_error(E_OVERWRITE, "Omu_VarVec::alloc");
 
   if (!c_expand && n_expand > n)
     m_error(E_RANGE, "Omu_VarVec::alloc_expanded");
 
-  v_resize(_v, n_expand);
-  v_resize(initial, n_expand);
-  v_resize(min, n_expand);
-  v_resize(max, n_expand);
-
-  v_set(_v, 0.0);
-  v_set(initial, 0.0);
-  v_set(min, -Inf);
-  v_set(max, Inf);
+  Omu_VariableVec::alloc(n, n_expand);
 }
 
 //==========================================================================

@@ -48,7 +48,13 @@ class Omu_VariableVec: public Omu_Vec {
   */
   virtual void alloc(int n, int n_expand = -1);
 
+  /** Number of variables treated by the optimizer,
+      n <= n_expand = dim. */
+  int n() const {return _n;}
+
  private:
+  int _n; ///< number of variables treated by the optimizer
+
   /// dismiss copy constructor and assignment operator
   //@{
   Omu_VariableVec(const Omu_VariableVec &);

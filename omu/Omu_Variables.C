@@ -33,6 +33,7 @@ Omu_VariableVec::Omu_VariableVec()
   min = v_resize(v_get(1), 0);
   max = v_resize(v_get(1), 0);
   initial = v_resize(v_get(1), 0);
+  _n = 0;
 }
 
 //--------------------------------------------------------------------------
@@ -68,11 +69,12 @@ void Omu_VariableVec::alloc(int n, int n_expand)
 {
   if (n_expand < n)
     n_expand = n;
+  _n = n;
 
   v_resize(_v, n_expand);
   v_resize(initial, n_expand);
-  v_resize(min, n);
-  v_resize(max, n);
+  v_resize(min, n_expand);
+  v_resize(max, n_expand);
 
   v_set(_v, 0.0);
   v_set(initial, 0.0);

@@ -100,7 +100,7 @@ void Omu_Jacobian::size(int nrows, int ncols)
   m_ones(_m);	// indicate dense Jacobian
   _is_zero = false;
   _is_ident = false;
-  _is_scalar = false;
+  _is_scalar_constant = false;
   _is_constant = false;
   _sbw_lower = ncols - 1;
   _sbw_upper = ncols - 1;
@@ -147,35 +147,33 @@ void Omu_Jacobian::analyze_struct(bool is_constant)
     _sbw_upper = max(sbwi, _sbw_upper);
   }
 
-  // check for diagonal, zero, ident and scalar
+  // check for zero, ident and scalar
   if (is_constant && _sbw_lower < 1 && _sbw_upper < 1) {
     _is_zero = true;
     _is_ident = true;
-    _is_scalar = true;
+    _is_scalar_constant = true;
     for (i = 0; i < min(nrows, ncols); i++) {
       _is_zero &= ((*this)[i][i] == 0.0);
       _is_ident &= ((*this)[i][i] == 1.0);
-      _is_scalar &= ((*this)[i][i] == (*this)[0][0]);
+      _is_scalar_constant &= ((*this)[i][i] == (*this)[0][0]);
     }
   }
 
-  if (is_constant) {
-    // check for zero rows
-    bool is_zero;
-    for (i = 0; i < nrows; i++) {
-      is_zero = true;
-      for (j = 0; j < ncols; j++)
-	is_zero &= ((*this)[i][j] == 0.0);
-      _zero_rows[i] = (int)is_zero;
-    }
+  // check for zero rows
+  bool is_zero;
+  for (i = 0; i < nrows; i++) {
+    is_zero = true;
+    for (j = 0; j < ncols; j++)
+      is_zero &= ((*this)[i][j] == 0.0);
+    _zero_rows[i] = (int)is_zero;
+  }
 
-    // check for zero cols
-    for (j = 0; j < ncols; j++) {
-      is_zero = true;
-      for (i = 0; i < nrows; i++)
-	is_zero &= ((*this)[i][j] == 0.0);
-      _zero_cols[j] = (int)is_zero;
-    }
+  // check for zero cols
+  for (j = 0; j < ncols; j++) {
+    is_zero = true;
+    for (i = 0; i < nrows; i++)
+      is_zero &= ((*this)[i][j] == 0.0);
+    _zero_cols[j] = (int)is_zero;
   }
 }
 

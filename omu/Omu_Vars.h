@@ -40,7 +40,7 @@ class Omu_VarVec: public Omu_VariableVec {
   void alloc(int n, int n_expand = -1);
 };
 
-/** Internally used vector of state optimization variables
+/** Depreciated: Internally used vector of state optimization variables
     holding additional structural information. */
 class Omu_SVarVec: public Omu_VarVec {
  public:

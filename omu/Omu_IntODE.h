@@ -32,10 +32,12 @@
 
 /**
  * Interface for standard solvers for Ordinary Differential Equations (ODE)
- * hiding details of sensitivity analysis and discrete-time states.
- * Sensitivity equations are appended to the model equations.
- * Discrete-time states and control parameters are treated in one vector
- * of model parameters.
+ * hiding details of sensitivity analysis. Sensitivity equations are
+ * appended to the model equations.
+ * This base class bypasses the high-level Omu_Integrator::solve method and
+ * directly calls sys->continuous (optionally exploiting ADOL-C).
+ * Nevertheless discrete-time states and control parameters are treated
+ * in one vector of model parameters for derived classes.
  */
 class Omu_IntODE: public Omu_Integrator {
 
@@ -51,9 +53,9 @@ class Omu_IntODE: public Omu_Integrator {
 
   //@{
 
-  void init_stage(int k,
-		  const Omu_States &x, const Omu_Vector &u,
-		  bool sa = false);
+  void init(int k,
+	    const Omu_StateVec &xc, const Omu_Vec &q,
+	    const Omu_DependentVec &Fc, bool sa);
 
   void solve(int kk, double tstart, double tend,
 	     const Omu_VariableVec &x, const Omu_VariableVec &u,
@@ -73,6 +75,17 @@ class Omu_IntODE: public Omu_Integrator {
 
   /** Callback routine for evaluating the model by derived ODE solvers. */
   void syseq(double t, const VECP y, const VECP u, VECP f);
+
+ protected:
+
+  /**
+   * @name Depreciated methods (provided for old versions of derived classes).
+   */
+  //@{
+  void init_stage(int k,
+		  const Omu_States &x, const Omu_Vector &u,
+		  bool sa = false) {}
+  //@}
 
  private:
 

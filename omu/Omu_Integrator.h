@@ -273,6 +273,11 @@ class Omu_Integrator {
 
  private:
 
+  /** initialize _nx, _nu, etc. for stage k */
+  void init_dims(int k,
+		 const Omu_VariableVec &x, const Omu_VariableVec &u,
+		 const Omu_DependentVec &Ft);
+
   /**
    * Pointers to data available in solve() and required by residual()
    */
