@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -95,8 +95,16 @@ extern "C" {
 
   /** Return the result string produced by the last If function call.
       After a failed calculation, the corresponding error message
-      is returned. */
-  IF_API const char *If_ResultString();
+      is returned. This function is inlined to avoid problems when
+      accessing error messages under Tcl 8.4 and 8.5 (e.g. if Tcl library
+      is not found). */
+  inline const char *If_ResultString()
+  {
+    if (!If_Interp())
+      return "If_ResultString: If_Interp not initialized";
+    
+    return Tcl_GetStringResult(If_Interp());
+  }
 }
 
 #endif

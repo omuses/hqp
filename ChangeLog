@@ -1,3 +1,12 @@
+2004-04-27    <rfranke>
+
+	* configure.in: enable shared for Cygwin/gcc per default as well,
+	  as it now works with gcc 3.3.1
+
+	* iftcl/If.[hC]: inline function If_ResultString to avoid problems
+	  when accessing error messages under Tcl 8.4 and 8.5
+	  (e.g. if Tcl library is not found)
+
 2004-04-08    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]: 

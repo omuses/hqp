@@ -295,12 +295,6 @@ if test $uname_found = "yes" ; then
     CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
       EXE_SUFFIX=".exe"
-      # check for explicit --enable-shared as DLL does not fully work yet
-      AC_MSG_CHECKING([--enable-shared])
-      AC_ARG_ENABLE(shared,
-          [  --enable-shared      enable GCC generated DLL for HQP/Omuses],
-          [hqp_shared=$enableval], [hqp_shared=no])
-      AC_MSG_RESULT($hqp_shared)
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         LIB_PREFIX=""

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -188,15 +188,6 @@ extern "C" int If_Eval(char *command)
     return IF_ERROR;
 
   return IF_OK;
-}
-
-//-----------------------------------------------------------------------
-extern "C" const char *If_ResultString()
-{
-  if (!theInterp)
-    return "If_ResultString: If_Interp not initialized";
-
-  return Tcl_GetStringResult(theInterp);
 }
 
 
