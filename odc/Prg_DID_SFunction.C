@@ -152,14 +152,14 @@ void Prg_DID_SFunction::update(int kk,
   // update constraints and objective for given x and u
   if (kk < KK()) {
     real_T *mdl_x = ssGetDiscStates(_S);
-    real_T *mdl_u = ssGetInputPortRealSignal(_S, 0);
+    real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
     real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);
 
     // initialize model states and inputs
     for (i = 0; i < _nx; ++i)
       mdl_x[i] = x[i];
     for (i = 0; i < _nu; ++i)
-      mdl_u[i] = u[i];
+      *mdl_u[i] = u[i];
 
     // obtain model outputs for current states and inputs
     mdlOutputs(_S, 0);
