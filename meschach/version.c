@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.6 2002/05/13 18:10:26 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.7 2002/05/13 20:22:25 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -85,11 +85,14 @@ void	m_version()
 	printf("\tother files: adapt to new macro names\n");
 	/* rf, 05/13/02 */
 	printf("\tnorm.c, znorm.c: take out definition of max\n");
-	printf("\t*.h: use MESCH__BEGIN/END_DECLS (extern "C") for declarations\n");
+	printf("\t*.h: use MESCH__BEGIN/END_DECLS (extern \"C\") for declarations\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.7  2002/05/13 20:22:25  rfranke
+/* fix change log
+/*
 /* Revision 1.6  2002/05/13 18:10:26  rfranke
 /* use MESCH__BEGIN/END_DECLS, i.e. extern "C", inside the includes
 /*
