@@ -1,6 +1,6 @@
-/*
- * Omu_Dependents.h --
- *   -- dependent variables (single and vector, including Jacobians)
+/**
+ * @file Omu_Dependents.h 
+ *   Dependent variables (single and vector, including Jacobians).
  *
  * rf, 7/31/01
  */

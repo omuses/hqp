@@ -1,8 +1,9 @@
-/*
- * Hxi_mxArray.h:
- *   mxArray for compiling a Simulink(R) S-function for HQP
+/**
+ * @file Hxi_mxArray.h
+ *   Alternative native mxArray for compiling a Simulink(R) S-function
+ *   with HQP.
  *
- * (Simulink is a registered trademark of The MathWorks, Inc.)
+ * (Simulink is a registered trademarks of The MathWorks, Inc.)
  *
  * rf, 05/06/2001
  */
@@ -50,7 +51,7 @@
 #define mxIsComplex(a) 			(a)->isComplex()
 #define mxIsNumeric(a) 			(a)->isNumeric()
 
-/** mxArray for HQP. */
+/** Alternative native mxArray for HQP. */
 class mxArray {
 protected:
   real_T 	 	_dummy; // argument for ADOL-C memory management

@@ -1,6 +1,7 @@
-/*
- * Hxi_SimStruct.h:
- *   SimStruct for compiling a Simulink(R) S-function for HQP
+/**
+ * @file Hxi_SimStruct.h
+ *   Alternative native SimStruct for compiling a Simulink(R) S-function
+ *   with HQP.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -35,7 +36,8 @@
 #include "Hxi_sfun_types.h"
 #include "Hxi_mxArray.h"
 
-// definitions expected in S-functions (only a subset is supported)
+/// @name Definitions expected in S-functions (only a subset is supported)
+//@{
 #define SS_OPTION_EXCEPTION_FREE_CODE 		0x0001
 #define SS_OPTION_RUNTIME_EXCEPTION_FREE_CODE 	0x0002
 #define SS_OPTION_PORT_SAMPLE_TIMES_ASSIGNED 	0x0004
@@ -44,9 +46,13 @@
 
 #define SS_STDIO_AVAILABLE 			true
 #define CONTINUOUS_SAMPLE_TIME 			0.0
+//@}
 
-// Macros to access SimStruct (only a subset is supported)
+/// Empty implementation for some macros.
 #define HXI_NOT_IMPLEMENTED
+
+/// @name Macros to access SimStruct (only a subset is supported)
+//@{
 #define ssSetNumSFcnParams(S, np) 	(S)->setNumSFcnParams(np)
 #define ssGetNumSFcnParams(S) 		(S)->getNumSFcnParams()
 #define ssSetSFcnParamsCount(S, num) 	(S)->setSFcnParamsCount(num)
@@ -149,9 +155,10 @@
 #define ssSetChecksum1(S, val)  	HXI_NOT_IMPLEMENTED
 #define ssSetChecksum2(S, val)  	HXI_NOT_IMPLEMENTED
 #define ssSetChecksum3(S, val)  	HXI_NOT_IMPLEMENTED
+//@}
 
 /**
- * SimStruct for HQP.
+ * Alternative native SimStruct for HQP.
  */
 class SimStruct {
 protected:
@@ -159,36 +166,36 @@ protected:
       This is done to avoid memory management problems with ADOL-C 1.8.7. */
   real_T 	 _dummy;
 				
-  real_T	 _t;		// current simulation time
+  real_T	 _t;		///< current simulation time
 
-  int_T 	 _p_sfun_size;	// number of parameters expected in S-function
-  vector<int_T>  _dwork_usage;	// usage of each data work vector
+  int_T 	 _p_sfun_size;///< number of parameters expected in S-function
+  vector<int_T>  _dwork_usage;	///< usage of each data work vector
 
-  vector<const mxArray *> _p; 	// parameters provided by calling program
-  vector<real_T> _xc; 		// continuous states
-  vector<real_T> _dxc; 		// derivatives of continuous states
-  vector<real_T> _xd; 		// discrete states
-  vector< vector<real_T> > _u; 	// inputs
-  vector< vector<real_T *> > _uPtrs; // pointers to inputs
-  vector<int_T>  _u_dft;	// mark if input port is accessed in mdlOutputs
-  vector< vector<real_T> > _y; 	// outputs
-  vector< vector<real_T> > _dwork; // data work vectors
+  vector<const mxArray *> _p; 	///< parameters provided by calling program
+  vector<real_T> _xc; 		///< continuous states
+  vector<real_T> _dxc; 		///< derivatives of continuous states
+  vector<real_T> _xd; 		///< discrete states
+  vector< vector<real_T> > _u; 	///< inputs
+  vector< vector<real_T *> > _uPtrs; ///< pointers to inputs
+  vector<int_T>  _u_dft;      ///< mark if input port is accessed in mdlOutputs
+  vector< vector<real_T> > _y; 	///< outputs
+  vector< vector<real_T> > _dwork; ///< data work vectors
 
-  vector<real_T> _st_period;	// sample time period 
-  vector<real_T> _st_offset;	// sample time offset
+  vector<real_T> _st_period;	///< sample time period 
+  vector<real_T> _st_offset;	///< sample time offset
 
-  vector<real_T> _rwork; 	// real work array
-  vector<int_T>  _iwork; 	// int work array
-  vector<void *> _pwork; 	// pointer work array
-  vector<int_T>  _modes;	// modes array
-  void 		*_userData; 	// pointer to user data
+  vector<real_T> _rwork; 	///< real work array
+  vector<int_T>  _iwork; 	///< int work array
+  vector<void *> _pwork; 	///< pointer work array
+  vector<int_T>  _modes;	///< modes array
+  void 		*_userData; 	///< pointer to user data
 
-  uint_T 	_options; 	// option flags
+  uint_T 	_options; 	///< option flags
 
-  const char_T 	*_model_name; 	// relative name of this model
-  const char_T 	*_path; 	// absolute name of this model
-  int_T 	_version; 	// version of this model
-  const char_T 	*_error_msg;	// used to report errors from S-function
+  const char_T 	*_model_name; 	///< relative name of this model
+  const char_T 	*_path; 	///< absolute name of this model
+  int_T 	_version; 	///< version of this model
+  const char_T 	*_error_msg;	///< used to report errors from S-function
 
 public:
   /*

@@ -1,6 +1,12 @@
-/*
- * Hxi_MEX_SFunction.h:
- *   declarations of C MEX S-function interface for Hqp
+/**
+ * @file Hxi_MEX_SFunction.h
+ *   Interface to a Simulink(R) S-function given as binary MEX object.
+ *   Several S-function methods are supported that redirect the call
+ *   to the MEX object. Data is communicated through a %SimStruct.
+ *   The two functions Hxi_SimStruct_create and Hxi_SimStruct_destroy
+ *   are provided for allocating and releasing a %SimStruct.
+ *
+ * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
  * rf, 07/14/2001
  */
@@ -36,19 +42,6 @@
 
 #include <simstruc.h>
 
-/** Create SimStruct for S-function. */
-SimStruct *Hxi_SimStruct_create();
-
-/** Realease S-function. */
-void Hxi_SimStruct_destroy(SimStruct *S);
-
-/** Initialize sizes of data vectors. This function loads the shared object 
-    found under ssGetPath(S), calls the S-function method mdlInitializeSizes
-    and allocates memory required for a level 2 S-function.
-    The models parameters must be initialized prior to calling this
-    function. */
-void mdlInitializeSizes(SimStruct *S);
-
 #if !defined(Hxi_MEX_SFunction_C)
 
 // redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers
@@ -72,6 +65,22 @@ void mdlInitializeSizes(SimStruct *S);
 #define ssSetTPtr(S, tptr) ssSetTPtr_cannot_be_used_with_Hxi_MEX_SFunction
 
 #endif
+
+/** Create %SimStruct for S-function. */
+SimStruct *Hxi_SimStruct_create();
+
+/** Realease S-function and %SimStruct. */
+void Hxi_SimStruct_destroy(SimStruct *S);
+
+/** @name Supported S-function methods. */
+//@{
+/** Load MEX object and initialize sizes of data vectors in S. 
+    This function loads the shared object found under ssGetPath(S),
+    calls the S-function method mdlInitializeSizes
+    and allocates memory required for a level 2 S-function.
+    The models parameters must be initialized prior to calling this
+    function. */
+void mdlInitializeSizes(SimStruct *S);
 
 /** Optional: Allocate local ressources for simulation. */
 inline void mdlStart(SimStruct *S)
@@ -130,5 +139,6 @@ inline void mdlTerminate(SimStruct *S)
 {
   sfcnTerminate(S);
 }
+//@}
 
 #endif // !defined(Hxi_MEX_SFunction_H)

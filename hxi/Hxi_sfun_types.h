@@ -1,6 +1,7 @@
-/*
- * Hxi_sfun_types.h:
- *   type definitions required to compile a Simulink(R) S-function for HQP
+/** 
+ * @file Hxi_sfun_types.h
+ *   Alternative native type definitions required to compile
+ *   a Simulink(R) S-function with HQP.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -32,7 +33,7 @@
 /** Use this macro to avoid compiler warning about unused function args. */
 #define UNUSED_ARG(arg) 		(arg)=(arg)
 
-// HXI_REAL_T can be defined before including this file (default: adouble).
+/** HXI_REAL_T can be defined before including this file (default: adouble). */
 #if !defined(HXI_REAL_T)
 #include <adouble.h>
 #define HXI_REAL_T adouble

@@ -1,8 +1,8 @@
 
-README for HQP/Omuses 1.7
+README for HQP/Omuses 1.8
 -- This software is free according to the conditions of the 
    GNU LIBRARY GENERAL PUBLIC LICENSE, Version 2 (see COPYING.LIB) --
-Ruediger Franke, 05/11/01
+Ruediger Franke, 05/04/02
 
 HQP is a solver for nonlinearly constrained large-scale optimization
 problems. It is developed with respect to problems that have a

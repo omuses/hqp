@@ -576,4 +576,4 @@ AC_SUBST(IF_DEFS)
 # 	Produce outputs
 # -----------------------------------------------------------------------
 
-AC_OUTPUT(makedefs makedirs odc/Makefile hqp_docp/Makefile)
+AC_OUTPUT(makedefs makedirs odc/Makefile hqp_docp/Makefile doc/Doxyfile)

@@ -37,17 +37,24 @@
 
 IF_BASE_DECLARE(Omu_Program);
 
-//--------------------------------------------------------------------------
+/**
+ * Interface for a multi-stage optimization problem. The problem may be
+ * defined in a derived class by overloading the appropriate methods.
+ * The problem may contain discrete-time and continuous-time equations.
+ * It may be formulated using ADOL-C for automatic differentiation
+ * (defining the high-level methods) or by providing structural information
+ * and derivatives manually (defining the low-level methods).
+ */
 class Omu_Program {
 
  public:
 
-  Omu_Program();
-  virtual ~Omu_Program();
+  Omu_Program();		///< constructor
+  virtual ~Omu_Program();	///< destructor
 
-  //
-  // High-level methods to be primarily implemented by a derived class.
-  //
+  /*
+   * High-level methods to be primarily implemented by a derived class.
+   */
 
   /**
    * Setup stages and time sampling. The default implementation sets up
@@ -63,6 +70,13 @@ class Omu_Program {
 		     Omu_VariableVec &x, Omu_VariableVec &u,
 		     Omu_VariableVec &c) = 0;
 
+  /**
+   * Initialize problem variables using simulation. 
+   * A problem specification may set state variables x and/or control
+   * parameters u prior to the evaluation of stage k.
+   * The default version causes an initial value simulation based
+   * on initial values given in setup.
+   */
   virtual void init_simulation(int k,
 			       Omu_VariableVec &x, Omu_VariableVec &u);
 
@@ -96,12 +110,16 @@ class Omu_Program {
 			  const adoublev &x, const adoublev &u,
 			  const adoublev &xp, adoublev &F);
 
-  //
-  // Low-level methods primarily called from outside.
-  // Default implementations are provided in Omu_Program.
-  // A derived class should should only overload these methods
-  // in special cases, e.g. to achieve a speedup.
-  //
+  /**
+   * @name Low-level methods
+   * Low-level methods are primarily called from within Omuses to evaluate
+   * the problem specification. Default implementations are provided
+   * that call the corresponding high-level methods and use ADOL-C
+   * to obtain required structural information and derivatives.
+   * A derived class should only overload these low-level methods
+   * in special cases, e.g. to achieve a speedup.
+   */
+  //@{
 
   /**
    * Setup stages and time sampling. The default implementation calls
@@ -110,8 +128,7 @@ class Omu_Program {
   virtual void setup_stages();
 
   /**
-   * Setup sparsity patterns of Jacobians. The default implementation 
-   * employs ADOL-C to get all information.
+   * Setup sparsity patterns of Jacobians. 
    * Note: The sparsity pattern must be the same for all sample periods of
    * a stage, i.e. this method has to setup a superset of all sparsity
    * patterns of individual sample periods.
@@ -125,8 +142,6 @@ class Omu_Program {
   /**
    * Low-level consistic (consistent initial conditions) routine
    * for the user specification of derivative information.
-   * The default implementation calls the high-level version
-   * and uses ADOL-C for the determination of xtx and xtu.
    */
   virtual void consistic(int kk, double t,
 			 const Omu_StateVec &x, const Omu_Vec &u,
@@ -134,16 +149,13 @@ class Omu_Program {
 
   /**
    * Low-level continuous routine.
-   * The default implementation calls the high-level continuous()
-   * and employs ADOL-C for automatic Jacobian calculation.
    */
   virtual void continuous(int kk, double t,
 			  const Omu_StateVec &x, const Omu_Vec &u,
 			  const Omu_StateVec &xp, Omu_DependentVec &F);
 
   /**
-   * Low-level update. The default implementation calls the high-level update
-   * and calculates Jacobians by using ADOL-C.
+   * Low-level update. 
    */
   virtual void update(int kk, 
 		      const Omu_StateVec &x, const Omu_Vec &u,
@@ -151,28 +163,51 @@ class Omu_Program {
 		      Omu_DependentVec &f, Omu_Dependent &f0,
 		      Omu_DependentVec  &c);
 
-  //
-  // member access routines
-  //
+  /**
+   * This routine is intended for a calling module,
+   * which might want to avoid calling the low-level continuous
+   * if it is not overridden (e.g. as it has then a faster sensitivity
+   * calculation).
+   * @return true if low-level continuous is overloaded
+   * (currently low-level continuous must have been called once before 
+   *  false may be returned)
+   */
+  bool has_low_level_continuous();
+  //@}
 
-  int		K() {return _K;}
-  void		set_K(int K) {_K = K;}
-  int		KK() {return _KK;}
-  void		set_KK(int KK) {_KK = KK;}
+  /**
+   * @name Member access routines
+   */
+  //@{
+
+  int		K() {return _K;}	///< get number of stages
+  void		set_K(int K) {_K = K;}	///< set number of stages
+  int		KK() {return _KK;}	///< get number of sample periods
+  void		set_KK(int KK) {_KK = KK;}///< set number of sample periods
+
+  /// get vector of start indices for sample periods in each stage
   const IVECP 	ks() {return _ks;}
+
+  /// get vector of start time points in each sample period
   const VECP 	ts() {return _ts;}
+
+  /// get start index of sample periods in stage k
   int	 	ks(int k) {return _ks[k];}
+
+  /// get start time point of sample period kk
   Real 		ts(int kk) {return _ts[kk];}
 
-  //
-  // textual name of a problem definition
-  //
+  //@}
 
+  /**
+   * Textual name of a problem definition.
+   */
   virtual char *name() = 0;
 
-  //
-  // depreciated methods
-  //
+  /**
+   * @name Depreciated methods
+   */
+  //@{
 
   /**
    * Old low-level consistic (consistent initial conditions) routine
@@ -205,48 +240,38 @@ class Omu_Program {
 			  MATP Fx = MNULL, MATP Fu = MNULL,
 			  MATP Fxp = MNULL);
 
-  /**
-   * This routine is intended for a calling module,
-   * which might want to avoid calling the low-level continuous
-   * if it is not overridden (e.g. as it has then a faster sensitivity
-   * calculation).
-   * @return true if low-level continuous is overloaded
-   * (currently low-level continuous must have been called once before 
-   *  false may be returned)
-   */
-  bool has_low_level_continuous();
+  //@}
 
  protected:
 
-  //
-  // provide a container to keep track of interface elements
-  //
-
-  If_List	_ifList;
+  If_List	_ifList; ///< container for interface elements
 
   //
   // predefined basic variables
   //
 
-  int 	_K;	// number of stages
-  int 	_KK;	// number of sample periods over all stages
+  int 	_K;	///< number of stages
+  int 	_KK;	///< number of sample periods over all stages
 
-  //		     
-  // service routines
-  //
-
+  /**
+   * Service routine that can be called from setup_stages for
+   * initalizing ks and ts.
+   */
   void 	stages_alloc(IVECP ks, VECP ts, int K, int sps,
 		     double t0 = 0.0, double tf = 1.0);
 
-  //
-  // low-level routines employing numerical differentiation
-  // to obtain Jacobians
-  //
-
+  /**
+   * @name Low-level gradient routines
+   * These routines can be used to obtain Jacobians from low-level
+   * methods employing numerical differentiation.
+   * They can be called from the corresponding
+   * low-level method after the values have been calculated.
+   * The default versions implement finite forward differences.
+   */
+  //@{
+   
   /**
    * Low-level consistic routine for obtaining gradients.
-   * The default version implements finite forward differences.
-   * It can be called after the values have been calculated.
    */
   virtual void consistic_grds(int kk, double t,
 			      const Omu_StateVec &x, const Omu_Vec &u,
@@ -254,8 +279,6 @@ class Omu_Program {
 
   /**
    * Low-level continuous routine for obtaining gradients.
-   * The default version implements finite forward differences.
-   * It can be called after the values have been calculated.
    */
   virtual void continuous_grds(int kk, double t,
 			       const Omu_StateVec &x, const Omu_Vec &u,
@@ -263,14 +286,13 @@ class Omu_Program {
 
   /**
    * Low-level update routine for obtaining gradients.
-   * The default version implements finite forward differences.
-   * It can be called after the values have been calculated.
    */
   virtual void update_grds(int kk, 
 			   const Omu_StateVec &x, const Omu_Vec &u,
 			   const Omu_StateVec &xf,
 			   Omu_DependentVec &f, Omu_Dependent &f0,
 			   Omu_DependentVec  &c);
+  //@}
 
 private:
   IVECP _ks;	// starting indices of stages

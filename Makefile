@@ -11,6 +11,9 @@ omuses:
 	mv omu/$(LIB_PREFIX)omu$(LIB_SUFFIX) lib/
 	cd odc; $(MAKE); ./run Crane; cd ..
 
+doc::
+	cd doc; doxygen; cd latex; $(MAKE) pdf; mv refman.pdf ..; cd ../..
+
 clean:
 	cd odc; $(MAKE) clean; cd ..
 	rm -f hxi/*~
@@ -20,9 +23,11 @@ clean:
 	$(MAKE) -f Makefile.hqp clean
 	cd hqp_docp; $(MAKE) clean; cd ..
 	rm -f hqp_cute/*~
+	rm -f doc/*~
 
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile hqp_docp/Makefile
+	rm -rf doc/Doxyfile doc/latex
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include

@@ -1,6 +1,6 @@
-/*
- * Omu_Variables.h --
- *   -- independent variables for Omuses problem setup
+/** 
+ * @file Omu_Variables.h 
+ *   Independent variables for Omuses problem setup.
  *
  * rf, 10/10/01
  */

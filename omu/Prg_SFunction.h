@@ -1,6 +1,7 @@
-/*
- * Prg_SFunction.h -- basic functionality for formulating an
- *  optimization problem for a model given as MEX S-function
+/**
+ * @file Prg_SFunction.h
+ *    Basic functionality for formulating an optimization problem for
+ *    a model given as MEX S-function.
  *
  * rf, 7/25/00
  */
@@ -34,32 +35,34 @@
 #define MATLAB_MEX_FILE 1
 #include <simstruc.h>
 
-//--------------------------------------------------------------------------
+/**
+ * Basic functionality for formulating an optimization problem for
+ * a model given as MEX S-function.
+ */
 class Prg_SFunction: public Omu_Program {
 
  protected:
-  char 		*_mdl_name;	// S-function name
-  char 		*_mdl_args;	// S-function parameters
-  SimStruct 	*_S;
-  mxArray	*_mx_args;// S-function parameters after parsing (cell array)
+  char 		*_mdl_name;	///< S-function name
+  char 		*_mdl_args;	///< S-function parameters
+  SimStruct 	*_S;		///< pointer to %SimStruct
+  mxArray	*_mx_args;///< S-function parameters after parsing (cell array)
 
-  int		_mdl_nx;	// number of model states
-  int		_mdl_nu;	// number of model inputs
-  int		_mdl_ny;	// number of model outputs
+  int		_mdl_nx;	///< number of model states
+  int		_mdl_nu;	///< number of model inputs
+  int		_mdl_ny;	///< number of model outputs
 
-  VECP		_mdl_x0;	// initial states
+  VECP		_mdl_x0;	///< initial states
 
   // methods
-  virtual void setup_sfun(); // load S-function
+  virtual void setup_sfun(); 	///< load S-function
 
  public:
 
-  Prg_SFunction();
-  ~Prg_SFunction();
+  Prg_SFunction();		///< constructor
+  ~Prg_SFunction();		///< destructor
 
-  int	mdl_name(IF_DEF_ARGS);	// access S-function name
-  int	mdl_args(IF_DEF_ARGS);	// access S-function parameters as string
+  int	mdl_name(IF_DEF_ARGS);	///< access S-function name
+  int	mdl_args(IF_DEF_ARGS);	///< access S-function parameters as string
 };  
 
 #endif
-

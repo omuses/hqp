@@ -1,8 +1,9 @@
-/*
- * cg_sfun.h: code generation include file for HQP.
+/**
+ * @file cg_sfun.h
+ * S-function code generation include file for HQP.
  * Currently macros for checking optional S-function methods are defined.
  * This allows to write the same code for an inlined S-function and for 
- * an external MEX S-function
+ * an external MEX S-function.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *

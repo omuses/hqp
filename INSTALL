@@ -16,7 +16,7 @@ This creates a new directory hqp containing everything.
 cd to the created directory and invoke
  ./configure
 to create the files ./makedirs, ./makedefs 
-   ./odc/Makefile, and ./hqp_docp/Makefile.
+   ./odc/Makefile, ./hqp_docp/Makefile, and ./doc/Doxyfile.
 Following options can be specified:
  --prefix=PATH
      Path where you'd like to install the libraries and include files
@@ -40,10 +40,19 @@ Build options:
      This requires that this distribution is unpacked in the directory of
      the Ascend distribution, e.g. in /home/myname/ascendiv-0.9
      (for Ascend see http://www.cs.cmu.edu/~ascend/Home.html)
+ --enable-mex
+     Include MEX S-function interface with Omuses. This option requires
+     MATLAB(R) and two paths have to be specified:
+    --with-matlab
+       Root directory of MATLAB(R) installation, e.g.
+       --with-matlab=/usr/local/matlab
+    --with-matlab-libs
+       Directory containing MATLAB(R) runtime libraries, e.g.
+       --with-matlab-libs=/usr/local/matlab/extern/lib/glnx86
 Use a specific Tcl installation, which is not found automatically:
  --with-tcl
      Directory containing Tcl configuration file tclConfig.sh, e.g.
-     --with-tcl=/cygnus/cygwin-b20/H-i586-cygwin32/lib
+     --with-tcl=/usr/local/lib
  --with-tclinclude
      Directory containing include file tcl.h.
 
@@ -57,7 +66,7 @@ Compile the distribution by invoking
 4)
 Directly after compilation, a test run of an example in ./odc is performed 
 automatically that should produce the result "optimal". Some more examples 
-are given in ./odc (please see the documentation in ./doc).
+are given in ./odc (please see also the documentation in ./doc).
 
 5)
 Install the libraries and includes if you want by invoking
@@ -89,10 +98,9 @@ for using an other compiler, say cl, invoke
   CC=cl ./configure
 
 Hints for using cl, i.e. the "native" compiler under Windows:
- - you still need Cygwin (see http://sources.redhat.com)
+ - you still need Cygwin (see http://www.cygwin.com)
+   or MinGW (see http://www.mingw.org)
    in order to run the automatic configuration and make
-   (Note that Cygwin 1.1 is not considered stable,
-    if you have problems with a current version: b20 works fine!)
  - the location of cl must be in your PATH environment
  - the automatically generated file makedirs
    may need to be customized manually with drive names for absolute paths
