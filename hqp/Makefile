@@ -72,6 +72,7 @@ depend:
 	makedepend -- $(CCDEFS) -- $(SRCS)
 
 clean:
-	rm -f tpc$(EXE_SUFFIX) hqp_solve.c *.o *.obj $(LIB_PREFIX)hqp.* *~
+	rm -f tpc$(EXE_SUFFIX) hqp_solve.c *.o *.obj *.[pi]db \
+	  $(LIB_PREFIX)hqp.* *~
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

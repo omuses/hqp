@@ -38,7 +38,7 @@ LIBRARY = omu
 lib: $(OBJS) $(DASPK) Makefile
 	rm -f $(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX)
 	$(LD)$(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX) $(OBJS) \
-	../adol-c/SRC/*$O ../adol-c/SRC/*/*$O $(DASPK_OBJS) $(OMU_MACH_OBJS)
+	$(DASPK_OBJS) $(OMU_MACH_OBJS)
 	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
 
 daspk:
@@ -55,7 +55,7 @@ Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<
 
 clean:
-	rm -f *.o *.obj $(LIB_PREFIX)omu.* *~
+	rm -f *.o *.obj *.[pi]db $(LIB_PREFIX)omu.* *~
 	PWD=`pwd`; cd ../daspk; $(MAKE) clean; cd $(PWD)
 	PWD=`pwd`; cd ../rksuite; rm -f *.o *.obj *~; cd $(PWD)
 

@@ -15,8 +15,8 @@ clean:
 	cd malloc; $(MAKE) clean; cd ..
 	cd hqp; $(MAKE) clean; cd ..
 	cd iftcl; $(MAKE) clean; cd ..
-	rm -f meschach/*.o meschach/*.obj meschach/*~
-	rm -f lib/*.* config.* *~
+	rm -f meschach/*.o meschach/*.obj meschach/*.[pi]db meschach/*~
+	rm -f lib/*.* config.* *.[pi]db *~
 
 distclean: clean
 	rm -f makedefs makedirs hqp_docp/Makefile
