@@ -71,7 +71,9 @@ Feature options:
      Note: The automatic settings done by ./configure are only guesses. 
      Please check the variables FORTRAN_* in ./makedefs.
  --enable-mex
-     Include MEX S-function interface with Omuses. 
+     Include MEX S-function interface with Omuses. This requires MATLAB(R)
+     and Simulink(R) on your computer for include files declaring data
+     structures and for runtime libs implementing mxArray.
      Additionally you may specify:
     --with-matlab
        Root directory of MATLAB(R) installation, e.g.
