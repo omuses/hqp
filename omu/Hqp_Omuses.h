@@ -1,12 +1,12 @@
-/*
- * Hqp_Omuses.h --
- *   -- multi stage optimal control problems described by DAE's
+/**
+ * @file Hqp_Omuses.h 
+ *   multi stage optimal control problems described by DAE's
  *
  * rf, 7/27/96
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,9 +29,7 @@
 
 #include "Hqp_DocpStub.h"
 
-#include <adouble.h>
 #include <If_List.h>
-#include <If_Command.h>
 
 class Omu_Program;
 class Omu_Integrator;
@@ -41,50 +39,35 @@ class Omu_SVec;
 class Omu_DepVec;
 class Omu_Dep;
 
-//--------------------------------------------------------------------------
+/**
+ * Extend DOCP interface with treatment of continuous-time differential
+ * algebraic equations (DAE) and multiple sample periods per stage.
+ */
 class Hqp_Omuses: public Hqp_DocpStub {
 
  public:
-
   Hqp_Omuses();
   ~Hqp_Omuses();
-  char *name() {return "Omuses";}
 
-  int setup_stages(IF_DEF_ARGS);
+  /** setup stages of optimization problem */
+  void setup_stages();
 
  protected:
+  If_List		_ifList; 	///< interface elements
+  Omu_Program		*_prg; 		///< problem definition
+  Omu_Integrator	*_integrator; 	///< integrator
 
-  If_List		_ifList;
-  Omu_Program		*_prg;
-  Omu_Integrator	*_integrator;
-  void 			*_integrator_setup;
+  /// integrator that has been set up (to check if new setup required)
+  void 	*_integrator_setup;
+  bool 	_stages_ok;	///< setup_stages() was called separately
+  MATP 	_IS;		///< help matrix
+  bool 	_ad;		///< flag about use of automatic differentiation
+  double _fscale;	///< scaling of optimization criterion
 
-  bool _stages_ok;	// setup_stages() was called separately
-  VECP _xt;		// initial states of a sample period
-  MATP _xtxk;		// dxt/dxk
-  MATP _xtuk;		// dxt/duk
-  MATP _Sx;		// sensitivity for x after integration
-  MATP _Sxk;		// sensitivity for x before integration
-  MATP _IS;		// help matrix
-  MATP _Su;		// sensitivity for u after integration
-  MATP _Suk;		// sensitivity for u before integration
-
-  VECP _fk;		// call argument for update
-
-  MATP _fkxk;		// Jacobian delivered by update
-  MATP _fkuk;		// Jacobian delivered by update
-  MATP _fkfk;		// Jacobian delivered by update
-  VECP _f0kxk;		// Jacobian delivered by update
-  VECP _f0kuk;		// Jacobian delivered by update
-  VECP _f0kfk;		// Jacobian delivered by update
-  MATP _ckxk;		// Jacobian delivered by update
-  MATP _ckuk;		// Jacobian delivered by update
-  MATP _ckfk;		// Jacobian delivered by update
-
-  bool _ad;		// flag about use of automatic differentiation
-  double _fscale;	// scaling of the criterion
-
-  // define interface of Hqp_Docp_stub
+  /**
+   *@name Implement interface of Hqp_Docp_stub
+   */
+  //@{
   void setup_horizon(int &k0, int &kf);
 
   void setup_vars(int k,
@@ -110,43 +93,20 @@ class Hqp_Omuses: public Hqp_DocpStub {
 		    MATP cx, MATP cu,
 		    const VECP rf, const VECP rc,
 		    MATP Lxx, MATP Luu, MATP Lxu);
+  //@}
 
-  // further methods
-  void init_vars(int k,
-		 VECP x, VECP u);
+  Omu_DynVarVec	*_xs;	///< state information from problem setup
+  Omu_VarVec	*_us;	///< control information from problem setup
+  Omu_VarVec	*_css;	///< constraint information from problem setup
 
-  void obtain_structure(int k,
-			Omu_DynVarVec &xk, const Omu_VarVec &uk);
+  Omu_SVec 	*_x0s;	///< initial states before integration
+  Omu_SVec 	*_xfs;	///< final states after integration
 
-  Omu_DynVarVec	*_xs;	// state information from problem setup
-  Omu_VarVec	*_us;	// control information from problem setup
-  Omu_VarVec	*_css;	// constraint information from problem setup
-
-  Omu_SVec 	*_x0s;	// initial states before integration
-  Omu_SVec 	*_xfs;	// final states after integration
-
-  Omu_DepVec 	*_xts;	// continuous time states from consistic
-  Omu_DepVec 	*_Fs;	// continuous time model equations from continuous
-  Omu_DepVec 	*_fs;	// discrete time states from update
-  Omu_Dep 	*_f0s;  // objective from update
-  Omu_DepVec 	*_cs; 	// constraints from update
-
-  // variables for ADOL-C
-
-  void		ad_alloc(int ndep, int nindep, int npar);
-  void		ad_realloc(int ndep, int nindep, int npar);
-  void		ad_free();
-  int		_max_ndep;
-  int		_max_nindep;
-  int		_max_npar;
-
-  VECP		_x;
-  VECP		_y;
-  MATP		_X;
-  MATP		_Y;
-  MATP		_U;
-  double	***_Z3;
-  short	  	**_nz;
+  Omu_DepVec 	*_xts;	///< continuous time states from consistic
+  Omu_DepVec 	*_Fs;	///< continuous time model equations from continuous
+  Omu_DepVec 	*_fs;	///< discrete time states from update
+  Omu_Dep 	*_f0s;  ///< objective from update
+  Omu_DepVec 	*_cs; 	///< constraints from update
 };  
 
 #endif
