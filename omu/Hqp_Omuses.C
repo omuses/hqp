@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -237,15 +237,14 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
   bool is_zero;
 
   // allocate dependents
+  xtk.size(nxt, nxt, nu, 0, 0, 0);
   if (k < K) {
-    xtk.size(nxt, nxt, nu, 0, 0, 0);
     Fk.size(nxt, nxt, nu, nxt, 0, 0);
     fk.size(max(nxt, nf), nxt, nu, 0, nxt, 0);
     f0k.size(nxt, nu, nxt);
     ck.size(nc, nxt, nu, 0, nxt, 0);
   }
   else {
-    x0k.size(nxt, nx, nu, 0);
     f0k.size(nxt, nu, 0);
     ck.size(nc, nxt, nu, 0, 0, 0);
   }
@@ -469,11 +468,14 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
 
   for (kk = _prg->ks(k); kk < kkend; kk++) {
 
+    // initialize (expansion) states
+    _prg->consistic(kk, _prg->ts(kk), x0k, uk, xtk);
+    v_copy(xtk, x0k);
+
     // solve continuous equations over sample period
     if (nxf > 0) {
 
-      _prg->consistic(kk, _prg->ts(kk), x0k, uk, xtk);
-      v_copy(xtk, xfk);
+      v_copy(x0k, xfk);
 
       m_catch(E_CONV,
 	      // try
@@ -608,14 +610,22 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
   for (kk = _prg->ks(k); kk < kkend; kk++) {
 
+    // initialize (expansion) states
+    _prg->consistic(kk, _prg->ts(kk), x0k, uk, xtk);
+    v_copy(xtk, x0k);
+    if (!xtk.Jx.is_ident()) {
+      m_copy(m_mlt(xtk.Jx, x0k.Sx, _IS), x0k.Sx);
+      m_copy(m_mlt(xtk.Jx, x0k.Su, _IS), x0k.Su);
+    }
+    if (!xtk.Ju.is_zero())
+      m_add(x0k.Su, xtk.Ju, x0k.Su);
+
     // solve continuous equations over sample period
     if (nxf > 0) {
 
-      _prg->consistic(kk, _prg->ts(kk), x0k, uk, xtk);
-      v_copy(xtk, xfk);
-      m_mlt(xtk.Jx, x0k.Sx, xfk.Sx);
-      m_mlt(xtk.Jx, x0k.Su, xfk.Su);
-      m_add(xfk.Su, xtk.Ju, xfk.Su);
+      v_copy(x0k, xfk);
+      m_copy(x0k.Sx, xfk.Sx);
+      m_copy(x0k.Su, xfk.Su);
 
       m_catch(E_CONV,
 	      // try

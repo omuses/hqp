@@ -1,3 +1,15 @@
+2004-02-28    <rfranke>
+
+	* omu/Hqp_Omuses.C:
+	  call Omu_Program::consistic at beginning of each stage
+	  (instead before solution of continuous-time equations) to
+	  - simplify initialization of (expansion) states if no 
+	    continuous equations present, e.g. at final stage
+	  - better treatment of discrete events at beginning of stage
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  - adapt to new semantics of consistic
+
 2004-02-19    <rfranke>
 
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:

@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -522,23 +522,24 @@ void Prg_SFunctionEst::setup_struct(int k,
   int ex = _exs[ks(k)]; 	// experiment of current stage
   bool new_experiment = k == 0 || ex != _exs[ks(k)-1];
 
+  // consistic just takes states from optimizer
+  // note: possible changes due to discrete events (mdlUpdate) are neglected
+  if (k == 0 || !new_experiment) {
+    m_ident(xt.Jx);
+    m_zero(xt.Ju);
+  }
+  else {
+    m_zero(xt.Jx);
+    for (i = 0; i < _np; i++)
+      xt.Jx[i][i] = 1.0;
+    m_zero(xt.Ju);
+    for (i = _np; i < _nx; i++)
+      xt.Ju[i][i-_np] = 1.0;
+  }
+  xt.set_linear();
+
   if (k < _K) {
     int ex1 = _exs[ks(k+1)]; 	// experiment of subsequent stage
-
-    // consistic just takes states from optimizer
-    if (k == 0 || !new_experiment) {
-      m_ident(xt.Jx);
-      m_zero(xt.Ju);
-    }
-    else {
-      m_zero(xt.Jx);
-      for (i = 0; i < _np; i++)
-	xt.Jx[i][i] = 1.0;
-      m_zero(xt.Ju);
-      for (i = _np; i < _nx; i++)
-	xt.Ju[i][i-_np] = 1.0;
-    }
-    xt.set_linear();
 
     if (ex == ex1) {
       // explicit ODE for continuous-time equations
@@ -636,18 +637,6 @@ void Prg_SFunctionEst::update(int kk,
 
   // obtain model outputs
   SMETHOD_CALL2(mdlOutputs, _S, 0);
-
-  // call mdlUpdate to get discrete events processed at final time
-  // (this is done from consistic at regular sample intervals)
-  if (kk == _KK && ssGetmdlUpdate(_S) != NULL) {
-    if (_KK == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-      // initialize model as no consistic called for _KK==0
-      SMETHOD_CALL(mdlInitializeConditions, _S);
-    }
-    SMETHOD_CALL2(mdlUpdate, _S, 0);
-    // and re-calculate model outputs after update
-    SMETHOD_CALL2(mdlOutputs, _S, 0);
-  }
 
   // store outputs in constraints
   real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);
@@ -859,18 +848,28 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
     // pass estimated parameters to model
     write_active_mx_args(x);
-
-    // initialize model inputs
-    real_T *mdl_u;
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-    else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
-    for (i = 0; i < _mdl_nu; i++)
-      mdl_u[i] = _mdl_us[kk][i];
-
     // initialize model
     SMETHOD_CALL(mdlInitializeConditions, _S);
+  }
+
+  // initialize model inputs
+  real_T *mdl_u;
+  if (ssGetInputPortRequiredContiguous(_S, 0))
+    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  else
+    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  for (i = 0; i < _mdl_nu; i++)
+    mdl_u[i] = _mdl_us[kk][i];
+
+  // pass states from optimizer to model
+  real_T *mdl_x = ssGetContStates(_S);
+  if (kk == 0 || !new_experiment) {
+    for (i = 0; i < _mdl_nx; i++)
+      mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
+  }
+  else {
+    for (i = 0; i < _mdl_nx; i++)
+      mdl_x[i] = u[i] * _mdl_x_nominal[i];
   }
 
   // call mdlUpdate to get discrete events processed
@@ -882,15 +881,12 @@ void Prg_SFunctionEst::consistic(int kk, double t,
     SMETHOD_CALL2(mdlUpdate, _S, 0);
   }
 
-  // take over states from optimizer
-  if (kk == 0 || !new_experiment)
-    v_copy(x, xt);
-  else {
-    for (i = 0; i < _np; i++)
-      xt[i] = x[i];
-    for (i = _np; i < _nx; i++)
-      xt[i] = u[i-_np];
-  }
+  // take over estimated parameters from optimizer
+  for (i = 0; i < _np; i++)
+    xt[i] = x[i];
+  // read back states from model
+  for (i = 0; i < _mdl_nx; i++)
+    xt[_np + i] = mdl_x[i] / _mdl_x_nominal[i];
 }
 
 //--------------------------------------------------------------------------

@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -581,6 +581,7 @@ void Prg_SFunctionOpt::setup_struct(int k,
   int i, idx, j;
 
   // consistic just takes states from optimizer
+  // note: possible changes due to discrete events (mdlUpdate) are neglected
   m_ident(xt.Jx);
   m_zero(xt.Ju);
   xt.set_linear();
@@ -708,18 +709,6 @@ void Prg_SFunctionOpt::update(int kk,
 
   // call mdlOutputs
   SMETHOD_CALL2(mdlOutputs, _S, 0); 
-
-  // call mdlUpdate to get discrete events processed at final time
-  // (this is done from consistic at regular sample intervals)
-  if (kk == _KK && ssGetmdlUpdate(_S) != NULL) {
-    if (_KK == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-      // initialize model as no consistic called for _KK==0
-      SMETHOD_CALL(mdlInitializeConditions, _S);
-    }
-    SMETHOD_CALL2(mdlUpdate, _S, 0);
-    // and re-calculate model outputs after update
-    SMETHOD_CALL2(mdlOutputs, _S, 0); 
-  }
 
   // obtain model outputs
   real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);
@@ -1192,23 +1181,27 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
 
   // initialize model in first stage
   if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-    // initialize model inputs using linear interpolation over time
-    double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
-    real_T *mdl_u;
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-    else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
-      if (_mdl_u.active[idx])
-	mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
-      else
-	mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
-    }
-
     // initialize model
     SMETHOD_CALL(mdlInitializeConditions, _S);
   }
+
+  // initialize model inputs
+  real_T *mdl_u;
+  if (ssGetInputPortRequiredContiguous(_S, 0))
+    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  else
+    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    if (_mdl_u.active[idx])
+      mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
+    else
+      mdl_u[idx] = _mdl_us[kk][idx];
+  }
+
+  // pass states from optimizer to model
+  real_T *mdl_x = ssGetContStates(_S);
+  for (i = 0; i < _mdl_nx; i++)
+    mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
 
   // call mdlUpdate to get discrete events processed
   // Note: this is done once at the beginning of a sample interval;
@@ -1219,8 +1212,12 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
     SMETHOD_CALL2(mdlUpdate, _S, 0);
   }
 
-  // take over states from optimizer
-  v_copy(x, xt);
+  // take over optimized control inputs from optimizer
+  for (i = 0; i < _nu; i++)
+    xt[i] = x[i];
+  // read back states from model
+  for (i = 0; i < _mdl_nx; i++)
+    xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
 }
 
 //--------------------------------------------------------------------------
@@ -1234,8 +1231,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   // set simulation time
   ssSetT(_S, t);
 
-  // initialize model inputs using linear interpolation over time
-  double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
+  // initialize model inputs
   real_T *mdl_u;
   if (ssGetInputPortRequiredContiguous(_S, 0))
     mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
@@ -1244,12 +1240,8 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
-    else {
-      if (_mdl_u_order[idx] == 0)
-	mdl_u[idx] = _mdl_us[kk][idx];
-      else
-	mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
-    }
+    else
+      mdl_u[idx] = _mdl_us[kk][idx];
   }
 
   // pass current states to model
