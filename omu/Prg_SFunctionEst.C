@@ -85,7 +85,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   v_set(_mdl_p_min, 0.0);
   v_set(_mdl_p_max, INF);
 
-  _mdl_x0 = v_get(_mdl_nx);
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_x0_min = v_get(_mdl_nx);
   _mdl_x0_max = v_get(_mdl_nx);
@@ -109,7 +108,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealVec("mdl_p_nominal", &_mdl_p_nominal));
   _ifList.append(new If_RealVec("mdl_p_min", &_mdl_p_min));
   _ifList.append(new If_RealVec("mdl_p_max", &_mdl_p_max));
-  _ifList.append(new If_RealVec("mdl_x0", &_mdl_x0));
   _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
   _ifList.append(new If_RealVec("mdl_x0_min", &_mdl_x0_min));
   _ifList.append(new If_RealVec("mdl_x0_max", &_mdl_x0_max));
@@ -144,7 +142,6 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   v_free(_mdl_x0_min);
   v_free(_mdl_x0_max);
   v_free(_mdl_x_nominal);
-  v_free(_mdl_x0);
 }
 
 //--------------------------------------------------------------------------
@@ -199,7 +196,6 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   v_set(_mdl_p_min, 0.0);
   v_set(_mdl_p_max, INF);
 
-  v_resize(_mdl_x0, _mdl_nx);
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_x0_min, _mdl_nx);
   v_resize(_mdl_x0_max, _mdl_nx);
@@ -493,7 +489,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
 				 const Omu_StateVec &x, const Omu_Vec &u,
 				 Omu_DependentVec &xt)
 {
-  int i, idx;
+  int i;
 
   // initialize model in first stage
   if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {

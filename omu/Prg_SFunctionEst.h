@@ -136,7 +136,6 @@ class Prg_SFunctionEst: public Prg_SFunction {
   VECP 		_mdl_p_nominal;	///< nominal parameter values (for scaling)
   VECP 		_mdl_p_min;	///< lower bounds for estimated parameters
   VECP 		_mdl_p_max;	///< upper bounds for estimated parameters
-  VECP 		_mdl_x0;	///< initial states
   VECP 		_mdl_x_nominal; ///< nominal state values (for scaling)
   VECP 		_mdl_x0_min;	///< lower bounds for estimated initial states
   VECP 		_mdl_x0_max;	///< upper bounds for estimated initial states
