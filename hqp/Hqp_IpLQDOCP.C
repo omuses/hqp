@@ -6,6 +6,9 @@
  *           07/08/97  bugs in resize(), free()
  *           08/20/99  Hqp_IpLQDOCP::Get_Dim()
  *           2002-04-17 free() replaced by myfree()
+ *           2004-10-13 bug fix for assert()
+ *           2004-10-15 replace BKPfactor, BKPsolve 
+ *                      by matBKPfactor, matBKPsolve
  *
  */
 
@@ -101,6 +104,64 @@ SPMAT *CTDC(const SPMAT *CT, const VEC *yny, SPMAT *CTC)
   return CTC;
 }
  
+/*
+ * matBKPsolveM -- matBKPsolve with matrix right hand side
+ * E. Arnold   2004-10-15
+ */
+MAT *matBKPsolveM(MAT *A, PERM *pivot, MAT *B, MAT *C)
+{
+    static VEC *v1 = VNULL;
+    u_int i;
+
+    if ( ( A == MNULL ) || ( B == MNULL ) )
+	m_error(E_NULL,"matBKPsolveM");
+    if ( A->m != A->n )
+	m_error(E_SQUARE,"matBKPsolveM");
+    if ( A->m != B->m )
+	m_error(E_SIZES,"matBKPsolveM");
+
+    v1 = v_resize(v1, B->m);
+    MEM_STAT_REG(v1, TYPE_VEC);
+    C = m_resize(C, A->m, B->n);
+
+    for (i = 0; i < B->n; i++) {
+	v1 = get_col(B, i, v1);
+	v1 = matBKPsolve(A, pivot, v1, v1);
+	C = set_col(C, i, v1);
+    }
+    return C;
+}
+
+/*
+ * matBKPsolveMT -- matBKPsolve with transposed matrix right hand side
+ * E. Arnold   2004-10-15
+ */
+MAT *matBKPsolveMT(MAT *A, PERM *pivot, MAT *B, MAT *C)
+{
+    static VEC *v1 = VNULL;
+    u_int i;
+
+    if ( ( A == MNULL ) || ( B == MNULL ) )
+	m_error(E_NULL,"matBKPsolveMT");
+    if ( A->m != A->n )
+	m_error(E_SQUARE,"matBKPsolveMT");
+    if ( A->m != B->n )
+	m_error(E_SIZES,"matBKPsolveMT");
+    if ( B == C)
+	m_error(E_INSITU,"matBKPsolveMT");
+
+    v1 = v_resize(v1, B->n);
+    MEM_STAT_REG(v1, TYPE_VEC);
+    C = m_resize(C, A->m, B->m);
+
+    for (i = 0; i < B->m; i++) {
+	v1 = get_row(B, i, v1);
+	v1 = matBKPsolve(A, pivot, v1, v1);
+	C = set_col(C, i, v1);
+    }
+    return C;
+}
+
 //--------------------------------------------------------------------------
 Hqp_IpLQDOCP::Hqp_IpLQDOCP()
 {
@@ -128,7 +189,7 @@ Hqp_IpLQDOCP::Hqp_IpLQDOCP()
   yb = VNULL;
   Z = MNULL;
   pivot = PNULL;
-  blocks = PNULL;
+  //  blocks = PNULL;
   _ra = IVNULL;
   _rc = IVNULL;
   _rak = IVNULL;
@@ -420,7 +481,7 @@ void Hqp_IpLQDOCP::resize()
   Guu.resize(_kmax1);
   CH_Guu.resize(_kmax1);
   CH_Guu_p.resize(_kmax1);
-  CH_Guu_b.resize(_kmax1);
+  //  CH_Guu_b.resize(_kmax1);
   Vx.resize(_kmax);
   cb.resize(_kmax);
   S.resize(_kmax1);
@@ -499,7 +560,7 @@ void Hqp_IpLQDOCP::myfree()
   Guu.tfree();
   CH_Guu.tfree();
   CH_Guu_p.tfree();
-  CH_Guu_b.tfree();
+  //  CH_Guu_b.tfree();
   Vx.tfree();
   cb.tfree();
   S.tfree();
@@ -534,7 +595,7 @@ void Hqp_IpLQDOCP::myfree()
   V_FREE(yb);
   M_FREE(Z);
   PX_FREE(pivot);
-  PX_FREE(blocks);
+  //  PX_FREE(blocks);
 
   IV_FREE(_ra);
   IV_FREE(_rc);
@@ -630,8 +691,8 @@ void Hqp_IpLQDOCP::dump(char *fname)
       fprintf(fp, "\n%s   CH_Guu[%d]: ", s1, k); m_foutput(fp, CH_Guu[k]);   
       fprintf(fp, "\n%s   CH_Guu_p[%d]: ", s1, k); 
       px_foutput(fp, CH_Guu_p[k]);   
-      fprintf(fp, "\n%s   CH_Guu_b[%d]: ", s1, k); 
-      px_foutput(fp, CH_Guu_b[k]);   
+      //      fprintf(fp, "\n%s   CH_Guu_b[%d]: ", s1, k); 
+      //      px_foutput(fp, CH_Guu_b[k]);   
       fprintf(fp, "\n%s   ctx[%d]: ", s1, k); m_foutput(fp, ctx[k]);   
       fprintf(fp, "\n%s   d11[%d]: ", s1, k); m_foutput(fp, d11[k]);   
       fprintf(fp, "\n%s   d12[%d]: ", s1, k); m_foutput(fp, d12[k]);   
@@ -1415,12 +1476,14 @@ void Hqp_IpLQDOCP::ExRiccatiFactor(void)
       //      printf("CH_Guu[%d]: ", k); m_output(CH_Guu[k]);
       //      CH_Guu[k] = CHfactor(CH_Guu[k]);
       CH_Guu_p[k] = px_resize(CH_Guu_p[k], CH_Guu[k]->m);
-      CH_Guu_b[k] = px_resize(CH_Guu_b[k], CH_Guu[k]->m);
-      CH_Guu[k] = BKPfactor(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k]);
+      //      CH_Guu_b[k] = px_resize(CH_Guu_b[k], CH_Guu[k]->m);
+      //      CH_Guu[k] = BKPfactor(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k]);
+      CH_Guu[k] = matBKPfactor(CH_Guu[k], CH_Guu_p[k]);
 
       //   Rux, Ryx, Ruyb, Ryyb, ctx for unconstrained u
       //      Rux[k] = CHsolveMT(CH_Guu[k], Gxu[k], Rux[k]);
-      Rux[k] = BKPsolveMT(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], Gxu[k], Rux[k]);
+      //      Rux[k] = BKPsolveMT(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], Gxu[k], Rux[k]);
+      Rux[k] = matBKPsolveMT(CH_Guu[k], CH_Guu_p[k], Gxu[k], Rux[k]);
       Ryx[k] = m_resize(Ryx[k], 0, _nk[k]);
       Ruyb[k] = m_resize(Ruyb[k], _mk[k], d22->m);
       Ruyb[k] = m_zero(Ruyb[k]);
@@ -1453,9 +1516,11 @@ void Hqp_IpLQDOCP::ExRiccatiFactor(void)
 	//	CH_Guu[k] = CHfactor(CH_Guu[k]);
 	//	m2 = CHsolveMT(CH_Guu[k], Z, m2);
 	pivot = px_resize(pivot, CH_Guu[k]->m);
-	blocks = px_resize(blocks, CH_Guu[k]->m);
-	CH_Guu[k] = BKPfactor(CH_Guu[k], pivot, blocks);
-	m2 = BKPsolveMT(CH_Guu[k], pivot, blocks, Z, m2);
+	//	blocks = px_resize(blocks, CH_Guu[k]->m);
+	//	CH_Guu[k] = BKPfactor(CH_Guu[k], pivot, blocks);
+	CH_Guu[k] = matBKPfactor(CH_Guu[k], pivot);
+	//	m2 = BKPsolveMT(CH_Guu[k], pivot, blocks, Z, m2);
+	m2 = matBKPsolveMT(CH_Guu[k], pivot, Z, m2);
         CH_Guu[k] = m_mlt(Z, m2, CH_Guu[k]);
 
 	//   Rux for constrained u
@@ -1586,8 +1651,9 @@ void Hqp_IpLQDOCP::ExRiccatiFactor(void)
     m1 = m_move(db, 0, 0, db->m, db->n, m1, _nk[0], _nk[0]);
   }
   pivot = px_resize(pivot, m1->m);
-  blocks = px_resize(blocks, m1->m);
-  m1 = BKPfactor(m1, pivot, blocks);
+  //  blocks = px_resize(blocks, m1->m);
+  //  m1 = BKPfactor(m1, pivot, blocks);
+  m1 = matBKPfactor(m1, pivot);
   //   do not change m1, pivot, blocks!
 
 }
@@ -1632,7 +1698,8 @@ void Hqp_IpLQDOCP::ExRiccatiSolve(void)
       //      printf("k = %d, Ru,Ry\n", k);
       //   Ru, Ry for unconstrained u
       //      Ru[k] = CHsolve(CH_Guu[k], Gu, Ru[k]);
-      Ru[k] = BKPsolve(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], Gu, Ru[k]);
+      //      Ru[k] = BKPsolve(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], Gu, Ru[k]);
+      Ru[k] = matBKPsolve(CH_Guu[k], CH_Guu_p[k], Gu, Ru[k]);
       Ry[k] = v_resize(Ry[k], 0);
     } else {
 
@@ -1701,13 +1768,15 @@ void Hqp_IpLQDOCP::ExRiccatiSolve(void)
       v1 = v_resize(v1, cb[0]->dim);
       v1 = mv_mltadd(cb[0], x[0], cbx[0], 1.0, v1);
       v1 = sv_mlt(-1.0, v1, v1);
-      yb = BKPsolve(m1, pivot, blocks, v1, yb);
+      //      yb = BKPsolve(m1, pivot, blocks, v1, yb);
+      yb = matBKPsolve(m1, pivot, v1, yb);
     } else
       yb = v_resize(yb, 0);
   } else {
     v1 = v_concat(Vx[0], cb[0], v1);
     v1 = sv_mlt(-1.0, v1, v1);
-    v1 = BKPsolve(m1, pivot, blocks, v1, v1);
+    //    v1 = BKPsolve(m1, pivot, blocks, v1, v1);
+    v1 = matBKPsolve(m1, pivot, v1, v1);
     x[0] = v_move(v1, 0, _nk[0], x[0], 0);
     yb = v_resize(yb, v1->dim-_nk[0]);
     yb = v_move(v1, _nk[0], v1->dim-_nk[0], yb, 0);
@@ -1867,15 +1936,17 @@ void Hqp_IpLQDOCP::ExRiccatiFactorSc(void)
       //      printf("CH_Guu[%d]: ", k); m_output(CH_Guu[k]);
       //      CH_Guu[k] = CHfactor(CH_Guu[k]);
       CH_Guu_p[k] = px_resize(CH_Guu_p[k], CH_Guu[k]->m);
-      CH_Guu_b[k] = px_resize(CH_Guu_b[k], CH_Guu[k]->m);
-      CH_Guu[k] = BKPfactor(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k]);
+      //      CH_Guu_b[k] = px_resize(CH_Guu_b[k], CH_Guu[k]->m);
+      //      CH_Guu[k] = BKPfactor(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k]);
+      CH_Guu[k] = matBKPfactor(CH_Guu[k], CH_Guu_p[k]);
 
       //   Rux, Ryx, Ruyb, Ryyb, ctx for unconstrained u
       //      Rux[k] = CHsolveMT(CH_Guu[k], Gxu[k], Rux[k]);
       //      printf("vor Rux\n"); 
       m1 = md_mlt(Gxu[k], sc[k], m1);
       //      m1 = m_copy1(Gxu[k], m1);
-      Rux[k] = BKPsolveMT(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], m1, Rux[k]);
+      //      Rux[k] = BKPsolveMT(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], m1, Rux[k]);
+      Rux[k] = matBKPsolveMT(CH_Guu[k], CH_Guu_p[k], m1, Rux[k]);
       Rux[k] = dm_mlt(Rux[k], sc[k], Rux[k]);
       Ryx[k] = m_resize(Ryx[k], 0, _nk[k]);
       ctx[k] = m_resize(ctx[k], 0, _nk[k]);
@@ -1916,9 +1987,11 @@ void Hqp_IpLQDOCP::ExRiccatiFactorSc(void)
 	//	CH_Guu[k] = CHfactor(CH_Guu[k]);
 	//	m2 = CHsolveMT(CH_Guu[k], Z, m2);
 	pivot = px_resize(pivot, CH_Guu[k]->m);
-	blocks = px_resize(blocks, CH_Guu[k]->m);
-	CH_Guu[k] = BKPfactor(CH_Guu[k], pivot, blocks);
-	m2 = BKPsolveMT(CH_Guu[k], pivot, blocks, Z, m2);
+	//	blocks = px_resize(blocks, CH_Guu[k]->m);
+	//	CH_Guu[k] = BKPfactor(CH_Guu[k], pivot, blocks);
+	CH_Guu[k] = matBKPfactor(CH_Guu[k], pivot);
+	//	m2 = BKPsolveMT(CH_Guu[k], pivot, blocks, Z, m2);
+	m2 = matBKPsolveMT(CH_Guu[k], pivot, Z, m2);
         CH_Guu[k] = m_mlt(Z, m2, CH_Guu[k]);
 
 	//   Rux for constrained u
@@ -1991,8 +2064,9 @@ void Hqp_IpLQDOCP::ExRiccatiFactorSc(void)
   m1 = md_mlt(m1, scx0, m1);
 
   pivot = px_resize(pivot, m1->m);
-  blocks = px_resize(blocks, m1->m);
-  m1 = BKPfactor(m1, pivot, blocks);
+  //  blocks = px_resize(blocks, m1->m);
+  //  m1 = BKPfactor(m1, pivot, blocks);
+  m1 = matBKPfactor(m1, pivot);
   //   do not change m1, pivot, blocks!
 
 }
@@ -2040,7 +2114,8 @@ void Hqp_IpLQDOCP::ExRiccatiSolveSc(void)
       //      Ru[k] = CHsolve(CH_Guu[k], Gu, Ru[k]);
 
       v1 = v_star(sc[k], Gu, v1);
-      Ru[k] = BKPsolve(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], v1, Ru[k]);
+      //      Ru[k] = BKPsolve(CH_Guu[k], CH_Guu_p[k], CH_Guu_b[k], v1, Ru[k]);
+      Ru[k] = matBKPsolve(CH_Guu[k], CH_Guu_p[k], v1, Ru[k]);
       Ru[k] = v_star(Ru[k], sc[k], Ru[k]);
       Ry[k] = v_resize(Ry[k], 0);
     } else {
@@ -2102,7 +2177,8 @@ void Hqp_IpLQDOCP::ExRiccatiSolveSc(void)
       v1 = mv_mltadd(cb[0], x[0], cbx[0], 1.0, v1);
       v1 = sv_mlt(-1.0, v1, v1);
       v1 = v_star(v1, scx0, v1);
-      yb = BKPsolve(m1, pivot, blocks, v1, yb);
+      //      yb = BKPsolve(m1, pivot, blocks, v1, yb);
+      yb = matBKPsolve(m1, pivot, v1, yb);
       yb = v_star(yb, scx0, yb);
     } else
       yb = v_resize(yb, 0);
@@ -2110,7 +2186,8 @@ void Hqp_IpLQDOCP::ExRiccatiSolveSc(void)
     v1 = v_concat(Vx[0], cb[0], v1);
     v1 = sv_mlt(-1.0, v1, v1);
     v1 = v_star(v1, scx0, v1);
-    v1 = BKPsolve(m1, pivot, blocks, v1, v1);
+    //    v1 = BKPsolve(m1, pivot, blocks, v1, v1);
+    v1 = matBKPsolve(m1, pivot, v1, v1);
     v1 = v_star(v1, scx0, v1);
     x[0] = v_move(v1, 0, _nk[0], x[0], 0);
     yb = v_resize(yb, v1->dim-_nk[0]);

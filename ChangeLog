@@ -1,3 +1,13 @@
+2005-01-14  <e_arnold>
+
+	* adol-c, configure.in, configure, Makefile, makedirs.in,
+	  odc/Makefile.in:
+	  - Remove adol-c/adolc directory tree from CVS. Rebuild from 
+	    adolc-1.9.0-PL2.tar.gz during configure.
+
+	* hqp/Hqp_IpLQDOCP.[hC]
+	  - replace BKPfactor, BKPsolve by matBKPfactor, matBKPsolve
+	
 2005-01-11  <rfranke>
 
 	Add support for native external S-functions,

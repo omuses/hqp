@@ -14,9 +14,9 @@ omuses:
 	$(MAKE) test
 
 adolc:
-	cd adol-c; \
+	cd adol-c/adol-c; \
 	$(MAKE) CC="$(ADOL_MCC)" CXX="$(ADOL_CC)" CFLAGS="$(ADOL_CFLAGS)"; \
-	cd ..
+	cd ../..
 
 test:
 	@if test -n "$(ADOLC_SRCS)"; then \
@@ -38,7 +38,9 @@ clean:
 	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..
-	if test -n "$(ADOLC_SRCS)"; then cd adol-c; $(MAKE) clean; cd ..; fi
+	if test -n "$(ADOLC_SRCS)"; then \
+	  cd adol-c/adol-c; $(MAKE) clean; cd ../..; \
+	fi
 	$(MAKE) -f Makefile.hqp clean
 	cd hqp_docp; $(MAKE) clean; cd ..
 	rm -f hqp_cute/*~
@@ -47,8 +49,8 @@ clean:
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
 	if test -n "$(ADOLC_SRCS)"; then \
-	cd adol-c; $(MAKE) distclean; cd ..; \
-	patch -t -R -p0 < hqp_adolc.patch; \
+	cd adol-c; \
+	if test -d adol-c; then rm -rf adol-c; fi \
 	fi
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
 
@@ -76,19 +78,19 @@ install::
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
 	@if test ! -d $(INC_DIR)-$(VERSION)/adolc; then \
 	mkdir $(INC_DIR)-$(VERSION)/adolc; fi
-	for f in adol-c/adolc/*.h; do \
+	for f in adol-c/adol-c/adolc/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/; done
 	@if test ! -d $(INC_DIR)-$(VERSION)/adolc/drivers; then \
 	mkdir $(INC_DIR)-$(VERSION)/adolc/drivers; fi
-	for f in adol-c/adolc/drivers/*.h; do \
+	for f in adol-c/adol-c/adolc/drivers/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/drivers/; done
 	@if test ! -d $(INC_DIR)-$(VERSION)/adolc/sparse; then \
 	mkdir $(INC_DIR)-$(VERSION)/adolc/sparse; fi
-	for f in adol-c/adolc/sparse/*.h; do \
+	for f in adol-c/adol-c/adolc/sparse/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/sparse/; done
 	@if test ! -d $(INC_DIR)-$(VERSION)/adolc/tapedoc; then \
 	mkdir $(INC_DIR)-$(VERSION)/adolc/tapedoc; fi
-	for f in adol-c/adolc/tapedoc/*.h; do \
+	for f in adol-c/adol-c/adolc/tapedoc/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/tapedoc/; done
 # complete directory structure for includes
 	rm -rf $(INC_DIR_ROOT)/hqp

@@ -597,13 +597,18 @@ else
 fi
 
 if test "$omu_adolc" = yes; then
-  patch -p0 -N -s < hqp_adolc.patch
+  cd adol-c;
+  if test -d adol-c; then rm -rf adol-c; fi
+  tar xzf adolc-1.9.0-PL2.tar.gz;
+  mv adolc-1.9.0 adol-c;
+  patch -p0 -N -s < hqp_adolc.patch;
+  cd adol-c; ./configure; cd ..;
+  cd ..
   ASRCS="\$(ASRCS)"
   ADOLCDEF="-DOMU_WITH_ADOLC=1"
   OMU_DEFS="$OMU_DEFS $ADOLCDEF"
   HQP_DEFS="$HQP_DEFS $ADOLCDEF"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adolc/*\$O ../adol-c/adolc/*/*\$O"
-  cd adol-c; ./configure; cd ..
+  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adol-c/adolc/*\$O ../adol-c/adol-c/adolc/*/*\$O"
 else
   ASRCS=""
   ADOLCDEF =""
