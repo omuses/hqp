@@ -589,16 +589,13 @@ void Prg_SFunctionOpt::update(int kk,
       f0 += _mdl_u.weight1[idx] * _mdl_us[kk][idx] / _mdl_u_nominal[idx];
       help = (_mdl_us[kk][idx] - _mdl_u.ref[idx]) / _mdl_u_nominal[idx];
       f0 += _mdl_u.weight2[idx]*help*help;
-      if (_mdl_u_order[idx] == 0)
-	f0 *= dt0;
-      else
-	f0 *= dt;
+      f0 *= (_mdl_u_order[idx] == 0)? dt0: dt;
       // rates of change
       if (kk < _KK) {
-	f0 += dt * _mdl_der_u.weight1[idx] * u[i*upsk + kk%upsk]/_t_nominal;
+	f0 += dt0 * _mdl_der_u.weight1[idx] * u[i*upsk + kk%upsk]/_t_nominal;
 	help = u[i*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
 	  / _mdl_u_nominal[idx];
-	f0 += dt * _mdl_der_u.weight2[idx]*help*help;
+	f0 += dt0 * _mdl_der_u.weight2[idx]*help*help;
       }
       i++;
     }
@@ -888,11 +885,11 @@ void Prg_SFunctionOpt::update_grds(int kk,
       f0.gx[i] += _mdl_u.weight1[idx];
       f0.gx[i] += _mdl_u.weight2[idx] *
 	2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
-      f0.gx[i] *= _mdl_u_order[idx] == 0? dt0: dt;
+      f0.gx[i] *= (_mdl_u_order[idx] == 0)? dt0: dt;
       // rates of change
       if (kk < _KK) {
-	f0.gu[i] += dt * _mdl_der_u.weight1[idx]/_t_nominal;
-	f0.gu[i] += dt * _mdl_der_u.weight2[idx]/_t_nominal *
+	f0.gu[i] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
+	f0.gu[i] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal *
 	  2.0 * (u[i]/_t_nominal - _mdl_der_u.ref[idx]/_mdl_u_nominal[idx]);
       }
       i++;

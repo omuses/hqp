@@ -61,14 +61,14 @@ public:
    @f[
    \begin{array}{l}
     \displaystyle{}
-    J\ =\ \sum_{kk=0}^{KK} \Delta t_{u,i}^{kk} \sum_{i=1}^{n_u} \left\{
+    J\ =\ \sum_{kk=0}^{KK} \sum_{i=1}^{n_u} \Delta t_{u,i}^{kk} \left\{
       u_{weight1}\,u(t^{kk})
       \ +\ u_{weight2}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
-    \ + \ \sum_{kk=0}^{KK-1} \Delta t^{kk} \sum_{i=1}^{n_u} \left\{
-      {der\_u}_{weight1}\,\dot{u}(t^{kk})
-      \ +\ {der\_u}_{weight2}\left[\dot{u}(t^{kk})
+    \ + \ \sum_{k=0}^{K-1} (t^{k+1}-t^{k}) \sum_{i=1}^{n_u} \left\{
+      {der\_u}_{weight1}\,du^k
+      \ +\ {der\_u}_{weight2}\left[du^k
                                 -\frac{{der\_u}_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
