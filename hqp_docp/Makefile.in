@@ -3,7 +3,7 @@
 #
 
 include ../makedirs
-# (makedirs should define TCL_LIBDIR)
+# (makedirs should define TCL_INCDIR and TCL_LIBDIR)
 
 O = @OBJ_SUFFIX@
 
@@ -17,7 +17,7 @@ O = @OBJ_SUFFIX@
 # additional objects to create an executable
 # 
 TCL_LIBS = @TCL_LIBS@
-HQP_DOCP_MACH_OBJS = @HQP_DOCP_MACH_OBJS@
+MACH_OBJS = $(TCL_LIBS) @HQP_DOCP_MACH_OBJS@
 
 LFLAG = @LFLAG@
 #
@@ -47,9 +47,9 @@ CXX = @CXX@
 CC = @CC@
 
 CFLAGS = @GFLAG@ @WFLAG@ -DDEBUG \
-         $(HQP_INCDIR) 
+         $(HQP_INCDIR) $(TCL_INCDIR) 
 
-LDFLAGS = $(HQP_LIBDIR) 
+LDFLAGS = $(HQP_LIBDIR) $(TCL_LIBDIR) 
 
 #
 # machine independent part
@@ -67,7 +67,7 @@ RESULT = docp
 all: $(OBJS) Makefile
 	$(CXX) -o $(RESULT)  $(OBJS) \
 	@LDFLAGS_START@ $(LDFLAGS) @LDLIB_PREFIX@hqp@LDLIB_SUFFIX@ \
-	$(HQP_DOCP_MACH_OBJS)
+	$(MACH_OBJS)
 
 gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
 	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \

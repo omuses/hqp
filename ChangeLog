@@ -1,3 +1,17 @@
+2002-06-15    <rfranke>
+
+	* configure.in, makedefs.in: make use of Tcl stubs mechanism
+	  to make a compiled Hqp/Omuses independent of specific Tcl version
+	* iftcl/If.[hC]: add functions for managing the Tcl interpreter.
+	  (If_CreateInpterp, If_InitInterp, If_Interp)
+	* hqp/Hqp.C, hqp/Hqp_Init.C, omu/Omu_Init.C: adapt to using Tcl stubs
+	* hqp_docp/Docp_Main.C, hqp_docp/Makefile.in: adapt demo (note: now
+	  the the application using Hqp has to determine which Tcl to use)
+
+	* iftcl/If_Proc.h: add IF_API so that If_Proc gets exported in a DLL
+	  -- with this odc runs if compiled using cl and shared libs
+	* Makefile: add test for MEX feature after compilation
+
 2002-06-12    <h_linke>
 	* Omu_IntSDIRK.[hC]: fix bug in error control
 	* add support of expansion variables

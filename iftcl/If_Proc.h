@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -34,7 +34,7 @@
 typedef int If_Proc_t(int argc, char *argv[], char **result);
 
 //--------------------------------
-class If_Proc: public If_Command {
+class IF_API If_Proc: public If_Command {
 
  protected:
 

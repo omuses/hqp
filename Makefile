@@ -10,14 +10,21 @@ omuses:
 	mv omu/$(LIB_PREFIX)omu.* lib/
 	if test -f lib/omu.dll; then cp lib/omu.dll odc/; fi
 	cd odc; $(MAKE); cd ..
-	if test ! "$(CXX)" = "cl -nologo"; then $(MAKE) test; fi
+	$(MAKE) test
 
 adolc:
 	cd adol-c/INS; $(MAKE) xxxinstall; cd ../..
 	cd adol-c/SRC; $(MAKE); cd ../..
 
 test:
-	cd odc; ./run Crane; cd ..
+	@if test ! "$(CXX)" = "cl -nologo"; then \
+	  echo "Testing Crane example..."; \
+	  cd odc; ./run Crane; cd ..; \
+	fi
+	@if test ! -z "$(MEX_SRCS)"; then \
+	  echo "Testing MEX..."; \
+	  cd odc; ./run dic_mex_sfunction_est; cd ..; \
+	fi
 
 doc::
 	cd doc; doxygen; cd ..

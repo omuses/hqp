@@ -28,6 +28,19 @@
 
 #include <string.h>
 
+//--------------------------------------------------------------------------
+extern "C" int If_Init(Tcl_Interp *interp)
+{
+  theInterp = interp;
+  return theInterp? TCL_OK: TCL_ERROR;
+}
+
+//--------------------------------------------------------------------------
+extern "C" Tcl_Interp *If_Interp()
+{
+  return theInterp;
+}
+
 //-----------------------------------------------------------------------
 extern "C" int If_SizeOfInt()
 {
@@ -37,6 +50,9 @@ extern "C" int If_SizeOfInt()
 //-----------------------------------------------------------------------
 extern "C" int If_SetInt(const char *name, int val)
 {
+  if (!theInterp)
+    return IF_ERROR;
+
 #if 0
   // unfortunately Tcl_EvalObjv was not available under Tcl 8.0
   Tcl_Obj *objv[2];
@@ -66,6 +82,9 @@ extern "C" int If_SetInt(const char *name, int val)
 //-----------------------------------------------------------------------
 extern "C" int If_GetInt(const char *name, int &val)
 {
+  if (!theInterp)
+    return IF_ERROR;
+
   if (Tcl_Eval(theInterp, (char *)name) != TCL_OK)
     return IF_ERROR;
 
@@ -86,6 +105,9 @@ extern "C" int If_SizeOfReal()
 //-----------------------------------------------------------------------
 extern "C" int If_SetReal(const char *name, Real val)
 {
+  if (!theInterp)
+    return IF_ERROR;
+
 #if 0
   // unfortunately Tcl_EvalObjv was not available under Tcl 8.0
   Tcl_Obj *objv[2];
@@ -115,6 +137,9 @@ extern "C" int If_SetReal(const char *name, Real val)
 //-----------------------------------------------------------------------
 extern "C" int If_GetReal(const char *name, Real &val)
 {
+  if (!theInterp)
+    return IF_ERROR;
+
   if (Tcl_Eval(theInterp, (char *)name) != TCL_OK)
     return IF_ERROR;
 
@@ -129,6 +154,9 @@ extern "C" int If_GetReal(const char *name, Real &val)
 //-----------------------------------------------------------------------
 extern "C" int If_SetString(const char *name, const char *val)
 {
+  if (!theInterp)
+    return IF_ERROR;
+
   if (Tcl_VarEval(theInterp, (char *)name, " {", (char *)val, "}", 
 		  NULL) != TCL_OK)
     return IF_ERROR;
@@ -139,6 +167,9 @@ extern "C" int If_SetString(const char *name, const char *val)
 //-----------------------------------------------------------------------
 extern "C" int If_GetString(const char *name, const char *&val)
 {
+  if (!theInterp)
+    return IF_ERROR;
+
   if (Tcl_Eval(theInterp, (char *)name) != TCL_OK) {
     val = NULL;
     return IF_ERROR;
@@ -148,9 +179,12 @@ extern "C" int If_GetString(const char *name, const char *&val)
 }
 
 //-----------------------------------------------------------------------
-extern "C" int If_Eval(const char *command)
+extern "C" int If_Eval(char *command)
 {
-  if (Tcl_Eval(theInterp, (char *)command) != TCL_OK)
+  if (!theInterp)
+    return IF_ERROR;
+
+  if (Tcl_Eval(theInterp, command) != TCL_OK)
     return IF_ERROR;
 
   return IF_OK;
@@ -159,7 +193,11 @@ extern "C" int If_Eval(const char *command)
 //-----------------------------------------------------------------------
 extern "C" const char *If_ResultString()
 {
+  if (!theInterp)
+    return "If_ResultString: If_Interp not initialized";
+
   return Tcl_GetStringResult(theInterp);
 }
+
 
 //=======================================================================

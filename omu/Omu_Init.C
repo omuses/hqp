@@ -91,7 +91,12 @@ static int Omu_VersionCmd(int, char *[], char **result)
 extern "C" int Hqp_Init(Tcl_Interp *interp);
 extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
 {
-  // check if Hqp is present and initialize it if not
+  // initialize stubs
+  if (Tcl_InitStubs(interp, "8.1", 0) == NULL) {
+    return TCL_ERROR;
+  }
+
+  // initialize Hqp if it is not already present
   // (for now do the initialization directly by calling Hqp_Init,
   //  instead of using Tcl_PkgRequire, to force linkage of Hqp)
   if (Tcl_PkgPresent(interp, "Hqp", VERSION, 1) == NULL) {
@@ -104,9 +109,7 @@ extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
     return TCL_ERROR;
   }
 
-  // initialize global reference to Tcl interpreter
-  theInterp = interp;
-
+  // initialize version command
   new If_Proc("omu_version", &Omu_VersionCmd);
 
   // allocate interface modules

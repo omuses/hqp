@@ -52,10 +52,10 @@
 static If_List _ifList;
 
 /** Hold a pointer to the Hqp_SqpProgram */
-Hqp_SqpProgram *theSqpProgram;
+Hqp_SqpProgram *theSqpProgram = NULL;
 
 /** Hold a pointer to the Hqp_SqpSolver */
-Hqp_SqpSolver *theSqpSolver;
+Hqp_SqpSolver *theSqpSolver = NULL;
 
 #ifdef IF_CLASS_STATIC
 //--------------------------------------------------------------------------
@@ -154,7 +154,7 @@ static void signal_handler(int code)
 extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp) 
 {
   // provide Tcl package Hqp
-  if (Tcl_PkgRequire(interp, "Tcl", "8.0", 0) == NULL ||
+  if (Tcl_InitStubs(interp, "8.1", 0) == NULL ||
       Tcl_PkgProvide(interp, "Hqp", (char *)Hqp_Version) != TCL_OK) {
     return TCL_ERROR;
   }

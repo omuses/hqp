@@ -1,11 +1,12 @@
-/*
- * If.h: public declarations of the interface library
+/**
+ * @file If.h
+ *   public declarations of the interface library
  *
  * rf, 10/4/95
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,21 +27,45 @@
 #ifndef If_H
 #define If_H
 
-#include "Meschach.h"
+#include <Meschach.h>
+#include <tcl.h>
 
 /** define IF_API when compiling a Dynamic Link Library (DLL) */
 #ifndef IF_API
 #define IF_API 
 #endif
 
-/** Return code for successful calculation. */
+/** Return code for success. */
 #define IF_OK		0
 
-/** Return code for failed calculation. */
+/** Return code for fail. */
 #define IF_ERROR 	1
 
-
 extern "C" {
+  /** Initialize the command interface to use the specified Tcl_Interp.
+      This function needs to be called by an extension being loaded
+      to a Tcl application. It either returns TCL_OK or TCL_ERROR
+      if the initialization fails. */
+  IF_API int If_Init(Tcl_Interp *interp);
+
+  /** Create a Tcl interpreter and initialize the path for the Tcl library
+      based on argv[0]. This function needs to be called by a non Tcl
+      application, i.e. an application that does not enter Tcl_Main.
+      It is inlined as in this way the application determines,
+      which Tcl version to use. */
+  inline int If_CreateInterp(int argc, char *argv[])
+  {
+    char argv0 = '\0';
+    Tcl_FindExecutable(argc > 0? argv[0]: &argv0);
+    Tcl_Interp *interp = Tcl_CreateInterp();
+    if (If_Init(interp) != TCL_OK || Tcl_Init(interp) != TCL_OK)
+      return IF_ERROR;
+    return IF_OK;
+  }
+
+  /** Return the Tcl interpreter used by the interface. */
+  IF_API Tcl_Interp *If_Interp();
+
   /** Return size of Int. */
   IF_API int If_SizeOfInt();
 
@@ -66,7 +91,7 @@ extern "C" {
   IF_API int If_GetString(const char *name, const char *&val);
 
   /** Evaluate a command. */
-  IF_API int If_Eval(const char *command);
+  IF_API int If_Eval(char *command);
 
   /** Return the result string produced by the last If function call.
       After a failed calculation, the corresponding error message

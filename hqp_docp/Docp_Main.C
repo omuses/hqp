@@ -24,8 +24,12 @@ Hqp_DocpHandle theHqp_DocpHandle;
  * First Hqp is initialized using the Docp interface.
  * Afterwards the solver is executed via the If interface.
  */
-int main(int, char *[])
+int main(int argc, char *argv[])
 {
+  // create interpreter for interface library
+  if (If_CreateInterp(argc, argv) != IF_OK)
+    printf("Can't create Tcl interpreter: %s\n", If_ResultString());
+
   // Assert that Hqp uses same data representation as this application
   // (might be different if different C++ compilers are used)
   assert(If_SizeOfInt() == sizeof(int));

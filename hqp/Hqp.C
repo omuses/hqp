@@ -23,11 +23,14 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <If.h>
+
 #include "Hqp.h"
 #include "Hqp_DocpWrapper.h"
 
 /* declare things necessary for automatic initialization of Hqp */
-#include <If_Element.h>
+class Hqp_SqpSolver;
+extern Hqp_SqpSolver *theSqpSolver;
 extern "C" int Hqp_Init(Tcl_Interp *);
 
 //-------------------------------------------------------------------------
@@ -39,13 +42,13 @@ Hqp_Docp_create(Hqp_DocpSpec &spec, void *clientdata)
   assert(spec.setup_vars != NULL);
   assert(spec.update_vals != NULL);
 
-  // initialize Hqp if this was not done already
-  if (theInterp == NULL) {
-    Tcl_Interp *interp = Tcl_CreateInterp();
-    Tcl_FindExecutable(""); // we don't have a better name
-    if (Hqp_Init(interp) != TCL_OK)
-      m_error(E_UNKNOWN, "Hqp_Docp_create: failed Hqp_Init");
-  }
+  // check that If was initialized
+  if (If_Interp() == NULL)
+    m_error(E_UNKNOWN, "Hqp_Docp_create: If_Interp not initialized");
+
+  // check for Hqp
+  if (!theSqpSolver && Hqp_Init(If_Interp()) != TCL_OK)
+    m_error(E_UNKNOWN, "Hqp_Docp_create: failed calling Hqp_Init");
 
   // create a Hqp_Docp
   return new Hqp_DocpWrapper(spec, clientdata);

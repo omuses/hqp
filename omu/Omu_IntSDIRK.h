@@ -28,8 +28,6 @@
 #ifndef Omu_IntSDIRK_H
 #define Omu_IntSDIRK_H
 
-#define OMU_WITH_ADOLC 1
-
 #include "Omu_Integrator.h"
 
 //--------------------------------------------------------------------------

@@ -30,8 +30,6 @@
 #include <iostream.h>
 #include <fstream.h>
 
-#define OMU_WITH_ADOLC 1
-
 #ifdef OMU_WITH_ADOLC
 
 #include <adutils.h>

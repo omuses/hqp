@@ -78,8 +78,8 @@ else
   TCL_LIB_FILE=`basename "${TCL_LIB_FILE}"`
 fi
 
-if test $TCL_MAJOR_VERSION -lt 8; then
-  AC_MSG_ERROR("Require Tcl version 8.0 or greater.")
+if test $TCL_MAJOR_VERSION$TCL_MINOR_VERSION -lt 81; then
+  AC_MSG_ERROR("Require Tcl version 8.1 or greater.")
 fi
 
 # -----------------------------------------------------------------------
@@ -176,6 +176,7 @@ if test ! -z "$TCL_LIB_SPEC"; then
 else
   TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
 fi
+TCL_STUB_LIB="${LDLIB_PREFIX}tclstub${TCL_VERSION}${LDLIB_SUFFIX}"
 
 AC_PROGRAM_CHECK(uname_found, uname, yes, no)
 if test $uname_found = "yes" ; then
@@ -251,18 +252,19 @@ if test $uname_found = "yes" ; then
       fi
       ;;
     CL)
+      # note: -nodefaultlib:msvcrt is required when using Tcl stubs
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         MKLIB_SUFFIX=".dll"
-        LD="link -dll -nologo -out:"
+        LD="link -dll -nologo -nodefaultlib:msvcrt -out:"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
 	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
 	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
-        AC_DEFINE(IF_CLASS_STATIC)
       else
-        LD="link -lib -nologo -out:"
+        LD="link -lib -nologo -nodefaultlib:msvcrt -out:"
       fi
-      LDFLAGS_START="-link"
+      AC_DEFINE(IF_CLASS_STATIC)
+      LDFLAGS_START="-link -nodefaultlib:msvcrt"
       OBJ_SUFFIX=".obj"
       LIB_PREFIX=""
       LIB_SUFFIX=".lib"
@@ -272,15 +274,20 @@ if test $uname_found = "yes" ; then
       PICFLAG=""
       LFLAG="-LIBPATH:"
       RFLAG="-LIBPATH:"
-      if test -z "$TCL_LIB_SPEC"; then
-        # take "." out of TCL_VERSION in case of no tclConfig.sh
-        TCL_VERSION="${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}"
-        TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
-      fi
       ;;
   esac
 fi
 
+case "$target" in
+  CYGWIN*|MSYS*|MINGW*|CL)
+    if test -z "$TCL_LIB_SPEC"; then
+      # take "." out of TCL_VERSION in case of no tclConfig.sh
+      TCL_VERSION="${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}"
+      TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
+      TCL_STUB_LIB="${LDLIB_PREFIX}tclstub${TCL_VERSION}${LDLIB_SUFFIX}"
+    fi
+  ;;
+esac
 
 CFLAGS="$CFLAGS $PICFLAG"
 CXXFLAGS="$CXXFLAGS $PICFLAG"
@@ -310,6 +317,7 @@ AC_SUBST(LDFLAGS_START)
 AC_SUBST(LFLAG)
 AC_SUBST(RFLAG)
 AC_SUBST(TCL_LIBS)
+AC_SUBST(TCL_STUB_LIB)
 AC_SUBST(RANLIB)
 
 AC_SUBST(MES_CC)
@@ -368,13 +376,16 @@ fi
 TCL_LIBDIR="$with_tcllib"
 AC_SUBST(TCL_LIBDIR)
 
-# add Tcl lib to machine objects
-if test "$hqp_libs_resolved" = "yes"; then
-  HQP_MACH_OBJS="$HQP_MACH_OBJS \$(TCL_LIBDIR) \$(TCL_LIBS)"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(TCL_LIBDIR) \$(TCL_LIBS)"
+# add Tcl libs to machine objects
+if test "$hqp_shared" = yes; then
+  HQP_MACH_OBJS="$HQP_MACH_OBJS \$(TCL_LIBDIR) \$(TCL_STUB_LIB)"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(TCL_LIBDIR) \$(TCL_STUB_LIB)"
 else
-  HQP_DOCP_MACH_OBJS="$HQP_DOCP_MACH_OBJS \$(TCL_LIBDIR) \$(TCL_LIBS)"
+  TCL_LIBS="$TCL_LIBS $TCL_STUB_LIB"
 fi
+
+# compile using stubs mechanism
+AC_DEFINE(USE_TCL_STUBS)
 
 # -----------------------------------------------------------------------
 # 	Configure ADOL-C
@@ -548,14 +559,8 @@ if test "$omu_mex" != no; then
         MEX_LIBDIR="$with_matlab/extern/lib/hpux"
         MEX_EXTENSION=".mexhpux"
         ;;
-      CYGWIN*)
+      CYGWIN*|MSYS*|MINGW*)
         MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
-        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
-        MEX_EXTENSION=".dll"
-        ;;
-      MSYS*|MINGW*)
-        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
-	MEX_LIBS="-llibmatlb -llibmx -llibmex"
         MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
         MEX_EXTENSION=".dll"
         ;;
