@@ -1,3 +1,7 @@
+2003-03-04    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]: add support for free initial states
+
 2003-03-01    <rfranke>
 
 	* omu/Prg_SFunctionOpt.C (update, update_grds): bug fix for

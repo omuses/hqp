@@ -94,6 +94,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _sps = 1;
   _multistage = true;
 
+  _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_x_nominal = v_get(_mdl_nx);
@@ -101,6 +102,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _t_nominal = 1.0;
   _mdl_y_bias = v_get(_mdl_ny);
   _nus_fixed = iv_get(_mdl_nu);
+  iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
@@ -121,6 +123,12 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 
   _ifList.append(new If_Int("prg_sps", &_sps));
   _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
+
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x0_active)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_weight2)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_active)));
@@ -177,6 +185,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   v_free(_mdl_u_nominal);
   iv_free(_mdl_u_order);
   iv_free(_nus_fixed);
+  iv_free(_mdl_x0_active);
 }
 
 //--------------------------------------------------------------------------
@@ -203,18 +212,21 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   assert(ssGetmdlDerivatives(_S) != NULL);
 
   // adapt sizes of model vectors
+  _mdl_y0.resize(_mdl_ny);
   _mdl_u.resize(_mdl_nu);
   _mdl_der_u.resize(_mdl_nu);
   _mdl_y.resize(_mdl_ny);
   _mdl_y_soft.resize(_mdl_ny);
   _mdl_yf.resize(_mdl_ny);
 
+  iv_resize(_mdl_x0_active, _mdl_nx);
   iv_resize(_mdl_u_order, _mdl_nu);
   v_resize(_mdl_u_nominal, _mdl_nu);
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_resize(_nus_fixed, _mdl_nu);
+  iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
@@ -245,6 +257,7 @@ void Prg_SFunctionOpt::setup(int k,
     _nc = 0;
     _ns = 0;
     _nsc = 0;
+    _nc0 = 0;
     _ncf = 0;
     for (idx = 0; idx < _mdl_ny; idx++) {
       if (_mdl_y.min[idx] > -Inf || _mdl_y.max[idx] < Inf
@@ -261,6 +274,14 @@ void Prg_SFunctionOpt::setup(int k,
       if (_mdl_y_soft.min[idx] > -Inf || _mdl_y_soft.max[idx] < Inf) {
 	_mdl_y_soft.active[idx] = 1;
 	_ns++;
+      }
+      if (_mdl_y0.min[idx] > -Inf || _mdl_y0.max[idx] < Inf
+	  || _mdl_y0.weight1[idx] != 0.0 || _mdl_y0.weight2[idx] != 0.0) {
+	if (!_multistage)
+	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+		  "use of mdl_y0 requires prg_multistage=true");
+	_mdl_y0.active[idx] = 1;
+	_nc0++;
       }
       if (_mdl_yf.min[idx] > -Inf || _mdl_yf.max[idx] < Inf
 	  || _mdl_yf.weight1[idx] != 0.0 || _mdl_yf.weight2[idx] != 0.0) {
@@ -280,7 +301,10 @@ void Prg_SFunctionOpt::setup(int k,
       upsk = 1;
       x.alloc(_nx);
       u.alloc(_nu + spsk*_ns);
-      c.alloc(spsk*(_nc+_nsc));
+      if (k == 0)
+	c.alloc(spsk*(_nc+_nsc) + _ncf);
+      else
+	c.alloc(spsk*(_nc+_nsc));
     }
     else {
       spsk = _KK;
@@ -312,7 +336,13 @@ void Prg_SFunctionOpt::setup(int k,
     }
     for (i = _nu; i < _nx; i++) {
       x.initial[i] = _mdl_x0[i-_nu] / _mdl_x_nominal[i-_nu];
-      x.min[i] = x.max[i] = x.initial[i];
+      if (_mdl_x0_active[i-_nu]) {
+	if (!_multistage)
+	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+		  "mdl_x0_active=1 requires prg_multistage=true");
+      }
+      else
+	x.min[i] = x.max[i] = x.initial[i];
     }
   }
 
@@ -426,6 +456,18 @@ void Prg_SFunctionOpt::setup(int k,
       x.min[i] = 0.0;
       x.initial[i] = 0.0;
     }
+
+  // setup output constraints at initial time
+  if (k == 0) {
+    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
+      if (_mdl_y0.min[idx] > -Inf)
+	c.min[i] = _mdl_y0.min[idx] / _mdl_y_nominal[idx];
+      if (_mdl_y0.max[idx] < Inf)
+	c.max[i] = _mdl_y0.max[idx] / _mdl_y_nominal[idx];
+      if (_mdl_y0.active[idx])
+	i++;
+    }
+  }
 
   // setup output constraints at final time
   if (k == _K) {
@@ -650,6 +692,24 @@ void Prg_SFunctionOpt::update(int kk,
     }
   }
 
+  // additional terms at initial time
+  if (kk == 0) {
+    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
+      // assign used outputs to constraints
+      if (_mdl_y0.active[idx]) {
+	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
+	i++;
+      }
+      // initial objective terms
+      if (_mdl_y0.weight1[idx] != 0.0)
+	f0 += _mdl_y0.weight1[idx] * mdl_y[idx] / _mdl_y_nominal[idx];
+      if (_mdl_y0.weight2[idx] != 0.0) {
+	help = (mdl_y[idx] - _mdl_y.ref[idx]) / _mdl_y_nominal[idx];
+	f0 += _mdl_y0.weight2[idx]*help*help;
+      }
+    }
+  }
+
   // additional terms at final time
   if (kk == _KK) {
     for (i = _nc+_nsc, idx = 0; idx < _mdl_ny; idx++) {
@@ -674,6 +734,7 @@ void Prg_SFunctionOpt::update(int kk,
 
   // obtain Jacobians if required
   if (f.is_required_J() || f0.is_required_g() || c.is_required_J())
+    //Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
     update_grds(kk, x, u, xf, f, f0, c);
 }
 
@@ -746,7 +807,17 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	      isc -= spsk;
 	    }
 	  }
-	  // constraints at final time
+	  // constraints (used model outputs) at initial time
+	  if (kk == 0 && _mdl_y0.active[mdl_y_idx]) {
+	    // need to loop to obtain ii considering active outputs
+	    for (; iidx < ir[rdx]; iidx++) {
+	      if (_mdl_y0.active[iidx - _mdl_nx])
+		ii++;
+	    }
+	    c.Jx[ii][j] = pr[rdx] /
+	      _mdl_y_nominal[mdl_y_idx] * _mdl_x_nominal[mdl_x_idx];
+	  }
+	  // constraints (used model outputs) at final time
 	  if (kk == _KK && _mdl_yf.active[mdl_y_idx]) {
 	    // need to loop to obtain ii considering active outputs
 	    for (; iidx < ir[rdx]; iidx++) {
@@ -937,6 +1008,24 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	  += dt*(_mdl_y_soft.weight1[idx]
 		 + 2.0*_mdl_y_soft.weight2[idx]*x[_nx + is + kk%spsk]);
       is += spsk;
+    }
+  }
+  // additional terms at initial time
+  if (kk == 0) {
+    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
+      // contributions of final objective terms
+      if (_mdl_y0.weight1[idx] != 0.0) {
+	for (j = 0; j < _nx; j++)
+	  f0.gx[j] += _mdl_y0.weight1[idx] * c.Jx[i][j];
+      }
+      if (_mdl_y0.weight2[idx] != 0.0) {
+	for (j = 0; j < _nx; j++)
+	  f0.gx[j] += _mdl_y0.weight2[idx] *
+	    2.0 * (c[i] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
+	    c.Jx[i][j];
+      }
+      if (_mdl_y0.active[idx])
+	i++;
     }
   }
   // additional terms at final time

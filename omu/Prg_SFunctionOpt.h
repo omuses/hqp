@@ -82,6 +82,11 @@ public:
     \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{i=1}^{n_y} \left\{
+      y_{0\_weight1}\,y(t_0)
+      \ +\ y_{0\_weight2}\left[y(t_0)-\frac{y_{ref}}{y_{nominal}}\right]^2
+    \right\}_i
+    \\[4ex] \displaystyle \qquad
+    \ + \ \sum_{i=1}^{n_y} \left\{
       y_{f\_weight1}\,y(t_f)
       \ +\ y_{f\_weight2}\left[y(t_f)-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
@@ -137,17 +142,20 @@ public:
    and subject to the constraints
    @f[
    \begin{array}{rcccll}
-    \displaystyle &&x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}}, \\[3ex]
-    \displaystyle &&u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}}, \quad &
-        \mbox{if}\ \ nus_{fixed}>0, \\[3ex]
-    \displaystyle \frac{u_{min}}{u_{nominal}} &<& u(t^{k})
-        &<& \displaystyle \frac{u_{max}}{u_{nominal}}, \quad &
-        k=0,\ldots,K \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}, \\[3ex]
-    \displaystyle &&du^k &=& \displaystyle du^k_{initial}, \quad &
-        k = 0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k < nus_{fixed}-1, \\[3ex]
-    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
-        &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
-        k=0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}-1, \\[3ex]
+    \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
+        \quad & i\notin\mbox{find}(x_{active}), \\[3ex]
+    \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{0})
+        &<& \displaystyle \frac{y_{max}}{y_{nominal}}, \\[3ex]
+    \displaystyle &&\{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
+    \quad & i\in\mbox{find}(nus_{fixed}>0), \\[3ex]
+    \displaystyle \left\{\frac{u_{min}}{u_{nominal}}\right. &<& u(t^{k})
+        &<& \displaystyle\left. \frac{u_{max}}{u_{nominal}}\right\}_i, \quad &
+        k=0,\ldots,K \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed,i}, \\[3ex]
+    \displaystyle && \{du^k &=& \displaystyle du^k_{initial} \}_i, \quad &
+        k = 0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k < nus_{fixed,i}-1, \\[3ex]
+    \displaystyle \left\{\frac{{der\_u}_{min}}{u_{nominal}}\right. &<& du^{k}
+        &<& \left.\displaystyle \frac{{der\_u}_{max}}{u_{nominal}}\right\}_i, &
+        k=0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed,i}-1, \\[3ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
@@ -189,6 +197,8 @@ public:
 class Prg_SFunctionOpt: public Prg_SFunction {
 
  protected:
+  IVECP 	_mdl_x0_active;	///< free initial states (default: 0)
+  Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs
   Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
   Omu_OptVarVec _mdl_y; 	///< model outputs
@@ -207,7 +217,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_nx;	///< number of states for optimizer
   int		_nu;	///< number of optimized control inputs
   int		_nc;	///< number of constrained outputs
-  int		_ncf;	///< number of constrained outputs at final time
+  int		_nc0;	///< number of constrained/used outputs at initial time
+  int		_ncf;	///< number of constrained/used outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
   bool 		_multistage; 	///< treat as multistage problem
@@ -318,6 +329,21 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * problem description.
    */
   //@{
+  ///< free initial states (default: 0)
+  const IVECP mdl_x0_active() const {return _mdl_x0_active;}
+
+  /// lower bounds for model outputs at initial time
+  const VECP mdl_y0_min() const {return _mdl_y0.min;}
+
+  /// upper bounds for model outputs at initial time
+  const VECP mdl_y0_max() const {return _mdl_y0.max;}
+
+  /// weight for linear objective term at initial time (default: 0)
+  const VECP mdl_y0_weight1() const {return _mdl_y0.weight1;}
+
+  /// weight for quadratic objective term at initial time (default: 0)
+  const VECP mdl_y0_weight2() const {return _mdl_y0.weight2;}
+
   ///< interpolation order (0 (constant) or 1 (linear), default: 1)
   const IVECP mdl_u_order() const {return _mdl_u_order;}
 
@@ -416,6 +442,21 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @name Write methods for model specific members (no If prefix).
    */
   //@{
+  /// set free inputs
+  void set_mdl_x0_active(const IVECP v) {iv_copy_elements(v, _mdl_x0_active);}
+
+  /// set lower bounds for final model outputs
+  void set_mdl_y0_min(const VECP v) {v_copy_elements(v, _mdl_y0.min);}
+
+  /// set upper bounds for final model outputs
+  void set_mdl_y0_max(const VECP v) {v_copy_elements(v, _mdl_y0.max);}
+
+  /// set linear weight
+  void set_mdl_y0_weight1(const VECP v) {v_copy_elements(v, _mdl_y0.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_y0_weight2(const VECP v) {v_copy_elements(v, _mdl_y0.weight2);}
+
   ///< set interpolation order
   void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
 
