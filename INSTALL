@@ -1,7 +1,7 @@
 The software can be installed as follows:
 
 (basically two libraries, libhqp and libomu, 
- as well as an example in hqp_docp and a demo collection in ./odc are built)
+ as well as an example in ./hqp_docp and a demo collection in ./odc are built)
 
 0)
 You need to have Tcl version 8.0 (or higher) and a C++ compiler;
