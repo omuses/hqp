@@ -67,6 +67,7 @@ class Omu_IntIMP: public Omu_IntODE {
   VECP		_y2;
 
   int           _npar;
+  int           _max_modnewtonsteps;
   int           _modnewtonsteps;
   int           _maxiters;
   double        _hinit;

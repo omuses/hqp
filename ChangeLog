@@ -1,3 +1,7 @@
+2002-06-01    <e_arnold>
+
+	* omu/Omu_IntIMP.[hC]: fix bug in sensitivities
+
 2002-05-31    <h_linke>
 	* omu/Omu_IntSDIRK.[hC]:  support fixed integration stepsize
         * introduce conditional compilation for adolc
@@ -13,7 +17,7 @@
 	* omu/Omu_IntOdeTs.C:  code cleanup
 	* omu/Omu_IntSDIRK.C:  code cleanup
 	* hqp/meschext_hl.C:  code cleanup
-	
+
 2002-05-13    <rfranke>
 
 	* omu/Omu_IntODE.h: fix prototype for method ode_solve
