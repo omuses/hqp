@@ -27,7 +27,7 @@
 /*
 	A collection of functions for computing norms: scaled and unscaled
 */
-static	char	rcsid[] = "$Id: norm.c,v 1.1 2001/03/01 17:18:55 rfranke Exp $";
+static	char	rcsid[] = "$Id: norm.c,v 1.2 2002/05/13 18:07:38 rfranke Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -98,8 +98,6 @@ VEC	*x, *scale;
 
 	return sqrt(sum);
 }
-
-#define	max(a,b)	((a) > (b) ? (a) : (b))
 
 /* _v_norm_inf -- computes (scaled) infinity-norm (supremum norm) of vectors */
 double	_v_norm_inf(x,scale)
