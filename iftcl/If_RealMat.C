@@ -72,22 +72,11 @@ int If_RealMat::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
       // parse the new value
       //--------------------
       if (Tcl_GetDoubleFromObj(interp, cols[j], &element) != TCL_OK) {
-	// in case of error check for Inf, +Inf, -Inf
-	int len;
-	const char *str = Tcl_GetStringFromObj(cols[j], &len);
-	element = 2.0;
-	if (len == 4 && str[0] == '+')
-	  element = 1.0;
-	else if (len == 4 && str[0] == '-')
-	  element = -1.0;
-	if (element != 2.0) {
-	  len--;
-	  str++;
-	}
-	if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
+	// in case of error, check for Inf, +Inf, -Inf
+        const char *str = Tcl_GetStringFromObj(cols[j], NULL);
+        element = sscan_real(str);
+        if (!is_nan(element))
 	  Tcl_ResetResult(interp);
-	  element *= Inf;
-	}
 	else {
 	  m_free(newMat);
 	  return TCL_ERROR;

@@ -23,6 +23,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Hqp_IpSpSC.h"
+
 #include <assert.h>
 #include <math.h>
 
@@ -47,7 +49,6 @@ VEC *spCHOLsol(SPMAT *, VEC *, VEC *);
 
 #include "sprcm.h"
 #include "Hqp_Program.h"
-#include "Hqp_IpSpSC.h"
 
 IF_CLASS_DEFINE("SpSC", Hqp_IpSpSC, Hqp_IpMatrix);
 

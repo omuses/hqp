@@ -34,6 +34,8 @@
 // include mxArray data type definitions from Matlab or Hxi
 #include "simstruc.h"
 
+#include <Meschach.h> // sscan_real
+
 namespace Hxi {
 
 /**
@@ -216,15 +218,13 @@ static mxArray *mx_parse_argument(const char *arg)
   }
   else {
     // create mxDoubleMatrix
-    float val;
     mx_count_dimensions(str, m, n);
     mxa = mxCreateDoubleMatrix(m, n, mxREAL);
     if (*str == '[')
       str = mx_forward_whitespaces(++str); // step into array
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
-	sscanf(str, "%g", &val);
-	mxGetPr(mxa)[j*m+i] = val;
+        mxGetPr(mxa)[j*m+i] = sscan_real(str);
 	str = mx_forward_argument(str);
 	if (*str == ',')
 	  str = mx_forward_whitespaces(++str); // step over col delimiter

@@ -28,6 +28,9 @@
 #if !defined(Meschach_H)
 #define Meschach_H
 
+#include <limits> // for NaN
+#include <string.h> // for sscanf
+
 #include <assert.h>
 
 #include <meschach/matrix.h>
@@ -377,12 +380,37 @@ typedef BAND* BANDP;
 
 #undef Inf
 /** Infinity for non existing constraints and numerical overflow */
-const Real Inf = HUGE_VAL;
+const Real Inf = (Real)std::numeric_limits<double>::infinity();
 
 /** check if a number is finite */
 inline bool is_finite(Real x)
 {
   return -Inf < x && x < Inf;
+}
+
+/** check for not a number */
+inline bool is_nan(Real x)
+{
+  return (double)x == std::numeric_limits<double>::quiet_NaN();
+}
+
+/** Scan a string for a real number, including infinity (Inf, -Inf);
+    Return the number or NaN in case of error. */
+inline Real sscan_real(const char *str)
+{
+  Real val;
+  float valf;
+  if (sscanf(str, "%g", &valf)) {
+    val = (Real)valf;
+  } else {
+    if (strncmp(str, "Inf", 3) == 0 || strncmp(str, "+Inf", 4) == 0)
+      val = Inf;
+    else if (strncmp(str, "-Inf", 4) == 0)
+      val = -Inf;
+    else
+      val = (Real)std::numeric_limits<double>::quiet_NaN();
+  }
+  return val;
 }
 
 }; // namespace Mesch

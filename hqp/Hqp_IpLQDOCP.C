@@ -29,6 +29,8 @@
  */
 
 
+#include "Hqp_IpLQDOCP.h"
+
 #include <assert.h>
 #include <math.h>
 
@@ -42,8 +44,6 @@ extern "C" {
 // #include <If_Method.h>
 
 #include "Hqp_Program.h"
-#include "Hqp_IpLQDOCP.h"
-
 
 IF_CLASS_DEFINE("LQDOCP", Hqp_IpLQDOCP, Hqp_IpMatrix);
 // typedef If_Method<Hqp_IpLQDOCP> If_Cmd;

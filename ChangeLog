@@ -1,3 +1,13 @@
+2004-08-23    <rfranke>
+
+	* omu/Prg_SFunction*
+	  - introduce mdl_p into Prg_SFunctionOpt
+	  - rework processing of events at initial time
+
+	* hqp/Meschach.h, hxi/Hxi_mx_parse.h, iftcl/If_Real*.C,
+	  hqp/Hqp_HL.C, hqp/Hqp_HL_BFGS.C, hqp/Hqp_Ip*.C:
+	  - unified parsing of infinite double values
+
 2004-06-30    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]:

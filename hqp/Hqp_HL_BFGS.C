@@ -33,6 +33,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Hqp_HL_BFGS.h"
+
 #include <math.h>
 extern "C" {
 #include <meschach/matrix2.h>
@@ -42,7 +44,6 @@ extern "C" {
 #include <If_Real.h>
 #include <If_Bool.h>
 
-#include "Hqp_HL_BFGS.h"
 #include "Hqp_Program.h"
 #include "Hqp_SqpProgram.h"
 

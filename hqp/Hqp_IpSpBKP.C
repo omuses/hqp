@@ -23,6 +23,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Hqp_IpSpBKP.h"
+
 #include <assert.h>
 #include <math.h>
 
@@ -35,7 +37,6 @@ extern "C" {
 #include <If_Real.h>
 
 #include "Hqp_Program.h"
-#include "Hqp_IpSpBKP.h"
 
 IF_CLASS_DEFINE("SpBKP", Hqp_IpSpBKP, Hqp_IpMatrix);
 

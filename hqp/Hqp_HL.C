@@ -28,6 +28,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Hqp_HL.h"
+
 #include <math.h>
 extern "C" {
 #include <meschach/matrix2.h>
@@ -37,7 +39,6 @@ extern "C" {
 #include <If_Bool.h>
 #include <If_Real.h>
 
-#include "Hqp_HL.h"
 #include "Hqp_Program.h"
 #include "Hqp_SqpProgram.h"
 #include "Meschach.h"

@@ -33,22 +33,11 @@ int If_Real::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
   // parse the new value
   //--------------------
   if (Tcl_GetDoubleFromObj(interp, objPtr, &value) != TCL_OK) {
-    // in case of error check for Inf, +Inf, -Inf
-    int len;
-    const char *str = Tcl_GetStringFromObj(objPtr, &len);
-    value = 2.0;
-    if (len == 4 && str[0] == '+')
-      value = 1.0;
-    else if (len == 4 && str[0] == '-')
-      value = -1.0;
-    if (value != 2.0) {
-      len--;
-      str++;
-    }
-    if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
+    // in case of error, check for Inf, +Inf, -Inf
+    const char *str = Tcl_GetStringFromObj(objPtr, NULL);
+    value = sscan_real(str);
+    if (!is_nan(value))
       Tcl_ResetResult(interp);
-      value *= Inf;
-    }
     else
       return TCL_ERROR;
   }
