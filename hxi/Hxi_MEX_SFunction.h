@@ -3,8 +3,9 @@
  *   Interface to a Simulink(R) S-function given as binary MEX object.
  *   Several S-function methods are supported that redirect the call
  *   to the MEX object. Data is communicated through a SimStruct.
- *   The two functions Hxi_SimStruct_create and Hxi_SimStruct_destroy
+ *   The two functions Hxi_MEX_SimStruct_create and Hxi_MEX_SimStruct_destroy
  *   are provided for allocating and releasing a SimStruct.
+ *   The function Hxi_MEX_SFunction_init calls the mexFunction.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -38,6 +39,41 @@
     in order to select the MEX version of SimStruct. */
 #define HXI_MEX_S_FUNCTION
 #include "simstruc.h"
+
+/** Redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers */
+#undef ssSetSFcnParamsCount
+inline int_T ssSetSFcnParamsCount(SimStruct *S, int_T n) {
+  _ssSetSFcnParamsCount(S,n);
+  mxFree(ssGetSFcnParamsPtr(S));
+#if MATLAB_VERSION >= 61
+  ssSetSFcnParamsPtr(S, (mxArray **)mxCalloc(sizeof(mxArray *), n));
+#else
+  ssSetSFcnParamsPtr(S, (const mxArray **)mxCalloc(sizeof(mxArray *), n));
+#endif
+  return n;
+}
+
+#if !defined(Hxi_MEX_SFunction_C)
+
+/** @name Unsupported macros
+  Disable macros that are critical for memory management and must
+  not be used.
+*/ 
+//@{
+#undef ssSetRWork
+#define ssSetRWork(S, rwork) ssSetRWork_cannot_be_used_with_Hxi_MEX_SFunction
+
+#undef ssSetPWork
+#define ssSetPWork(S, pwork) ssSetPWork_cannot_be_used_with_Hxi_MEX_SFunction
+
+#undef ssSetIWork
+#define ssSetIWork(S, iwork) ssSetIWork_cannot_be_used_with_Hxi_MEX_SFunction
+
+#undef ssSetTPtr
+#define ssSetTPtr(S, tptr) ssSetTPtr_cannot_be_used_with_Hxi_MEX_SFunction
+//@}
+
+#endif // !defined(Hxi_MEX_SFunction_C)
 
 /** Create a MEX SimStruct */
 SimStruct *Hxi_MEX_SimStruct_create();

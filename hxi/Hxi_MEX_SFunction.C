@@ -24,6 +24,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define Hxi_MEX_SFunction_C
 #include "Hxi_MEX_SFunction.h"
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
