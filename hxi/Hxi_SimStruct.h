@@ -92,8 +92,6 @@
 #define ssGetOutputPortWidth(S, port) 	(S)->getOutputPortWidth(port)
 #define ssGetOutputPortRealSignal(S, port) (S)->getOutputPortRealSignal(port)
 #define ssGetOutputPortSignal(S, port)  ssGetOutputPortRealSignal(S, port)
-#define ssGetOutputPortRealSignalPtrs(S, port) \
-  (S)->getOutputPortRealSignalPtrs(port)
 #define ssSetOutputPortSampleTime(S, port, val) HXI_NOT_IMPLEMENTED
 #define ssSetOutputPortOffsetTime(S, port, val) HXI_NOT_IMPLEMENTED
 #define ssSetOutputPortOptimOpts(S, port, val)  HXI_NOT_IMPLEMENTED
@@ -172,7 +170,6 @@ protected:
   vector< vector<real_T *> > _uPtrs; // pointers to inputs
   vector<int_T>  _u_dft;	// mark if input port is accessed in mdlOutputs
   vector< vector<real_T> > _y; 	// outputs
-  vector< vector<real_T *> > _yPtrs; // pointers to outputs
   vector< vector<real_T> > _dwork; // data work vectors
 
   int_T 	 _st_size;	// number of sample times
@@ -335,7 +332,6 @@ public:
   /** Set number of output ports. */
   int_T setNumOutputPorts(int_T nports) {
     _y.resize(nports);
-    _yPtrs.resize(nports);
     return _y.size();
   }
   /** Get number of output ports. */
@@ -345,9 +341,6 @@ public:
   /** Set number of outputs of a port. */
   int_T setOutputPortWidth(int_T port, int_T ny) {
     _y[port].resize(ny, _dummy);
-    _yPtrs[port].resize(ny);
-    for (int i = 0; i < ny; ++i)
-      _yPtrs[port][i] = &_y[port][i];
     return _y[port].size();
   }
   /** Get number of outputs of a port. */
@@ -357,10 +350,6 @@ public:
   /** Get pointer to outputs of a port. */
   real_T *getOutputPortRealSignal(int_T port) {
     return &_y[port][0];
-  }
-  /** Get pointer to pointers to outputs of a port. */
-  InputRealPtrsType getOutputPortRealSignalPtrs(int_T port) {
-    return &_yPtrs[port][0];
   }
 
   /** Set number of data vectors. */
