@@ -2,6 +2,15 @@
 
 	* hxi/Hxi_SimStruct.h, hxi/README: add S-function interface
 
+	* odc/Prg_Di.[hC]:
+	   add double integrator example to odc
+	* odc/simstruc.h, odc/cg_sfun.h:
+	   add files required to compile an S-function for Hqp
+	* odc/Prg_DiDSfun.[hC], odc/sfun_did.c:
+	   add double integrator example using discrete-time s-Function
+	* odc/Prg_DiCSfun.[hC], odc/sfun_dic.c:
+	   add double integrator example using continuous-time s-Function
+
 2001-04-26    <rfranke>
 
 	* Makefile: change INC_DIR for installation of all includes to

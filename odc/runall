@@ -3,7 +3,7 @@
 # rf, 11/07/00
 #
 
-for p in TP383 TP383omu HS99 HS99omu Maratos CranePar Crane; do
+for p in TP383 TP383omu HS99 HS99omu Maratos CranePar Crane Di DiDSfun DiCSfun; do
   echo $p:
   ./run $p
   echo ""
