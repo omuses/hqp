@@ -1,13 +1,12 @@
 /*
- *  If_Command.h
- *   - abstract base class for interface commands
+ *  If_Procedure.C -- class definition
  *
  *  rf, 7/20/94
  *
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,35 +24,25 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef If_Command_H
-#define If_Command_H
+#include "If_Procedure.h"
 
-#include "If_Element.h"
+//--------------------------------------------------------------------------
+If_Procedure::If_Procedure(const char *ifName, If_Procedure_t *proc)
+  :If_Element(ifName)
+{
+  _proc = proc;
+}
 
-#define IF_CMD_ARGS	int, char *[], char **
-#define IF_DEF_ARGS	int argc=0, char *argv[]=NULL, char **result=NULL
-
-
-//-----------------------------------
-class If_Command: public If_ListElement {
-
- protected:
-  char *_ifName;
-
-  If_Command(const char *ifName);
-
-  // interface to Tcl
-  //-----------------
-  static int 	tclCmd(ClientData, Tcl_Interp *, int argc, char *argv[]);
-
-  // interface to derived classes
-  //-----------------------------
-  virtual int	invoke(int argc, char *argv[], char **result)=0;
-
- public:
-
-  ~If_Command();
-};
+//--------------------------------------------------------------------------
+int If_Procedure::invoke(Tcl_Interp *interp, int objc, Tcl_Obj *CONST [])
+{
+  if (objc > 1) {
+    Tcl_AppendResult(interp, "wrong # args, should be: ",
+		     ifName(), NULL);
+  }
+  (*_proc)();
+  return TCL_OK;
+}
 
 
-#endif
+//==========================================================================

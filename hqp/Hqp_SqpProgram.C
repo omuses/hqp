@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,10 +25,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <math.h>
 
 #include <If_Real.h>
 #include <If_RealVec.h>
@@ -46,6 +42,11 @@ typedef If_Method<Hqp_SqpProgram> If_Cmd;
 
 IF_BASE_DEFINE(Hqp_SqpProgram);
 
+#define GET_SET_CB(vartype, name) \
+  "prg_"#name, \
+  IF_GET_CB(vartype, Hqp_SqpProgram, name), \
+  IF_SET_CB(vartype, Hqp_SqpProgram, set_##name)
+
 //-------------------------------------------------------------------------
 Hqp_SqpProgram::Hqp_SqpProgram()
 {
@@ -55,15 +56,18 @@ Hqp_SqpProgram::Hqp_SqpProgram()
 
   theSqpSolver->set_prg(this);
 
-  _ifList.append(new If_Real("prg_f", &_f));
-  _ifList.append(new If_RealVec("prg_x", &_x));
-  _ifList.append(new If_Cmd("prg_setup", &Hqp_SqpProgram::setup_cmd, this));
-  _ifList.append(new If_Cmd("prg_init_x", &Hqp_SqpProgram::init_x_cmd, this));
-  _ifList.append(new If_Cmd("prg_test", &Hqp_SqpProgram::test_cmd, this));
-  _ifList.append(new If_Cmd("prg_qp_dump",
-			    &Hqp_SqpProgram::qp_dump_cmd, this));
+  _ifList.append(new If_Real(GET_SET_CB(Real, f)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, x)));
+  _ifList.append(new If_Cmd("prg_setup", &Hqp_SqpProgram::setup, this));
+  _ifList.append(new If_Cmd("prg_init_x", &Hqp_SqpProgram::init_x, this));
+  _ifList.append(new If_Cmd("prg_qp_dump", &Hqp_SqpProgram::qp_dump, this));
   _ifList.append(new If_Cmd("prg_update_fbd",
-			    &Hqp_SqpProgram::update_fbd_cmd, this));
+			    &Hqp_SqpProgram::update_fbd, this));
+  // note: need to cast as test method calls non-const member set_x 
+  typedef double (Hqp_SqpProgram::*RealReadCb)() const;
+  _ifList.append(new If_Real("prg_test",
+			     new If_GetCb<double,Hqp_SqpProgram>
+			     ((RealReadCb)&Hqp_SqpProgram::test, this)));
 }
 
 //-------------------------------------------------------------------------
@@ -74,7 +78,7 @@ Hqp_SqpProgram::~Hqp_SqpProgram()
 }
 
 //-------------------------------------------------------------------------
-void Hqp_SqpProgram::x(const VECP n_x)
+void Hqp_SqpProgram::set_x(const VECP n_x)
 {
   assert(n_x->dim == _x->dim);
   v_copy(n_x, _x);
@@ -87,31 +91,14 @@ void Hqp_SqpProgram::reinit_bd()
 }
 
 //-------------------------------------------------------------------------
-int Hqp_SqpProgram::setup_cmd(IF_CMD_ARGS)
-{
-  setup();
-
-  return IF_OK;
-}
-
-//-------------------------------------------------------------------------
-int Hqp_SqpProgram::init_x_cmd(IF_CMD_ARGS)
-{
-  init_x();
-
-  return IF_OK;
-}
-
-//-------------------------------------------------------------------------
 // write difference between approximated and calculated gradients into qp
 // -- _x, _f, and _qp must be initialized before
 // -- results are stored in _qp->c, _qp->A, and _qp->C
 //    (--> program should be reinitialzed afterwards)
 // -- returns maximal found error
 //
-int Hqp_SqpProgram::test_cmd(int, char *[], char **result)
+Real Hqp_SqpProgram::test()
 {
-  static char maxstr[15];
   int i, j, idx;
   int xdim = _x->dim;
   int bdim = _qp->b->dim;
@@ -130,7 +117,7 @@ int Hqp_SqpProgram::test_cmd(int, char *[], char **result)
     xi_bak = _x[i];
     dxi = 1e-4 * fabs(xi_bak) + 1e-6;
     _x[i] += dxi;
-    x(_x);	// write new _x with access method
+    set_x(_x);	// write new _x with access method
 
     update_fbd();
 
@@ -171,11 +158,6 @@ int Hqp_SqpProgram::test_cmd(int, char *[], char **result)
   maxval = max(maxval, v_max(_qp->c, &i));
   maxval = max(maxval, -v_min(_qp->c, &i));
 
-  if (result) {
-    sprintf(maxstr, "%.5g", maxval);
-    *result = maxstr;
-  }
-
   v_copy(b_bak, _qp->b);
   v_copy(d_bak, _qp->d);
 
@@ -183,51 +165,22 @@ int Hqp_SqpProgram::test_cmd(int, char *[], char **result)
   v_free(b_bak);
   v_free(d_bak);
 
-  return IF_OK;
+  return maxval;
 }
 
 //-------------------------------------------------------------------------
-int Hqp_SqpProgram::qp_dump_cmd(int argc, char *argv[], char **result)
+void Hqp_SqpProgram::qp_dump()
 {
-  int	fd;
-  char	*pos;
+  const char *filename = "prg_qp_dump.out";
   FILE 	*fp;
 
-  if (argc != 2) {
-    *result = "wrong # args, should be: prg_qp_dump [<fd>|<filename>]";
-    return IF_ERROR;
+  fp = fopen(filename, "w");
+  if (fp == NULL) {
+    m_error(E_OVERWRITE, "Hqp_SqpProgram::qp_dump"
+	    " that can't open file prg_qp_dump.out for writing");
   }
-
-  // try to interpret argv[1] as filedescriptor
-  // if this fails, then create file with name argv[1]
-
-  fd = (int)strtol(argv[1], &pos, 0);
-  if (pos != argv[1]) {
-    fp = fdopen(fd, "w");
-    if (fp == NULL) {
-      *result = strerror(errno);
-      return IF_ERROR;
-    }
-    _qp->foutput(fp);
-  }
-  else {
-    fp = fopen(argv[1], "w");
-    if (fp == NULL) {
-      *result = "can't open file for writing";
-      return IF_ERROR;
-    }
-    _qp->foutput(fp);
-    fclose(fp);
-  }
-
-  return IF_OK;
-}
-
-//-------------------------------------------------------------------------
-int Hqp_SqpProgram::update_fbd_cmd(int argc, char *argv[], char **result)
-{
-  update_fbd();
-  return IF_OK;
+  _qp->foutput(fp);
+  fclose(fp);
 }
 
 

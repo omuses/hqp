@@ -50,7 +50,7 @@ int If_IntVec::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
   // check dimension
   //----------------
   if (curIVec == IVNULL || ncols != (int)(curIVec)->dim) {
-    Tcl_AppendResult(interp, "wrong dimension for ", _ifName, NULL);
+    Tcl_AppendResult(interp, "wrong dimension for ", ifName(), NULL);
     return TCL_ERROR;
   }
 

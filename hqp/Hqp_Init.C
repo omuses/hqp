@@ -38,7 +38,8 @@
 
 #include <If_List.h>
 #include <If_Element.h>
-#include <If_Proc.h>
+#include <If_Procedure.h>
+#include <If_String.h>
 #include <If_Class.h>
 #include <If_Module.h>
 
@@ -110,20 +111,12 @@ static void Hqp_ClassAlloc()
 //--------------------------------------------------------------------------
 const char *Hqp_Version = VERSION;
 
-static int Hqp_VersionCmd(int, char *[], char **result)
-{
-  *result = (char *)Hqp_Version;
-  return IF_OK;
-}
-
 //--------------------------------------------------------------------------
 // fulfill the Meschach copyright
 //--------------------------------------------------------------------------
-static int m_version_cmd(int, char *[], char **)
+static void m_version_cmd()
 {
   m_version();
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
@@ -175,17 +168,10 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
   theSqpProgram = NULL;
   theSqpSolver = new Hqp_SqpPowell;
 
-#if defined(HQP_GENDLL) || defined(__MINGW32__)
-  // allocate interface elements dynamically
-  // as destoying them upon DLL detach does not work
-  // (NT 4 application crashes with bad memory access on exit)
-  If_List *ifList_ptr = new If_List();
-  If_List &_ifList = *ifList_ptr;
-#endif
   _ifList.append(new IF_MODULE("sqp_solver", &theSqpSolver, Hqp_SqpSolver));
   _ifList.append(new IF_MODULE("prg_name", &theSqpProgram, Hqp_SqpProgram));
-  _ifList.append(new If_Proc("hqp_version", &Hqp_VersionCmd));
-  _ifList.append(new If_Proc("m_version", &m_version_cmd));
+  _ifList.append(new If_String("hqp_version", &Hqp_Version));
+  _ifList.append(new If_Procedure("m_version", &m_version_cmd));
 
   // install a handler for signal interrupt
   signal(SIGINT, &signal_handler);

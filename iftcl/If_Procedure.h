@@ -1,13 +1,13 @@
-/*
- *  If_Command.h
- *   - abstract base class for interface commands
+/**
+ *  @file If_Procedure.h
+ *     binds a function pointer to an interface element
  *
  *  rf, 7/20/94
  *
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,34 +25,27 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef If_Command_H
-#define If_Command_H
+#ifndef If_Procedure_H
+#define If_Procedure_H
 
 #include "If_Element.h"
 
-#define IF_CMD_ARGS	int, char *[], char **
-#define IF_DEF_ARGS	int argc=0, char *argv[]=NULL, char **result=NULL
+/** Interface procedure type */
+typedef void If_Procedure_t();
 
-
-//-----------------------------------
-class If_Command: public If_ListElement {
+/** Interface procedure */
+class IF_API If_Procedure: public If_Element {
 
  protected:
-  char *_ifName;
+  /** pointer to callback procedure */
+  If_Procedure_t	*_proc;
 
-  If_Command(const char *ifName);
-
-  // interface to Tcl
-  //-----------------
-  static int 	tclCmd(ClientData, Tcl_Interp *, int argc, char *argv[]);
-
-  // interface to derived classes
-  //-----------------------------
-  virtual int	invoke(int argc, char *argv[], char **result)=0;
+  /** invoke callback procedure */
+  int invoke(Tcl_Interp *, int objc, Tcl_Obj *CONST objv[]);
 
  public:
-
-  ~If_Command();
+  /** constructor */
+  If_Procedure(const char *ifName, If_Procedure_t *proc);
 };
 
 

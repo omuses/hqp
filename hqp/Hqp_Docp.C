@@ -211,11 +211,11 @@ Hqp_Docp::Hqp_Docp()
   _ifList.append(new If_Cmd("prg_simulate",
 			    &Hqp_Docp::simulate, this));
   _ifList.append(new If_IntVec("prg_nxs",
-			       IF_GET_CB(const IVECP, nxs, Hqp_Docp)));
+			       IF_GET_CB(const IVECP, Hqp_Docp, nxs)));
   _ifList.append(new If_IntVec("prg_nus",
-			       IF_GET_CB(const IVECP, nus, Hqp_Docp)));
+			       IF_GET_CB(const IVECP, Hqp_Docp, nus)));
   _ifList.append(new If_Int("prg_fbd_evals", 
-			    IF_GET_CB(int, fbd_evals, Hqp_Docp)));
+			    IF_GET_CB(int, Hqp_Docp, fbd_evals)));
 }  
 
 //-------------------------------------------------------------------------

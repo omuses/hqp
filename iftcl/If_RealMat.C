@@ -54,7 +54,7 @@ int If_RealMat::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
   //----------------
   if (curMat == MNULL
       || nrows != (int)(curMat)->m || ncols != (int)(curMat)->n) {
-    Tcl_AppendResult(interp, "wrong dimension for ", _ifName, NULL);
+    Tcl_AppendResult(interp, "wrong dimension for ", ifName(), NULL);
     return TCL_ERROR;
   }
 
@@ -70,7 +70,7 @@ int If_RealMat::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
       }
       if (dummy != ncols) {
 	Tcl_AppendResult(interp, "different sizes of rows in ",
-			 _ifName, "!", NULL);
+			 ifName(), "!", NULL);
 	m_free(newMat);
 	return TCL_ERROR;
       }

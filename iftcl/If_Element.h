@@ -1,16 +1,12 @@
-/*
- * If_Element.h --
- *     - abstract base class for interface elements to Tcl
- *       (e.g. variables, commands)
- *     - provides:
- *        + a textual name for every interface element
- *        + a static Tcl_Interp for all elements
+/**
+ *  @file If_Element.h
+ *     interface element to Tcl
  *
- *  rf, 22/6/94, rev. 1.0
+ *  rf, 22/6/94
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -31,31 +27,39 @@
 #ifndef If_Element_H
 #define If_Element_H
 
-extern "C" {
-#ifdef VARARGS
-#undef VARARGS
-#endif
 #include <tcl.h>
-#undef VARARGS
-}
 
 #include "If.h"
 #include "If_ListElement.h"
 
-
-// global Tcl interpreter, that must be initialized by an application
-//-------------------------------------------------------------------
+/** global Tcl interpreter that must be initialized by the application */
 extern Tcl_Interp *theInterp;
 
-//-----------------------------------------------------
-class If_Element: public If_ListElement {
+/**
+ *  Abstract base class for interface elements to Tcl, like variables and
+ *  procedures. A Tcl command is created for each interface element.
+ */
+class IF_API If_Element: public If_ListElement {
+
+ private:
+  Tcl_Command 	_token;		///< token identifying the interface element
+  bool 		_deleted; 	///< mark if command was deleted
+
+  /** Callback for Tcl if command is invoked */
+  static  int	tclCmd(ClientData, Tcl_Interp*,
+		       int objc, Tcl_Obj *CONST objv[]);
+
+  /** Callback for Tcl if command is being deleted */
+  static  void	tclCmdDeleted(ClientData);
 
  protected:
-  char                  *_ifName;
+  /** Interface for derived classes to process command invocation */
+  virtual int invoke(Tcl_Interp *, int objc, Tcl_Obj *CONST objv[]) = 0;
 
  public:
-                        If_Element(const char *ifName);
-  virtual               ~If_Element();
+  If_Element(const char *ifName); 	///< constructor
+  virtual ~If_Element(); 		///< destructor
+  const char *ifName(); 		///< get interface name
 };
 
 

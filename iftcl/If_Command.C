@@ -26,11 +26,13 @@
 
 #include "If_Command.h"
 
+#include <stdlib.h>
+#include <string.h>
 
 //--------------------------------------------------------------------------
 If_Command::If_Command(const char *ifName)
-  :If_Element(ifName)
 {
+  _ifName = strdup(ifName);
   Tcl_CreateCommand(theInterp, _ifName, &tclCmd, (ClientData)this, NULL);
 }
 
@@ -38,6 +40,7 @@ If_Command::If_Command(const char *ifName)
 If_Command::~If_Command()
 {
   Tcl_DeleteCommand(theInterp, _ifName);
+  free(_ifName);
 }	
 
 

@@ -30,45 +30,12 @@
 #include "If_Element.h"
 
 /** Construct a read callback */
-#define IF_GET_CB(vartype, name, classtype) \
+#define IF_GET_CB(vartype, classtype, name) \
   new If_GetCb<vartype, classtype>(&classtype::name, this)
 
 /** Construct a write callback */
-#define IF_SET_CB(vartype, name, classtype) \
+#define IF_SET_CB(vartype, classtype, name) \
   new If_SetCb<vartype, classtype>(&classtype::name, this)
-
-/**
- *  Base class for interface variables. This base class provides the 
- *  connection to the Tcl interpreter for a generic variable.
- *  A derived class should provide for a specific variable type the
- *  conversion from and to a Tcl object implementing the methods getTclObj
- *  and setTclObj.
- */
-class If_VariableCmd: public If_Element {
- private:
-  /** Interface to Tcl */
-  static  int	tclCmd(ClientData, Tcl_Interp*,
-		       int objc, Tcl_Obj *CONST objv[]);
-
-  /** Flags indicating read/write permission */
-  int		_mode;
-
- protected:
-  /** Constructor */
-  If_VariableCmd(const char *ifName, const char *mode = "rw");
-
-  /** Destructor */
-  virtual ~If_VariableCmd();
-
-  /** Get the value of the interface variable
-      and create a Tcl object containing it. */
-  virtual int	getTclObj(Tcl_Interp *) = 0;
-
-  /** Convert Tcl object to internal type and
-      set the value of the interface variable. */
-  virtual int	setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr) = 0;
-};
-
 
 /** Interface for a read callback. */
 template <class VarType>
@@ -77,6 +44,7 @@ class If_GetIf {
   virtual ~If_GetIf() {} 	   ///< destructor
   virtual VarType get() const = 0; ///< get method
 };
+
 
 /** Read callback for specific class type. */
 template <class VarType, class ClassType>
@@ -178,7 +146,7 @@ class If_SetPt: public If_SetIf<VarType> {
  *  The destructor of this base class will delete the callback objects.
  */
 template <class VarType>
-class If_Variable: public If_VariableCmd {
+class If_Variable: public If_Element {
 
  protected:
   If_GetIf<VarType>	*_getCb;  ///< callback for reading
@@ -187,10 +155,47 @@ class If_Variable: public If_VariableCmd {
   /** Constructor taking callback methods as arguments. */
   If_Variable(const char *ifName, If_GetIf<VarType> *getCb,
 	      If_SetIf<VarType> *setCb = NULL)
-    :If_VariableCmd(ifName, (getCb && setCb)? "rw": getCb? "r": "") {
+    :If_Element(ifName) {
     _getCb = getCb;
     _setCb = setCb;
   }
+
+  /** Process command invokation */
+  int invoke(Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+    switch (objc) {
+    case 1:
+      if (_getCb)
+	return getTclObj(interp);
+      else {
+	Tcl_AppendResult(interp, "read permission denied for ",
+			 ifName(), NULL);
+	return TCL_ERROR;
+      }
+
+    case 2:
+      if (_setCb)
+	return setTclObj(interp, objv[1]);
+      else {
+	Tcl_AppendResult(interp, "write permission denied for ",
+			 ifName(), NULL);
+	return TCL_ERROR;
+      }
+
+    default:
+      Tcl_AppendResult(interp, "wrong # args, should be: ",
+		       ifName(), " [new value]", NULL);
+      return TCL_ERROR;
+    }
+    return TCL_ERROR;
+  }
+
+  /** Get the value of the interface variable
+      and create a Tcl object containing it. */
+  virtual int	getTclObj(Tcl_Interp *) = 0;
+
+  /** Convert Tcl object to internal type and
+      set the value of the interface variable. */
+  virtual int	setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr) = 0;
 
  public:
   /** Destructor */

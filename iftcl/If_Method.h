@@ -1,14 +1,13 @@
-/*
- *  If_Method.h
- *   - binds a pointer to a method to an interface command
- *   - class template (inline code to be compatible with most compilers)
+/**
+ *  @file If_Method.h
+ *     binds a pointer to a method to an interface element
  *
  *  rf, 7/19/94
  *
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,31 +28,67 @@
 #ifndef If_Method_H
 #define If_Method_H
 
-#include "If_Command.h"
+#include "If_Element.h"
 
+/** Enable old signatures for callback methods. */
+#define IF_METHOD_WITH_DEPRECATED 1
 
-template<class X>
-class If_Method: public If_Command {
+/** Interface method */
+template<class ClassType>
+class If_Method: public If_Element {
 
  protected:
+  ClassType	*_object; 		 ///< object the method belongs to
+  void		(ClassType::*_method)(); ///< method pointer
 
-  X	*_object;
-  int	(X::*_method)(int, char *[], char **);
+#if defined(IF_METHOD_WITH_DEPRECATED)
+  /** deprecated pointer to a method taking argc/argv arguments */
+  int	(ClassType::*_dep_method)(int, char *[], char **);
+#endif
 
-  int 	invoke(int argc, char *argv[], char **result)
-    {
-      return (_object->*_method)(argc, argv, result);
-    }	
+  /** invoke callback method */
+  int invoke(Tcl_Interp *interp, int objc, Tcl_Obj *CONST []) {
+    if (objc > 1) {
+      Tcl_AppendResult(interp, "wrong # args, should be: ",
+		       ifName(), NULL);
+      return TCL_ERROR;
+    }
+#if defined(IF_METHOD_WITH_DEPRECATED)
+    if (_dep_method) {
+      return (_object->*_dep_method)(0, NULL, &interp->result);
+    }
+#endif
+    (_object->*_method)();
+    return TCL_OK;
+  }	
 
  public:
-
+  /** constructor */
   If_Method(const char *ifName,
-	    int (X::*method)(int, char *[], char **), X *object)
-    :If_Command(ifName)
-      {
-	_object = object;
-	_method = method;
-      }
+	    void (ClassType::*method)(), ClassType *object)
+    :If_Element(ifName) {
+    _object = object;
+    _method = method;
+#if defined(IF_METHOD_WITH_DEPRECATED)
+    _dep_method = NULL;
+#endif
+  }
+
+#if defined(IF_METHOD_WITH_DEPRECATED)
+  /** Deprecated constructor. It temporarily provides backwards
+      compatibility for methods using call arguments and returning a result.
+      However, no values will be passed to the method, that is argc == 0,
+      argv == NULL; result can be used as before. Please redefine methods
+      to not having call arguments and to throw errors with m_error(). */
+  If_Method(const char *ifName,
+	    int (ClassType::*method)(int argc, char *argv[], char **result),
+	    ClassType *object)
+    :If_Element(ifName) {
+    _object = object;
+    _method = NULL;
+    _dep_method = method;
+  }
+#endif
 };
 
 

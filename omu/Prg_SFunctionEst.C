@@ -42,7 +42,7 @@
 
 #define GET_CB(vartype, name) \
   #name, \
-  IF_GET_CB(vartype, name, Prg_SFunctionEst)
+  IF_GET_CB(vartype, Prg_SFunctionEst, name)
 
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 

@@ -1,16 +1,12 @@
 /* 
- * Odc_Main.c --
- *
- *    main function for the Omuses demo collection
- *    (this file may be replaced by tclAppInit.c or tkAppInit.c of
- *     a Tcl/Tk distribution, provided that the modules Hqp, Omu, 
- *     and Odc are initialized)
+ * iftest.C --
+ *    test application for interface elements
  *
  *  rf, 2/6/97
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,6 +26,7 @@
 
 #include <tcl.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "If_Int.h"
 #include "If_Bool.h"
@@ -39,6 +36,8 @@
 #include "If_IntVec.h"
 #include "If_String.h"
 #include "If_StdString.h"
+#include "If_Procedure.h"
+#include "If_Method.h"
 
 /*
  * the main function
@@ -62,6 +61,11 @@ VECP if_realVec = VNULL;
 MATP if_realMat = MNULL;
 IVECP if_intVec = IVNULL;
 const char *if_string = "initial if_string value";
+
+void if_procedure()
+{
+  printf("if_procedure called\n");
+}
 
 class A {
  public:
@@ -100,6 +104,11 @@ class A {
 
   const std::string &stdString() const {return _stdString;}
   void set_stdString(const std::string &value) {_stdString = value;}
+
+  void if_method()
+  {
+    m_error(E_INPUT, "A::if_method");
+  }
 };
 
 A a;
@@ -146,6 +155,10 @@ Tcl_AppInit(Tcl_Interp *interp)
   new If_StdString("if_stdString",
 		   new If_GetCb<const std::string&, A>(&A::stdString, &a),
 		   new If_SetCb<const std::string&, A>(&A::set_stdString, &a));
+
+  new If_Procedure("if_procedure", &if_procedure);
+
+  new If_Method<A>("if_method", &A::if_method, &a);
 
   Tcl_SetVar(interp, "tcl_rcFileName", "~/.tclshrc", TCL_GLOBAL_ONLY);
   return TCL_OK;

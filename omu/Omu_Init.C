@@ -27,7 +27,7 @@
  */
 
 #include <tcl.h>
-#include <If_Proc.h>
+#include <If_String.h>
 
 #include "Hqp_Omuses.h"
 
@@ -81,12 +81,6 @@ static void Omu_ClassAlloc()
 //--------------------------------------------------------------------------
 const char *Omu_Version = VERSION;
 
-static int Omu_VersionCmd(int, char *[], char **result)
-{
-  *result = (char *)Omu_Version;
-  return IF_OK;
-}
-
 //--------------------------------------------------------------------------
 extern "C" int Hqp_Init(Tcl_Interp *interp);
 extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
@@ -110,7 +104,7 @@ extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
   }
 
   // initialize version command
-  new If_Proc("omu_version", &Omu_VersionCmd);
+  new If_String("omu_version", &Omu_Version);
 
   // allocate interface modules
 # ifdef IF_CLASS_STATIC

@@ -5,23 +5,17 @@
  */
 
 #include <tcl.h>
-#include <If_Proc.h>
+#include <If_String.h>
 
 //--------------------------------------------------------------------------
-const char *Odc_Version = "1.3";
-
-static int Odc_VersionCmd(int, char *[], char **result)
-{
-  *result = (char *)Odc_Version;
-  return IF_OK;
-}
+const char *Odc_Version = "1.4";
 
 //--------------------------------------------------------------------------
 extern "C" int Odc_Init(Tcl_Interp *interp)
 {
   // do package specific initializations
 
-  new If_Proc("odc_version", &Odc_VersionCmd);
+  new If_String("odc_version", &Odc_Version);
 
   return TCL_OK;
 }

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -303,7 +303,7 @@ void Hqp_SqpSchittkowski::update_vals()
       v_copy(_ve, _y);
       v_copy(_v, _z);
     }
-    _prg->x(_xk);
+    _prg->set_x(_xk);
     _prg->update_fbd();
     if (!is_finite(_prg->f())) {
       _alpha *= 0.1;

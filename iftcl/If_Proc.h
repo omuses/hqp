@@ -28,6 +28,11 @@
 #ifndef If_Proc_H
 #define If_Proc_H
 
+#ifdef __GNUC__
+// (standard C++ does not define #warning)
+#warning "If_Proc is deprecated and will be removed; use If_Procedure or If_String instead!"
+#endif
+
 #include "If_Command.h"
 
 

@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,7 +29,7 @@
 #ifndef If_Module_H
 #define If_Module_H
 
-#include "If_Command.h"
+#include "If_Element.h"
 #include "If_Class.h"
 
 // use this macro to create a new If_Module
@@ -39,62 +39,63 @@
 
 
 template<class X>
-class If_Module: public If_Command {
+class If_Module: public If_Element {
 
  protected:
 
   X	**_module;
   If_ClassList<X>*& _list;
 
-  int 	invoke(int argc, char *argv[], char **result)
-    {
-      char *fallback;
+  /** create requested module */
+  int invoke(Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+  {
+    char *fallback;
 
-      if (argc == 1) {
-	if (*_module)
-	  *result = (*_module)->name();
-	else
-	  *result = "No module chosen.";
-	return IF_OK;
-      }
-      else if (argc == 2) {
-	if (!_list) {
-	  *result = "No modules available.";
-	  return IF_ERROR;
-	}
-
-	// store the current module name
-	if (*_module)
-	  fallback = (*_module)->name();
-	else
-	  fallback = NULL;
-
-	// delete the current module to free interface elements
-	delete *_module;
-
-	// create the requested module
-	*_module = _list->createObject(argv[1]);
-	if (!*_module) {
-	  *result = (char *)_list->cand_names();
-	  if (fallback)
-	    *_module = _list->createObject(fallback);
-	  return IF_ERROR;
-	}
-	return IF_OK;
+    if (objc == 1) {
+      if (*_module)
+	Tcl_AppendResult(interp, (*_module)->name(), NULL);
+      else
+	Tcl_AppendResult(interp, "No module chosen.", NULL);
+      return IF_OK;
+    }
+    else if (objc == 2) {
+      if (!_list) {
+	Tcl_AppendResult(interp, "No modules available.", NULL);
+	return IF_ERROR;
       }
 
-      *result = "If_Module: wrong # of args";
-      return IF_ERROR;
-    }	
+      // store the current module name
+      if (*_module)
+	fallback = (*_module)->name();
+      else
+	fallback = NULL;
+
+      // delete the current module to free interface elements
+      delete *_module;
+
+      // create the requested module
+      *_module = _list->createObject(Tcl_GetString(objv[1]));
+      if (!*_module) {
+	Tcl_AppendResult(interp, _list->cand_names(), NULL);
+	if (fallback)
+	  *_module = _list->createObject(fallback);
+	return IF_ERROR;
+      }
+      return IF_OK;
+    }
+
+    Tcl_AppendResult(interp, "wrong # of args, should be: ",
+		     ifName(), " [new module name]", NULL);
+    return IF_ERROR;
+  }	
 
  public:
 
+  /** constructor */
   If_Module(const char *ifName, X **module, If_ClassList<X>*& list)
-    :If_Command(ifName),
-      _list(list)
-      {
-	_module = module;
-      }
+    :If_Element(ifName), _list(list) {
+    _module = module;
+  }
 };
 
 

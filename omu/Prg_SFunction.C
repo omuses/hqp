@@ -38,8 +38,8 @@
 
 #define GET_SET_CB(vartype, name) \
   #name, \
-  IF_GET_CB(vartype, name, Prg_SFunction), \
-  IF_SET_CB(vartype, set_##name, Prg_SFunction)
+  IF_GET_CB(vartype, Prg_SFunction, name), \
+  IF_SET_CB(vartype, Prg_SFunction, set_##name)
 
 //--------------------------------------------------------------------------
 Prg_SFunction::Prg_SFunction()
@@ -110,7 +110,7 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
   str1 = Hxi::mx_count_columns(str, nargs);
   if (*str1 != '\0') {
     // did not arrive at the end of the string
-    m_error(E_INPUT, "Prg_SFunction::set_mdl_args that "
+    m_error(E_FORMAT, "Prg_SFunction::set_mdl_args that "
 	    "failed to parse S-function args");
   }
   args = new mxArray* [nargs];

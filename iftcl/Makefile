@@ -15,7 +15,7 @@ SRCS = 	If.C \
 	If_Element.C \
 	If_Command.C \
 	If_Proc.C \
-	If_Variable.C \
+	If_Procedure.C \
 	If_Int.C \
 	If_IntVec.C \
 	If_Bool.C \

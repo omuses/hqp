@@ -124,7 +124,7 @@ void Hqp_HL::init(const VEC *y, const VEC *z, Hqp_SqpProgram *prg)
     // disturbed primal variables
     dx = v_map(&dxi, prg->x(), dx);
     v_add(x_bak, dx, x_mod);
-    prg->x(x_mod);
+    prg->set_x(x_mod);
 
     // gradient of Lagrangian
     prg->update((VEC *)y_appr, (VEC *)z);
@@ -143,8 +143,8 @@ void Hqp_HL::init(const VEC *y, const VEC *z, Hqp_SqpProgram *prg)
       sp_set_val(qp->Q, i, i, val);
     }
 
-    prg->f(f_bak);
-    prg->x(x_bak);
+    prg->set_f(f_bak);
+    prg->set_x(x_bak);
     v_copy(b_bak, qp->b);
     v_copy(d_bak, qp->d);
     v_copy(c_bak, qp->c);

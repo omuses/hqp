@@ -364,7 +364,7 @@ void Hqp_SqpSolver::feasible_vals()
   while (1) {
     _d = sv_mlt(_alpha, qp->x, _d);
     v_add(_x0, _d, _xk);
-    _prg->x(_xk);
+    _prg->set_x(_xk);
     _prg->update_fbd();
     _norm_inf = norm_inf(qp);
 

@@ -317,7 +317,7 @@ void Hqp_SqpPowell::update_vals()
 
       // backing store values from _watchdog_iter
       _x0 = v_copy(_xl, _x0);
-      _prg->x(_x0);
+      _prg->set_x(_x0);
       _y = v_copy(_yl, _y);
       _z = v_copy(_zl, _z);
       _prg->update(_y, _z);
@@ -356,7 +356,7 @@ void Hqp_SqpPowell::update_vals()
       v_mltadd(_y0, _sy_y, _alpha, _y);
       v_mltadd(_z0, _sz_z, _alpha, _z);
     }
-    _prg->x(_xk);
+    _prg->set_x(_xk);
     if (_alpha <= _min_alpha)
       break;
     if (_relaxed && _watchdog_credit > 0)

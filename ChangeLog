@@ -1,3 +1,26 @@
+2002-11-20    <rfranke>
+
+	* iftcl/If_Element.[hC]: add treatment of Tcl command 
+	* iftcl/If_Variable.C: remove as functionality went to If_Element
+	* iftcl/If_Procedure.[hC]: add procedure taking no arguments
+	* iftcl/If_Method.h: adapt to changes in If_Element
+	* iftcl/iftest.C: adapt to changes
+	* If_Command.[hC], If_Proc.[hC]:
+	  adapt to changes and mark them deprecated
+	* iftcl/If_Variable.h and derived classes,
+	  hqp/Hqp_Docp.C, hqp/Prg_SFunction.C: cosmetic changes
+	* If_List.[hC], If_ListElement.[hC]: simplify and add documentation
+
+	* hqp/Hqp_SqpProgram.[hC], hqp/Hqp_SqpSolver.C, hqp/Hqp_HL.C,
+	  hqp/Hqp_SqpSchittkowski.C, hqp/Hqp_SqpProgram.h:
+	  adapt Hqp_SqpProgram to new iftcl
+
+	* hqp/Hqp_Init.C, omu/Omu_Init.C, odc/Odc_Init.C:
+	  adapt to new iftcl (exchange If_Proc with If_String for versions)
+
+	* hqp/Hqp_Init.C (Hqp_Init): take out special treatment of
+	  _ifList for DLL generated with gcc
+
 2002-11-15    <rfranke>
 
 	* iftcl/If_Variable.[hC], iftcl/If_Bool.[hC], iftcl/If_Int.[hC],
