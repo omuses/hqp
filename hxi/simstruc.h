@@ -36,11 +36,11 @@
 #define MATLAB_MEX_FILE
 
 # if !defined(ssGetNumInputPorts)
-# define ssGetNumInputPorts(S) _ssGetNumInputPorts(S)
+# define ssGetNumInputPorts(S) 	(S)->sizes.in.numInputPorts
 # endif
 
 # if !defined(ssGetNumOutputPorts)
-# define ssGetNumOutputPorts(S) _ssGetNumOutputPorts(S)
+# define ssGetNumOutputPorts(S) (S)->sizes.out.numOutputPorts
 # endif
 
 // guess MATLAB version (times 10 to avoid decimal point)
