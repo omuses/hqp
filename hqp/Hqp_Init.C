@@ -135,7 +135,7 @@ static void signal_handler(int code)
     Tcl_Eval(theInterp, "hqp_exit {signal interrupt}");
     fprintf(stderr, "HQP %s: %s\n", Hqp_Version, "signal interrupt");
     break;
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
   case SIGXCPU:
     signal(SIGXCPU, SIG_IGN);
     Tcl_Eval(theInterp, "hqp_exit {signal cputime}");
@@ -175,7 +175,7 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
   theSqpProgram = NULL;
   theSqpSolver = new Hqp_SqpPowell;
 
-#ifdef HQP_GENDLL
+#if defined(HQP_GENDLL) || defined(__MINGW32__)
   // allocate interface elements dynamically
   // as destoying them upon DLL detach does not work
   // (NT 4 application crashes with bad memory access on exit)
@@ -189,7 +189,7 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
 
   // install a handler for signal interrupt
   signal(SIGINT, &signal_handler);
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
   signal(SIGXCPU, &signal_handler);
 #endif
 

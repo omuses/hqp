@@ -1,3 +1,7 @@
+2002-05-04    <e_arnold>
+
+	* configure.in, Makefile, hqp/Hqp_Init.C: add MinGW/MSYS support
+
 2002-05-04    <rfranke>
 
 	* doc/Doxyfile.in: add input file for Doxygen documentation generator

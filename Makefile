@@ -49,19 +49,23 @@ install::
 	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
 	@if test ! -d $(INC_DIR)-$(VERSION); then \
 	  mkdir $(INC_DIR)-$(VERSION); fi
+# install include files
+	for f in adol-c/SRC/*.h omu/*.h hxi/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
+	@if test ! -d $(INC_DIR)/DRIVERS; then \
+	mkdir $(INC_DIR)-$(VERSION)/DRIVERS; fi
+	for f in adol-c/SRC/DRIVERS/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/DRIVERS/; done
+	@if test ! -d $(INC_DIR)/SPARSE; then \
+	mkdir $(INC_DIR)-$(VERSION)/SPARSE; fi
+	for f in adol-c/SRC/SPARSE/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/SPARSE/; done
+	@if test ! -d $(INC_DIR)/TAPEDOC; then \
+	mkdir $(INC_DIR)-$(VERSION)/TAPEDOC; fi
+	for f in adol-c/SRC/TAPEDOC/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/TAPEDOC/; done
+# complete directory structure for includes
 	rm -rf $(INC_DIR_ROOT)/hqp
 	cd $(INC_DIR_ROOT); \
 	ln -s hqp-$(VERSION) hqp; \
 	cd $(PWD)
-# install include files
-	for f in adol-c/SRC/*.h omu/*.h hxi/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
-	@if test ! -d $(INC_DIR)/DRIVERS; then mkdir $(INC_DIR)/DRIVERS; fi
-	for f in adol-c/SRC/DRIVERS/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)/DRIVERS/; done
-	@if test ! -d $(INC_DIR)/SPARSE; then mkdir $(INC_DIR)/SPARSE; fi
-	for f in adol-c/SRC/SPARSE/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/SPARSE/; done
-	@if test ! -d $(INC_DIR)/TAPEDOC; then mkdir $(INC_DIR)/TAPEDOC; fi
-	for f in adol-c/SRC/TAPEDOC/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/TAPEDOC/; done

@@ -111,7 +111,9 @@ Hints for using cl, i.e. the "native" compiler under Windows:
 
 Alternative for Windows:
  - compile everything under Cygwin and install it under /usr/local
-   (i.e. c:\cygwin\usr\local)
+   (i.e. c:\cygwin\usr\local), or
+ - compile everything under MinGW/MSYS
+   (tested with MinGW 1.1, MSYS 1.0.7 prerelease 1, Tcl 8.4a3)
 
 Known Problems
 ==============
@@ -124,3 +126,9 @@ Known Problems
    code will be rather slow)
 2) Problems with Cygwin
 - some early version of Cygwin 1.1 did setup HUGE_VAL wrong
+3) Problems with MinGW/MSYS
+- "TCL_LIB_SPEC" isn't set correctly in tclConfig.sh for Tcl 8.4a3;
+  "@TCL_LIB_SPEC@" must be replaced by "-ltcl84" 
+  in hqp_docp/Makefile and odc/Makefile
+- mkdirhier and gunzip are not included in the standard MinGW/MSYS
+  installation

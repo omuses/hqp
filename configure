@@ -1048,8 +1048,8 @@ fi
 echo "$as_me: error: Please specify --with-tcl (directory of tclConfig.sh)." >&2;}
    { (exit 1); exit 1; }; }
   fi
-  echo "$as_me:1051: checking for tclsh version" >&5
-echo $ECHO_N "checking for tclsh version... $ECHO_C" >&6
+  echo "$as_me:1051: checking \"for tclsh version\"" >&5
+echo $ECHO_N "checking \"for tclsh version\"... $ECHO_C" >&6
   TCL_VERSION=`echo 'puts -nonewline $tcl_version' | $TCLSH`
   echo "$as_me:1054: result: \"$TCL_VERSION\"" >&5
 echo "${ECHO_T}\"$TCL_VERSION\"" >&6
@@ -2838,6 +2838,176 @@ else
 fi
 
       ;;
+    MINGW*)
+      PICFLAG=""
+      LD="ar -cr "
+      LIB_SUFFIX=".a"
+      EXE_SUFFIX=".exe"
+      cat >>confdefs.h <<\EOF
+#define IF_CLASS_STATIC 1
+EOF
+
+      RFLAG="-L"
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ranlib; ac_word=$2
+echo "$as_me:2854: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_RANLIB+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$RANLIB"; then
+  ac_cv_prog_RANLIB="$RANLIB" # Let the user override the test.
+else
+  ac_save_IFS=$IFS; IFS=$ac_path_separator
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  IFS=$ac_save_IFS
+  test -z "$ac_dir" && ac_dir=.
+  $as_executable_p "$ac_dir/$ac_word" || continue
+ac_cv_prog_RANLIB="${ac_tool_prefix}ranlib"
+echo "$as_me:2869: found $ac_dir/$ac_word" >&5
+break
+done
+
+fi
+fi
+RANLIB=$ac_cv_prog_RANLIB
+if test -n "$RANLIB"; then
+  echo "$as_me:2877: result: $RANLIB" >&5
+echo "${ECHO_T}$RANLIB" >&6
+else
+  echo "$as_me:2880: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+fi
+if test -z "$ac_cv_prog_RANLIB"; then
+  ac_ct_RANLIB=$RANLIB
+  # Extract the first word of "ranlib", so it can be a program name with args.
+set dummy ranlib; ac_word=$2
+echo "$as_me:2889: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_ac_ct_RANLIB+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$ac_ct_RANLIB"; then
+  ac_cv_prog_ac_ct_RANLIB="$ac_ct_RANLIB" # Let the user override the test.
+else
+  ac_save_IFS=$IFS; IFS=$ac_path_separator
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  IFS=$ac_save_IFS
+  test -z "$ac_dir" && ac_dir=.
+  $as_executable_p "$ac_dir/$ac_word" || continue
+ac_cv_prog_ac_ct_RANLIB="ranlib"
+echo "$as_me:2904: found $ac_dir/$ac_word" >&5
+break
+done
+
+  test -z "$ac_cv_prog_ac_ct_RANLIB" && ac_cv_prog_ac_ct_RANLIB=":"
+fi
+fi
+ac_ct_RANLIB=$ac_cv_prog_ac_ct_RANLIB
+if test -n "$ac_ct_RANLIB"; then
+  echo "$as_me:2913: result: $ac_ct_RANLIB" >&5
+echo "${ECHO_T}$ac_ct_RANLIB" >&6
+else
+  echo "$as_me:2916: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  RANLIB=$ac_ct_RANLIB
+else
+  RANLIB="$ac_cv_prog_RANLIB"
+fi
+
+      ;;
+    MSYS*)
+      PICFLAG=""
+      LD="ar -cr "
+      LIB_SUFFIX=".a"
+      EXE_SUFFIX=".exe"
+      cat >>confdefs.h <<\EOF
+#define IF_CLASS_STATIC 1
+EOF
+
+      RFLAG="-L"
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ranlib; ac_word=$2
+echo "$as_me:2939: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_RANLIB+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$RANLIB"; then
+  ac_cv_prog_RANLIB="$RANLIB" # Let the user override the test.
+else
+  ac_save_IFS=$IFS; IFS=$ac_path_separator
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  IFS=$ac_save_IFS
+  test -z "$ac_dir" && ac_dir=.
+  $as_executable_p "$ac_dir/$ac_word" || continue
+ac_cv_prog_RANLIB="${ac_tool_prefix}ranlib"
+echo "$as_me:2954: found $ac_dir/$ac_word" >&5
+break
+done
+
+fi
+fi
+RANLIB=$ac_cv_prog_RANLIB
+if test -n "$RANLIB"; then
+  echo "$as_me:2962: result: $RANLIB" >&5
+echo "${ECHO_T}$RANLIB" >&6
+else
+  echo "$as_me:2965: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+fi
+if test -z "$ac_cv_prog_RANLIB"; then
+  ac_ct_RANLIB=$RANLIB
+  # Extract the first word of "ranlib", so it can be a program name with args.
+set dummy ranlib; ac_word=$2
+echo "$as_me:2974: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_ac_ct_RANLIB+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$ac_ct_RANLIB"; then
+  ac_cv_prog_ac_ct_RANLIB="$ac_ct_RANLIB" # Let the user override the test.
+else
+  ac_save_IFS=$IFS; IFS=$ac_path_separator
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  IFS=$ac_save_IFS
+  test -z "$ac_dir" && ac_dir=.
+  $as_executable_p "$ac_dir/$ac_word" || continue
+ac_cv_prog_ac_ct_RANLIB="ranlib"
+echo "$as_me:2989: found $ac_dir/$ac_word" >&5
+break
+done
+
+  test -z "$ac_cv_prog_ac_ct_RANLIB" && ac_cv_prog_ac_ct_RANLIB=":"
+fi
+fi
+ac_ct_RANLIB=$ac_cv_prog_ac_ct_RANLIB
+if test -n "$ac_ct_RANLIB"; then
+  echo "$as_me:2998: result: $ac_ct_RANLIB" >&5
+echo "${ECHO_T}$ac_ct_RANLIB" >&6
+else
+  echo "$as_me:3001: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  RANLIB=$ac_ct_RANLIB
+else
+  RANLIB="$ac_cv_prog_RANLIB"
+fi
+
+      ;;
     CL)
       if test "$hqp_shared" = "yes"; then
         MKLIB_SUFFIX=".dll"
@@ -2907,7 +3077,7 @@ for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  { { echo "$as_me:2910: error: cannot find install-sh or install.sh in $srcdir $srcdir/.. $srcdir/../.." >&5
+  { { echo "$as_me:3080: error: cannot find install-sh or install.sh in $srcdir $srcdir/.. $srcdir/../.." >&5
 echo "$as_me: error: cannot find install-sh or install.sh in $srcdir $srcdir/.. $srcdir/../.." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -2927,7 +3097,7 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 # AFS /usr/afsws/bin/install, which mishandles nonexistent args
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
-echo "$as_me:2930: checking for a BSD compatible install" >&5
+echo "$as_me:3100: checking for a BSD compatible install" >&5
 echo $ECHO_N "checking for a BSD compatible install... $ECHO_C" >&6
 if test -z "$INSTALL"; then
 if test "${ac_cv_path_install+set}" = set; then
@@ -2976,7 +3146,7 @@ fi
     INSTALL=$ac_install_sh
   fi
 fi
-echo "$as_me:2979: result: $INSTALL" >&5
+echo "$as_me:3149: result: $INSTALL" >&5
 echo "${ECHO_T}$INSTALL" >&6
 
 # Use test -z because SunOS4 sh mishandles braces in ${var-val}.
@@ -2993,7 +3163,7 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 # first try --with-tclinclude (as defined for TEA)
 
-echo "$as_me:2996: checking --with-tclinclude" >&5
+echo "$as_me:3166: checking --with-tclinclude" >&5
 echo $ECHO_N "checking --with-tclinclude... $ECHO_C" >&6
 
 # Check whether --with-tclinclude or --without-tclinclude was given.
@@ -3001,10 +3171,10 @@ if test "${with_tclinclude+set}" = set; then
   withval="$with_tclinclude"
   with_tclinclude=${withval}
 fi;
-echo "$as_me:3004: result: \"$with_tclinclude\"" >&5
+echo "$as_me:3174: result: \"$with_tclinclude\"" >&5
 echo "${ECHO_T}\"$with_tclinclude\"" >&6
 
-echo "$as_me:3007: checking for tcl.h" >&5
+echo "$as_me:3177: checking for tcl.h" >&5
 echo $ECHO_N "checking for tcl.h... $ECHO_C" >&6
 
 if test -z "${with_tclinclude}"; then
@@ -3013,28 +3183,28 @@ if test -z "${with_tclinclude}"; then
 fi
 
 if test -f ${with_tclinclude}/tcl.h; then
-  echo "$as_me:3016: result: ${with_tclinclude}/tcl.h" >&5
+  echo "$as_me:3186: result: ${with_tclinclude}/tcl.h" >&5
 echo "${ECHO_T}${with_tclinclude}/tcl.h" >&6
   TCL_INCDIR="${with_tclinclude}"
 
 else
-  echo "$as_me:3021: result: file not found" >&5
+  echo "$as_me:3191: result: file not found" >&5
 echo "${ECHO_T}file not found" >&6
-  { { echo "$as_me:3023: error: Specify path of tcl.h via --with-tclinclude" >&5
+  { { echo "$as_me:3193: error: Specify path of tcl.h via --with-tclinclude" >&5
 echo "$as_me: error: Specify path of tcl.h via --with-tclinclude" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
 # Tcl lib
 
-echo "$as_me:3030: checking for Tcl lib ${TCL_LIB_FILE}" >&5
+echo "$as_me:3200: checking for Tcl lib ${TCL_LIB_FILE}" >&5
 echo $ECHO_N "checking for Tcl lib ${TCL_LIB_FILE}... $ECHO_C" >&6
 with_tcllib=${TCL_EXEC_PREFIX}/lib
 if test -f ${with_tcllib}/${TCL_LIB_FILE}; then
-  echo "$as_me:3034: result: ${with_tcllib}/${TCL_LIB_FILE}" >&5
+  echo "$as_me:3204: result: ${with_tcllib}/${TCL_LIB_FILE}" >&5
 echo "${ECHO_T}${with_tcllib}/${TCL_LIB_FILE}" >&6
 else
-  echo "$as_me:3037: result: file not found" >&5
+  echo "$as_me:3207: result: file not found" >&5
 echo "${ECHO_T}file not found" >&6
 fi
 TCL_LIBDIR="$with_tcllib"
@@ -3067,7 +3237,7 @@ OMU_INTRKSUITE_C=""
 RKSUITE_O=""
 RKSUITE_COMPILE_CMD=""
 
-echo "$as_me:3070: checking --enable-fortran" >&5
+echo "$as_me:3240: checking --enable-fortran" >&5
 echo $ECHO_N "checking --enable-fortran... $ECHO_C" >&6
 # Check whether --enable-fortran or --disable-fortran was given.
 if test "${enable_fortran+set}" = set; then
@@ -3076,13 +3246,13 @@ if test "${enable_fortran+set}" = set; then
 else
   omu_fortran=no
 fi;
-echo "$as_me:3079: result: $omu_fortran" >&5
+echo "$as_me:3249: result: $omu_fortran" >&5
 echo "${ECHO_T}$omu_fortran" >&6
 
 if test "$omu_fortran" != no; then
   # Extract the first word of "f77", so it can be a program name with args.
 set dummy f77; ac_word=$2
-echo "$as_me:3085: checking for $ac_word" >&5
+echo "$as_me:3255: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
 if test "${ac_cv_path_fortran_f77+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -3099,7 +3269,7 @@ for ac_dir in $ac_dummy; do
   test -z "$ac_dir" && ac_dir=.
   if $as_executable_p "$ac_dir/$ac_word"; then
    ac_cv_path_fortran_f77="$ac_dir/$ac_word"
-   echo "$as_me:3102: found $ac_dir/$ac_word" >&5
+   echo "$as_me:3272: found $ac_dir/$ac_word" >&5
    break
 fi
 done
@@ -3110,10 +3280,10 @@ fi
 fortran_f77=$ac_cv_path_fortran_f77
 
 if test -n "$fortran_f77"; then
-  echo "$as_me:3113: result: $fortran_f77" >&5
+  echo "$as_me:3283: result: $fortran_f77" >&5
 echo "${ECHO_T}$fortran_f77" >&6
 else
-  echo "$as_me:3116: result: no" >&5
+  echo "$as_me:3286: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi
 
@@ -3122,7 +3292,7 @@ fi
   else
     # Extract the first word of "g77", so it can be a program name with args.
 set dummy g77; ac_word=$2
-echo "$as_me:3125: checking for $ac_word" >&5
+echo "$as_me:3295: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
 if test "${ac_cv_path_fortran_g77+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -3139,7 +3309,7 @@ for ac_dir in $ac_dummy; do
   test -z "$ac_dir" && ac_dir=.
   if $as_executable_p "$ac_dir/$ac_word"; then
    ac_cv_path_fortran_g77="$ac_dir/$ac_word"
-   echo "$as_me:3142: found $ac_dir/$ac_word" >&5
+   echo "$as_me:3312: found $ac_dir/$ac_word" >&5
    break
 fi
 done
@@ -3150,17 +3320,17 @@ fi
 fortran_g77=$ac_cv_path_fortran_g77
 
 if test -n "$fortran_g77"; then
-  echo "$as_me:3153: result: $fortran_g77" >&5
+  echo "$as_me:3323: result: $fortran_g77" >&5
 echo "${ECHO_T}$fortran_g77" >&6
 else
-  echo "$as_me:3156: result: no" >&5
+  echo "$as_me:3326: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi
 
     if test ! -z "$fortran_g77"; then
       fortran_ftn="g77"
     else
-      { { echo "$as_me:3163: error: \"Require f77 or g77 to enable RKsuite.\"" >&5
+      { { echo "$as_me:3333: error: \"Require f77 or g77 to enable RKsuite.\"" >&5
 echo "$as_me: error: \"Require f77 or g77 to enable RKsuite.\"" >&2;}
    { (exit 1); exit 1; }; }
     fi
@@ -3177,18 +3347,18 @@ echo "$as_me: error: \"Require f77 or g77 to enable RKsuite.\"" >&2;}
     OMU_INTDASPK_C="Omu_IntDASPK.C"
     DASPK="daspk"
     DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
-    echo "$as_me:3180: result: \"enabling DASPK\"" >&5
+    echo "$as_me:3350: result: \"enabling DASPK\"" >&5
 echo "${ECHO_T}\"enabling DASPK\"" >&6
   fi
 
   # default settings with RKsuite
   OMU_INTRKSUITE_C="Omu_IntRKsuite.C"
   RKSUITE_O="`pwd`/rksuite/rksuite.o"
-  echo "$as_me:3187: result: \"enabling RKsuite\"" >&5
+  echo "$as_me:3357: result: \"enabling RKsuite\"" >&5
 echo "${ECHO_T}\"enabling RKsuite\"" >&6
 
   # try to figure out Fortran environment
-  echo "$as_me:3191: checking for pow_dd in -lf2c" >&5
+  echo "$as_me:3361: checking for pow_dd in -lf2c" >&5
 echo $ECHO_N "checking for pow_dd in -lf2c... $ECHO_C" >&6
 if test "${ac_cv_lib_f2c_pow_dd+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -3196,7 +3366,7 @@ else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lf2c  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
-#line 3199 "configure"
+#line 3369 "configure"
 #include "confdefs.h"
 
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -3215,16 +3385,16 @@ pow_dd ();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:3218: \"$ac_link\"") >&5
+if { (eval echo "$as_me:3388: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:3221: \$? = $ac_status" >&5
+  echo "$as_me:3391: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:3224: \"$ac_try\"") >&5
+  { (eval echo "$as_me:3394: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:3227: \$? = $ac_status" >&5
+  echo "$as_me:3397: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   ac_cv_lib_f2c_pow_dd=yes
 else
@@ -3235,7 +3405,7 @@ fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:3238: result: $ac_cv_lib_f2c_pow_dd" >&5
+echo "$as_me:3408: result: $ac_cv_lib_f2c_pow_dd" >&5
 echo "${ECHO_T}$ac_cv_lib_f2c_pow_dd" >&6
 if test $ac_cv_lib_f2c_pow_dd = yes; then
   fortran_lib=f2c
@@ -3243,7 +3413,7 @@ else
   fortran_lib=""
 fi
 
-  echo "$as_me:3246: checking for pow_dd in -lg2c" >&5
+  echo "$as_me:3416: checking for pow_dd in -lg2c" >&5
 echo $ECHO_N "checking for pow_dd in -lg2c... $ECHO_C" >&6
 if test "${ac_cv_lib_g2c_pow_dd+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -3251,7 +3421,7 @@ else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lg2c  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
-#line 3254 "configure"
+#line 3424 "configure"
 #include "confdefs.h"
 
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -3270,16 +3440,16 @@ pow_dd ();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:3273: \"$ac_link\"") >&5
+if { (eval echo "$as_me:3443: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:3276: \$? = $ac_status" >&5
+  echo "$as_me:3446: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:3279: \"$ac_try\"") >&5
+  { (eval echo "$as_me:3449: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:3282: \$? = $ac_status" >&5
+  echo "$as_me:3452: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   ac_cv_lib_g2c_pow_dd=yes
 else
@@ -3290,14 +3460,14 @@ fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:3293: result: $ac_cv_lib_g2c_pow_dd" >&5
+echo "$as_me:3463: result: $ac_cv_lib_g2c_pow_dd" >&5
 echo "${ECHO_T}$ac_cv_lib_g2c_pow_dd" >&6
 if test $ac_cv_lib_g2c_pow_dd = yes; then
   fortran_lib=g2c
 fi
 
   if test "${fortran_f77}" = "f77"; then
-    echo "$as_me:3300: checking for pow_dd in -lftn" >&5
+    echo "$as_me:3470: checking for pow_dd in -lftn" >&5
 echo $ECHO_N "checking for pow_dd in -lftn... $ECHO_C" >&6
 if test "${ac_cv_lib_ftn_pow_dd+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -3305,7 +3475,7 @@ else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lftn  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
-#line 3308 "configure"
+#line 3478 "configure"
 #include "confdefs.h"
 
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -3324,16 +3494,16 @@ pow_dd ();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:3327: \"$ac_link\"") >&5
+if { (eval echo "$as_me:3497: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:3330: \$? = $ac_status" >&5
+  echo "$as_me:3500: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:3333: \"$ac_try\"") >&5
+  { (eval echo "$as_me:3503: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:3336: \$? = $ac_status" >&5
+  echo "$as_me:3506: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   ac_cv_lib_ftn_pow_dd=yes
 else
@@ -3344,7 +3514,7 @@ fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:3347: result: $ac_cv_lib_ftn_pow_dd" >&5
+echo "$as_me:3517: result: $ac_cv_lib_ftn_pow_dd" >&5
 echo "${ECHO_T}$ac_cv_lib_ftn_pow_dd" >&6
 if test $ac_cv_lib_ftn_pow_dd = yes; then
   fortran_lib=ftn
@@ -3373,7 +3543,7 @@ fi
 # 	Configure support for MEX
 # -----------------------------------------------------------------------
 
-echo "$as_me:3376: checking --enable-mex" >&5
+echo "$as_me:3546: checking --enable-mex" >&5
 echo $ECHO_N "checking --enable-mex... $ECHO_C" >&6
 # Check whether --enable-mex or --disable-mex was given.
 if test "${enable_mex+set}" = set; then
@@ -3382,7 +3552,7 @@ if test "${enable_mex+set}" = set; then
 else
   omu_mex=no
 fi;
-echo "$as_me:3385: result: $omu_mex" >&5
+echo "$as_me:3555: result: $omu_mex" >&5
 echo "${ECHO_T}$omu_mex" >&6
 
 MEX_SRCS=""
@@ -3393,7 +3563,7 @@ MEX_LIBDIR=""
 
 if test "$omu_mex" != no; then
 
-  echo "$as_me:3396: checking --with-matlab" >&5
+  echo "$as_me:3566: checking --with-matlab" >&5
 echo $ECHO_N "checking --with-matlab... $ECHO_C" >&6
 
 # Check whether --with-matlab or --without-matlab was given.
@@ -3401,10 +3571,10 @@ if test "${with_matlab+set}" = set; then
   withval="$with_matlab"
   with_matlab=$withval
 fi;
-  echo "$as_me:3404: result: \"$with_matlab\"" >&5
+  echo "$as_me:3574: result: \"$with_matlab\"" >&5
 echo "${ECHO_T}\"$with_matlab\"" >&6
 
-  echo "$as_me:3407: checking --with-matlab-libs" >&5
+  echo "$as_me:3577: checking --with-matlab-libs" >&5
 echo $ECHO_N "checking --with-matlab-libs... $ECHO_C" >&6
 
 # Check whether --with-matlab-libs or --without-matlab-libs was given.
@@ -3412,7 +3582,7 @@ if test "${with_matlab_libs+set}" = set; then
   withval="$with_matlab_libs"
   with_matlab_libs=$withval
 fi;
-  echo "$as_me:3415: result: \"$with_matlab_libs\"" >&5
+  echo "$as_me:3585: result: \"$with_matlab_libs\"" >&5
 echo "${ECHO_T}\"$with_matlab_libs\"" >&6
 
   if test ! -z "${with_matlab}"; then
@@ -3426,7 +3596,7 @@ echo "${ECHO_T}\"$with_matlab_libs\"" >&6
     fi
   fi
   if test -z "${MEX_LIBDIR}"; then
-    { { echo "$as_me:3429: error: for --enable-mex need --with-matlab and --with-matlab-libs" >&5
+    { { echo "$as_me:3599: error: for --enable-mex need --with-matlab and --with-matlab-libs" >&5
 echo "$as_me: error: for --enable-mex need --with-matlab and --with-matlab-libs" >&2;}
    { (exit 1); exit 1; }; }
   fi
@@ -3439,7 +3609,7 @@ fi
 # defaults to disable GNU malloc
 GMALLOC_O=""
 
-echo "$as_me:3442: checking --enable-gmalloc" >&5
+echo "$as_me:3612: checking --enable-gmalloc" >&5
 echo $ECHO_N "checking --enable-gmalloc... $ECHO_C" >&6
 # Check whether --enable-gmalloc or --disable-gmalloc was given.
 if test "${enable_gmalloc+set}" = set; then
@@ -3448,12 +3618,12 @@ if test "${enable_gmalloc+set}" = set; then
 else
   odc_gmalloc=no
 fi;
-echo "$as_me:3451: result: $odc_gmalloc" >&5
+echo "$as_me:3621: result: $odc_gmalloc" >&5
 echo "${ECHO_T}$odc_gmalloc" >&6
 
 if test "$odc_gmalloc" = no; then
-  echo "$as_me:3455: checking if malloc returns NULL" >&5
-echo $ECHO_N "checking if malloc returns NULL... $ECHO_C" >&6
+  echo "$as_me:3625: checking \"for malloc\(0\) == NULL\"" >&5
+echo $ECHO_N "checking \"for malloc\(0\) == NULL\"... $ECHO_C" >&6
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3464,7 +3634,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   odc_gmalloc=yes
 else
   cat >conftest.$ac_ext <<_ACEOF
-#line 3467 "configure"
+#line 3637 "configure"
 #include "confdefs.h"
 
   #include <stdlib.h>
@@ -3477,15 +3647,15 @@ else
 
 _ACEOF
 rm -f conftest$ac_exeext
-if { (eval echo "$as_me:3480: \"$ac_link\"") >&5
+if { (eval echo "$as_me:3650: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:3483: \$? = $ac_status" >&5
+  echo "$as_me:3653: \$? = $ac_status" >&5
   (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:3485: \"$ac_try\"") >&5
+  { (eval echo "$as_me:3655: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:3488: \$? = $ac_status" >&5
+  echo "$as_me:3658: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   odc_gmalloc=no
 else
@@ -3496,7 +3666,7 @@ odc_gmalloc=yes
 fi
 rm -f core core.* *.core conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
-  echo "$as_me:3499: result: \"$odc_gmalloc\"" >&5
+  echo "$as_me:3669: result: \"$odc_gmalloc\"" >&5
 echo "${ECHO_T}\"$odc_gmalloc\"" >&6
 fi
 if test "$odc_gmalloc" != no; then
@@ -3504,7 +3674,7 @@ if test "$odc_gmalloc" != no; then
 fi
 
 if test "$GMALLOC_O" != ""; then
-  echo "$as_me:3507: result: \"enabling GNU malloc\"" >&5
+  echo "$as_me:3677: result: \"enabling GNU malloc\"" >&5
 echo "${ECHO_T}\"enabling GNU malloc\"" >&6
 fi
 
@@ -3512,7 +3682,7 @@ fi
 # 	Configure support for CUTE
 # -----------------------------------------------------------------------
 
-echo "$as_me:3515: checking --enable-cute" >&5
+echo "$as_me:3685: checking --enable-cute" >&5
 echo $ECHO_N "checking --enable-cute... $ECHO_C" >&6
 # Check whether --enable-cute or --disable-cute was given.
 if test "${enable_cute+set}" = set; then
@@ -3521,7 +3691,7 @@ if test "${enable_cute+set}" = set; then
 else
   hqp_cute=no
 fi;
-echo "$as_me:3524: result: $hqp_cute" >&5
+echo "$as_me:3694: result: $hqp_cute" >&5
 echo "${ECHO_T}$hqp_cute" >&6
 
 if test "$hqp_cute" != no; then
@@ -3535,7 +3705,7 @@ fi
 # 	Configure support for Ascend
 # -----------------------------------------------------------------------
 
-echo "$as_me:3538: checking --enable-ascend" >&5
+echo "$as_me:3708: checking --enable-ascend" >&5
 echo $ECHO_N "checking --enable-ascend... $ECHO_C" >&6
 # Check whether --enable-ascend or --disable-ascend was given.
 if test "${enable_ascend+set}" = set; then
@@ -3544,7 +3714,7 @@ if test "${enable_ascend+set}" = set; then
 else
   hqp_ascend=no
 fi;
-echo "$as_me:3547: result: $hqp_ascend" >&5
+echo "$as_me:3717: result: $hqp_ascend" >&5
 echo "${ECHO_T}$hqp_ascend" >&6
 
 if test "$hqp_ascend" != no; then
@@ -3560,7 +3730,7 @@ fi
 # 	Produce outputs
 # -----------------------------------------------------------------------
 
-ac_config_files="$ac_config_files makedefs makedirs odc/Makefile hqp_docp/Makefile doc/Doxyfile"
+ac_config_files="$ac_config_files makedefs makedirs odc/Makefile hqp_docp/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -3670,7 +3840,7 @@ rm -f confdef2opt.sed
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files $CONFIG_STATUS"
-{ echo "$as_me:3673: creating $CONFIG_STATUS" >&5
+{ echo "$as_me:3843: creating $CONFIG_STATUS" >&5
 echo "$as_me: creating $CONFIG_STATUS" >&6;}
 cat >$CONFIG_STATUS <<_ACEOF
 #! $SHELL
@@ -3838,7 +4008,7 @@ cat >>$CONFIG_STATUS <<\EOF
     echo "$ac_cs_version"; exit 0 ;;
   --he | --h)
     # Conflict between --help and --header
-    { { echo "$as_me:3841: error: ambiguous option: $1
+    { { echo "$as_me:4011: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -3857,7 +4027,7 @@ Try \`$0 --help' for more information." >&2;}
     ac_need_defaults=false;;
 
   # This is an error.
-  -*) { { echo "$as_me:3860: error: unrecognized option: $1
+  -*) { { echo "$as_me:4030: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -3896,8 +4066,7 @@ do
   "makedirs" ) CONFIG_FILES="$CONFIG_FILES makedirs" ;;
   "odc/Makefile" ) CONFIG_FILES="$CONFIG_FILES odc/Makefile" ;;
   "hqp_docp/Makefile" ) CONFIG_FILES="$CONFIG_FILES hqp_docp/Makefile" ;;
-  "doc/Doxyfile" ) CONFIG_FILES="$CONFIG_FILES doc/Doxyfile" ;;
-  *) { { echo "$as_me:3900: error: invalid argument: $ac_config_target" >&5
+  *) { { echo "$as_me:4069: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -4152,7 +4321,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:4155: creating $ac_file" >&5
+    { echo "$as_me:4324: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -4170,7 +4339,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:4173: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:4342: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -4183,7 +4352,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:4186: error: cannot find input file: $f" >&5
+           { { echo "$as_me:4355: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
