@@ -1,3 +1,11 @@
+2004-10-06  <rfranke>
+
+	* configure.in, configure:
+	  change version to 1.9.2, add tag release-1-9-2
+
+	* hxi/simstruc.h:
+	  adapt to MATLAB 7.0 (R14)
+
 2004-08-23    <rfranke>
 
 	* omu/Prg_SFunction*
