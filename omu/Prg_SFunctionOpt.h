@@ -278,6 +278,218 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   ~Prg_SFunctionOpt();		///< destructor
 
   char *name() {return "SFunctionOpt";} ///< name SFunctionOpt
+
+  /**
+   * @name Access methods for program specific members (If prefix: prg_)
+   */
+  //@{
+  /// Numbers of fixed control inputs at begin of time horizon (default: 0)
+  const IVECP nus_fixed() const {return _nus_fixed;}
+  /// set numbers of fixed constrol inputs
+  void set_nus_fixed(const IVECP v) {iv_copy_elements(v, _nus_fixed);}
+
+  /// indicate if problem is treated with one stage per time interval
+  bool multistage() const {return _multistage;}
+  /// set multistage flag
+  void set_multistage(bool val) {_multistage = val;}
+
+  //@}
+
+  /**
+   * @name Read methods for model specific members (no If prefix).
+   * Note that the prefix mdl_ is omitted in the detailed mathematical
+   * problem description.
+   */
+  //@{
+  /// indicate optimized inputs
+  const IVECP mdl_u_active() const {return _mdl_u.active;}
+
+  /// nominal input values (for scaling)
+  const VECP mdl_u_nominal() const {return _mdl_u_nominal;}
+
+  /// lower bounds for optimized model inputs
+  const VECP mdl_u_min() const {return _mdl_u.min;}
+
+  /// upper bounds for optimized model inputs
+  const VECP mdl_u_max() const {return _mdl_u.max;}
+
+  /// reference values for optimized model inputs (default: 0)
+  const VECP mdl_u_ref() const {return _mdl_u.ref;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_u_weight1() const {return _mdl_u.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_u_weight2() const {return _mdl_u.weight2;}
+
+  /// lower bounds for rates of change of optimized model inputs
+  const VECP mdl_der_u_min() const {return _mdl_der_u.min;}
+
+  /// upper bounds for rates of change of optimized model inputs
+  const VECP mdl_der_u_max() const {return _mdl_der_u.max;}
+
+  /// reference values for rates of change of optimized inputs (default: 0)
+  const VECP mdl_der_u_ref() const {return _mdl_der_u.ref;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_der_u_weight1() const {return _mdl_der_u.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_der_u_weight2() const {return _mdl_der_u.weight2;}
+
+  /// bias for outputs
+  const VECP mdl_y_bias() const {return _mdl_y_bias;}
+
+  /// nominal output values (for scaling)
+  const VECP mdl_y_nominal() const {return _mdl_y_nominal;}
+
+  /// lower bounds for model outputs
+  const VECP mdl_y_min() const {return _mdl_y.min;}
+
+  /// upper bounds for model outputs
+  const VECP mdl_y_max() const {return _mdl_y.max;}
+
+  /// reference values for model outputs (default: 0)
+  const VECP mdl_y_ref() const {return _mdl_y.ref;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_y_weight1() const {return _mdl_y.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_y_weight2() const {return _mdl_y.weight2;}
+
+  /// soft lower bounds for model outputs
+  const VECP mdl_y_soft_min() const {return _mdl_y_soft.min;}
+
+  /// soft upper bounds for model outputs
+  const VECP mdl_y_soft_max() const {return _mdl_y_soft.max;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_y_soft_weight1() const {return _mdl_y_soft.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_y_soft_weight2() const {return _mdl_y_soft.weight2;}
+
+  /// lower bounds for model outputs at final time
+  const VECP mdl_yf_min() const {return _mdl_yf.min;}
+
+  /// upper bounds for model outputs at final time
+  const VECP mdl_yf_max() const {return _mdl_yf.max;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_yf_weight1() const {return _mdl_yf.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_yf_weight2() const {return _mdl_yf.weight2;}
+
+  /// nominal state values (for scaling)
+  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
+
+  /// model inputs (size: KK+1 . mdl_nu)
+  const MATP mdl_us() const {return _mdl_us;}
+
+  /// model outputs (read only, size: KK+1 . mdl_ny)
+  const MATP mdl_ys() const {return _mdl_ys;}
+
+  //@}
+  /**
+   * @name Write methods for model specific members (no If prefix).
+   */
+  //@{
+  /// set optimized inputs
+  void set_mdl_u_active(const IVECP v) {iv_copy_elements(v, _mdl_u.active);}
+
+  /// set nominal inputs
+  void set_mdl_u_nominal(const VECP v) {v_copy_elements(v, _mdl_u_nominal);}
+
+  /// set lower bounds for model inputs
+  void set_mdl_u_min(const VECP v) {v_copy_elements(v, _mdl_u.min);}
+
+  /// set upper bounds for model inputs
+  void set_mdl_u_max(const VECP v) {v_copy_elements(v, _mdl_u.max);}
+
+  /// set reference model inputs
+  void set_mdl_u_ref(const VECP v) {v_copy_elements(v, _mdl_u.ref);}
+
+  /// set linear weight
+  void set_mdl_u_weight1(const VECP v) {v_copy_elements(v, _mdl_u.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_u_weight2(const VECP v) {v_copy_elements(v, _mdl_u.weight2);}
+
+  /// set lower bounds for rates of change of model inputs
+  void set_mdl_der_u_min(const VECP v) {v_copy_elements(v, _mdl_der_u.min);}
+
+  /// set upper bounds for rates of change of model inputs
+  void set_mdl_der_u_max(const VECP v) {v_copy_elements(v, _mdl_der_u.max);}
+
+  /// set reference rates of change of model inputs
+  void set_mdl_der_u_ref(const VECP v) {v_copy_elements(v, _mdl_der_u.ref);}
+
+  /// set linear weight
+  void set_mdl_der_u_weight1(const VECP v)
+  {v_copy_elements(v, _mdl_der_u.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_der_u_weight2(const VECP v)
+  {v_copy_elements(v, _mdl_der_u.weight2);}
+
+  /// set output bias
+  void set_mdl_y_bias(const VECP v) {v_copy_elements(v, _mdl_y_bias);}
+
+  /// set nominal outputs
+  void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
+
+  /// set lower bounds for model outputs
+  void set_mdl_y_min(const VECP v) {v_copy_elements(v, _mdl_y.min);}
+
+  /// set upper bounds for model outputs
+  void set_mdl_y_max(const VECP v) {v_copy_elements(v, _mdl_y.max);}
+
+  /// set reference model outputs
+  void set_mdl_y_ref(const VECP v) {v_copy_elements(v, _mdl_y.ref);}
+
+  /// set linear weight
+  void set_mdl_y_weight1(const VECP v) {v_copy_elements(v, _mdl_y.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_y_weight2(const VECP v) {v_copy_elements(v, _mdl_y.weight2);}
+
+  /// set soft lower bounds for model outputs
+  void set_mdl_y_soft_min(const VECP v) {v_copy_elements(v, _mdl_y_soft.min);}
+
+  /// set soft upper bounds for model outputs
+  void set_mdl_y_soft_max(const VECP v) {v_copy_elements(v, _mdl_y_soft.max);}
+
+  /// set linear weight
+  void set_mdl_y_soft_weight1(const VECP v)
+  {v_copy_elements(v, _mdl_y_soft.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_y_soft_weight2(const VECP v)
+  {v_copy_elements(v, _mdl_y_soft.weight2);}
+
+  /// set lower bounds for final model outputs
+  void set_mdl_yf_min(const VECP v) {v_copy_elements(v, _mdl_yf.min);}
+
+  /// set upper bounds for final model outputs
+  void set_mdl_yf_max(const VECP v) {v_copy_elements(v, _mdl_yf.max);}
+
+  /// set linear weight
+  void set_mdl_yf_weight1(const VECP v) {v_copy_elements(v, _mdl_yf.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_yf_weight2(const VECP v) {v_copy_elements(v, _mdl_yf.weight2);}
+
+  /// set nominal states
+  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
+
+  /// set model inputs
+  void set_mdl_us(const MATP v) {m_copy_elements(v, _mdl_us);}
+
+  /// model outputs are read only
+
+  //@}
 };  
 
 #endif

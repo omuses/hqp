@@ -41,6 +41,14 @@
 #undef assert
 #define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
 
+#define GET_SET_CB(vartype, prefix, name) \
+  GET_CB(vartype, prefix, name), \
+  IF_SET_CB(vartype, Prg_SFunctionOpt, set_##name)
+
+#define GET_CB(vartype, prefix, name) \
+  prefix#name, \
+  IF_GET_CB(vartype, Prg_SFunctionOpt, name)
+
 IF_CLASS_DEFINE("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -110,45 +118,49 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_ys = m_get(_KK+1, _mdl_ny);
 
   _ifList.append(new If_Int("prg_sps", &_sps));
+  _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
 
-  _ifList.append(new If_IntVec("mdl_u_active", &_mdl_u.active));
-  _ifList.append(new If_RealVec("mdl_u_nominal", &_mdl_u_nominal));
-  _ifList.append(new If_RealVec("mdl_u_min", &_mdl_u.min));
-  _ifList.append(new If_RealVec("mdl_u_max", &_mdl_u.max));
-  _ifList.append(new If_RealVec("mdl_u_ref", &_mdl_u.ref));
-  _ifList.append(new If_RealVec("mdl_u_weight1", &_mdl_u.weight1));
-  _ifList.append(new If_RealVec("mdl_u_weight2", &_mdl_u.weight2));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_active)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_ref)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_weight2)));
 
-  _ifList.append(new If_RealVec("mdl_der_u_min", &_mdl_der_u.min));
-  _ifList.append(new If_RealVec("mdl_der_u_max", &_mdl_der_u.max));
-  _ifList.append(new If_RealVec("mdl_der_u_ref", &_mdl_der_u.ref));
-  _ifList.append(new If_RealVec("mdl_der_u_weight1", &_mdl_der_u.weight1));
-  _ifList.append(new If_RealVec("mdl_der_u_weight2", &_mdl_der_u.weight2));
-  _ifList.append(new If_IntVec("prg_nus_fixed", &_nus_fixed));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_u_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_u_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_u_ref)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+					   mdl_der_u_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+					   mdl_der_u_weight2)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "prg_", nus_fixed)));
 
-  _ifList.append(new If_RealVec("mdl_y_nominal", &_mdl_y_nominal));
-  _ifList.append(new If_RealVec("mdl_y_bias", &_mdl_y_bias));
-  _ifList.append(new If_RealVec("mdl_y_min", &_mdl_y.min));
-  _ifList.append(new If_RealVec("mdl_y_max", &_mdl_y.max));
-  _ifList.append(new If_RealVec("mdl_y_ref", &_mdl_y.ref));
-  _ifList.append(new If_RealVec("mdl_y_weight1", &_mdl_y.weight1));
-  _ifList.append(new If_RealVec("mdl_y_weight2", &_mdl_y.weight2));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_bias)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_ref)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_weight2)));
 
-  _ifList.append(new If_RealVec("mdl_y_soft_min", &_mdl_y_soft.min));
-  _ifList.append(new If_RealVec("mdl_y_soft_max", &_mdl_y_soft.max));
-  _ifList.append(new If_RealVec("mdl_y_soft_weight1", &_mdl_y_soft.weight1));
-  _ifList.append(new If_RealVec("mdl_y_soft_weight2", &_mdl_y_soft.weight2));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_soft_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_soft_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+					   mdl_y_soft_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+					   mdl_y_soft_weight2)));
 
-  _ifList.append(new If_RealVec("mdl_yf_min", &_mdl_yf.min));
-  _ifList.append(new If_RealVec("mdl_yf_max", &_mdl_yf.max));
-  _ifList.append(new If_RealVec("mdl_yf_weight1", &_mdl_yf.weight1));
-  _ifList.append(new If_RealVec("mdl_yf_weight2", &_mdl_yf.weight2));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_weight2)));
 
-  _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
 
-  _ifList.append(new If_RealMat("mdl_us", &_mdl_us));
-  _ifList.append(new If_RealMat("mdl_ys", &_mdl_ys));
-  _ifList.append(new If_Bool("prg_multistage", &_multistage));
+  _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_us)));
+  _ifList.append(new If_RealMat(GET_CB(const MATP, "", mdl_ys)));
 }
 
 //--------------------------------------------------------------------------
