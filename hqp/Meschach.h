@@ -1,5 +1,6 @@
-/*
- * Meschach.h -- Meschach declarations and some extensions
+/**
+ * @file Meschach.h
+ *   Meschach declarations and some extensions
  *
  * rf, 8/18/94
  */
@@ -40,6 +41,18 @@ extern "C" {
 #include <meschach/sparse.h>
 }
 
+#undef Inf
+/** Infinity for non existing constraints and numerical overflow */
+const Real Inf = HUGE_VAL;
+
+/** check if a number is finite */
+inline bool is_finite(Real x)
+{
+  return -Inf < x && x < Inf;
+}
+
+/** @name Additional Meschach functions */
+//@{
 extern IVEC *iv_set(IVEC *, int);
 extern IVEC *iv_part(IVEC *iv, int offs, int dim, IVEC *header);
 extern IVEC *iv_expand(IVEC *iv, int nel, int granul);
@@ -78,11 +91,14 @@ extern void sprow_zero(SPROW *row);
 
 extern SPMAT *spLUfactor2(SPMAT *A, PERM *px);
 extern SPMAT *sp_transp(const SPMAT *, SPMAT *);
+//@}
 
-/*
- * BKP factor and solve routines
+/**
+ * @name BKP factor and solve routines
+ *   Reference: J.R.Bunch, L.Kaufman, and B.N.Parlett:
+ *      Decomposition of a Symmetric Matrix, Numer Math 27, 95--109 (1976).
  */
-
+//@{
 extern MAT *matBKPfactor(MAT *A, PERM *pivot);
 extern VEC *matBKPsolve(const MAT *A, const PERM *pivot,
 			const VEC *b, VEC *x);
@@ -94,12 +110,13 @@ extern VEC *bdBKPsolve(const BAND *A, const PERM *pivot, const PERM *relief,
 extern SPMAT *spBKPfactor(SPMAT *, PERM *pivot, Real tol);
 extern VEC *spBKPsolve(const SPMAT *, const PERM *pivot,
 		       const VEC *b, VEC *x);
+//@}
 
-/*
- * routines for copying sparse matrices into sparse/band matrices
- *  -- "sym" means, that only the upper part of a symmetric matrix is filled
+/**
+ * @name Routines for copying sparse matrices into sparse/band matrices
+ *   ("sym" means that only the upper part of a symmetric matrix is filled)
  */
-
+//@{
 extern void sp_into_sp(const SPMAT *src, Real s, SPMAT *dst,
 		       const PERM *px, int i_offs, int j_offs);
 extern void spT_into_sp(const SPMAT *src, Real s, SPMAT *dst,
@@ -115,6 +132,7 @@ extern void sp_into_bd(const SPMAT *sp, Real s, BAND *bd,
 		       const PERM *px, int i_offs, int j_offs);
 extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
 			const PERM *px, int i_offs, int j_offs);
+//@}
 
 // overload operators for Meschach data structures (esp. operator [])
 // idea: 
@@ -128,6 +146,7 @@ extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
 //     (VEC *v_add(VEC *a, VEC *b, VEC *out) instead of
 //      VEC *v_add(const VEC *a, const VEC *b, VEC *out)
 
+/** Bounds check for wrappers of Meschach types if compiled with DEBUG flag */
 #ifdef DEBUG
 #define MESCH_BOUNDS_CHECK(i, first_index, next_index) \
    assert((int)(first_index) <= (int)(i) && (int)(i) < (int)(next_index))
@@ -135,6 +154,7 @@ extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
 #define MESCH_BOUNDS_CHECK(i, first_index, next_index)
 #endif
 
+/** NULL check for wrappers of Meschach types if compiled with DEBUG flag */
 #ifdef DEBUG
 #define MESCH_NULL_CHECK(ptr) \
    assert (ptr != NULL)
@@ -142,20 +162,23 @@ extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
 #define MESCH_NULL_CHECK(ptr)
 #endif
 
-/** Wrapper for VEC*. */
+/** Wrapper for VEC* */
 class VECP {
 
  protected:
-  VEC *_v;
+  VEC *_v;	///< wrapped VEC*
 
  public:
-  // constructors and assignments
+  /// @name Constructors and assignments
+  //@{
   VECP() {_v = VNULL;}
   VECP(VEC *cv) {_v = cv;}
 
   VEC *operator = (VEC *nv) {_v = nv; return _v;}
+  //@}
 
-  // overloaded operators
+  /// @name Operators for VECP
+  //@{
   Real &operator [] (int j)
     {
       MESCH_NULL_CHECK(_v);
@@ -166,8 +189,10 @@ class VECP {
   operator VEC*() {return _v;}
   // additional conversion to avoid warning of gcc2.95
   operator const VEC*() {return _v;} 
+  //@}
 
-  // operators for const VECP
+  /// @name Operators for const VECP
+  //@{
   const Real &operator [] (int j) const
     {
       MESCH_NULL_CHECK(_v);
@@ -176,22 +201,26 @@ class VECP {
     }
   const VEC *operator -> () const {return _v;}
   operator const VEC*() const {return _v;}
+  //@}
 };
 
-/** Wrapper for IVEC*. */
+/** Wrapper for IVEC* */
 class IVECP {
 
  protected:
-  IVEC *_v;
+  IVEC *_v;	///< wrapped IVEC*
 
  public:
-  // constructors and assignment
+  /// @name Constructors and assignment
+  //@{
   IVECP() {_v = IVNULL;}
   IVECP(IVEC *cv) {_v = cv;}
 
   IVEC *operator = (IVEC *nv) {_v = nv; return _v;}
+  //@}
 
-  // operators
+  /// @name Operators for IVECP
+  //@{
   int &operator [] (int j)
     {
       MESCH_NULL_CHECK(_v);
@@ -202,8 +231,10 @@ class IVECP {
   operator IVEC*() {return _v;}
   // additional conversion to avoid warning of gcc2.95
   operator const IVEC*() {return _v;}
+  //@}
 
-  // operators for const IVECP
+  /// @name Operators for const IVECP
+  //@{
   const int &operator [] (int j) const
     {
       MESCH_NULL_CHECK(_v);
@@ -212,22 +243,26 @@ class IVECP {
     }
   const IVEC *operator -> () const {return _v;}
   operator const IVEC*() const {return _v;}
+  //@}
 };
 
-/** Wrapper for PERM*. */
+/** Wrapper for PERM* */
 class PERMP {
 
  protected:
-  PERM *_v;
+  PERM *_v; 	///< wrapped PERMP
 
  public:
-  // constructors and assignment
+  /// @name Constructors and assignments
+  //@{
   PERMP() {_v = PNULL;}
   PERMP(PERM *cv) {_v = cv;}
 
   PERM *operator = (PERM *nv) {_v = nv; return _v;}
+  //@}
 
-  // operators
+  /// @name Operators for PERMP
+  //@{
   u_int &operator [] (int j)
     {
       MESCH_NULL_CHECK(_v);
@@ -238,8 +273,10 @@ class PERMP {
   operator PERM*() {return _v;}
   // additional conversion to avoid warning of gcc2.95
   operator const PERM*() {return _v;}
+  //@}
 
-  // operators for const PERMP
+  /// @name Operators for const PERMP
+  //@{
   const u_int &operator [] (int j) const
     {
       MESCH_NULL_CHECK(_v);
@@ -248,47 +285,60 @@ class PERMP {
     }
   const PERM *operator -> () const {return _v;}
   operator const PERM*() const {return _v;}
+  //@}
 };
 
-/** Wrapper for row in MAT*. */
+/** Wrapper for row in MAT* that is used if compiled with DEBUG flag */
 class MATROWP {
 
  protected:
-  Real *_row;
-  int _dim;
+  Real *_row; 	///< pointer to data
+  int _dim;	///< dimension of row
 
  public:
+  /// @name Constructors and assignments
+  //@{
   MATROWP(Real *row, int dim) {_row = row; _dim = dim;}
+  //@}
 
+  /// @name Operators for MATROWP
+  //@{
   Real &operator [] (int j)
     {
       MESCH_BOUNDS_CHECK(j, 0, _dim);
       return _row[j];
     }
   operator Real*() {return _row;}
+  //@}
 
+  /// @name Operators for const MATROWP
+  //@{
   const Real &operator [] (int j) const
     {
       MESCH_BOUNDS_CHECK(j, 0, _dim);
       return _row[j];
     }
   operator const Real*() const {return _row;}
+  //@}
 };
 
-/** Wrapper for MAT*. */
+/** Wrapper for MAT* */
 class MATP {
 
  protected:
-  MAT *_m;
+  MAT *_m; 	///< wrapped MAT*
 
  public:
-  // constructors and assignment
+  /// @name Constructors and assignments
+  //@{
   MATP() {_m = MNULL;}
   MATP(MAT *cm) {_m = cm;}
 
   MAT *operator = (MAT *nm) {_m = nm; return _m;}
+  //@}
 
-  // operators
+  /// @name Operators for MATP
+  //@{
 # ifdef DEBUG
   MATROWP operator [] (int i)
     {
@@ -306,8 +356,10 @@ class MATP {
   operator MAT*() {return _m;}
   // additional conversion to avoid warning of gcc2.95
   operator const MAT*() {return _m;}
+  //@}
 
-  // operators for const MATP
+  /// @name Operators for const MATP
+  //@{
 # ifdef DEBUG
   const MATROWP operator [] (int i) const
     {
@@ -323,9 +375,14 @@ class MATP {
 # endif
   const MAT *operator -> () const {return _m;}
   operator const MAT*() const {return _m;}
+  //@}
 };
 
+/** Place holder for wrapper of SPMAT* */
 typedef SPMAT* SPMATP;
+
+/** Place holder for wrapper of BAND* */
 typedef BAND* BANDP;
+
 
 #endif

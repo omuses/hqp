@@ -128,14 +128,5 @@ extern "C" {
 			MATP Lxx, MATP Luu, MATP Lxu);
 }
 
-#undef Inf
-/** Infinity for non existing constraints and numerical overflow */
-const Real Inf = HUGE_VAL;
-
-/** check if a number is finite */
-inline bool is_finite(Real x)
-{
-  return -Inf < x && x < Inf;
-}
 
 #endif
