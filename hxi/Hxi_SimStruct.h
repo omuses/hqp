@@ -1,7 +1,7 @@
 /**
  * @file Hxi_SimStruct.h
- *   Alternative native SimStruct for compiling a Simulink(R) S-function
- *   with HQP.
+ *   Alternative native %SimStruct for compiling a Simulink(R) S-function
+ *   with Hqp.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -27,6 +27,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/** Avoid multiple inclusion */
 #if !defined(Hxi_SimStruct_H)
 #define Hxi_SimStruct_H
 
@@ -157,8 +158,10 @@
 #define ssSetChecksum3(S, val)  	HXI_NOT_IMPLEMENTED
 //@}
 
+namespace Hxi {
+
 /**
- * Alternative native SimStruct for HQP.
+ * Alternative native %SimStruct for Hqp.
  */
 class SimStruct {
 protected:
@@ -484,13 +487,13 @@ public:
   }
 
   /** Set number of states for which zero crossings may occur.
-      Note: state events are not supported by HQP. */
+      Note: state events are not supported by Hqp. */
   int_T setNumNonsampledZCs(int_T nzcs) {
     assert(nzcs == 0);
     return 0;
   }
   /** Get number of states for which zero crossings may occur.
-      Note: state events are not supported by HQP. */
+      Note: state events are not supported by Hqp. */
   int_T getNumNonsampledZCs(int_T nzcs) {
     return 0;
   }
@@ -548,13 +551,15 @@ public:
   }
 };
 
+}; // namespace Hxi
+
 /** Construct a SimStruct. */
-static SimStruct *Hxi_SimStruct_create() {
-  return new SimStruct();
+static Hxi::SimStruct *Hxi_SimStruct_create() {
+  return new Hxi::SimStruct();
 }
 
 /** Delete a SimStruct. */
-static void Hxi_SimStruct_destroy(SimStruct *S) {
+static void Hxi_SimStruct_destroy(Hxi::SimStruct *S) {
   delete S;
 }
 

@@ -2,9 +2,9 @@
  * @file Hxi_MEX_SFunction.h
  *   Interface to a Simulink(R) S-function given as binary MEX object.
  *   Several S-function methods are supported that redirect the call
- *   to the MEX object. Data is communicated through a %SimStruct.
+ *   to the MEX object. Data is communicated through a SimStruct.
  *   The two functions Hxi_SimStruct_create and Hxi_SimStruct_destroy
- *   are provided for allocating and releasing a %SimStruct.
+ *   are provided for allocating and releasing a SimStruct.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -12,7 +12,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,13 +30,15 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/** Avoid multiple inclusion */
 #if !defined(Hxi_MEX_SFunction_H)
 #define Hxi_MEX_SFunction_H
 
 #include <assert.h>
 
+/** define MATLAB_MEX_FILE prior to inclusion of simstruc.h,
+    in order to select the MEX version of SimStruct. */
 #if !defined(MATLAB_MEX_FILE)
-// MATLAB_MEX_FILE must be defined prior to inclusion of simstruc.h
 #define MATLAB_MEX_FILE 1
 #endif
 
@@ -44,14 +46,18 @@
 
 #if !defined(Hxi_MEX_SFunction_C)
 
-// redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers
+/** Redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers */
 #undef ssSetSFcnParamsCount
 #define ssSetSFcnParamsCount(S,n) \
   _ssSetSFcnParamsCount(S,n); \
   mxFree(ssGetSFcnParamsPtr(S)); \
   ssSetSFcnParamsPtr(S, (const mxArray **)mxCalloc(sizeof(mxArray *), n))
 
-// disable macros that are critical for memory management
+/** @name Unsupported macros
+  Disable macros that are critical for memory management and must
+  not be used.
+*/ 
+//@{
 #undef ssSetRWork
 #define ssSetRWork(S, rwork) ssSetRWork_cannot_be_used_with_Hxi_MEX_SFunction
 
@@ -63,13 +69,14 @@
 
 #undef ssSetTPtr
 #define ssSetTPtr(S, tptr) ssSetTPtr_cannot_be_used_with_Hxi_MEX_SFunction
+//@}
 
 #endif
 
-/** Create %SimStruct for S-function. */
+/** Create SimStruct for S-function. */
 SimStruct *Hxi_SimStruct_create();
 
-/** Realease S-function and %SimStruct. */
+/** Realease S-function and SimStruct. */
 void Hxi_SimStruct_destroy(SimStruct *S);
 
 /** @name Supported S-function methods. */

@@ -1,11 +1,16 @@
 2002-05-10    <rfranke>
 
-	* configure.in: change version to 1.8.1d
+	* hxi/simstruc.h, hxi/Hxi_SimStruct.h, hxi/Hxi_mxArray.h,
+	  hxi/Hxi_sfun_types.h, hxi/cg_sfun.h, hxi/Hxi_MEX_SFunction.h:
+	  introduce namespace Hxi for native implementations
+	  of SimStruct and mxArray
 
 	* doc/Doxyfile.in, configure.in:
 	  optionally use dot drawing tool (see www.graphviz.org)
 
 	* hxi/Hxi_MEX_SFunction.C: add support for MinGW
+
+	* configure.in: change version to 1.8.1d
 
 2002-05-06    <h_linke>
 

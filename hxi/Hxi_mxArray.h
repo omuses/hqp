@@ -1,7 +1,7 @@
 /**
  * @file Hxi_mxArray.h
- *   Alternative native mxArray for compiling a Simulink(R) S-function
- *   with HQP.
+ *   Alternative native %mxArray for compiling a Simulink(R) S-function
+ *   with Hqp. mxArray is used for passing parameters to an S-function.
  *
  * (Simulink is a registered trademarks of The MathWorks, Inc.)
  *
@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,16 +27,20 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/** Avoid multiple inclusion */
 #if !defined(Hxi_mxArray_H)
 #define Hxi_mxArray_H
 
 #include "Hxi_sfun_types.h"
 #include <vector>
 
-// data types
+/// @name Data types
+//@{ 
 #define mxREAL		0x0001
+//@}
 
-// Macros to access an mxArray (required for parameters)
+/// @name Access macros
+//@{
 #define mxCreateDoubleMatrix(m, n, ty) 	new mxArray(m, n, ty)
 #define mxDestroyArray(a) 		delete (a)
 #define mxGetPr(a) 			(a)->getPr()
@@ -50,8 +54,11 @@
 #define mxIsSparse(a) 			(a)->isSparse()
 #define mxIsComplex(a) 			(a)->isComplex()
 #define mxIsNumeric(a) 			(a)->isNumeric()
+//@}
 
-/** Alternative native mxArray for HQP. */
+namespace Hxi {
+
+/** Alternative native %mxArray for Hqp. */
 class mxArray {
 protected:
   real_T 	 	_dummy; // argument for ADOL-C memory management
@@ -119,5 +126,7 @@ public:
     return true;
   }
 };
+
+}; // namespace Hxi
 
 #endif

@@ -1,6 +1,6 @@
 /**
  * @file cg_sfun.h
- * S-function code generation include file for HQP.
+ * S-function code generation include file for Hqp.
  * Currently macros for checking optional S-function methods are defined.
  * This allows to write the same code for an inlined S-function and for 
  * an external MEX S-function.
@@ -29,6 +29,13 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/** @name Access S-function methods.
+    Get pointers to S-function methods or NULL if they are not implemented.
+    These macros shall be used to check if an S-function implements
+    optional methods.
+*/
+//@{
+
 #if defined(MDL_START)
 #define ssGetmdlStart(S) mdlStart
 #else
@@ -53,3 +60,4 @@
 #define ssGetmdlDerivatives(S) NULL
 #endif
 
+//@}

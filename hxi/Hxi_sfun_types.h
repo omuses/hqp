@@ -1,7 +1,7 @@
 /** 
  * @file Hxi_sfun_types.h
  *   Alternative native type definitions required to compile
- *   a Simulink(R) S-function with HQP.
+ *   a Simulink(R) S-function with Hqp.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -27,6 +27,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/** Avoid multiple inclusion */
 #if !defined(Hxi_sfun_types_H)
 #define Hxi_sfun_types_H
 
@@ -38,6 +39,8 @@
 #include <adouble.h>
 #define HXI_REAL_T adouble
 #endif
+
+namespace Hxi {
 
 /** Real type used in S-function. */
 typedef HXI_REAL_T real_T;
@@ -51,6 +54,8 @@ typedef unsigned uint_T;
 
 /** Character type used in S-function. */
 typedef char char_T;
+
+}; // namespace Hxi
 
 #endif
 
