@@ -449,7 +449,7 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
       // _integrator needs to be set up, e.g. as it was exchanged
       resetup_integrator();
     }
-    _integrator->init_stage(k, xk, uk, Fk);
+    _integrator->init_stage(k, xk, uk, Fk, false);
   }
 
   // initial states of stage

@@ -1,16 +1,19 @@
-/*
- * Omu_IntIMP.h --
- *   -- integrate an ODE over a stage using the implicit midpoint rule
+/**
+ * @file Omu_IntIMP.h --
+ *    integrate an ODE over a stage using the implicit midpoint rule
  *
  * E. Arnold   1999-04-12
  *             2000-05-12 _rtol, _atol -> Omu_Integrator 
  *             2000-05-30 step size control
  *             2001-08-16 prg_int_nsteps --> _stepsize
+ *             2003-01-02 modified Newton's method from Hairer/Wanner
+ *             2003-08-25 Omu_Integrator
+ *             2003-09-06 step size control by Richardson extrapolation
  *
  */
 
 /*
-    Copyright (C) 1999--2000  Eckhard Arnold
+    Copyright (C) 1999--2003  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -31,54 +34,84 @@
 #ifndef Omu_IntIMP_H
 #define Omu_IntIMP_H
 
-#include "Omu_IntODE.h"
+#include "Omu_Integrator.h"
 
-//--------------------------------------------------------------------------
-class Omu_IntIMP: public Omu_IntODE {
+/**
+ * Integrator for (stiff) ordinary differential equations (ODEs). The solver
+ * is employed internally to numerically integrate continuous-time model
+ * equations over sample periods and discrete-time stages.
+ * The implicit midpoint rule is implemented using modified Newton's method 
+ * described by Hairer/Wanner.
+ */  
+class Omu_IntIMP: public Omu_Integrator {
 
  public:
 
-  Omu_IntIMP();
-  ~Omu_IntIMP();
+    Omu_IntIMP();     ///< constructor
+    ~Omu_IntIMP();    ///< destructor
 
-  char *name() {return "IMP";}
+    char *name() {return "IMP";}
 
-  // interface routines
-  void init_stage(int k,
-		  const Omu_States &x, const Omu_Vector &u,
-		  bool sa = false);
+    // interface routines
+    virtual void init(int k,
+		      const Omu_StateVec &xc, const Omu_Vec &q,
+		      const Omu_DependentVec &Fc, bool sa);
 
-  void ode_solve(double tstart, VECP y, const VECP u, double tend);
+    virtual void solve(int kk, double tstart, double tend,
+		       Omu_StateVec &xc, Omu_StateVec &dxc, Omu_Vec &q,
+		       Omu_DependentVec &Fc);
 
  private:
 
-  void realloc();
-  void jac(double t, VECP y);
-  void step(double tstep, double dt, VECP y);
+    void resize();
+    int  step(double tstep, double dt, VECP y, MATP yq, double tol);
+    void fixedstep(double tstep, double dt, VECP y, MATP yq);
 
-  VECP		_y;
-  VECP		_u;
-  VECP		_k1;
-  VECP		_y0;
-  VECP		_res;
-  VECP		_fh;
-  VECP		_yjac;
-  VECP		_yjacp;
-  MATP		_yy;
-  MATP		_yyn;
-  PERM          *_ppivot;
-  VECP		_y1;
-  VECP		_y2;
+    VECP	  _x;
+    VECP	  _y;
+    VECP	  _k1;
+    VECP	  _y0;
+    VECP	  _res;
+    VECP	  _fh;
+    VECP	  _z;
+    VECP	  _zp;
+    VECP	  _z_old;
+    MATP	  _xs;
+    MATP	  _yy;
+    MATP	  _yyn;
+    MATP	  _yq;
+    MATP	  _yq1;
+    MATP	  _yq2;
+    MATP	  _yqq;
+    PERM          *_ppivot;
+    VECP	  _y1;
+    VECP	  _y2;
 
-  int           _npar;
-  int           _max_modnewtonsteps;
-  int           _modnewtonsteps;
-  int           _maxiters;
-  double        _hinit;
-  double        _dt;
-  int           _IMP;
+    int           _maxiters;
+    double        _hinit;
+    double        _dt;
+    double        _eta;
+    double        _kappa;
+    int           _ixgz;
+    int           _max_modnewtonsteps;
+    int           _modnewtonsteps;
+    bool          _correct_der; 
+    int           _nsing;
+    int           _max_sing;
+
+
+    void sys(double t, VECP x, VECP xp);
+    void sys_jac(double t, VECP x, VECP xp, MATP fx);
+    void sys_jac(double t, VECP x, VECP xp, MATP fx, MATP fu);
+    int lufac_jac(double gamma, double delta, MATP fx);
+
+    int              _kk;
+    Omu_Vec	     *_q_ptr;
+    Omu_SVec	     _dxc;
+    Omu_StateVec     *_xc_ptr;
+    Omu_DependentVec *_Fc_ptr;
+
 
 };  
 
 #endif
-

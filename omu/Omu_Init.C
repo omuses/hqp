@@ -67,7 +67,7 @@ static void Omu_ClassAlloc()
 #endif
   IF_CLASS_ALLOC("Dopri5", Omu_IntDopri5, Omu_Integrator);
   IF_CLASS_ALLOC("IMP", Omu_IntIMP, Omu_Integrator);
-  IF_CLASS_ALLOC("GRK4", Omu_IntIMP, Omu_Integrator);
+  IF_CLASS_ALLOC("GRK4", Omu_IntGRK4, Omu_Integrator);
   IF_CLASS_ALLOC("SDIRK", Omu_IntSDIRK, Omu_Integrator);
 #ifdef OMU_WITH_FORTRAN
   IF_CLASS_ALLOC("DASPK", Omu_IntDASPK, Omu_Integrator);

@@ -1,3 +1,15 @@
+2003-09-12    <e_arnold>
+	* meschach/matop.c, meschach/version.c:
+	  in-situ bug fix in ms_mltadd()
+	* omu/Omu_IntIMP.[hC]: 
+	  derive from Omu_Integrator, improved step-size control
+	* omu/Omu_IntGRK4.[hC]:
+	  derive from Omu_Integrator; cosmetic changes for GCC 3.3.1
+	* omu/Omu_Init.C:
+	  bug fix in Omu_ClassAlloc() (GRK4)
+	* omu/Hqp_Omuses.C
+	  cosmetic changes for GCC 3.3.1
+	
 2003-09-10    <rfranke>
 
 	* meschach/err.[hc], meschach/version.c:

@@ -26,6 +26,7 @@
  *
  * E. Arnold   2000-05-25 C++ version
  *             2003-01-03
+ *             2003-09-07 Omu_Integrator
  *
  */
 
@@ -57,6 +58,7 @@
 
 #include "Omu_IntGRK4.h"
 extern "C" {
+#include <meschach/addon_hqp.h>
 #include <meschach/matrix2.h>
 }
 
@@ -66,7 +68,6 @@ IF_CLASS_DEFINE("GRK4", Omu_IntGRK4, Omu_Integrator);
 
 Omu_IntGRK4::Omu_IntGRK4()
 {
-
     _y = v_get(1);
     _ynew = v_get(1);
     _fx = v_get(1);
@@ -76,13 +77,12 @@ Omu_IntGRK4::Omu_IntGRK4()
     k2     = v_get(1);
     k3     = v_get(1);
     k4     = v_get(1);
-    _u     = v_get(1);
-    _yjac  = v_get(1);
-    _yjacp = v_get(1);
     _yy    = m_get(1, 1);
     _yyn   = m_get(1, 1);
-    _yu    = m_get(1, 1);
-    _yun   = m_get(1, 1);
+    _yq    = m_get(1, 1);
+    _yq1   = m_get(1, 1);
+    _yqn   = m_get(1, 1);
+    _ys    = m_get(1, 1);
     _ppivot= px_get(1);
 
     _nmax = 100000;
@@ -91,6 +91,7 @@ Omu_IntGRK4::Omu_IntGRK4()
     _uround = MACHEPS;
     _fac1 = 5.0;
     _fac2 = 1.0/6.0;
+    _max_sing = 5;
 
     _coeffs = 5;   // 1: SHAMPINE
                    // 2: GRK4A OF KAPS-RENTROP 
@@ -100,20 +101,20 @@ Omu_IntGRK4::Omu_IntGRK4()
                    // 6: AN L-STABLE METHOD
 
     _sensrk4 = 0;  // sensitivities by 0: IMP, 1: RK4
-
+                   // !!!!! 2003-09-12: ToDo !!!!!!
     _ifList.append(new If_Real("prg_int_hinit", &_hinit));
     _ifList.append(new If_Real("prg_int_hmax", &_hmaxinit));
     _ifList.append(new If_Int("prg_int_coeffs", &_coeffs));
-    _ifList.append(new If_Bool("prg_int_sensrk4", &_sensrk4));
+//    _ifList.append(new If_Bool("prg_int_sensrk4", &_sensrk4));
     _res_evals = 0;
     _jac_evals = 0;
+    _sen_evals = 0;
 }
 
 //--------------------------------------------------------------------------
 
 Omu_IntGRK4::~Omu_IntGRK4()
 {
-
     V_FREE(_y);
     V_FREE(_ynew);
     V_FREE(_fx);
@@ -123,33 +124,22 @@ Omu_IntGRK4::~Omu_IntGRK4()
     V_FREE(k2);
     V_FREE(k3);
     V_FREE(k4);
-    V_FREE(_u);
-    V_FREE(_yjac);
-    V_FREE(_yjacp);
     M_FREE(_yy);
     M_FREE(_yyn);
-    M_FREE(_yu);
-    M_FREE(_yun);
+    M_FREE(_yq);
+    M_FREE(_yq1);
+    M_FREE(_yqn);
+    M_FREE(_ys);
     PX_FREE(_ppivot);
-
 }
 
 //--------------------------------------------------------------------------
 
-void Omu_IntGRK4::init_stage(int k,
-			     const Omu_States &x, const Omu_Vector &u,
-			     bool sa)
+void Omu_IntGRK4::init(int k,
+			const Omu_StateVec &xc, const Omu_Vec &q,
+			const Omu_DependentVec &Fc, bool sa)
 {
     int result = 0;
-
-    Omu_IntODE::init_stage(k, x, u, sa);
-
-    if ( _nv ) {
-	fprintf(stderr,  "Omu_IntGRK4::init_stage");
-	m_error(E_SIZES, "Omu_IntGRK4::init_stage");
-    }
-    
-    _npar = _nd + _nu;
 
     resize();
 
@@ -180,7 +170,6 @@ void Omu_IntGRK4::init_stage(int k,
 	result = coeffs();
 
     if ( result < 0 ) {
-	fprintf(stderr, "Omu_IntGRK4::init_stage");
 	m_error(E_UNKNOWN, "Omu_IntGRK4::init_stage");
     }
 }
@@ -189,139 +178,159 @@ void Omu_IntGRK4::init_stage(int k,
 
 void Omu_IntGRK4::resize() 
 {
+    if ( (int) _dxc->dim != _n )
+	_dxc.resize(_n, 0, 0, _nq);
 
     // resize _y: without sensitivity analysis _y->dim=_n
-    if ( _sa ) 
-	v_resize(_y, _n*(1+_n+_npar));
-    else
+    if ( (int)_y->dim != _n || (int)_yq->n != _nq ) {
 	v_resize(_y, _n);
-    v_resize(_ynew, _n);
-    v_resize(_fx, _n);
-    v_resize(_dy, _n);
-    v_resize(_u, _npar);
-    v_resize(_yjac, _n*(1+_n+_npar));
-    v_resize(_yjacp, _n*(1+_n+_npar));
-    m_resize(_yy, _n, _n);
-    m_resize(_yyn, _n, _n);
-    m_resize(_yu, _n, _npar);
-    m_resize(_yun, _n, _npar);
-    px_resize(_ppivot, _n);
+	v_resize(_ynew, _n);
+	v_resize(_fx, _n);
+	v_resize(_dy, _n);
+	m_resize(_yy, _n, _n);
+	m_resize(_yyn, _n, _n);
+	m_resize(_yq, _n, _nq);
+	m_resize(_yq1, _n, _nq);
+	m_resize(_yqn, _n, _nq);
+	m_resize(_ys, _n, _nq);
+	px_resize(_ppivot, _n);
 
-    // ensure that k1, ..., k4, y1 are of the correct size 
-    v_resize(k1, _n);
-    v_resize(k1_ori, _n);
-    v_resize(k2, _n);
-    v_resize(k3, _n);
-    v_resize(k4, _n);
+	// ensure that k1, ..., k4, y1 are of the correct size 
+	v_resize(k1, _n);
+	v_resize(k1_ori, _n);
+	v_resize(k2, _n);
+	v_resize(k3, _n);
+	v_resize(k4, _n);
+    }
 }
 
 //--------------------------------------------------------------------------
 
-void Omu_IntGRK4::ode_solve(double tstart, VECP y, const VECP u, double tend)
+void Omu_IntGRK4::solve(int kk, double tstart, double tend,
+			 Omu_StateVec &xc, Omu_StateVec &dxc, Omu_Vec &q,
+			 Omu_DependentVec &Fc)
 {
+    int i;
 
-    int i, result;
+    _kk = kk;
+    _xc_ptr = &xc; 
+    _Fc_ptr = &Fc;
+    _q_ptr  = &q;
 
-    result = 0;
     _x = tstart;
     _xend = tend;
 
-    for ( i = 0; i < (int)_y->dim; i++ )
-	_y[i] = y[i];
-    _u = v_copy(u, _u);
+    v_copy(xc, _y);
+    m_copy(xc.Sq, _ys); 
 
     // start simulation
     _h = fabs(_hinit);
     if ( _h == 0.0 ) 
 	_h = fabs(tend-tstart)/10.0;
     //  _hmax = fabs(_hmaxinit);
-    result = simulation();
-    if ( result < 0 ) {
-	fprintf(stderr, "Omu_IntGRK4::ode_solve");
-	m_error(E_CONV, "Omu_IntGRK4::ode_solve");
-    }
+    simulation();
 
-    for ( i = 0; i < (int)_y->dim; i++ )
-	y[i] = _y[i];
+    v_copy(_y, xc);
+    m_copy(_ys, xc.Sq); 
 }
 
 //-----------------------------------------------------------------------------
 // calculate ODE rhs
 void Omu_IntGRK4::sys(double t, const VECP x, VECP xp)
 {
-    bool sa_old;
+    int i;
+    Omu_StateVec &xc = *_xc_ptr;
+    Omu_DependentVec &Fc = *_Fc_ptr;
+    Omu_Vec &q = *_q_ptr;
 
-    v_zero(xp);
-    sa_old = _sa;
-    _sa = 0;
-    syseq(t, x, _u, xp);
-    _sa = sa_old;
+//      // non-negative state variables
+//      if ( _ixgz >= 0 )
+//  	for ( i = _ixgz; i < _n; i++ )
+//  	    x[i] = max(x[i], 0.0);
+
+    // prepare call arguments
+    for ( i = 0; i < _n; i++ ) {
+	xc[i] = x[i];
+	_dxc[i] = 0.0;
+    }
+    Fc.set_required_J(false);
+
+    // evaluate residual
+    residual(_kk, t, xc, _dxc, q, Fc);
+    _res_evals++;
+
+    // read and return result
+    for ( i = 0; i < _n; i++ )
+	xp[i] = Fc[i];
 }
 
 //-----------------------------------------------------------------------------
 // calculate Jacobian of ODE rhs wrt x
-// modifies _yjac, _yjacp
 void Omu_IntGRK4::sys_jac(double t, const VECP x, VECP xp, MATP fx)
 {
-    int i, j;
-    bool sa_old;
-
-    v_zero(_yjac);
-    v_zero(_yjacp);
-    for ( i = 0; i < _n; i++ ) {
-	_yjac[i] = x[i];
-	_yjac[(1+_nd+i)*_n+i] = 1.0;
-    }
-    sa_old = _sa;
-    _sa = 1;
-    syseq(t, _yjac, _u, _yjacp);
-    _sa = sa_old;
-    _jac_evals++;
-
-    for ( i = 0; i < _n; i++ ) {
-	xp[i] = _yjacp[i];
-	for ( j = 0; j < _n; j++ )
-	    fx[i][j] = _yjacp[(1+_nd+j)*_n+i];
-    }
+    sys_jac(t, x, xp, fx, MNULL);
 }
 
 //-----------------------------------------------------------------------------
 // calculate Jacobian of ODE rhs wrt x and u
-// modifies _yjac, _yjacp
-void Omu_IntGRK4::sys_jac(double t, const VECP x, VECP xp, MATP fx, MATP fu)
+void Omu_IntGRK4::sys_jac(double t, const VECP x, VECP xp, MATP fx, MATP fq)
 {
-    int i, j, ii;
+    int i;
+    Omu_StateVec &xc = *_xc_ptr;
+    Omu_DependentVec &Fc = *_Fc_ptr;
+    Omu_Vec &q = *_q_ptr;
 
-    sys_jac( t, x, xp, fx);
-    for ( i = 0, ii = 0; i < _n+_npar; i++ ) {
-	if ( i < _nd || i >= _nd+_n ) {
-	    for ( j = 0; j < _n; j++ ) 
-		fu[j][ii] = _yjacp[_n*(1+i)+j];
-	    ii++;
-	}
+//      // non-negative state variables
+//      if ( _ixgz >= 0 )
+//  	for ( i = _ixgz; i < _n; i++ )
+//  	    x[i] = max(x[i], 0.0);
+
+    // prepare call arguments
+    for ( i = 0; i < _n; i++ ) {
+	xc[i] = x[i];
+	_dxc[i] = 0.0;
+    }
+    Fc.set_required_J(true);
+
+    // evaluate residual
+    residual(_kk, t, xc, _dxc, q, Fc);
+    _jac_evals++;
+
+    // read and return result
+    if ( xp != VNULL )
+  	for ( i = 0; i < _n; i++ )
+  	    xp[i] = Fc[i];
+
+    m_copy(Fc.Jx, fx);
+
+    if ( fq != MNULL ) {
+	m_copy(Fc.Jq, fq);
+	_sen_evals++;
     }
 }
 
 //-----------------------------------------------------------------------------
-// LU factorize I*gamma-fx
+// LU factorize I*gamma-delta*fx
 // modifies _ppivot
-int Omu_IntGRK4::lufac_jac(double gamma, MATP fx)
+int Omu_IntGRK4::lufac_jac(double gamma, double delta, MATP fx)
 {
     int i, result = 0;
 
-    sm_mlt(-1.0, fx, fx);
+    sm_mlt(-delta, fx, fx);
     for ( i = 0; i < _n; i++ ) 
 	    fx[i][i] += gamma;
     m_catchall(LUfactor(fx, _ppivot);,
 	       result = -1;
 	       _nsing++; 
-	       if ( _nsing == 5 ) {
-		   fprintf(stderr, 
-			   "Omu_IntGRK4::lufac_jac singular Jacobian");
+	       if ( _nsing >= _max_sing ) {
 		   m_error(E_CONV, 
 			   "Omu_IntGRK4::lufac_jac singular Jacobian");
 	       }
 	);
+
+    if ( result == 0 )
+	_nsing = 0;
+
     return result;
 }
 
@@ -356,10 +365,9 @@ void Omu_IntGRK4::lusolve_jac(MATP A, VECP b, VECP x)
 
 //-----------------------------------------------------------------------------
 
-int Omu_IntGRK4::simulation()
+void Omu_IntGRK4::simulation()
 {
-
-    int i, ii, j;
+    int i;
     int reject = 0, reject2 = 0;
     double facrej = 0.1;
     double h, hnew, xdelt, err;
@@ -380,17 +388,12 @@ int Omu_IntGRK4::simulation()
   
     // basic integration step 
     while ( ! last ) {
-
-//	printf(" x=%g, h=%g, hnew=%g, xend=%g\n", _x, h, hnew, _xend);
-
 	if ( _nstep > _nmax ) {
-	    fprintf(stderr, 
-		    "GRK4: more than nmax = %ld steps are needed.\n", _nmax); 
-	    return -2;
+	    m_error(E_CONV, 
+		    "Omu_IntGRK4::simulation more than nmax steps are needed."); 
 	} 
 	if ( _x+0.1*h == _x || fabs(h) <= _uround ) {
-	    fprintf(stderr, "GRK4: stepsize to small, h = %g\n", h);
-	    return -3;
+	    m_error(E_CONV, "Omu_IntGRK4::simulation stepsize to small.");
 	}     
 	last = ((_x+1.01*h-_xend)*_posneg > 0.0); 
 	if ( last ) 
@@ -412,22 +415,20 @@ int Omu_IntGRK4::simulation()
 
 	if ( !reject && !jac_ok ) {
 	    // calculate Jacobian
-	    sys_jac(_x, _y, k1, _yy, _yu);
+	    sys_jac(_x, _y, k1, _yy, _yq);
 	    v_copy(k1, k1_ori);
 	    m_copy(_yy, _yyn);
-	    m_copy(_yu, _yun);
+	    m_copy(_yq, _yqn);
 	} else {
 	    // restore Jacobian
 	    v_copy(k1_ori, k1);
 	    m_copy(_yyn, _yy);
-	    m_copy(_yun, _yu);
+	    m_copy(_yqn, _yq);
 	    jac_ok = 0;
 	}
 
 	// matrix factorization I/(h*GAMMA)-_yy
-	if ( !lufac_jac(fac, _yy) )
-	    _nsing = 0;
-	else {
+	if ( lufac_jac(fac, 1.0, _yy) ) {
 	    h *= 0.5;
 	    continue;
 	}
@@ -443,27 +444,25 @@ int Omu_IntGRK4::simulation()
   	lusolve_jac(_yy, k1, k1);
 
 	// k2
-	for ( i = 0; i < _n; i++ )
-	    _ynew[i] = _y[i]+A21*k1[i];
+	v_mltadd(_y, k1, A21, _ynew);
 	sys(_x+C2*h, _ynew, _dy);
-	v_linlist(k2, _dy, 1.0, _fx, hd2, k1, hc21, NULL);
+	v_linlist(k2, (VEC *)_dy, 1.0, (VEC *)_fx, hd2, (VEC *)k1, hc21, NULL);
 	lusolve_jac(_yy, k2, k2);
-
 	// k3
-	for ( i = 0; i < _n; i++ )
-	    _ynew[i] = _y[i]+A31*k1[i]+A32*k2[i];
+	v_linlist(_ynew, (VEC *)_y, 1.0, (VEC *)k1, A31, (VEC *)k2, A32, NULL);
   	sys(_x+C3*h, _ynew, _dy);
-	v_linlist(k3, _dy, 1.0, _fx, hd3, k1, hc31, k2, hc32, NULL);
+	v_linlist(k3, (VEC *)_dy, 1.0, (VEC *)_fx, hd3, (VEC *)k1, hc31, 
+		  (VEC *)k2, hc32, NULL);
 	lusolve_jac(_yy, k3, k3);
 
 	// k4
-	v_linlist(k4, _dy, 1.0, _fx, hd4, k1, hc41, k2, hc42, k3, hc43, NULL);
+	v_linlist(k4, (VEC *)_dy, 1.0, (VEC *)_fx, hd4, (VEC *)k1, hc41, 
+		  (VEC *)k2, hc42, (VEC *)k3, hc43, NULL);
 	lusolve_jac(_yy, k4, k4);
 
 	// _ynew
-	for ( i = 0; i < _n; i++ )
-	    _ynew[i] = _y[i]+B1*k1[i]+B2*k2[i]+B3*k3[i]+B4*k4[i];
-
+	v_linlist(_ynew, (VEC *)_y, 1.0, (VEC *)k1, B1, (VEC *)k2, B2, 
+		  (VEC *)k3, B3, (VEC *)k4, B4, NULL);
 	// error estimation
 	for ( i = 0, err = 0.0; i < _n; i++ ) 
 	    err += square((E1*k1[i]+E2*k2[i]+E3*k3[i]+E4*k4[i])/
@@ -496,66 +495,53 @@ int Omu_IntGRK4::simulation()
 	
 	// calculation of sensitivities
 	if ( _sa && !reject ) {
-	    if ( _sensrk4 ) {
+	    if ( 0 && _sensrk4 ) {
+		// ??? ToDo ???
 		// calculation of sensitivities by RK4
 		// Hermite interpolation 
 		// y(t+h/2)=(y(t)+y(t+h))/2+h/8*(\dot y(t)-\dot y(t+h))
-		sys_jac(_x, _y, k1, _yy, _yu);
+		sys_jac(_x, _y, k1, _yy, _yq);
 		v_copy(k1, k1_ori);
 		for ( i = 0; i < _n; i++ )
 		    _ynew[i] = (_y[i]+_dy[i])/2.0
 			+(_x-_xold)/8.0*(k1_ori[i]-k1[i]);
-		v_resize(k1, _y->dim);
-		v_resize(k2, _y->dim);
-		v_resize(k3, _y->dim);
-		v_resize(k4, _y->dim);
 
-		update_sens(_yyn, _y, 0.0, _y, _yun, k1);
-		sys_jac(0.5*(_x+_xold), _ynew, _dy, _yyn, _yun);
-		update_sens(_yyn, _y, (_x-_xold)/2.0, k1, _yun, k2);
-		update_sens(_yyn, _y, (_x-_xold)/2.0, k2, _yun, k3);
-		update_sens(_yy, _y, (_x-_xold), k3, _yu, k4);
+		update_sens(_yyn, _y, 0.0, _y, _yqn, k1);
+		sys_jac(0.5*(_x+_xold), _ynew, _dy, _yyn, _yqn);
+		update_sens(_yyn, _y, (_x-_xold)/2.0, k1, _yqn, k2);
+		update_sens(_yyn, _y, (_x-_xold)/2.0, k2, _yqn, k3);
+		update_sens(_yy, _y, (_x-_xold), k3, _yq, k4);
 		for ( i = _n; i < (int) _y->dim; i++ )
 		    _y[i] += (_x-_xold)/6.0*(k1[i]+2.0*k2[i]+2.0*k3[i]+k4[i]);
 
-		v_resize(k1, _n);
-		v_resize(k2, _n);
-		v_resize(k3, _n);
-		v_resize(k4, _n);
-
 		m_copy(_yy, _yyn);
-		m_copy(_yu, _yun);
+		m_copy(_yq, _yqn);
 		jac_ok = 1;
 
 	    } else {
 		// calculation of sensitivities by IMP
-		// calculate ODE r.h.s. and Jacobians _yy and _yu
-		for ( i = 0; i < _n; i++ ) 
-		    _ynew[i] = (_y[i]+_dy[i])/2.0;
-		sys_jac(0.5*(_x+_xold), _ynew, k1, _yy, _yu);
+		// Hermite interpolation 
+		// y(t+h/2)=(y(t)+y(t+h))/2+h/8*(\dot y(t)-\dot y(t+h))
+		sys(_x, _y, k1);
+		for ( i = 0; i < _n; i++ )
+		    _ynew[i] = (_y[i]+_dy[i])/2.0
+			+(_x-_xold)/8.0*(k1_ori[i]-k1[i]);
+
+		// calculate ODE r.h.s. and Jacobians _yy and _yq
+		sys_jac(0.5*(_x+_xold), _ynew, k1, _yy, _yq);
 		m_copy(_yy, _yyn);
 		
 		// factorize 2/dt*I-_yy
-		lufac_jac(2.0/(_x-_xold), _yyn);
+		lufac_jac(2.0/(_x-_xold), 1.0, _yyn);
 		
 		// derivatives
-		for ( i = 0, ii = 0; i < _n+_npar; i++ ) {
-		    for ( j = 0; j < _n; j++ )
-			k1[j] = _y[_n*(1+i)+j];
-		    mv_mlt(_yy, k1, k2);
-		    if ( i < _nd || i >= _nd+_n ) {
-			for ( j = 0; j < _n; j++ )
-			    k2[j] += _yu[j][ii];
-			ii++;
-		    }
-		    lusolve_jac(_yyn, k2, k2);
-		    for ( j = 0; j < _n; j++ )
-			_y[_n*(1+i)+j] = _y[_n*(1+i)+j]+2.0*k2[j];
-		}
+		m_mlt(_yy, _ys, _yq1);
+		m_add(_yq1, _yq, _yq1);
+		LUsolveM(_yyn, _ppivot, _yq1, _yq1);
+		ms_mltadd(_ys, _yq1, 2.0, _ys);
 	    }
 	}
     }
-    return 1;
 }
 
 //--------------------------------------------------------------------------

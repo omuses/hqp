@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.9 2003/09/10 06:02:25 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.10 2003/09/12 07:26:16 e_arnold Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -90,12 +90,17 @@ void	m_version()
 	printf("\tFurther adaptations to ANSI C; remove TRADITIONAL; prepend m_ to macros error, warning, catchall, tracecatch\n");
 	/* E. Arnold, 2002-12-06 */
 	printf("\tMeschach add-ons from the Hqp project: addon_hqp, spaddon_hqp\n");
+	/* E. Arnold, 2003-09-06 */
+	printf("\tmatop.c: fixed in-situ bug in ms_mltadd()\n");
 	/* rf, 09/09/03 */
 	printf("\terr.h, err.c: introduce m_error_message and m_error_description\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.10  2003/09/12 07:26:16  e_arnold
+/* derive Omu_IntIMP, OmuIntGRK4 from Omu_Integrator
+/*
 /* Revision 1.9  2003/09/10 06:02:25  rfranke
 /* improve error handling
 /*

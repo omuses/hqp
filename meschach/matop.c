@@ -30,7 +30,7 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: matop.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
+static	char	rcsid[] = "$Id: matop.c,v 1.3 2003/09/12 07:26:16 e_arnold Exp $";
 
 
 /* m_add -- matrix addition -- may be in-situ */
@@ -386,7 +386,7 @@ int	i, j, lo, hi;
 }
 
 /* ms_mltadd -- matrix-scalar multiply and add
-	-- may be in situ
+	-- may be in situ for A1 
 	-- returns out == A1 + s*A2 */
 MAT	*ms_mltadd(A1,A2,s,out)
 const MAT *A1, *A2;
@@ -407,11 +407,13 @@ double	  s;
 	if ( s == 1.0 )
 		return m_add(A1,A2,out);
 
-	m_tracecatch(out = m_copy(A1,out),"ms_mltadd");
+	if ( A2 != out )
+	{    
+	    m_tracecatch(out = m_copy(A1,out),"ms_mltadd");
 
-	m = A1->m;	n = A1->n;
-	for ( i = 0; i < m; i++ )
-	{
+	    m = A1->m;	n = A1->n;
+	    for ( i = 0; i < m; i++ )
+	    {
 		__mltadd__(out->me[i],A2->me[i],s,(int)n);
 		/**************************************************
 		A1_e = A1->me[i];
@@ -420,6 +422,12 @@ double	  s;
 		for ( j = 0; j < n; j++ )
 		    out_e[j] = A1_e[j] + s*A2_e[j];
 		**************************************************/
+	    }
+	}
+	else
+	{
+	    m_tracecatch(out = sm_mlt(s,A2,out),"ms_mltadd");
+	    out = m_add(A1,out,out);
 	}
 
 	return out;
