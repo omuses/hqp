@@ -185,9 +185,19 @@ class Omu_Program {
   int		KK() const {return _KK;}///< get number of sample periods
   void		set_KK(int KK) {_KK = KK;}///< set number of sample periods
   double	t0() const {return _t0;}///< get initial time of horizon
-  void		set_t0(double t0) {_t0 = t0;}///< set initial time
+  /// set initial time
+  void		set_t0(double t0) {
+    _t0 = t0;
+    if (_ts->dim > 0)
+      _ts[0] = t0;
+  }
   double	tf() const {return _tf;}///< get final time of horizon
-  void		set_tf(double tf) {_tf = tf;}///< set initial time
+  /// set final time
+  void		set_tf(double tf) {
+    _tf = tf;
+    if (_ts->dim > 0)
+      _ts[(int)_ts->dim - 1] = tf;
+  }
 
   /// vector of start indices for sample periods in each stage
   const IVECP 	ks() const {return _ks;}
@@ -197,7 +207,13 @@ class Omu_Program {
   /// vector of start time points in each sample period
   const VECP 	ts() const {return _ts;}
   /// set vector of start times
-  void 		set_ts(const VECP n_ts) {v_copy_elements(n_ts, _ts);}	
+  void 		set_ts(const VECP n_ts) {
+    v_copy_elements(n_ts, _ts);
+    if (_ts->dim > 0) {
+      _t0 = _ts[0];
+      _tf = _ts[(int)_ts->dim - 1];
+    }
+  }	
 
   /// get start index of sample periods in stage k
   int	 	ks(int k) const {return _ks[k];}

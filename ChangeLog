@@ -1,5 +1,8 @@
 2003-08-22    <rfranke>
 
+	* omu/Omu_Program.h: make prg_t0, prg_tf and prg_ts consistent
+	  upon write access
+
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C (constructors):
 	  take out initialization of _K and _KK as this is done in Omu_Program
 
