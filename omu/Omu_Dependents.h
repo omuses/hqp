@@ -31,7 +31,7 @@
 #include "Omu_Vec.h"
 
 /** Vector extended with structural information for a gradient. */
-class Omu_Gradient: public VECP {
+class Omu_Gradient: public Mesch::VECP {
   friend class Omu_Dep;
 public:
   /** Create an empty matrix. */
@@ -103,7 +103,7 @@ protected:
 
 
 /** Matrix extended with structural information for a Jacobian. */
-class Omu_Jacobian: public MATP {
+class Omu_Jacobian: public Mesch::MATP {
   friend class Omu_DepVec;
 public:
   /** Create an empty matrix. */
