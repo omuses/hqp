@@ -1,3 +1,10 @@
+2002-05-13    <rfranke>
+
+	* configure.in, configure, makedefs.in, hqp_docp/Makefile.in,
+	  odc/Makefile.in, omu/Omu_Init.C: add preliminary support for
+	  generating DLLs with Cygwin/MinGW (need to explicitly
+	  configure --enable-shared as it does not fully work yet)
+
 2002-05-12    <rfranke>
 
 	* hqp/Hqp.C (Hqp_Docp_create): add Tcl_FindExecutable()

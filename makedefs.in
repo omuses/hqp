@@ -43,6 +43,11 @@ ADOL_CFLAGS = @CFLAGS@
 IF_DEFS = @IF_DEFS@
 
 #
+# Tcl
+#
+TCL_LIBS = @TCL_LIBS@
+
+#
 # HQP
 #   IF_CLASS_STATIC  -- enforce linking of all modules
 #   HQP_WITH_CUTE    -- include CUTE interface with Hqp
@@ -52,13 +57,25 @@ HQP_DEFS = @DEFS@ @HQP_DEFS@
 HQP_MACH_OBJS = @HQP_MACH_OBJS@
 
 #
-# Omuses
-#   OMU_WITH_FORTRAN -- include DASPK and RKsuite (requires f77 or g77)
+# Fortran
 #
-OMU_DEFS = @DEFS@ @OMU_DEFS@
-
 FORTRAN_COMP = @FORTRAN_COMP@
 FORTRAN_FLAGS = @FORTRAN_FLAGS@
+FORTRAN_LIBS = @FORTRAN_LIBS@
+
+#
+# MEX
+#
+MEX_SRCS = @MEX_SRCS@
+MEX_LIBS = @MEX_LIBS@
+
+#
+# Omuses
+#   OMU_WITH_FORTRAN -- include DASPK and RKsuite (requires f77 or g77)
+#   OMU_WITH_MEX     -- include MEX S-function interface (requires Matlab)
+#
+OMU_DEFS = @DEFS@ @OMU_DEFS@
+OMU_MACH_OBJS = @OMU_MACH_OBJS@
 
 OMU_INTDASPK_C = @OMU_INTDASPK_C@
 DASPK_OBJS = @DASPK_OBJS@
@@ -70,9 +87,6 @@ RKSUITE_O = @RKSUITE_O@
 #
 # Interfaces to other packages
 #
-
-MEX_SRCS = @MEX_SRCS@
-MEX_MACH_OBJS = @MEX_MACH_OBJS@
 
 CUTE_SRCS = @CUTE_SRCS@
 

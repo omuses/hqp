@@ -6,7 +6,7 @@ all:
 	cd iftcl; $(MAKE); cd ..
 	cd hqp; $(MAKE); cd ..
 	mv hqp/$(LIB_PREFIX)hqp.* lib/
-	if test -f lib/hqp.dll; then cp lib/*.dll hqp_docp; fi
+	if test -f lib/hqp.dll; then cp lib/*.dll hqp_docp/; fi
 	cd hqp_docp; $(MAKE); ./docp; cd ..
 
 clean:

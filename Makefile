@@ -8,7 +8,8 @@ omuses:
 	cd adol-c/INS; $(MAKE) xxxinstall; cd ../..
 	cd adol-c/SRC; $(MAKE); cd ../..
 	cd omu; $(MAKE); cd ..
-	mv omu/$(LIB_PREFIX)omu$(LIB_SUFFIX) lib/
+	mv omu/$(LIB_PREFIX)omu.* lib/
+	if test -f lib/omu.dll; then cp lib/*.dll odc/; fi
 	cd odc; $(MAKE); ./run Crane; cd ..
 
 doc::
@@ -17,6 +18,7 @@ doc::
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
+	rm -f odc/*.dll
 	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..

@@ -16,9 +16,10 @@ O = @OBJ_SUFFIX@
 #
 # additional objects to create an executable
 # 
+TCL_LIBS = @TCL_LIBS@
 FORTRAN_LIBS = @FORTRAN_LIBS@
-MEX_MACH_OBJS = @MEX_MACH_OBJS@
-MACH_OBJS = @TCL_LIBS@ $(FORTRAN_LIBS) -lm
+MEX_LIBS = @MEX_LIBS@
+MACH_OBJS = $(TCL_LIBS) @ODC_MACH_OBJS@ -lm
 
 LFLAG = @LFLAG@
 #
@@ -50,7 +51,7 @@ CC = @CC@
 CFLAGS = @GFLAG@ @WFLAG@ -DDEBUG \
          ${HQP_INCDIR} ${TCL_INCDIR}
 
-LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR} ${MEX_LIBDIR}
+LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR} 
 
 #
 # machine independent part
@@ -70,22 +71,22 @@ SRCS = 	Odc_Init.C \
 	Prg_DID_SFunction.C \
 	Prg_DIC_SFunction.C
 
-OBJS = $(SRCS:.C=.o) Odc_Main.o $(GMALLOC_O)
+OBJS = $(SRCS:.C=$O) Odc_Main$O $(GMALLOC_O)
 
 RESULT = odc
 
 all: $(OBJS) Makefile
 	$(CXX) -o $(RESULT) $(LDFLAGS) $(OBJS) \
-	-lomu -lhqp $(MEX_MACH_OBJS) $(MACH_OBJS)
+	-lomu -lhqp $(MACH_OBJS)
 
-gmalloc $(GMALLOC_O): $(GMALLOC_O:.o=.c)
+gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
 	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \
 	make `basename $(GMALLOC_O)`; cd $(PWD)
 
-.C.o:
+.C$O:
 	$(CXX) -c $(CFLAGS) $<
 
-.c.o:
+.c$O:
 	$(CC) -c $(CFLAGS) $<
 
 clean:

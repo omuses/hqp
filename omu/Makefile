@@ -4,6 +4,8 @@
 include ../makedirs
 include ../makedefs
 
+O = $(OBJ_SUFFIX)
+
 CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
           $(HQP_INCDIR) $(ADOL_INCDIR) $(HXI_INCDIR) $(MEX_INCDIR) \
           $(OMU_DEFS)
@@ -28,33 +30,33 @@ SRCS =	Omu_Init.C \
         $(OMU_INTDASPK_C) \
 	$(MEX_SRCS)
 
-OBJS = $(SRCS:.C=.o) $(RKSUITE_O)
+OBJS = $(SRCS:.C=$O) $(RKSUITE_O)
 
 LIBRARY = omu
 
 lib: $(OBJS) $(DASPK) Makefile
 	rm -f $(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX)
 	$(LD)$(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX) $(OBJS) \
-	../adol-c/SRC/*.o ../adol-c/SRC/*/*.o $(DASPK_OBJS)
+	../adol-c/SRC/*$O ../adol-c/SRC/*/*$O $(DASPK_OBJS) $(OMU_MACH_OBJS)
 	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
 
 daspk:
 	PWD=`pwd`; cd ../daspk; $(MAKE); cd $(PWD)
 
-$(RKSUITE_O): $(RKSUITE_O:.o=.f)
+$(RKSUITE_O): $(RKSUITE_O:$O=.f)
 	PWD=`pwd`; cd `dirname $(RKSUITE_O)`; \
 	$(FORTRAN_COMP) $(FORTRAN_FLAGS) -c rksuite.f; cd $(PWD)
 
-Hxi_MEX_SFunction.o: ../hxi/Hxi_MEX_SFunction.C
+Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_MEX_SFunction.C
 
-.C.o:
+.C$O:
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<
 
 clean:
 	rm -f *.o *.obj $(LIB_PREFIX)omu.* *~
 	PWD=`pwd`; cd ../daspk; $(MAKE) clean; cd $(PWD)
-	PWD=`pwd`; cd ../rksuite; rm -f *.o *~; cd $(PWD)
+	PWD=`pwd`; cd ../rksuite; rm -f *.o *.obj *~; cd $(PWD)
 
 depend:
 	makedepend -- $(CCFLAGS) -- $(SRCS)

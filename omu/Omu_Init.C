@@ -79,10 +79,18 @@ static int Omu_VersionCmd(int, char *[], char **result)
 }
 
 //--------------------------------------------------------------------------
+extern "C" int Hqp_Init(Tcl_Interp *interp);
 extern "C" int Omu_Init(Tcl_Interp *interp)
 {
+  // check if Hqp is present and initialize it if not
+  // (for now do the initialization directly by calling Hqp_Init,
+  //  instead of using Tcl_PkgRequire, to force linkage of Hqp)
+  if (Tcl_PkgPresent(interp, "Hqp", VERSION, 1) == NULL) {
+    if (Hqp_Init(interp) != TCL_OK)
+      return TCL_ERROR;
+  }
   // provide Tcl package Omuses
-  if (Tcl_PkgRequire(interp, "Tcl", "8.0", 0) == NULL ||
+  if (/* Tcl_PkgRequire(interp, "Hqp", VERSION, 1) == NULL || */
       Tcl_PkgProvide(interp, "Omuses", (char *)Omu_Version) != TCL_OK) {
     return TCL_ERROR;
   }
