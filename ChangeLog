@@ -1,4 +1,8 @@
+2002-04-23    <h_linke>
 
+	* omu/Omu_IntSDIRK.[hC]: remove adolc from sensitivity computation
+	* omu/Omu_IntSDIRK.[hC]: add possibility to least squares solution
+	  
 2002-04-23    <rfranke>
 
 	* meschach/makefile: add splufctr to list of compiled objects
