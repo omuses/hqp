@@ -1,3 +1,14 @@
+2002-11-28    <rfranke>
+
+	* omu/Prg_SFunction.C (setup_sfun): instead of raising an error,
+	  issue a warning for more than one sample time 
+	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C:
+	  call mdlOutputs before each call to mdlDerivatives (cf. Simulink)
+	* hxi/simstruc.h: bug fix for Level 1 S-functions
+	  (bug was introduced on 2002-11-22)
+
+	* hqp/Hqp_Docp.C (setup): reset fbd_evals to 0
+
 2002-11-23    <rfranke> add support for gcc 3 (tested with 3.2 20020927)
 
 	* configure.in: generate adol-c/SRC/iostream.h to avoid name conflict

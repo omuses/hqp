@@ -733,14 +733,6 @@ void Prg_SFunctionEst::consistic(int kk, double t,
       ssSetErrorStatus(_S, NULL);
       m_error(E_RANGE, "mdlInitializeConditions");
     }
-    // call mdlOutputs as mdlInitializeConditions might not really
-    // perform the initialization
-    mdlOutputs(_S, 0); 
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlOutputs");
-    }
   }
 
   // take over states from optimizer
@@ -782,20 +774,21 @@ void Prg_SFunctionEst::continuous(int kk, double t,
       ssSetErrorStatus(_S, NULL);
       m_error(E_RANGE, "mdlInitializeConditions");
     }
-    // call mdlOutput as mdlInitializeConditions might not actually
-    // perform initialization
-    mdlOutputs(_S, 0);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlOutputs");
-    }
   }
 
   // pass current states to model
   real_T *mdl_x = ssGetContStates(_S);
   for (i = 0; i < _mdl_nx; i++)
     mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
+
+  // set model outputs before calculating derivatives
+  // (note: this is required for sub-blocks providing inputs other blocks)
+  mdlOutputs(_S, 0); 
+  if (ssGetErrorStatus(_S)) {
+    fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
+    ssSetErrorStatus(_S, NULL);
+    m_error(E_RANGE, "mdlOutputs");
+  }
 
   // evaluate continuous model equations
   mdlDerivatives(_S);

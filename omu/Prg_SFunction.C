@@ -212,8 +212,11 @@ void Prg_SFunction::setup_sfun()
 
   // initialize and check sample times of model
   mdlInitializeSampleTimes(_S);
-  assert(ssGetNumSampleTimes(_S) == 1);
+  assert(ssGetNumSampleTimes(_S) > 0);
   assert(value(ssGetSampleTime(_S, 0)) == CONTINUOUS_SAMPLE_TIME);
+  if (ssGetNumSampleTimes(_S) > 1)
+    m_warning(WARN_UNKNOWN,
+	      "Prg_SFunction::setup_sfun: ignoring multiple sample times");
 
   // start using S-function
   if (ssGetmdlStart(_S) != NULL)
