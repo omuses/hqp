@@ -1,3 +1,8 @@
+2004-06-30    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - introduce mdl_u0_min/max 
+
 2004-06-28    <rfranke>
 
 	* configure.in, configure: DEVELOPMENT_VERSION=yes

@@ -139,7 +139,7 @@ public:
     & t\in[t^{kk},t^{kk+1}),\ kk=0,\ldots,KK-1,
    \end{array}
    @f]
-   and subject to the constraints
+   and subject to the constraints at initial and final time
    @f[
    \begin{array}{rcccll}
     \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
@@ -152,18 +152,27 @@ public:
         &\le& \dot{x}(t^{0}) &\le& 
         \displaystyle \left. \frac{der\_x^0_{max}}{x_{nominal}} \right\}_i,
 	\quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
-    \displaystyle \frac{y_{0,min}}{y_{nominal}} &\le& y(t^{0})
-        &\le& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
+    \displaystyle \left\{ \frac{u^0_{min}}{u_{nominal}} \right.
+        &\le& u(t^{0}) &\le& 
+        \displaystyle \left. \frac{u^0_{max}}{u_{nominal}} \right\}_i,
+	\quad & i\in\mbox{find}(u_{active}\ \mbox{and}\ u_{0,nfixed}=0), \\[3ex]
     \displaystyle && \{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
         \quad & i \in \mbox{find}(u_{0,nfixed}>1-u_{order}), \\[3ex]
-    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right.
-        &\le& u(t^0) &\le& 
-        \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
+    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &\le& u(t^0)
+        &\le& \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
         \ & i \in \mbox{find}(u_{0,nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
-    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right.
-        &\le& u(t^{k}) &\le& 
-        \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
-        i \in \mbox{find}(k \ge u_{0,nfixed} + u_{order} - 1), \\[1ex]
+    \displaystyle \frac{y_{0,min}}{y_{nominal}} &\le& y(t^{0})
+        &\le& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
+    \displaystyle \frac{y_{f\_min}}{y_{nominal}} &\le& y(t_f)
+        &\le& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}},
+   \end{array}
+   @f]
+   as well as at all time points
+   @f[
+   \begin{array}{rcccll}
+    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &\le& u(t^{k})
+        &\le& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, 
+        \quad & i \in \mbox{find}(k \ge u_{0,nfixed} + u_{order} - 1), \\[1ex]
 	&& && & k=0,\ldots,K, \\[2ex]
     \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &\le& du^{k}
         &\le& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
@@ -176,11 +185,13 @@ public:
         kk=0,\ldots,KK, \\[3ex]
     \displaystyle \frac{y_{soft\_min}}{y_{nominal}} - s^{kk} &\le& y(t^{kk})
         &\le& \displaystyle \frac{y_{soft\_max}}{y_{nominal}} + s^{kk}, \\[3ex]
-    \displaystyle && s^{kk} &\ge& 0, \quad & kk=0,\ldots,KK, \\[3ex]
-    \displaystyle \frac{y_{f\_min}}{y_{nominal}} &\le& y(t_f)
-        &\le& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
+    \displaystyle && s^{kk} &\ge& 0, \quad & kk=0,\ldots,KK.
    \end{array}
    @f]
+   Note that path constraints over continuous time intervals can be 
+   approximated by specifying @f$sps>1@f$, leading to output constraints 
+   at interior sample time points.
+
    The actually optimized rates of changes @f$du^k, k=0,\ldots,K-1@f$ for
    active inputs may be set to fixed values by specifying @f$u_{0,nfixed}@f$
    and @f$u_{decimation}@f$ (defaults: 1), fixing initial values and holding
@@ -254,6 +265,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   IVECP 	_mdl_x0_active;	///< free initial states (default: 0)
   VECP		_mdl_der_x0_min;///< minimum for time derivative of x0
   VECP		_mdl_der_x0_max;///< maximum for time derivative of x0
+  Omu_VariableVec _mdl_u0;	///< initial inputs
   Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs
   Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
@@ -410,6 +422,12 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// maximum for time derivative of x0  
   const VECP mdl_der_x0_max() const {return _mdl_der_x0_max;}
 
+  /// lower bounds for model inputs at initial time
+  const VECP mdl_u0_min() const {return _mdl_u0.min;}
+
+  /// upper bounds for model inputs at initial time
+  const VECP mdl_u0_max() const {return _mdl_u0.max;}
+
   /// lower bounds for model outputs at initial time
   const VECP mdl_y0_min() const {return _mdl_y0.min;}
 
@@ -560,10 +578,16 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set maximum for dx0dt
   void set_mdl_der_x0_max(const VECP v) {v_copy_elements(v, _mdl_der_x0_max);}
 
-  /// set lower bounds for final model outputs
+  /// set lower bounds for initial model inputs
+  void set_mdl_u0_min(const VECP v) {v_copy_elements(v, _mdl_u0.min);}
+
+  /// set upper bounds for initial model inputs
+  void set_mdl_u0_max(const VECP v) {v_copy_elements(v, _mdl_u0.max);}
+
+  /// set lower bounds for initial model outputs
   void set_mdl_y0_min(const VECP v) {v_copy_elements(v, _mdl_y0.min);}
 
-  /// set upper bounds for final model outputs
+  /// set upper bounds for initial model outputs
   void set_mdl_y0_max(const VECP v) {v_copy_elements(v, _mdl_y0.max);}
 
   /// set linear weight

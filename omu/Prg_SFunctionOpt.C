@@ -158,6 +158,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u0_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u0_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_weight1)));
@@ -240,6 +242,7 @@ void Prg_SFunctionOpt::setup_model()
 
   // adapt sizes of model vectors
   _mdl_x0.alloc(_mdl_nx);
+  _mdl_u0.alloc(_mdl_nu);
   _mdl_y0.resize(_mdl_ny);
   _mdl_u.resize(_mdl_nu);
   _mdl_der_u.resize(_mdl_nu);
@@ -423,7 +426,7 @@ void Prg_SFunctionOpt::setup(int k,
 	    x.max[i] = x.initial[i]
 	      + _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
 	}
-	i++;
+        i++;
       }
     }
     for (i = _nu; i < _nx; i++) {
@@ -463,16 +466,20 @@ void Prg_SFunctionOpt::setup(int k,
   // setup control inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
-      if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1) {
+      if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1
+          || !_multistage && k == 0 && _mdl_u0_nfixed[idx] == 0) {
 	// control bounds
-	if (_mdl_u.min[idx] > -Inf) {
+        // at k=0, use the more restrictive bound of u0_min/max and u_min/max
+        if (k == 0 && _mdl_u0.min[idx] > _mdl_u.min[idx])
+          x.min[i] = _mdl_u0.min[idx] / _mdl_u_nominal[idx];
+	else if (_mdl_u.min[idx] > -Inf)
 	  x.min[i] = _mdl_u.min[idx] / _mdl_u_nominal[idx];
-	}
-	if (_mdl_u.max[idx] < Inf) {
+        if (k == 0 && _mdl_u0.max[idx] < _mdl_u.max[idx])
+          x.max[i] = _mdl_u0.max[idx] / _mdl_u_nominal[idx];
+	else if (_mdl_u.max[idx] < Inf)
 	  x.max[i] = _mdl_u.max[idx] / _mdl_u_nominal[idx];
-	}
       }
-      else if (!_multistage && k < _K) {
+      if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
 	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
