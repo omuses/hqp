@@ -197,15 +197,39 @@ public:
 
    The problem is treated as multistage problem with K stages per default. 
    Consequently additional K junction conditions (equality constraints)
-   are introduced for the state variables x and the piecewise linear
-   approximated control trajectories u. Alternatively the problem can
-   be treated without stages applying pure control vector parameterization
-   and hiding model states from the optimizer.
+   are introduced for the state variables x and the control trajectories u. 
+   Alternatively the problem can be treated without stages applying pure 
+   control vector parameterization and hiding model states from the optimizer.
 
-   Model inputs and outputs can be accessed through
+   When treated as multistage problem, the additional optimization
+   variables introduced for states are normally initialized with the results
+   of an initial-value simulation for the given initial states and inputs 
+   (see above). Alternatively, the multistage problem may be treated with
+   multiple shooting, i.e. all states are initialized with
+   the initial states @f$x^0@f$
+   @f[
+   \begin{array}{rcll}
+    x_{initial}(t^k) &=& \displaystyle \frac{x^0}{x_{nominal}},
+      & k=1,\ldots,K
+   \end{array}
+   @f]
+   or with an explicitly given initial guess for states @f$xs@f$ in all stages
+   @f[
+   \begin{array}{rcll}
+    x_{initial}(t^k) &=& \displaystyle \frac{xs^{sps\,k}}{x_{nominal}},
+      & k=1,\ldots,K.
+   \end{array}
+   @f]
+   The multiple shooting method is advantageous if the expected state
+   trajectories are known (e.g. constant at a set point or following a
+   ramp), but if an initial guess for the control trajectories causing
+   those state trajectories is unknown.
+
+   Model inputs, states and outputs can be accessed through
    @f[
    \begin{array}{l}
     us^{kk} = u_{nominal}\,u(t^{kk}), \\[1ex]
+    xs^{kk} = x_{nominal}\,x(t^{kk}), \\[1ex]
     ys^{kk} = y_{nominal}\,y(t^{kk}), \quad kk=0,\ldots,KK.
    \end{array}
    @f]
@@ -249,6 +273,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int 		_sps;
 
   MATP	_mdl_us;	///< given model inputs (controls and disturbances)
+  MATP	_mdl_xs;	///< given and calculated model states
   MATP	_mdl_ys;	///< calculated model outputs
 
   /**
@@ -348,6 +373,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * problem description.
    */
   //@{
+  /// initial states
+  const VECP mdl_x0() const {return _mdl_x0;}
+
   /// free initial states (default: 0)
   const IVECP mdl_x0_active() const {return _mdl_x0_active;}
 
@@ -459,6 +487,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// model inputs (size: KK+1 . mdl_nu)
   const MATP mdl_us() const {return _mdl_us;}
 
+  /// model states (size: KK+1 . mdl_nx)
+  const MATP mdl_xs() const {return _mdl_xs;}
+
   /// model outputs (read only, size: KK+1 . mdl_ny)
   const MATP mdl_ys() const {return _mdl_ys;}
 
@@ -467,6 +498,16 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @name Write methods for model specific members (no If prefix).
    */
   //@{
+  /// set initial states
+  void set_mdl_x0(const VECP v) {
+    v_copy_elements(v, _mdl_x0);
+    // copy initial states to all sample periods
+    // to achieve multiple shooting behavior when no simulation is performed
+    for (int kk = 0; kk <= _KK; kk++)
+      for (int i = 0; i < _mdl_nx; i++)
+	_mdl_xs[kk][i] = v[i];
+  }
+
   /// set free initial states
   void set_mdl_x0_active(const IVECP v) {iv_copy_elements(v, _mdl_x0_active);}
 
@@ -582,6 +623,16 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set model inputs
   void set_mdl_us(const MATP v) {m_copy_elements(v, _mdl_us);}
+
+  /// set model states
+  void set_mdl_xs(const MATP v) {
+    m_copy_elements(v, _mdl_xs);
+    // also set additionally treated mdl_x0
+    if (_KK > 0) {
+      for (int i = 0; i < _mdl_nx; i++)
+	_mdl_x0[i] = _mdl_xs[0][i];
+    }
+  }
 
   /// model outputs are read only
 

@@ -89,6 +89,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   iv_zero(_exs);
 
   _mdl_us = m_get(_KK+1, _mdl_nu);
+  _mdl_xs = m_get(_KK+1, _mdl_nx);
   _mdl_ys = m_get(_KK+1, _mdl_ny);
   _ys_ref = m_get(_KK+1, 1);
 
@@ -122,6 +123,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
 
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_x0s)));
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_us)));
+  _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_xs)));
   _ifList.append(new If_RealMat(GET_CB(const MATP, "", mdl_ys)));
 
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", nex)));
@@ -141,6 +143,7 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   m_free(_M);
   m_free(_ys_ref);
   m_free(_mdl_ys);
+  m_free(_mdl_xs);
   m_free(_mdl_us);
   m_free(_mdl_x0s);
   iv_free(_exs);
@@ -281,6 +284,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   iv_zero(_exs);
 
   m_resize(_mdl_us, _KK+1, _mdl_nu);
+  m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
   // store parameters in _mdl_p
@@ -403,6 +407,16 @@ void Prg_SFunctionEst::setup(int k,
 	  u.max[i] = _mdl_x0.max[i] / _mdl_x_nominal[i];
       }
     }
+  }
+  // setup states of subsequent stages
+  else {
+    for (i = 0, idx = 0; idx < _mdl_np; idx++)
+      if (_mdl_p_active[idx]) {
+	x.initial[i] = _mdl_p[i] / _mdl_p_nominal[i];
+	i++;
+      }
+    for (idx = 0; idx < _mdl_nx; idx++)
+      x.initial[_np+idx] = _mdl_xs[ks(k)][idx] / _mdl_x_nominal[idx];
   }
   // constraints for assigning relevant model outputs to opt vars
   // and on time derivatives of initial states
@@ -612,10 +626,6 @@ void Prg_SFunctionEst::update(int kk,
     }
   }
 
-  // store values of model outputs
-  for (idx = 0; idx < _mdl_ny; idx++)
-    _mdl_ys[kk][idx] = value(mdl_y[idx]);
-
   // obtain Jacobians if required
   if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
 
@@ -630,6 +640,14 @@ void Prg_SFunctionEst::update(int kk,
       for (idx = 0; idx < _mdl_nx; idx++)
 	_mdl_x0s[ex][idx] = mdl_x[idx];
     }
+
+    // store values of model states
+    for (idx = 0; idx < _mdl_nx; idx++)
+      _mdl_xs[kk][idx] = value(mdl_x[idx]);
+
+    // store values of model outputs
+    for (idx = 0; idx < _mdl_ny; idx++)
+      _mdl_ys[kk][idx] = value(mdl_y[idx]);
 
     // call predefined update for numerical differentiation
     _S->mdlInfo->reservedForFutureInt[0] = 1;

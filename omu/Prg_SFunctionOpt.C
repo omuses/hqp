@@ -121,11 +121,14 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ncf = 0;
 
   _mdl_us = m_get(_KK+1, _mdl_nu);
+  _mdl_xs = m_get(_KK+1, _mdl_nx);
   _mdl_ys = m_get(_KK+1, _mdl_ny);
 
   _ifList.append(new If_Int("prg_sps", &_sps));
   _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
 
+  // redefine mdl_x0 in order to also consider mdl_xs
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x0_active)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_max)));
@@ -174,6 +177,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
 
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_us)));
+  _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_xs)));
   _ifList.append(new If_RealMat(GET_CB(const MATP, "", mdl_ys)));
 }
 
@@ -181,6 +185,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 Prg_SFunctionOpt::~Prg_SFunctionOpt()
 {
   m_free(_mdl_ys);
+  m_free(_mdl_xs);
   m_free(_mdl_us);
   v_free(_mdl_y_bias);
   v_free(_mdl_y_nominal);
@@ -241,6 +246,7 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   v_set(_mdl_y_bias, 0.0);
 
   m_resize(_mdl_us, _KK+1, _mdl_nu);
+  m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 }
 
@@ -362,6 +368,16 @@ void Prg_SFunctionOpt::setup(int k,
       else
 	x.min[i] = x.max[i] = x.initial[i];
     }
+  }
+  // setup states of subsequent stages
+  else {
+    for (i = 0, idx = 0; idx < _mdl_nu; idx++)
+      if (_mdl_u.active[idx]) {
+	x.initial[i] = _mdl_us[ks(k)][idx] / _mdl_u_nominal[idx];
+	i++;
+      }
+    for (i = _nu; i < _nx; i++)
+      x.initial[i] = _mdl_xs[ks(k)][i-_nu] / _mdl_x_nominal[i-_nu];
   }
 
   // setup control inputs
@@ -758,14 +774,23 @@ void Prg_SFunctionOpt::update(int kk,
     }
   }
 
-  // store values of model outputs
-  for (i = 0; i < _mdl_ny; i++)
-    _mdl_ys[kk][i] = value(mdl_y[i]);
-
   // obtain Jacobians if required
-  if (f.is_required_J() || f0.is_required_g() || c.is_required_J())
+  if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
+
+    // store values of model states
+    if (kk == 0)
+      for (i = 0; i < _mdl_nx; i++)
+	_mdl_x0[i] = value(mdl_x[i]);
+    for (i = 0; i < _mdl_nx; i++)
+      _mdl_xs[kk][i] = value(mdl_x[i]);
+
+    // store values of model outputs
+    for (i = 0; i < _mdl_ny; i++)
+      _mdl_ys[kk][i] = value(mdl_y[i]);
+
     //Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
     update_grds(kk, x, u, xf, f, f0, c);
+  }
 }
 
 //--------------------------------------------------------------------------

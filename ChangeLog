@@ -1,3 +1,8 @@
+2003-04-04    <rfranke>
+
+	* omu/Prg_SFunctionEst.[hC], omu/Prg_SFunctionOpt.[hC]: 
+	  introduce mdl_xs for state values at all sample periods
+
 2003-03-27    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]: introduce mdl_u_decimation for

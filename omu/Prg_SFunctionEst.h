@@ -68,9 +68,7 @@
           {x_{nominal}}, \\[3ex]
     \displaystyle y(t) = 
      \frac{g[p,\ x_{nominal}\,x(t),\ u(t)]}
-          {y_{nominal}}, \\[3ex]
-    ys^{k_l} = y_{nominal}y(t^{k_l}),
-        \quad k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}
+          {y_{nominal}}
    \end{array}
    @f]
    with piecewise constant or linear interpolation of the inputs
@@ -114,6 +112,38 @@
    junction conditions are introduced for the state variables x.
    Alternatively the problem can be treated without stages hiding model
    states from the optimizer.
+
+   The states of all stages are either initialized with the initial states
+   @f$x0s^l@f$
+   @f[
+   \begin{array}{rcll}
+    x_{initial}(t^{k_l}) &=& \displaystyle \frac{x0s^l}{x_{nominal}},
+      & k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}
+   \end{array}
+   @f]
+   or with individually given initial guesses @f$xs@f$
+   @f[
+   \begin{array}{rcll}
+    x_{initial}(t^{k_l}) &=& \displaystyle \frac{xs^{k_l}}{x_{nominal}},
+      & k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}.
+   \end{array}
+   @f]
+   All but the initial states of the experiments may be initialized
+   with the results of an initial-value simulation for given initial
+   states and inputs. If the problem is treated as multistage problem,
+   then not performing the simulation results in the multiple shooting
+   method. This might be useful if no sensible initial guesses can be
+   given for unknown parameters, so that a simulation fails.
+
+   Model inputs, states and outputs can be accessed through
+   @f[
+   \begin{array}{l}
+    us^{k_l} = u_{nominal}\,u(t^{k_l}), \\[1ex]
+    xs^{k_l} = x_{nominal}\,x(t^{k_l}), \\[1ex]
+    ys^{k_l} = y_{nominal}\,y(t^{k_l}),
+      \quad k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}.
+   \end{array}
+   @f]
 
    In addition to the estimated parameters and initial states, the 
    measurement matrix M is calculated in each optimization iteration.
@@ -174,6 +204,7 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   // vectors for inputs, states, and outputs
   MATP	_mdl_us;	///< given model inputs
+  MATP	_mdl_xs;	///< calculated model states
   MATP	_mdl_ys;	///< calculated model outputs
   MATP	_ys_ref;	///< reference values for active outputs
 
@@ -319,6 +350,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// model inputs (size: KK+1 . mdl_nu)
   const MATP mdl_us() const {return _mdl_us;}
 
+  /// model states (size: KK+1 . mdl_nx)
+  const MATP mdl_xs() const {return _mdl_xs;}
+
   /// model outputs (read only, size: KK+1 . mdl_ny)
   const MATP mdl_ys() const {return _mdl_ys;}
 
@@ -373,10 +407,35 @@ class Prg_SFunctionEst: public Prg_SFunction {
   void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
 
   /// set initial states
-  void set_mdl_x0s(const MATP v) {m_copy_elements(v, _mdl_x0s);}
+  void set_mdl_x0s(const MATP v) {
+    m_copy_elements(v, _mdl_x0s);
+    // copy initial states to all sample periods of all experiments
+    // to achieve multiple shooting behavior when no simulation is performed
+    int ex = 0;
+    for (int kk = 0; kk <= _KK; kk++) {
+      for (int i = 0; i < _mdl_nx; i++)
+	_mdl_xs[kk][i] = v[ex][i];
+      if (kk > 0 && ts(kk) < ts(kk-1))
+	ex++;
+    }
+  }
 
   /// set model inputs
   void set_mdl_us(const MATP v) {m_copy_elements(v, _mdl_us);}
+
+  /// set model states
+  void set_mdl_xs(const MATP v) {
+    m_copy_elements(v, _mdl_xs);
+    // also set additionally treated mdl_x0s
+    int ex = 0;
+    for (int kk = 0; kk <= _KK; kk++) {
+      if (kk == 0 || ts(kk) < ts(kk-1)) {
+	for (int i = 0; i < _mdl_nx; i++)
+	  _mdl_x0s[ex][i] = _mdl_xs[kk][i];
+	ex++;
+      }
+    }
+  }
 
   // model outputs are read only
 
@@ -384,4 +443,3 @@ class Prg_SFunctionEst: public Prg_SFunction {
 };  
 
 #endif
-
