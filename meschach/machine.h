@@ -2,7 +2,7 @@
 /* Any machine specific stuff goes here */
 /* Add details necessary for your own installation here! */
 
-/* RCS id: $Id: machine.h,v 1.1 2001/03/01 17:18:44 rfranke Exp $ */
+/* RCS id: $Id: machine.h,v 1.2 2002/05/13 18:08:52 rfranke Exp $ */
 
 /* This is for use with "configure" -- if you are not using configure
 	then use machine.van for the "vanilla" version of machine.h */
@@ -237,14 +237,8 @@
 #include <sys/cdefs.h>
 #endif
 
-#ifndef __STDC__
-#ifdef __cplusplus
-#define __STDC__
-#endif
-#endif
-
 #ifndef MESCH__P
-#ifdef __STDC__
+#if defined(__STDC__) || defined(__cplusplus)
 #define	MESCH__P(protos)	protos
 #else
 #define MESCH__P(protos)	()
