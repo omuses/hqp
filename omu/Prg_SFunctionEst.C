@@ -55,8 +55,6 @@ IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 //--------------------------------------------------------------------------
 Prg_SFunctionEst::Prg_SFunctionEst()
 {
-  _K = 0;
-  _KK = 0;
   _multistage = true;
 
   _mdl_np = 0;

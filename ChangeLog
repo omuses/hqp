@@ -1,3 +1,11 @@
+2003-08-22    <rfranke>
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C (constructors):
+	  take out initialization of _K and _KK as this is done in Omu_Program
+
+	* omu/Omu_Integrator.C (setup_stages): don't allocate Omu_DepVec[_K] 
+	  for _K=0 as cl does cause a crash otherwise
+
 2003-08-20    <rfranke>
 
 	* omu/Omu_Program.[hC]: add prg_t0 and prg_tf to access initial and

@@ -89,8 +89,6 @@ void Omu_OptVarVec::resize(int n)
 //--------------------------------------------------------------------------
 Prg_SFunctionOpt::Prg_SFunctionOpt()
 {
-  _K = 1;
-  _KK = 1;
   _sps = 1;
   _multistage = true;
 
@@ -243,6 +241,10 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
     setup_model();
 
   // setup optimization problem
+  if (_sps < 1) {
+    m_error(E_FORMAT, "Prg_SFunctionOpt::setup_stages: "
+	    "prg_sps must at least be one");
+  }
   if (_multistage) {
     _K = _KK/_sps;
     stages_alloc(ks, ts, _K, _sps);
