@@ -1,8 +1,11 @@
 /*
- * If_RealVec.h --
- *     - new name for If_FloatVec
+ *  If_RealVec.h
+ *   - vectors of reals (currently supported: Meschach VEC* and VECP)
  *
- *  rf, 12/3/00
+ *  rf, 2/7/97
+ *
+ *  rf, 8/13/98
+ *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
@@ -27,8 +30,64 @@
 #ifndef If_RealVec_H
 #define If_RealVec_H
 
-#include "If_FloatVec.h"
+// Include file with declaration of vector and matrix type.
+#include "Meschach.h"
 
-typedef If_FloatVec If_RealVec;
+#include "If_Variable.h"
+
+// typedef for a callback for write-access
+//----------------------------------------
+class If_RealVecWriteIf {
+
+ public:
+  virtual ~If_RealVecWriteIf() {}
+  virtual int write(VEC *newVEC)=0;
+};
+
+template <class X>
+class If_RealVecWriteCB: public If_RealVecWriteIf {
+
+ protected:
+  X	*_object;
+  int	(X::*_write)(VEC *);
+
+ public:
+  If_RealVecWriteCB(int (X::*n_write)(VEC *), X *n_object)
+    {
+      assert(n_write != NULL && n_object != NULL);
+      _write = n_write;
+      _object = n_object;
+    }
+  int write(VEC *newVEC)
+    {
+      return (_object->*_write)(newVEC);
+    }
+};
+
+// foreward declaration for a VECP
+class VECP;
+
+// class declaration
+//------------------
+class If_RealVec: public If_Variable {
+
+ protected:
+
+  VEC			**_varPtr;
+  If_RealVecWriteIf  	*_callback;
+
+  // define abstract methods of If_Variable
+  //---------------------------------------
+  int                  put(Tcl_Obj *CONST objPtr);
+  int                  get();
+
+ public:
+
+  If_RealVec(const char *ifName, VEC **varPtr, const char *mode = "rw");
+  If_RealVec(const char *ifName, VECP *varPtr, const char *mode = "rw");
+  If_RealVec(const char *ifName, VEC **varPtr, If_RealVecWriteIf *callback);
+  If_RealVec(const char *ifName, VECP *varPtr, If_RealVecWriteIf *callback);
+  ~If_RealVec();
+};
 
 #endif

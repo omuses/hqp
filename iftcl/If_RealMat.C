@@ -1,5 +1,5 @@
 /*
- *  If_FloatMat.C -- class definition
+ *  If_RealMat.C -- class definition
  *
  *  rf, 8/19/94
  *
@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,34 +30,50 @@
 #include <string.h>
 #include <malloc.h>
 
-#include "If_FloatMat.h"
+#include "If_RealMat.h"
 
 //--------------------------------------------------------------------------
-If_FloatMat::If_FloatMat(char *ifName, MAT **varPtr,
-			 If_FloatMatWriteIf *callback)
-:If_Variable(ifName)
+If_RealMat::If_RealMat(const char *ifName, MAT **varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_RealMat::If_RealMat(const char *ifName, MATP *varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = (MAT **)varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_RealMat::If_RealMat(const char *ifName, MAT **varPtr,
+		       If_RealMatWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = varPtr;
   _callback = callback;
 }
 
 //--------------------------------------------------------------------------
-If_FloatMat::If_FloatMat(char *ifName, MATP *varPtr,
-			 If_FloatMatWriteIf *callback)
-:If_Variable(ifName)
+If_RealMat::If_RealMat(const char *ifName, MATP *varPtr,
+		       If_RealMatWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = (MAT **)varPtr;
   _callback = callback;
 }
 
 //--------------------------------------------------------------------------
-If_FloatMat::~If_FloatMat()
+If_RealMat::~If_RealMat()
 {
   delete _callback;
 }
 
 //--------------------------------------------------------------------------
-int If_FloatMat::put(Tcl_Obj *CONST objPtr)
+int If_RealMat::put(Tcl_Obj *CONST objPtr)
 {
   int  i, j;
   int  nrows = 0, ncols = 0;
@@ -131,7 +147,7 @@ int If_FloatMat::put(Tcl_Obj *CONST objPtr)
 }
 
 //--------------------------------------------------------------------------
-int If_FloatMat::get()
+int If_RealMat::get()
 {
   MAT *mat = *_varPtr;
   int i, iend = mat? mat->m: 0;

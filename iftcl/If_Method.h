@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -47,7 +47,7 @@ class If_Method: public If_Command {
 
  public:
 
-  If_Method(char *ifName,
+  If_Method(const char *ifName,
 	    int (X::*method)(int, char *[], char **), X *object)
     :If_Command(ifName)
       {

@@ -18,9 +18,9 @@ SRCS = 	If.C \
 	If_Variable.C \
 	If_Int.C \
 	If_Bool.C \
-	If_Float.C \
-	If_FloatVec.C \
-	If_FloatMat.C \
+	If_Real.C \
+	If_RealVec.C \
+	If_RealMat.C \
 	If_IntVec.C \
 	If_Class.C
 

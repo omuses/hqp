@@ -1,11 +1,11 @@
 /*
- *  If_Float.C -- class definiton
+ *  If_Real.C -- class definiton
  *
  *  rf, 1/25/97
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2000  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,27 +25,35 @@
 
 #include <math.h>
 
-#include "If_Float.h"
+#include "If_Real.h"
 
 //--------------------------------------------------------------------------
-If_Float::If_Float(char *ifName, If_Float_t *varPtr,
-		   If_FloatWriteIf *callback)
-:If_Variable(ifName)
+If_Real::If_Real(const char *ifName, If_Real_t *varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_Real::If_Real(const char *ifName, If_Real_t *varPtr,
+		 If_RealWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = varPtr;
   _callback = callback;
 }
 
 //--------------------------------------------------------------------------
-If_Float::~If_Float()
+If_Real::~If_Real()
 {
   delete _callback;
 }
 
 //--------------------------------------------------------------------------
-int If_Float::put(Tcl_Obj *CONST objPtr)
+int If_Real::put(Tcl_Obj *CONST objPtr)
 {
-  If_Float_t value;
+  If_Real_t value;
 
   // parse the new value
   //--------------------
@@ -67,7 +75,7 @@ int If_Float::put(Tcl_Obj *CONST objPtr)
 }
 
 //--------------------------------------------------------------------------
-int If_Float::get()
+int If_Real::get()
 {
   Tcl_Obj *objPtr = Tcl_NewDoubleObj(*_varPtr);
 

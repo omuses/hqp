@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -39,7 +39,7 @@ class If_Command: public If_Element {
 
  protected:
 
-  If_Command(char *ifName);
+  If_Command(const char *ifName);
 
   // interface to Tcl
   //-----------------

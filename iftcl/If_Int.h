@@ -1,9 +1,6 @@
 /*
  *  If_Int.h
  *     - an If_Variable for type Int
- *     - writing may be protected by an optinal write callback,
- *       a pointer to it is passed to the constructor and
- *       deleted by the destuctor
  *
  *  rf, 6/22/94
  *
@@ -12,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -80,7 +77,8 @@ class If_Int: public If_Variable {
   int                  get();
 
  public:
-  If_Int(char *ifName, If_Int_t *varPtr, If_IntWriteIf *callback=NULL);
+  If_Int(const char *ifName, If_Int_t *varPtr, const char *mode = "rw");
+  If_Int(const char *ifName, If_Int_t *varPtr, If_IntWriteIf *callback);
   ~If_Int();
 };
 

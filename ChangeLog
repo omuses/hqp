@@ -1,3 +1,12 @@
+03/17/01: rf
+	- adol-c/SRC/adouble.[hC]: add new constructor
+	  adouble(const badouble&) for use with avector::operator[]
+	  (add adol-c/SRC/adouble.[hC].ori for original versions)
+	- add iftcl/If_String.h
+	- iftcl: declare ifName argument of all constructors const char*,
+	         add constructors to If_Variables for read-write-mode
+	- hqp/Hqp.h: undef Inf before declaring it for Hqp
+	
 02/26/01: rf: change version to 1.7b1
 
 02/26/01: rf

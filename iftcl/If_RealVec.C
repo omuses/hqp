@@ -1,5 +1,5 @@
 /*
- *  If_FloatVec.C -- class definition
+ *  If_RealVec.C -- class definition
  *
  *  rf, 6/22/94
  *
@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,34 +30,50 @@
 #include <string.h>
 #include <malloc.h>
 
-#include "If_FloatVec.h"
+#include "If_RealVec.h"
 
 //--------------------------------------------------------------------------
-If_FloatVec::If_FloatVec(char *ifName, VEC **varPtr,
-			 If_FloatVecWriteIf *callback)
-:If_Variable(ifName)
+If_RealVec::If_RealVec(const char *ifName, VEC **varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_RealVec::If_RealVec(const char *ifName, VECP *varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = (VEC **)varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_RealVec::If_RealVec(const char *ifName, VEC **varPtr,
+		       If_RealVecWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = varPtr;
   _callback = callback;
 }
 
 //--------------------------------------------------------------------------
-If_FloatVec::If_FloatVec(char *ifName, VECP *varPtr,
-			 If_FloatVecWriteIf *callback)
-:If_Variable(ifName)
+If_RealVec::If_RealVec(const char *ifName, VECP *varPtr,
+		       If_RealVecWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = (VEC **)varPtr;
   _callback = callback;
 }
 
 //--------------------------------------------------------------------------
-If_FloatVec::~If_FloatVec()
+If_RealVec::~If_RealVec()
 {
   delete _callback;
 }
 
 //--------------------------------------------------------------------------
-int If_FloatVec::put(Tcl_Obj *CONST objPtr)
+int If_RealVec::put(Tcl_Obj *CONST objPtr)
 {
   int  j;
   int  ncols=0;
@@ -110,7 +126,7 @@ int If_FloatVec::put(Tcl_Obj *CONST objPtr)
 }
 
 //--------------------------------------------------------------------------
-int If_FloatVec::get()
+int If_RealVec::get()
 {
   VEC	*vec = *_varPtr;
   int   j, jend = vec? vec->dim: 0;

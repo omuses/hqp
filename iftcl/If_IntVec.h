@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -83,10 +83,10 @@ class If_IntVec: public If_Variable {
 
  public:
 
-  If_IntVec(char *ifName, IVEC **varPtr, If_IntVecWriteIf *callback=NULL);
-  If_IntVec(char *ifName, IVECP *varPtr, If_IntVecWriteIf *callback=NULL);
-  If_IntVec(char *ifName, IVEC **varPtr, const char *mode);
-  If_IntVec(char *ifName, IVECP *varPtr, const char *mode);
+  If_IntVec(const char *ifName, IVEC **varPtr, const char *mode = "rw");
+  If_IntVec(const char *ifName, IVECP *varPtr, const char *mode = "rw");
+  If_IntVec(const char *ifName, IVEC **varPtr, If_IntVecWriteIf *callback);
+  If_IntVec(const char *ifName, IVECP *varPtr, If_IntVecWriteIf *callback);
   ~If_IntVec();
 };
 

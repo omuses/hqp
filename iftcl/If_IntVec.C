@@ -33,37 +33,37 @@
 #include "If_IntVec.h"
 
 //--------------------------------------------------------------------------
-If_IntVec::If_IntVec(char *ifName, IVEC **varPtr,
-		     If_IntVecWriteIf *callback)
-:If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_IntVec::If_IntVec(char *ifName, IVECP *varPtr,
-		     If_IntVecWriteIf *callback)
-:If_Variable(ifName)
-{
-  _varPtr = (IVEC **)varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_IntVec::If_IntVec(char *ifName, IVEC **varPtr, const char *mode)
-:If_Variable(ifName, mode)
+If_IntVec::If_IntVec(const char *ifName, IVEC **varPtr, const char *mode)
+  :If_Variable(ifName, mode)
 {
   _varPtr = varPtr;
   _callback = NULL;
 }
 
 //--------------------------------------------------------------------------
-If_IntVec::If_IntVec(char *ifName, IVECP *varPtr, const char *mode)
-:If_Variable(ifName, mode)
+If_IntVec::If_IntVec(const char *ifName, IVECP *varPtr, const char *mode)
+  :If_Variable(ifName, mode)
 {
   _varPtr = (IVEC **)varPtr;
   _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_IntVec::If_IntVec(const char *ifName, IVEC **varPtr,
+		     If_IntVecWriteIf *callback)
+  :If_Variable(ifName)
+{
+  _varPtr = varPtr;
+  _callback = callback;
+}
+
+//--------------------------------------------------------------------------
+If_IntVec::If_IntVec(const char *ifName, IVECP *varPtr,
+		     If_IntVecWriteIf *callback)
+  :If_Variable(ifName)
+{
+  _varPtr = (IVEC **)varPtr;
+  _callback = callback;
 }
 
 //--------------------------------------------------------------------------

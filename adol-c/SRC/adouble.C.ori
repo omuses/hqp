@@ -458,13 +458,6 @@ adouble::adouble( const along& a )
   store[location] = store[a.loc()];
 }
 
-/* rf, 03/17/01: add new constructor for use with avector::operator[]       */
-/*--------------------------------------------------------------------------*/
-adouble::adouble( const badouble &ba )
-{ location = next_loc();
-  operator= (ba);
-}
-
 /****************************************************************************/
 /*                                                              DESTRUCTORS */
 

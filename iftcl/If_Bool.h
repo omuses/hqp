@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -80,7 +80,8 @@ class If_Bool: public If_Variable {
 
  public:
 
-  If_Bool(char *ifName, If_Bool_t *varPtr, If_BoolWriteIf *callback=NULL);
+  If_Bool(const char *ifName, If_Bool_t *varPtr, const char *mode = "rw");
+  If_Bool(const char *ifName, If_Bool_t *varPtr, If_BoolWriteIf *callback);
   ~If_Bool();
 };
 

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,8 +30,17 @@
 
 
 //--------------------------------------------------------------------------
-If_Bool::If_Bool(char *ifName, If_Bool_t *varPtr, If_BoolWriteIf *callback)
-:If_Variable(ifName)
+If_Bool::If_Bool(const char *ifName, If_Bool_t *varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_Bool::If_Bool(const char *ifName, If_Bool_t *varPtr,
+		 If_BoolWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = varPtr;
   _callback = callback;

@@ -1,15 +1,12 @@
 /*
- *  If_FloatVec.h
- *   - vectors of floats (currently supported: Meschach VEC*)
+ * If_FloatVec.h --
+ *     - old name for If_RealVec (provided for backward compatibility)
  *
- *  rf, 2/7/97
- *
- *  rf, 8/13/98
- *   - use typed Tcl 8 objects instead of strings
+ *  rf, 12/3/00
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,64 +27,8 @@
 #ifndef If_FloatVec_H
 #define If_FloatVec_H
 
-// Include file with declaration of vector and matrix type.
-#include "Meschach.h"
+#include "If_RealVec.h"
 
-#include "If_Variable.h"
-
-// typedef for a callback for write-access
-//----------------------------------------
-class If_FloatVecWriteIf {
-
- public:
-  virtual ~If_FloatVecWriteIf() {}
-  virtual int write(VEC *newVEC)=0;
-};
-
-template <class X>
-class If_FloatVecWriteCB: public If_FloatVecWriteIf {
-
- protected:
-  X	*_object;
-  int	(X::*_write)(VEC *);
-
- public:
-  If_FloatVecWriteCB(int (X::*n_write)(VEC *), X *n_object)
-    {
-      assert(n_write != NULL && n_object != NULL);
-      _write = n_write;
-      _object = n_object;
-    }
-  int write(VEC *newVEC)
-    {
-      return (_object->*_write)(newVEC);
-    }
-};
-
-// foreward declaration for a VECP
-class VECP;
-
-// class declaration
-//------------------
-class If_FloatVec: public If_Variable {
-
- protected:
-
-  VEC			**_varPtr;
-  If_FloatVecWriteIf  	*_callback;
-
-  // define abstract methods of If_Variable
-  //---------------------------------------
-  int                  put(Tcl_Obj *CONST objPtr);
-  int                  get();
-
- public:
-
-  If_FloatVec(char *ifName, VEC **varPtr,
-	      If_FloatVecWriteIf *callback=NULL);
-  If_FloatVec(char *ifName, VECP *varPtr,
-	      If_FloatVecWriteIf *callback=NULL);
-  ~If_FloatVec();
-};
+typedef If_RealVec If_FloatVec;
 
 #endif

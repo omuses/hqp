@@ -127,6 +127,7 @@ extern "C" {
 			MATP Lxx, MATP Luu, MATP Lxu);
 }
 
+#undef Inf
 /** Infinity for non existing constraints and numerical overflow */
 const Real Inf = HUGE_VAL;
 

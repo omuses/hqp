@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,8 +26,17 @@
 #include "If_Int.h"
 
 //--------------------------------------------------------------------------
-If_Int::If_Int(char *ifName, If_Int_t *varPtr, If_IntWriteIf *callback)
-:If_Variable(ifName)
+If_Int::If_Int(const char *ifName, If_Int_t *varPtr, const char *mode)
+  :If_Variable(ifName, mode)
+{
+  _varPtr = varPtr;
+  _callback = NULL;
+}
+
+//--------------------------------------------------------------------------
+If_Int::If_Int(const char *ifName, If_Int_t *varPtr,
+	       If_IntWriteIf *callback)
+  :If_Variable(ifName)
 {
   _varPtr = varPtr;
   _callback = callback;

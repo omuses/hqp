@@ -1,12 +1,15 @@
 /*
  * If_Real.h --
- *     - new name for If_Float
+ *     - an If_Variable for real numbers (currently supported: double)
  *
- *  rf, 12/3/00
+ *  rf, 2/7/97
+ *
+ *  rf, 8/13/98
+ *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,8 +30,60 @@
 #ifndef If_Real_H
 #define If_Real_H
 
-#include "If_Float.h"
+#include "If_Variable.h"
 
-typedef If_Float If_Real;
+typedef double If_Real_t;
+
+// callback for write-access
+//--------------------------
+class If_RealWriteIf {
+
+ public:
+  virtual ~If_RealWriteIf() {}
+  virtual int write(If_Real_t newVal)=0;
+};
+
+template <class X>
+class If_RealWriteCB: public If_RealWriteIf {
+
+ protected:
+  X	*_object;
+  int	(X::*_write)(If_Real_t);
+
+ public:
+  If_RealWriteCB(int (X::*n_write)(If_Real_t), X *n_object)
+    {
+      assert(n_write != NULL && n_object != NULL);
+      _write = n_write;
+      _object = n_object;
+    }
+  int write(If_Real_t newVal)
+    {
+      return (_object->*_write)(newVal);
+    }
+};
+
+
+// class declaration
+//------------------
+class If_Real: public If_Variable {
+
+ protected:
+
+  If_Real_t          *_varPtr;
+  If_RealWriteIf     *_callback;
+
+  // define abstract methods of If_Variable
+  //---------------------------------------
+  int                put(Tcl_Obj *CONST objPtr);
+  int                get();
+
+ public:
+
+  If_Real(const char *ifName, If_Real_t *varPtr, const char *mode = "rw");
+  If_Real(const char *ifName, If_Real_t *varPtr, If_RealWriteIf *callback);
+  ~If_Real();
+};
+
 
 #endif

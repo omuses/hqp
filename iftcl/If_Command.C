@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,8 +28,8 @@
 
 
 //--------------------------------------------------------------------------
-If_Command::If_Command(char *ifName)
-:If_Element(ifName)
+If_Command::If_Command(const char *ifName)
+  :If_Element(ifName)
 {
   Tcl_CreateCommand(theInterp, _ifName, &tclCmd, (ClientData)this, NULL);
 }

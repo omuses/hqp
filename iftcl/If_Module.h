@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2000  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -89,7 +89,7 @@ class If_Module: public If_Command {
 
  public:
 
-  If_Module(char *ifName, X **module, If_ClassList<X>*& list)
+  If_Module(const char *ifName, X **module, If_ClassList<X>*& list)
     :If_Command(ifName),
       _list(list)
       {

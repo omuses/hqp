@@ -390,8 +390,6 @@ class adouble:public badouble{
   adouble( const adouble& );
   adouble( void );
   adouble( double );
-  /* rf, 03/17/01: add new constructor for use with avector::operator[] */
-  adouble( const badouble& );
   /* adub prevents postfix operators to occur on the left 
      side of an assignment which would not work  */
   adub operator++( int );
