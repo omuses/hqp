@@ -32,8 +32,8 @@
 #include <math.h>
 
 extern "C" {
-#include <matrix2.h>
-#include <sparse2.h>
+#include <meschach/matrix2.h>
+#include <meschach/sparse2.h>
 }
 
 #include <If_Int.h>

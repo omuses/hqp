@@ -36,7 +36,7 @@
 #include "Omu_IntIMP.h"
 
 extern "C" {
-#include <matrix2.h>
+#include <meschach/matrix2.h>
 }
 
 IF_CLASS_DEFINE("IMP", Omu_IntIMP, Omu_Integrator);

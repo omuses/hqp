@@ -27,11 +27,11 @@
 #include <math.h>
 
 extern "C" {
-#include <sparse2.h>
+#include <meschach/sparse2.h>
 }
 
 extern "C" {
-#include <matlab.h>
+#include <meschach/matlab.h>
 }
 
 #include <If_Int.h>

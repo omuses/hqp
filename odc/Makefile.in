@@ -33,7 +33,7 @@ RFLAG = @RFLAG@
 #
 HQP_PREFIX = @prefix@
 
-HQP_INCDIR = -I../meschach -I../iftcl -I../hqp -I../adol-c/SRC -I../omu \
+HQP_INCDIR = -I.. -I../iftcl -I../hqp -I../adol-c/SRC -I../omu \
              -I../hxi -I${HQP_PREFIX}/include/hqp
 
 HQP_LIBDIR = -L../lib $(RFLAG)../lib \

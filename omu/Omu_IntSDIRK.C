@@ -42,7 +42,7 @@
 #include "Omu_IntSDIRK.h"
 
 extern "C" {
-#include <matrix2.h>
+#include <meschach/matrix2.h>
 }
 
 IF_CLASS_DEFINE("SDIRK", Omu_IntSDIRK, Omu_Integrator);

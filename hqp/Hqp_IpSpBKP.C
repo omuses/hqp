@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,7 @@
 #include <math.h>
 
 extern "C" {
-#include <sparse2.h>
+#include <meschach/sparse2.h>
 }
 #include "sprcm.h"
 

@@ -30,8 +30,8 @@
 #define MESCHEXT_EA_H
 
 extern "C" {
-#include <matrix.h>
-#include <sparse.h>
+#include <meschach/matrix.h>
+#include <meschach/sparse.h>
 }
 
 /* Entry level access to data structures                  */

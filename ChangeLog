@@ -1,3 +1,17 @@
+2002-04-21    <rfranke>
+
+	* omu/Omu_IntSDIRK.C, omu/Omu_IntIMP.C, hqp/Hqp_HL_BFGS.C, 
+	hqp/Hqp_HL.C, hqp/Hqp_IpSpSC.C, hqp/meschext_ea.C, 
+	hqp/Hqp_IpLQDOCP.C, hqp/Hqp_IpRedSpBKP.C, hqp/Meschach.h,
+	hqp/meschext_ea.h, hqp/Hqp_IpSpBKP.C:
+	  include Meschach files relative to meschach subdirectory, e.g.:
+	  #include <meschach/matrix.h> instead of #include <matrix.h>
+	This should avoid conflicts with very common names used by Meschach.
+
+	* makedirs.in, hqp_docp/Makefile.in, odc/Makefile.in,
+	Makefile.hqp, Makefile: 
+  	  hide Meschach includes in meschach subdirectory
+
 2002-04-10    <e_arnold>
 
 	* omu/Omu_IntDopri5.[hC]: remove static const from class declaration

@@ -24,20 +24,22 @@ clean:
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile hqp_docp/Makefile
 
-LIB_DIR = $(INSTALL_PREFIX)/lib
+LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include
 INC_DIR = $(INC_DIR_ROOT)/hqp
 install::
 	$(MAKE) -f Makefile.hqp install
 	@PWD=`pwd`
-	@if test ! -d $(LIB_DIR); then mkdir $(LIB_DIR); fi
+# install libomu
+	@if test ! -d $(LIB_DIR_ROOT); then mkdir $(LIB_DIR_ROOT); fi
 	$(INSTALL) lib/$(LIB_PREFIX)omu$(LIB_SUFFIX) \
-	  $(LIB_DIR)/$(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX)
-	rm -f $(LIB_DIR)/$(LIB_PREFIX)omu$(LIB_SUFFIX)
-	cd $(LIB_DIR); \
+	  $(LIB_DIR_ROOT)/$(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX)
+	rm -f $(LIB_DIR_ROOT)/$(LIB_PREFIX)omu$(LIB_SUFFIX)
+	cd $(LIB_DIR_ROOT); \
 	ln -s $(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX) \
 	  $(LIB_PREFIX)omu$(LIB_SUFFIX); \
 	cd $(PWD)
+# make directory structure for includes
 	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
 	@if test ! -d $(INC_DIR)-$(VERSION); then \
 	  mkdir $(INC_DIR)-$(VERSION); fi
@@ -45,6 +47,7 @@ install::
 	cd $(INC_DIR_ROOT); \
 	ln -s hqp-$(VERSION) hqp; \
 	cd $(PWD)
+# install include files
 	for f in adol-c/SRC/*.h omu/*.h hxi/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
 	@if test ! -d $(INC_DIR)/DRIVERS; then mkdir $(INC_DIR)/DRIVERS; fi

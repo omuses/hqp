@@ -11,4 +11,4 @@ OMU_INCDIR = -I../omu
 ADOL_INCDIR = -I../adol-c/SRC
 HQP_INCDIR = -I../hqp
 IF_INCDIR = -I../iftcl
-MES_INCDIR = -I../meschach
+MES_INCDIR = -I..

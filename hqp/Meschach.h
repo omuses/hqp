@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke and Eckhard Arnold
+    Copyright (C) 1994--2002  Ruediger Franke and Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -36,8 +36,8 @@
 #endif
 
 extern "C" {
-#include <matrix.h>
-#include <sparse.h>
+#include <meschach/matrix.h>
+#include <meschach/sparse.h>
 }
 
 extern IVEC *iv_set(IVEC *, int);
