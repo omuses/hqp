@@ -1,3 +1,8 @@
+2004-12-01	<e_arnold>
+	
+	* Makefile:
+	  - use adol-c/Makefile
+	  	  
 2004-10-14	<e_arnold>
 	
 	* adol-c/Makefile.in, adol-c/adolc/Makefile.in, configure.in, 

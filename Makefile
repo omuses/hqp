@@ -16,7 +16,7 @@ omuses:
 adolc:
 	cd adol-c; \
 	$(MAKE) CC=$(ADOL_MCC) CXX=$(ADOL_CC) CFLAGS="$(ADOL_CFLAGS)"; \
-	cd ../..
+	cd ..
 
 test:
 	@if test -n "$(ADOLC_SRCS)"; then \
@@ -38,7 +38,7 @@ clean:
 	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..
-	cd adol-c/adolc; $(MAKE) clean; cd ../..
+	cd adol-c; $(MAKE) clean; cd ..
 	$(MAKE) -f Makefile.hqp clean
 	cd hqp_docp; $(MAKE) clean; cd ..
 	rm -f hqp_cute/*~
@@ -46,7 +46,7 @@ clean:
 
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
-	cd adol-c/adolc; $(MAKE) distclean; cd ../..
+	cd adol-c; $(MAKE) distclean; cd ..
 	-patch -R -p0 < hqp_adolc.patch
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
 
