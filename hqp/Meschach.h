@@ -33,16 +33,6 @@
 #include <meschach/matrix.h>
 #include <meschach/sparse.h>
 
-#undef Inf
-/** Infinity for non existing constraints and numerical overflow */
-const Real Inf = HUGE_VAL;
-
-/** check if a number is finite */
-inline bool is_finite(Real x)
-{
-  return -Inf < x && x < Inf;
-}
-
 /** @name Additional Meschach functions */
 //@{
 extern IVEC *iv_set(IVEC *, int);
@@ -381,6 +371,16 @@ typedef SPMAT* SPMATP;
 
 /** Place holder for wrapper of Meschach BAND* */
 typedef BAND* BANDP;
+
+#undef Inf
+/** Infinity for non existing constraints and numerical overflow */
+const Real Inf = HUGE_VAL;
+
+/** check if a number is finite */
+inline bool is_finite(Real x)
+{
+  return -Inf < x && x < Inf;
+}
 
 }; // namespace Mesch
 
