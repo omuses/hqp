@@ -25,7 +25,7 @@ static double c[] = {
 void Prg_TP383omu::setup_stages(IVECP ks, VECP ts)
 {
   // setup a problem with 14 stages and one sample period per stage
-  // stages_alloc() initializes ks and ts and sets _K = _KK = 14
+  // stages_alloc() initializes ks and ts and sets K = KK = 14
   stages_alloc(ks, ts, 14, 1);
 }
 
@@ -34,7 +34,7 @@ void Prg_TP383omu::setup(int k,
 			 Omu_Vector &x, Omu_Vector &u, Omu_Vector &)
 {
   x.alloc(1);
-  if (k < _K)
+  if (k < K())
     u.alloc(1);
 
   // bounds on variables and initial values
@@ -43,7 +43,7 @@ void Prg_TP383omu::setup(int k,
     u.max[0] = 0.04;
     u.initial[0] = 0.01;
   }
-  else if (k < _K) {
+  else if (k < K()) {
     u.min[0] = 0.0;
     u.max[0] = 0.03;
     u.initial[0] = 0.01;
@@ -54,7 +54,7 @@ void Prg_TP383omu::setup(int k,
     x.min[0] = x.max[0] = 0.0;	// s^0
     x.initial[0] = 0.0;
   }
-  else if (k == _K) {
+  else if (k == K()) {
     x.min[0] = x.max[0] = 1.0;	// s^K
   }
 }
@@ -64,7 +64,7 @@ void Prg_TP383omu::update(int kk,
 			  const adoublev &x, const adoublev &u,
 			  adoublev &f, adouble &f0, adoublev &)
 {
-  if (kk < _KK) {
+  if (kk < KK()) {
     f0 = ::a[kk] / u[0];
     f[0] = x[0] + ::c[kk] * u[0];
   }

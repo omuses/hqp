@@ -16,7 +16,7 @@ IF_CLASS_DEFINE("Crane", Prg_Crane, Omu_Program);
 //--------------------------------------------------------------------------
 Prg_Crane::Prg_Crane()
 {
-  _K = 50;
+  set_K(50);
   _tf_guess = 15.0;
   _u_bound = 5.0;
   _phi_bound = 5.0 / 180.0 * 3.14159;
@@ -49,7 +49,7 @@ Prg_Crane::Prg_Crane()
 //--------------------------------------------------------------------------
 void Prg_Crane::setup_stages(IVECP ks, VECP ts)
 {
-  stages_alloc(ks, ts, _K, 1, 0.0, 1.0);
+  stages_alloc(ks, ts, K(), 1, 0.0, 1.0);
 }
 
 //--------------------------------------------------------------------------
@@ -59,7 +59,7 @@ void Prg_Crane::setup(int k,
   double u_guess;
 
   x.alloc(_nx);
-  if (k < _K)
+  if (k < K())
     u.alloc(_nu);
 
   if (k == 0) {
@@ -78,7 +78,7 @@ void Prg_Crane::setup(int k,
     x.initial[offs+2] = 0.0;	// v
     x.initial[offs+3] = 25.0;	// s
   }
-  else if (k == _K) {
+  else if (k == K()) {
     // final state constraints
     x.min[offs+0] = x.max[offs+0] = 0.0;	// phi
     x.min[offs+1] = x.max[offs+1] = 0.0;	// omega
@@ -108,16 +108,16 @@ void Prg_Crane::setup(int k,
 
   x.initial[0] = _tf_guess;
 
-  if (k < _K/2)
+  if (k < K()/2)
     u_guess = -100.0 * mdl / Fscale / (_tf_guess*_tf_guess);
   else
     u_guess = 100.0 * mdl / Fscale / (_tf_guess*_tf_guess);
 
   x.initial[5] = u_guess;
 
-  if (k < _K) {
-    if (k <= _K/2 && k+1 > _K/2)
-      u.initial[0] = 2.0 * u_guess / (_tf_guess / (double)_K);
+  if (k < K()) {
+    if (k <= K()/2 && k+1 > K()/2)
+      u.initial[0] = 2.0 * u_guess / (_tf_guess / (double)K());
     else
       u.initial[0] = 0.0;
   }
@@ -137,7 +137,7 @@ void Prg_Crane::init_simulation(int k,
   }
 
   // set the initial control for each stage
-  if (k < _K)
+  if (k < K())
     u[0] = u.initial[0];
 
   // apply bounds to simulated states
@@ -154,7 +154,7 @@ void Prg_Crane::update(int kk,
 		       const adoublev &x, const adoublev &u,
 		       adoublev &f, adouble &f0, adoublev &c)
 {
-  if (kk < _KK)
+  if (kk < KK())
     f[0] = x[0];	// constant final time
   else
     f0 = x[0];		// optimization criterion

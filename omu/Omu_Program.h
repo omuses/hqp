@@ -139,6 +139,10 @@ class Omu_Program {
   // member access routines
   //
 
+  int		K() {return _K;}
+  void		set_K(int K) {_K = K;}
+  int		KK() {return _KK;}
+  void		set_KK(int KK) {_KK = KK;}
   const IVECP 	ks() {return _ks;}
   const VECP 	ts() {return _ts;}
   int	 	ks(int k) {return _ks[k];}

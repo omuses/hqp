@@ -2,6 +2,10 @@
 
 	* configure.in: change to version 1.7.9d
 
+	* omu/Omu_Program.h: introduce access methods for _K and _KK;
+	  so that they do not need to be accessed directly anymore
+	* odc/Prg*.C: modify examples accordingly
+
 	* hxi/Hxi_mxArray.h: introduce dummy member value to work around
 	  problems with memory management of ADOL-C 1.7.8
 

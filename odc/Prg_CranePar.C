@@ -23,11 +23,11 @@ Prg_CranePar::Prg_CranePar()
 {
   _nx = 5;	// 4 states plus the mass parameter
   offs = 1;	// for the container mass parameter
-  _KK = 1;
+  set_KK(1);
 
   _maxdev = 0.05;
   _seed = 1234;
-  _s_ref = v_get(_KK + 1);
+  _s_ref = v_get(KK() + 1);
   _multistage = true;
 
   _ifList.append(new If_RealVec("prg_s_ref", &_s_ref));
@@ -61,16 +61,16 @@ Prg_CranePar::~Prg_CranePar()
 void Prg_CranePar::setup_stages(IVECP ks, VECP ts)
 {
   if (_multistage) {
-    _K = _KK;
-    stages_alloc(ks, ts, _K, 1);
+    set_K(KK());
+    stages_alloc(ks, ts, K(), 1);
   }
   else {
-    _K = 1;
-    stages_alloc(ks, ts, 1, _KK);
+    set_K(1);
+    stages_alloc(ks, ts, 1, KK());
   }
 
   // resize the vectors for measurement data
-  v_resize(_s_ref, _KK + 1);
+  v_resize(_s_ref, KK() + 1);
 }
 
 //--------------------------------------------------------------------------
@@ -124,13 +124,13 @@ void Prg_CranePar::update(int kk,
   adouble s;
 
   // discrete-time state equation for the mass parameter
-  if (kk < _KK)
+  if (kk < KK())
     f[0] = x[0];
 
   if (_multistage) {
     //
     // We have an optimization problem with one stage for each measurement
-    // point (_K == _KK). This results in 5*(_KK+1) optimization variables.
+    // point (K() == KK()). This results in 5*(KK()+1) optimization variables.
     // The criterion is defined as function of the optimization variable
     // that describes the state s in each stage.
     // 
@@ -140,7 +140,7 @@ void Prg_CranePar::update(int kk,
   else {
     //
     // Alternatively we can formulate an optimization problem with one
-    // stage (_K == 1) and without final states. This results in 5 
+    // stage (K() == 1) and without final states. This results in 5 
     // optimization variables. The initial state value of s is used
     // to formulate the criterion for the first measurement point. 
     // Afterwards the intermediate results for each sample period are used.
@@ -151,7 +151,7 @@ void Prg_CranePar::update(int kk,
       s = f[offs+3];
       f0 += pow(s - _s_ref[kk+1], 2);
     }
-    else if (kk < _KK) {
+    else if (kk < KK()) {
       s = f[offs+3];
       f0 = pow(s - _s_ref[kk+1], 2);
     }

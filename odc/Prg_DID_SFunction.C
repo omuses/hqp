@@ -19,11 +19,11 @@ IF_CLASS_DEFINE("DID_SFunction", Prg_DID_SFunction, Omu_Program);
 //--------------------------------------------------------------------------
 Prg_DID_SFunction::Prg_DID_SFunction()
 {
-  _K = 60;
+  set_K(60);
   _nx = 2;
   _nu = 1;
   _mdl_ny = 2;
-  _dt = 1.0/_K;
+  _dt = 1.0/K();
 
   _mx_dt = mxCreateDoubleMatrix(1, 1, mxREAL);
 
@@ -95,7 +95,7 @@ void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
   assert(value(ssGetSampleTime(_S, 0)) > 0.0);
 
   // allocate stages for optimization
-  stages_alloc(ks, ts, _K, 1, 0.0, _K*value(ssGetSampleTime(_S, 0)));
+  stages_alloc(ks, ts, K(), 1, 0.0, K()*value(ssGetSampleTime(_S, 0)));
 }
 
 //--------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void Prg_DID_SFunction::setup(int k,
 			      Omu_Vector &x, Omu_Vector &u, Omu_Vector &c)
 {
   x.alloc(_nx);
-  if (k < _K)
+  if (k < K())
     u.alloc(_nu);
 
   // initial values
@@ -114,7 +114,7 @@ void Prg_DID_SFunction::setup(int k,
     x.initial[0] = value(mdl_x[0]);
     x.initial[1] = value(mdl_x[1]);
   }
-  if (k < _K)
+  if (k < K())
     u.initial[0] = -2.0;
 
   // initial state constraints
@@ -123,7 +123,7 @@ void Prg_DID_SFunction::setup(int k,
     x.min[1] = x.max[1] = x.initial[1];
   }
   // path constraint
-  else if (k < _K) {
+  else if (k < K()) {
     x.max[1] = 0.01;
   }
   // final state constraints
@@ -134,7 +134,7 @@ void Prg_DID_SFunction::setup(int k,
 
   // optional additional treatment for path constraint
   if (_with_cns) {
-    if (k < _K) {
+    if (k < K()) {
       c.alloc(1);
       c.max[0] = 0.01;
     }
@@ -150,7 +150,7 @@ void Prg_DID_SFunction::update(int kk,
   real_T dt = ssGetSampleTime(_S, 0);
 
   // update constraints and objective for given x and u
-  if (kk < _KK) {
+  if (kk < KK()) {
     real_T *mdl_x = ssGetDiscStates(_S);
     real_T *mdl_u = ssGetInputPortRealSignal(_S, 0);
     real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);

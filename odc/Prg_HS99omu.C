@@ -24,7 +24,7 @@ void Prg_HS99omu::setup_stages(IVECP ks, VECP ts)
   stages_alloc(ks, ts, 7, 1);
 
   // initialize communication time points
-  for (int i = 0; i <= _KK; i++) {
+  for (int i = 0; i <= KK(); i++) {
     ts[i] = ::t[i];
   }
 }
@@ -34,11 +34,11 @@ void Prg_HS99omu::setup(int k,
 			Omu_Vector &x, Omu_Vector &u, Omu_Vector &c)
 {
   x.alloc(3);
-  if (k < _K)
+  if (k < K())
     u.alloc(1);
 
   // bounds on variables and initial values
-  if (k < _K) {
+  if (k < K()) {
     u.min[0] = 0.0;
     u.max[0] = 1.58;
     u.initial[0] = 0.5;
@@ -49,7 +49,7 @@ void Prg_HS99omu::setup(int k,
     for (int i = 0; i < 3; i++)
       x.min[i] = x.max[i] = 0.0;
   }
-  else if (k == _K) {
+  else if (k == K()) {
     x.min[1] = x.max[1] = 1e5;	// q(t_K)
     x.min[2] = x.max[2] = 1e3;	// s(t_K)
   }
@@ -60,7 +60,7 @@ void Prg_HS99omu::update(int kk,
 			 const adoublev &x, const adoublev &u,
 			 adoublev &f, adouble &f0, adoublev &c)
 {
-  if (kk == _KK) {
+  if (kk == KK()) {
     f0 = -x[0]*x[0];	// -r(t_K)^2
   }
 }
