@@ -1,3 +1,6 @@
+2003-09-22    <h_linke>
+	* /omu/Omu_IntSDIRK.C:
+	  bug fix for step size seletion
 2003-09-18    <h_linke>
 	* /omu/Omu_IntOdeTs.[hC]:
 	  adapt to new integrator interface, check for autonomous
