@@ -207,6 +207,10 @@ void Prg_SFunction::setup_model()
   }
 
   _S = Hxi_SimStruct_create(_mdl_path[0] != '\0'? _mdl_path: _mdl_name);
+  if (ssGetErrorStatus(_S)) {
+    fprintf(stderr, "Error creating SimStruct: %s\n", ssGetErrorStatus(_S));
+    m_error(E_FORMAT, ssGetErrorStatus(_S));
+  }
 
   // initialize model name
   ssSetModelName(_S, _mdl_name);
