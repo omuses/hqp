@@ -1,3 +1,8 @@
+2003-06-12    <rfranke>
+
+	* omu/Prg_SFunctionOpt.C (setup):
+	  bug fix for constraints and weights on y0
+
 2003-05-20    <e_arnold>
 	
 	* omu/Omu_IntIMP.[hC]:

@@ -322,7 +322,7 @@ void Prg_SFunctionOpt::setup(int k,
       x.alloc(_nx);
       u.alloc(_nu + spsk*_ns);
       if (k == 0)
-	c.alloc(spsk*(_nc+_nsc) + _ncf);
+	c.alloc(spsk*(_nc+_nsc) + _nc0);
       else
 	c.alloc(spsk*(_nc+_nsc));
     }
