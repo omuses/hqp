@@ -1,3 +1,10 @@
+2003-02-25    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]: correct treatment of du^k
+
+	* odc/runtk: add for running examples with Tk
+	* odc/run, odc/dic_mex_sfunction*.tcl: improve plotting
+
 2003-02-21    <e_arnold>
 
 	* omu/Omu_IntIMP.[hC]: improved Newton's method
@@ -7,6 +14,7 @@
 
 	* odc/Prg_Bio.[hC], odc/bio.tcl: add example problem
 	
+>>>>>>> 1.81
 2003-02-15    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEpt.[hC]:

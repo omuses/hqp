@@ -1,0 +1,11 @@
+#!./odc
+#
+# rf, 2/25/03
+#
+
+## dynamically load Tk for plots before running example
+## (only works with newer Tcl versions)
+
+package require Tk
+
+source run
