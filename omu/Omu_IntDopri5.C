@@ -221,7 +221,7 @@ void Omu_IntDopri5::ode_solve(double tstart, VECP y, const VECP u, double tend)
   if ( res >= 0 )
     res = simulation();
   if ( res < 0 )
-    m_error(E_UNKNOWN, "Omu_IntDopri5::ode_solve");
+    m_error(E_CONV, "Omu_IntDopri5::ode_solve");
 
   for ( i=0; i<(int)_y->dim; i++ )
     y[i] = _y[i];

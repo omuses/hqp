@@ -238,7 +238,7 @@ void Omu_IntGRK4::ode_solve(double tstart, VECP y, const VECP u, double tend)
     result = simulation();
     if ( result < 0 ) {
 	fprintf(stderr, "Omu_IntGRK4::ode_solve");
-	m_error(E_UNKNOWN, "Omu_IntGRK4::ode_solve");
+	m_error(E_CONV, "Omu_IntGRK4::ode_solve");
     }
 
     for ( i = 0; i < (int)_y->dim; i++ )
@@ -318,7 +318,7 @@ int Omu_IntGRK4::lufac_jac(double gamma, MATP fx)
 	       if ( _nsing == 5 ) {
 		   fprintf(stderr, 
 			   "Omu_IntGRK4::lufac_jac singular Jacobian");
-		   m_error(E_SING, 
+		   m_error(E_CONV, 
 			   "Omu_IntGRK4::lufac_jac singular Jacobian");
 	       }
 	);

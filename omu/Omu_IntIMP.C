@@ -223,7 +223,7 @@ void Omu_IntIMP::step(double tstep, double dt, VECP y)
 	if ( v_norm2(_res) < 0.1*(_atol+_rtol*v_norm2(_k1)) )
 	    break;
 	else if ( inewton == _maxiters-1 )
-	    m_error(E_INTERN, 
+	    m_error(E_CONV, 
 		    "Omu_IntIMP::ode_solve Newton method failed to converge");
     
 	// (re)calculate and factorize Jacobian
@@ -323,7 +323,7 @@ void Omu_IntIMP::ode_solve(double tstart, VECP y, const VECP u, double tend)
 	while ( t < tend ) {
 	    _dt = dt;  // keep last 'regular' step size
 	    if ( dt < 10.0*MACHEPS*t ) 
-		m_error(E_INTERN, 
+		m_error(E_CONV, 
 			"Omu_IntIMP::ode_solve step size too small");
 	    if ( t+dt > tend ) 
 		dt = tend-t;

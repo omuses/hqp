@@ -542,8 +542,8 @@ void Omu_IntDASPK::solve(int kk, double tstart, double tend,
     v_foutput(stderr, _yprime);
     v_foutput(stderr, _y);
     */
-    m_error(E_UNKNOWN,
-	  "Omu_IntDASPK::solve that failed in calling DASPK");
+    m_error(E_CONV,
+	    "Omu_IntDASPK::solve that failed in calling DASPK");
   }
 
   //

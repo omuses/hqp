@@ -155,7 +155,7 @@ void Omu_IntRKsuite::ode_solve(double tstart, VECP y, const VECP u,
     if (CFLAG > 1)
       fprintf(stderr, "RKsuite message %d at time %g\n", CFLAG, TNOW);
     if (CFLAG > 4)
-      m_error(E_UNKNOWN, "Omu_IntRKsuite::step");
+      m_error(E_CONV, "Omu_IntRKsuite::step");
   }
 
   integer TOTF, STPCST, STPSOK;

@@ -1,3 +1,16 @@
+2003-09-09    <rfranke>
+
+	* omu/Omu_Integrator.h, omu/Hqp_Omuses.C,
+	  omu/Omu_IntDASPK.C, omu/Omu_IntDopri5.C, omu/Omu_IntIMP.C,
+	  omu/Omu_IntGRK4.C, omu/Omu_IntOdeTs.C, omu/Omu_IntRKsuite.C,
+	  omu/Omu_IntSDIRK.C
+	 agree on error E_CONV for indicating failed convergence of integrator
+	 during optimization step length test
+
+	* hxi/Hxi_MEX_SFunction.C:
+	  add default S-function methods to avoid NULL pointers
+	  if dynamic load fails
+
 2003-08-22    <rfranke>
 
 	* omu/Omu_Program.h: make prg_t0, prg_tf and prg_ts consistent

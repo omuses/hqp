@@ -475,12 +475,13 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
       _prg->consistic(kk, _prg->ts(kk), x0k, uk, xtk);
       v_copy(xtk, xfk);
 
-      m_catchall(// try
-		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				    xk, uk, _prg, Fk, xfk),
-		 // catch
-		 f0 = Inf;
-		 return);
+      m_catch(E_CONV,
+	      // try
+	      _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+				 xk, uk, _prg, Fk, xfk),
+	      // catch
+	      f0 = Inf;
+	      return);
     }
 
     f0k = 0.0;
@@ -612,12 +613,13 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
       m_mlt(xtk.Jx, x0k.Su, xfk.Su);
       m_add(xfk.Su, xtk.Ju, xfk.Su);
 
-      m_catchall(// try
-		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				    xk, uk, _prg, Fk, xfk),
-		 // catch
-		 f0 = Inf;
-		 return);
+      m_catch(E_CONV,
+	      // try
+	      _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+				 xk, uk, _prg, Fk, xfk),
+	      // catch
+	      f0 = Inf;
+	      return);
     }
 
     //

@@ -105,6 +105,8 @@ class Omu_Integrator {
         initial sensitivity matrices xt.Sx, dim(xt.Sx)=_nxt._nx, and 
         xt.Su, dim(xt.Su)=_nxt._nu, if _sa is true
       @retval xt result at tend; xt.Sx and xt.Su at tend if _sa is true
+      @throw E_CONV indicate that the integrator failed to converge; 
+        may be caught during optimization step length test
   */
   virtual void solve(int kk, double tstart, double tend,
 		     const Omu_VariableVec &x, const Omu_VariableVec &u,
@@ -153,6 +155,8 @@ class Omu_Integrator {
         including structurally analyzed Jacobians Fc.Jx, Fc.Jdx, Fc.Jq
       @retval xc continuous-time states at tend;
         sensitivities xc.Sq at tend if _sa is true
+      @throw E_CONV indicate that the integrator failed to converge; 
+        may be caught during optimization step length test
   */
   virtual void solve(int kk, double tstart, double tend,
 		     Omu_StateVec &xc, Omu_StateVec &dxc, Omu_Vec &q,
@@ -231,7 +235,7 @@ class Omu_Integrator {
 
   /**
    * Boolean to indicate if sensitivities should be considered
-   * in error test (default: false).
+   * for error tolerance (default: false).
    */
   bool		_serr;
 
@@ -258,12 +262,12 @@ class Omu_Integrator {
   double	_stepsize;
 
   /**
-   * Relative integration error (only for variable stepsize).
+   * Relative integration error tolerance (only for variable stepsize).
    */
   double        _rtol;
 
   /**
-   * Absolute integration error (only for variable stepsize).
+   * Absolute integration error tolerance (only for variable stepsize).
    */
   double        _atol;
 
