@@ -277,18 +277,27 @@ void Omu_IntIMP::step(double tstep, double dt, VECP y)
 }
 
 //--------------------------------------------------------------------------
+void Omu_IntIMP::init_stage(int k,
+			    const Omu_States &x, const Omu_Vector &u,
+			    const Omu_DepVec &, bool sa)
+{
+  Omu_IntODE::init_stage(k, x, u, sa);
+
+  if ( _nv ) {
+    m_error(E_SIZES, "Omu_IntIMP::init_stage");
+  }
+
+  _npar = _nd + _nu;
+  realloc();
+}
+
+//--------------------------------------------------------------------------
 void Omu_IntIMP::ode_solve(double tstart, VECP y, const VECP u, double tend)
 {
 
     double t, dt, err, tol, ynorm, dtnew;
     int i;
 
-    if ( _nv ) {
-	m_error(E_SIZES, "Omu_IntIMP::ode_solve");
-    }
-
-    _npar = u->dim;
-    realloc();
     v_copy(u, _u);
 
     if ( _stepsize > 0.0 ) {

@@ -43,7 +43,11 @@ class Omu_IntIMP: public Omu_IntODE {
 
   char *name() {return "IMP";}
 
-  // interface routine
+  // interface routines
+  void init_stage(int k,
+		  const Omu_States &x, const Omu_Vector &u,
+		  const Omu_DepVec &F, bool sa = false);
+
   void ode_solve(double tstart, VECP y, const VECP u, double tend);
 
  private:
