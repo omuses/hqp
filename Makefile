@@ -38,7 +38,7 @@ clean:
 	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..
-	cd adol-c; $(MAKE) clean; cd ..
+	if test -n "$(ADOLC_SRCS)"; then cd adol-c; $(MAKE) clean; cd ..; fi
 	$(MAKE) -f Makefile.hqp clean
 	cd hqp_docp; $(MAKE) clean; cd ..
 	rm -f hqp_cute/*~
@@ -46,8 +46,10 @@ clean:
 
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
-	cd adol-c; $(MAKE) distclean; cd ..
-	-patch -R -p0 < hqp_adolc.patch
+	if test -n "$(ADOLC_SRCS)"; then \
+	cd adol-c; $(MAKE) distclean; cd ..; \
+	patch -t -R -p0 < hqp_adolc.patch; \
+	fi
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
