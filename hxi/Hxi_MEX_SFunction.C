@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,11 @@
 #define Hxi_MEX_SFunction_C
 #include "Hxi_MEX_SFunction.h"
 
+#if defined(_MSC_VER)
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
 
 // indices and size for MEX call argument
 const int_T Hxi_NRHS = 4;	// number of right hand side arguments
@@ -43,8 +47,10 @@ typedef void
 //-------------------------------------------------------------------
 // callback for allocating input ports
 //-------------------------------------------------------------------
-static int_T setNumInputPorts(SimStruct *S, int_T nuPorts)
+static int_T setNumInputPorts(void *arg, int_T nuPorts)
 {
+  SimStruct *S = (SimStruct *)arg;
+
   if (nuPorts < 0) {
     return 0;
   }
@@ -64,8 +70,10 @@ static int_T setNumInputPorts(SimStruct *S, int_T nuPorts)
 //-------------------------------------------------------------------
 // callback for allocating output ports
 //-------------------------------------------------------------------
-static int_T setNumOutputPorts(SimStruct *S, int_T nyPorts)
+static int_T setNumOutputPorts(void *arg, int_T nyPorts)
 {
+  SimStruct *S = (SimStruct *)arg;
+
   if (nyPorts < 0) {
     return 0;
   }
@@ -107,8 +115,10 @@ static int_T setOutputPortDimensionInfo(SimStruct *S, int_T port,
 //-------------------------------------------------------------------
 // callback for allocating data work records
 //-------------------------------------------------------------------
-static int_T setNumDWork(SimStruct *S, int_T nDWork)
+static int_T setNumDWork(void *arg, int_T nDWork)
 {
+  SimStruct *S = (SimStruct *)arg;
+
   if (nDWork < 0) {
     return 0;
   }
@@ -158,9 +168,15 @@ void Hxi_SimStruct_destroy(SimStruct *S)
     return;
 
   // obtain handle and release MEX S-function
+#if defined(_MSC_VER)
+  HMODULE handle = GetModuleHandle(ssGetPath(S));
+  if (handle)
+    FreeLibrary(handle);
+#else
   void *handle = dlopen(ssGetPath(S), RTLD_LAZY);
   if (handle)
     dlclose(handle);
+#endif
 
   // free memory
   mxFree(ssGetTPtr(S));
@@ -178,21 +194,38 @@ void Hxi_SimStruct_destroy(SimStruct *S)
 //-------------------------------------------------------------------
 void mdlInitializeSizes(SimStruct *S)
 {
+  int i, ip;
+
   // get handle to MEX S-function
+#if defined(_MSC_VER)
+  HMODULE handle = LoadLibrary(ssGetPath(S));
+  if (!handle) {
+    ssSetErrorStatus(S, "LoadLibrary failed");
+    return;
+  }
+#else
   void *handle = dlopen(ssGetPath(S), RTLD_LAZY);
   if (!handle) {
     ssSetErrorStatus(S, dlerror());
     return;
   }
+#endif
 
   // get pointer to entry point mexFunction
   mexFunction_t *mexFunction_p;
+#if defined(_MSC_VER)
+  mexFunction_p = (mexFunction_t *)GetProcAddress(handle, "mexFunction");
+  if (!mexFunction_p) {
+    ssSetErrorStatus(S, "GetProcAddress failed for mexFunction");
+    return;
+  }
+#else
   mexFunction_p = (mexFunction_t *)dlsym(handle, "mexFunction");
   if (!mexFunction_p) {
     ssSetErrorStatus(S, dlerror());
     return;
   }
-
+#endif
   //
   // initialize SimStruct via MEX calling interface
   //   - get pointers to S-function methods
@@ -205,7 +238,7 @@ void mdlInitializeSizes(SimStruct *S)
   plhs[0] = NULL;
 
   mxArray *prhs[Hxi_NRHS];
-  for (int i = 0; i < Hxi_NRHS; i++)
+  for (i = 0; i < Hxi_NRHS; i++)
     prhs[i] = NULL;
 
   // pass pointer to SimStruct in argument Hxi_RHS_X
@@ -213,7 +246,7 @@ void mdlInitializeSizes(SimStruct *S)
   prhs[Hxi_RHS_X] = mxCreateDoubleMatrix(m, 1, mxREAL);
   real_T *pr = (real_T*)mxGetPr(prhs[Hxi_RHS_X]);
   int_T *intS = (int_T *)&S;
-  for (int i = 0; i < m-1; i++)
+  for (i = 0; i < m-1; i++)
     pr[i] = (real_T)intS[i];
   // indicate level 2 S-function to get pointers to S-function methods
   pr[m-1] = SIMSTRUCT_VERSION_LEVEL2;
@@ -228,7 +261,7 @@ void mdlInitializeSizes(SimStruct *S)
 
   // free call arguments
   mxDestroyArray(plhs[0]);
-  for (int i = 0; i < Hxi_NRHS; i++)
+  for (i = 0; i < Hxi_NRHS; i++)
     mxDestroyArray(prhs[i]);
 
   // return if S-function's mdlInitializeSizes failed
@@ -258,12 +291,12 @@ void mdlInitializeSizes(SimStruct *S)
     // (sensible as NumInputPorts is stored at the same place as NumInputs)
     nu = nuPorts;
     setNumInputPorts(S, nuPorts);
-    for (int ip = 0; ip < nuPorts; ip++)
+    for (ip = 0; ip < nuPorts; ip++)
       ssSetInputPortWidth(S, ip, 1);
   }
   else {
     // level 2: count number of inputs of all ports,
-    for (int ip = 0; ip < ssGetNumInputPorts(S); ip++) {
+    for (ip = 0; ip < ssGetNumInputPorts(S); ip++) {
       // set dynamically sized ports to width one
       if (ssGetInputPortWidth(S, ip) == DYNAMICALLY_SIZED)
 	ssSetInputPortWidth(S, ip, 1);
@@ -279,12 +312,12 @@ void mdlInitializeSizes(SimStruct *S)
     // (sensible as NumOutputPorts is stored at the same place as NumOutputs)
     ny = nyPorts;
     setNumOutputPorts(S, nyPorts);
-    for (int ip = 0; ip < nyPorts; ip++)
+    for (ip = 0; ip < nyPorts; ip++)
       ssSetOutputPortWidth(S, ip, 1);
   }
   else {
     // level 2: count number of outputs of all ports,
-    for (int ip = 0; ip < ssGetNumOutputPorts(S); ip++) {
+    for (ip = 0; ip < ssGetNumOutputPorts(S); ip++) {
       // set dynamically sized ports to width one
       if (ssGetOutputPortWidth(S, ip) == DYNAMICALLY_SIZED)
 	ssSetOutputPortWidth(S, ip, 1);
@@ -294,7 +327,7 @@ void mdlInitializeSizes(SimStruct *S)
 
   // count number of dwork array elements
   int ndwel = 0;
-  for (int i = 0; i < ndw; i++)
+  for (i = 0; i < ndw; i++)
     ndwel += ssGetDWorkWidth(S, i);
 
   // allocate memory for real_T
@@ -311,12 +344,12 @@ void mdlInitializeSizes(SimStruct *S)
   pptr += npw;
 
   // setup pointers to inputs
-  for (int i = 0; i < nu; i++)
+  for (i = 0; i < nu; i++)
     pptr[i] = &rptr[i];
 
   // setup inputs
   ssSetU(S, rptr);  // level 1 S-function
-  for (int ip = 0; ip < nuPorts; ip++) {
+  for (ip = 0; ip < nuPorts; ip++) {
     if (ssGetInputPortRequiredContiguous(S, ip))
       // setup input signals
       ssSetInputPortSignal(S, ip, rptr);
@@ -329,7 +362,7 @@ void mdlInitializeSizes(SimStruct *S)
 
   // setup outputs
   ssSetY(S, rptr);  // level 1 S-function
-  for (int ip = 0; ip < nyPorts; ip++) {
+  for (ip = 0; ip < nyPorts; ip++) {
     // setup pointers to outputs in SimStruct
     ssSetOutputPortSignal(S, ip, rptr);
     rptr += ssGetOutputPortWidth(S, ip);
@@ -344,7 +377,7 @@ void mdlInitializeSizes(SimStruct *S)
   rptr += nx;
 
   // setup dwork arrays
-  for (int i = 0; i < ndw; i++) {
+  for (i = 0; i < ndw; i++) {
     ssSetDWork(S, i, rptr);
     rptr += ssGetDWorkWidth(S, i);
   }
@@ -360,7 +393,7 @@ void mdlInitializeSizes(SimStruct *S)
   iptr[0] = 1; // required for ssIsContinuousTask(0) == true
   iptr += nst;
   ssSetSampleTimeTaskIDPtr(S, iptr);
-  for (int i = 0; i < nst; i++)
+  for (i = 0; i < nst; i++)
     *iptr++ = i; // task id and sample time index are identical
 
   mxFree(ssGetTPtr(S));

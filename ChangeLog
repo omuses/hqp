@@ -1,5 +1,12 @@
 2002-04-21    <rfranke>
 
+	* omu/Prg_SFunction*.[hC]: add predefined optimization and
+	  estimation problems for S-functions 
+	* configure.in, makedefs.in, makedirs.in, omu/Omu_Init.C,
+	omu/Makefile, odc/Makefile.in: adapt accordingly
+	* hxi/Hxi_MEX_SFunction.C: extend dynamic loading for cl
+
+
 	* hqp/Hqp.h, hqp/Hqp_Docp.[hC]:	change signature of setup_struct to
 	  additionally pass independent variables xk and uk
 	* hqp/Hqp.h: rename Hqp_Docp_spec to Hqp_DocpSpec and
@@ -8,6 +15,7 @@
 	* hqp_dopc/Docp_Main.C, hqp_docp/Prg_DID.[hC]: adapt to changes
 	* omu/Hqp_DocpStub.[hC]: rename from Hqp_Docp_stub.[hC] and adapt
 	* omu/Makefile: adapt to changes
+
 
 	* omu/Omu_Dependents.h, omu/Omu_Deps.h:
 	let operator= return an object reference

@@ -3,7 +3,7 @@
 #
 
 include ../makedirs
-# (makedirs should define TCL_LIBDIR)
+# (makedirs should define TCL_LIBDIR and MEX_LIBDIR)
 
 O = @OBJ_SUFFIX@
 
@@ -17,6 +17,7 @@ O = @OBJ_SUFFIX@
 # additional objects to create an executable
 # 
 FORTRAN_LIBS = @FORTRAN_LIBS@
+MEX_MACH_OBJS = @MEX_MACH_OBJS@
 MACH_OBJS = @TCL_LIBS@ $(FORTRAN_LIBS) -lm
 
 LFLAG = @LFLAG@
@@ -49,7 +50,7 @@ CC = @CC@
 CFLAGS = @GFLAG@ @WFLAG@ -DDEBUG \
          ${HQP_INCDIR} ${TCL_INCDIR}
 
-LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR}
+LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR} ${MEX_LIBDIR}
 
 #
 # machine independent part
@@ -75,7 +76,7 @@ RESULT = odc
 
 all: $(OBJS) Makefile
 	$(CXX) -o $(RESULT) $(LDFLAGS) $(OBJS) \
-	-lomu -lhqp $(MACH_OBJS)
+	-lomu -lhqp $(MEX_MACH_OBJS) $(MACH_OBJS)
 
 gmalloc $(GMALLOC_O): $(GMALLOC_O:.o=.c)
 	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \

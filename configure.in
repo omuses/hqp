@@ -426,7 +426,6 @@ if test "$omu_fortran" != no; then
   esac
 fi
 
-AC_SUBST(OMU_DEFS)
 AC_SUBST(FORTRAN_COMP)
 AC_SUBST(FORTRAN_FLAGS)
 AC_SUBST(FORTRAN_LIBS)
@@ -439,20 +438,75 @@ AC_SUBST(OMU_INTRKSUITE_C)
 AC_SUBST(RKSUITE_O)
 
 # -----------------------------------------------------------------------
+# 	Configure support for MEX
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--enable-mex])
+AC_ARG_ENABLE(mex,
+    [  --enable-mex     include MEX S-function interface with Omuses],
+    [omu_mex=$enableval], [omu_mex=no])
+AC_MSG_RESULT($omu_mex)
+
+
+MEX_SRCS=""
+MEX_MACH_OBJS=""
+MEX_INCDIR1=""
+MEX_INCDIR2=""
+MEX_LIBDIR=""
+
+if test "$omu_mex" != no; then
+  
+  AC_MSG_CHECKING([--with-matlab])
+  AC_ARG_WITH(matlab,
+      [  --with-matlab       directory containing Matlab installation],
+      [with_matlab=$withval])
+  AC_MSG_RESULT("$with_matlab")
+
+  AC_MSG_CHECKING([--with-matlab-libs])
+  AC_ARG_WITH(matlab-libs,
+      [  --with-matlab-libs  directory containing Matlab run-time libraries],
+      [with_matlab_libs=$withval])
+  AC_MSG_RESULT("$with_matlab_libs")
+
+  if test ! -z "${with_matlab}"; then
+    if test ! -z "${with_matlab_libs}"; then
+      MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
+      MEX_MACH_OBJS="-lmatlb -lmx -lmex"
+      MEX_INCDIR1="$with_matlab"
+      MEX_INCDIR2="$with_matlab/extern/include"
+      MEX_LIBDIR="$with_matlab_libs"
+      OMU_DEFS="$OMU_DEFS -DOMU_WITH_MEX=1"
+    fi
+  fi
+  if test -z "${MEX_LIBDIR}"; then
+    AC_MSG_ERROR([for --enable-mex need --with-matlab and --with-matlab-libs])
+  fi
+fi
+
+AC_SUBST(MEX_SRCS)
+AC_SUBST(MEX_MACH_OBJS)
+AC_SUBST(MEX_INCDIR1)
+AC_SUBST(MEX_INCDIR2)
+AC_SUBST(MEX_LIBDIR)
+
+AC_SUBST(OMU_DEFS)
+
+
+# -----------------------------------------------------------------------
 # 	Configure GNU malloc if enabled or if system malloc is buggy
 # -----------------------------------------------------------------------
 
 # defaults to disable GNU malloc
 GMALLOC_O=""
 
-AC_MSG_CHECKING([--enable_gmalloc])
+AC_MSG_CHECKING([--enable-gmalloc])
 AC_ARG_ENABLE(gmalloc,
     [  --enable-gmalloc    link ODC with GNU malloc],
     [odc_gmalloc=$enableval], [odc_gmalloc=no])
 AC_MSG_RESULT($odc_gmalloc)
 
 if test "$odc_gmalloc" = no; then
-  AC_MSG_CHECKING("for malloc bug")
+  AC_MSG_CHECKING("for malloc(0) == NULL")
   AC_LANG_C
   AC_TRY_RUN([
   #include <stdlib.h>
@@ -479,7 +533,7 @@ AC_SUBST(GMALLOC_O)
 # 	Configure support for CUTE
 # -----------------------------------------------------------------------
 
-AC_MSG_CHECKING([--enable_cute])
+AC_MSG_CHECKING([--enable-cute])
 AC_ARG_ENABLE(cute,
     [  --enable-cute     include CUTE interface with HQP],
     [hqp_cute=$enableval], [hqp_cute=no])
@@ -498,7 +552,7 @@ AC_SUBST(CUTE_SRCS)
 # 	Configure support for Ascend
 # -----------------------------------------------------------------------
 
-AC_MSG_CHECKING([--enable_ascend])
+AC_MSG_CHECKING([--enable-ascend])
 AC_ARG_ENABLE(ascend,
     [  --enable-ascend     include preliminary Ascend4 interface with HQP],
     [hqp_ascend=$enableval], [hqp_ascend=no])

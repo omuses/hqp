@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -45,6 +45,10 @@
 #include "Omu_IntRKsuite.h"
 #include "Omu_IntDASPK.h"
 #endif
+#ifdef OMU_WITH_MEX
+#include "Prg_SFunctionOpt.h"
+#include "Prg_SFunctionEst.h"
+#endif
 
 static void Omu_ClassAlloc()
 {
@@ -57,6 +61,10 @@ static void Omu_ClassAlloc()
 #ifdef OMU_WITH_FORTRAN
   IF_CLASS_ALLOC("DASPK", Omu_IntDASPK, Omu_Integrator);
   IF_CLASS_ALLOC("RKsuite", Omu_IntRKsuite, Omu_Integrator);
+#endif
+#ifdef OMU_WITH_MEX
+  IF_CLASS_ALLOC("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
+  IF_CLASS_ALLOC("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 #endif
 }
 #endif

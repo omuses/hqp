@@ -5,7 +5,8 @@ include ../makedirs
 include ../makedefs
 
 CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
-          $(HQP_INCDIR) $(ADOL_INCDIR) $(OMU_DEFS)
+          $(HQP_INCDIR) $(ADOL_INCDIR) $(HXI_INCDIR) $(MEX_INCDIR) \
+          $(OMU_DEFS)
 
 SRCS =	Omu_Init.C \
 	Hqp_DocpStub.C \
@@ -24,7 +25,8 @@ SRCS =	Omu_Init.C \
 	Omu_IntIMP.C \
 	Omu_IntSDIRK.C \
         $(OMU_INTRKSUITE_C) \
-        $(OMU_INTDASPK_C)
+        $(OMU_INTDASPK_C) \
+	$(MEX_SRCS)
 
 OBJS = $(SRCS:.C=.o) $(RKSUITE_O)
 
@@ -42,6 +44,9 @@ daspk:
 $(RKSUITE_O): $(RKSUITE_O:.o=.f)
 	PWD=`pwd`; cd `dirname $(RKSUITE_O)`; \
 	$(FORTRAN_COMP) $(FORTRAN_FLAGS) -c rksuite.f; cd $(PWD)
+
+Hxi_MEX_SFunction.o: ../hxi/Hxi_MEX_SFunction.C
+	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_MEX_SFunction.C
 
 .C.o:
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<
