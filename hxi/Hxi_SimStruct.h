@@ -95,12 +95,14 @@
 #define ssSetOutputPortSampleTime(S, port, val) HXI_NOT_IMPLEMENTED
 #define ssSetOutputPortOffsetTime(S, port, val) HXI_NOT_IMPLEMENTED
 #define ssSetOutputPortOptimOpts(S, port, val)  HXI_NOT_IMPLEMENTED
-#define ssSetNumSampleTimes(S, ns) 	(S)->setNumSampleTimes(ns)
+#define ssSetNumSampleTimes(S, nst) 	(S)->setNumSampleTimes(nst)
 #define ssGetNumSampleTimes(S) 		(S)->getNumSampleTimes()
 #define ssSetSampleTime(S, idx, val) 	(S)->setSampleTime(idx, val)
 #define ssGetSampleTime(S, idx) 	(S)->getSampleTime(idx)
 #define ssSetOffsetTime(S, idx, val) 	(S)->setOffsetTime(idx, val)
 #define ssGetOffsetTime(S, idx) 	(S)->getOffsetTime(idx)
+#define ssIsContinuousTask(S, tid) \
+  (ssGetSampleTime(S, tid) == 0.0 && ssGetOffsetTime(S, tid) == 0.0)
 #define ssSetNumRWork(S, nrw) 		(S)->setNumRWork(nrw)
 #define ssGetNumRWork(S) 		(S)->getNumRWork()
 #define ssGetRWork(S) 			(S)->getRWork()
@@ -172,11 +174,9 @@ protected:
   vector< vector<real_T> > _y; 	// outputs
   vector< vector<real_T> > _dwork; // data work vectors
 
-  int_T 	 _st_size;	// number of sample times
-  real_T 	 _st_period;	// sample time period 
-  real_T 	 _st_offset;	// sample time offset
+  vector<real_T> _st_period;	// sample time period 
+  vector<real_T> _st_offset;	// sample time offset
 
-  int_T 	 _rwork_size; 	// size of real work array
   vector<real_T> _rwork; 	// real work array
   vector<int_T>  _iwork; 	// int work array
   vector<void *> _pwork; 	// pointer work array
@@ -201,7 +201,6 @@ public:
     _t = 0.0;
 
     _p_sfun_size = 0;
-    _st_size = 0;
     _userData = NULL;
 
     _options = 0;
@@ -383,38 +382,31 @@ public:
     return &_dwork[idx][0];
   }
 
-  /** Set number of sample times. Currently at most one is supported. */
+  /** Set number of sample times. */
   int_T setNumSampleTimes(int_T nst) {
-    assert(nst <= 1);
-    return _st_size = nst;
+    _st_period.resize(nst, _dummy);
+    _st_offset.resize(nst, _dummy);
+    return _st_period.size();
   }
   /** Get number of sample times. */
   int_T getNumSampleTimes() {
-    return _st_size;
+    return _st_period.size();
   }
   /** Set sample time period for given st_index. */
   real_T setSampleTime(int_T st_index, real_T period) {
-    assert(st_index == 0);
-    assert(_st_size == 1);  // must be initialized
-    return _st_period = period;
+    return _st_period[st_index] = period;
   }
   /** Get sample time period for given st_index. */
   real_T getSampleTime(int_T st_index) {
-    assert(st_index == 0);
-    assert(_st_size == 1);  // must be initialized
-    return _st_period;
+    return _st_period[st_index];
   }
   /** Set offset time for given st_index. */
   real_T setOffsetTime(int_T st_index, real_T offset) {
-    assert(st_index == 0);
-    assert(_st_size == 1);  // must be initialized
-    return _st_offset = offset;
+    return _st_offset[st_index] = offset;
   }
   /** Get offset time for given st_index. */
   real_T getOffsetTime(int_T st_index) {
-    assert(st_index == 0);
-    assert(_st_size == 1);  // must be initialized
-    return _st_offset;
+    return _st_offset[st_index];
   }
 
   /** Set size of real work array. */

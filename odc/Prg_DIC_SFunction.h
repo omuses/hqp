@@ -11,7 +11,7 @@
 
 #include <Omu_Program.h>
 
-#include "simstruc.h"
+#include <simstruc.h>
 
 //--------------------------------------------------------------------------
 class Prg_DIC_SFunction: public Omu_Program {

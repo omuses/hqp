@@ -1,10 +1,12 @@
 /*
- * Hxi_sfun_types.h:
- *   type definitions required to compile a Simulink(R) S-function for HQP
+ * cg_sfun.h: code generation include file for HQP.
+ * Currently macros for checking optional S-function methods are defined.
+ * This allows to write the same code for an inlined S-function and for 
+ * an external MEX S-function
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
- * rf, 05/06/2001
+ * rf, 05/05/2001
  */
 
 /*
@@ -26,30 +28,27 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if !defined(Hxi_sfun_types_H)
-#define Hxi_sfun_types_H
-
-/** Use this macro to avoid compiler warning about unused function args. */
-#define UNUSED_ARG(arg) 		(arg)=(arg)
-
-// HXI_REAL_T can be defined before including this file (default: adouble).
-#if !defined(HXI_REAL_T)
-#include <adouble.h>
-#define HXI_REAL_T adouble
+#if defined(MDL_START)
+#define ssGetmdlStart(S) mdlStart
+#else
+#define ssGetmdlStart(S) NULL
 #endif
 
-/** Real type used in S-function. */
-typedef HXI_REAL_T real_T;
-typedef real_T **InputRealPtrsType;
+#if defined(MDL_INITIALIZE_CONDITIONS)
+#define ssGetmdlInitializeConditions(S) mdlInitializeConditions
+#else
+#define ssGetmdlInitializeConditions(S) NULL
+#endif
 
-/** Integer type used in S-function. */
-typedef int int_T;
+#if defined(MDL_UPDATE)
+#define ssGetmdlUpdate(S) mdlUpdate
+#else
+#define ssGetmdlUpdate(S) NULL
+#endif
 
-/** Unsigned integer type used in S-function. */
-typedef unsigned uint_T;
-
-/** Character type used in S-function. */
-typedef char char_T;
-
+#if defined(MDL_DERIVATIVES)
+#define ssGetmdlDerivatives(S) mdlDerivatives
+#else
+#define ssGetmdlDerivatives(S) NULL
 #endif
 

@@ -18,6 +18,6 @@ with real_T defined as ADOL-C adouble.
 See also the sfun examples in the demo collection (odc directory).
 
 Ruediger Franke, May 6, 2001
-rfranke@sourceforge.net
+rfranke@users.sourceforge.net
 
 (Simulink is a registered trademark of The MathWorks, Inc.)

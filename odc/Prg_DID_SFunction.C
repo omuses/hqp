@@ -27,10 +27,9 @@ Prg_DID_SFunction::Prg_DID_SFunction()
 
   _mx_dt = mxCreateDoubleMatrix(1, 1, mxREAL);
 
- _with_cns = true;
+  _with_cns = true;
 
-  // create SimStruct for communication with S-function
-  _S = Hxi_SimStruct_create();
+  _S = NULL;
 
   // interface elements
   _ifList.append(new If_Bool("prg_with_cns", &_with_cns));
@@ -40,13 +39,23 @@ Prg_DID_SFunction::Prg_DID_SFunction()
 //--------------------------------------------------------------------------
 Prg_DID_SFunction::~Prg_DID_SFunction()
 {
-  Hxi_SimStruct_destroy(_S);
+  if (_S) {
+    mdlTerminate(_S);
+    Hxi_SimStruct_destroy(_S);
+  }
   mxDestroyArray(_mx_dt);
 }
 
 //--------------------------------------------------------------------------
 void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
 {
+  // (re)create a new SimStruct
+  if (_S) {
+    mdlTerminate(_S);
+    Hxi_SimStruct_destroy(_S);
+  }
+  _S = Hxi_SimStruct_create();
+
   // initialize model parameters
   mxGetPr(_mx_dt)[0] = _dt;
 
