@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,7 +24,6 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define Hxi_MEX_SFunction_C
 #include "Hxi_MEX_SFunction.h"
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
@@ -153,7 +152,7 @@ static void defaultSFunctionMethod2(SimStruct *S, int_T)
 }
 
 //-------------------------------------------------------------------
-SimStruct *Hxi_SimStruct_create()
+SimStruct *Hxi_MEX_SimStruct_create()
 {
   // allocate a SimStruct
   SimStruct *S = (SimStruct *)mxCalloc(1, sizeof(SimStruct));
@@ -197,7 +196,7 @@ SimStruct *Hxi_SimStruct_create()
 }
 
 //-------------------------------------------------------------------
-void Hxi_SimStruct_destroy(SimStruct *S)
+void Hxi_MEX_SimStruct_destroy(SimStruct *S)
 {
   if (S == NULL)
     return;
@@ -229,15 +228,15 @@ void Hxi_SimStruct_destroy(SimStruct *S)
 }
 
 //-------------------------------------------------------------------
-void mdlInitializeSizes(SimStruct *S)
+void Hxi_MEX_SFunction_init(SimStruct *S)
 {
   int i, ip;
 
   // get handle to MEX S-function
 #if defined(_MSC_VER) || defined(__MINGW32__)
-  HMODULE handle = LoadLibrary(ssGetPath(S));
+  HMODULE handle = GetModuleHandle(ssGetPath(S));
   if (!handle) {
-    ssSetErrorStatus(S, "LoadLibrary failed");
+    ssSetErrorStatus(S, "GetModuleHandle failed");
     return;
   }
 #else

@@ -7,8 +7,9 @@ set mex_script "@MEX_SCRIPT@"
 set mex_extension "@MEX_EXTENSION@"
 
 # configuration for building HXI S-function
-set hxi_cc {@CXX@ @CXXFLAGS@ @HXI_DEFS@}
+set hxi_cc {@CC@ @CFLAGS@}
 set hxi_ld {@SHLD@}
+set hxi_libs {@LFLAG@../lib @LDLIB_PREFIX@omu@LDLIB_SUFFIX@}
 set obj_extension "@OBJ_SUFFIX@"
 set lib_extension "@SHLIB_SUFFIX@"
 
@@ -23,11 +24,12 @@ proc mex {c_file} {
 }
 
 proc hxi {c_file} {
-    global hxi_cc hxi_ld
+    global hxi_cc hxi_ld hxi_libs
     global obj_extension lib_extension
     set rootname [file rootname $c_file]
     eval [concat exec $hxi_cc -I../hxi -c $c_file]
-    eval [concat exec $hxi_ld$rootname$lib_extension $rootname$obj_extension]
+    eval [concat exec $hxi_ld$rootname$lib_extension \
+          $rootname$obj_extension $hxi_libs]
 }
 
 proc mex_extension {{mdl_name {}}} {

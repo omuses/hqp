@@ -35,6 +35,7 @@ SRCS =	Omu_Init.C \
 	Prg_SFunctionOpt.C \
 	Prg_SFunctionEst.C \
 	Hxi_SFunction.C \
+	Hxi_SimStruct.C \
 	$(MEX_SRCS)
 
 OBJS = $(SRCS:.C=$O) $(RKSUITE_O)
@@ -59,6 +60,9 @@ Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 
 Hxi_SFunction$O: ../hxi/Hxi_SFunction.C
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_SFunction.C
+
+Hxi_SimStruct$O: ../hxi/Hxi_SimStruct.C
+	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_SimStruct.C
 
 .C$O:
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<

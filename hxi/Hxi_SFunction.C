@@ -35,15 +35,82 @@
 // prototype for initialization function exported by binary object
 typedef void (initFunction_t)(SimStruct *S);
 
+#  if defined(HXI_WITH_MEX)
+// prototype for MEX function
+typedef void
+(mexFunction_t)(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]);
+#endif
+
 //-------------------------------------------------------------------
-SimStruct *Hxi_SimStruct_create()
+extern "C" SimStruct *Hxi_SFunction_open(SimStruct *S)
 {
-  // allocate a SimStruct
-  return new SimStruct();
+  // get handle to binary S-function
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  HMODULE handle = LoadLibrary(ssGetPath(S));
+  if (!handle) {
+    ssSetErrorStatus(S, "LoadLibrary failed");
+    return S;
+  }
+#else
+  void *handle = dlopen(ssGetPath(S), RTLD_LAZY);
+  if (!handle) {
+    ssSetErrorStatus(S, dlerror());
+    return S;
+  }
+#endif
+
+  // get pointer to entry point Hxi_SimStruct_init
+  initFunction_t *initFunction_p;
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  // try HXI S-function
+  initFunction_p = (initFunction_t*)GetProcAddress(handle,
+                                                   "Hxi_SimStruct_init");
+  if (!initFunction_p) {
+#  if !defined(HXI_WITH_MEX)
+    ssSetErrorStatus(S, "GetProcAddress failed for Hxi_SimStruct_init");
+    return S;
+#  else
+    // alternatively try MEX S-function
+    mexFunction_t *mexFunction_p;
+    mexFunction_p = (mexFunction_t*)GetProcAddress(handle, "mexFunction");
+    if (!mexFunction_p) {
+      ssSetErrorStatus(S, "GetProcAddress failed for Hxi_SimStruct_init"
+                       " and mexFunction");
+      return S;
+    }
+#  endif
+  }
+#else
+  // try HXI S-function
+  initFunction_p = (initFunction_t *)dlsym(handle, "Hxi_SimStruct_init");
+  if (!initFunction_p) {
+#  if !defined(HXI_WITH_MEX)
+    ssSetErrorStatus(S, dlerror());
+    return S;
+#  else
+    // alternatively try MEX S-function
+    void *mexFunction_p = dlsym(handle, "mexFunction");
+    if (!mexFunction_p) {
+      ssSetErrorStatus(S, dlerror());
+      return S;
+    }
+#  endif
+  }
+#endif
+
+  if (initFunction_p)
+    // initialize Hxi::SimStruct
+    (*initFunction_p)(S);
+#if defined(HXI_WITH_MEX)
+  else
+    S = NULL; // indicate that a MEX S-function is present
+#endif
+
+  return S;
 }
 
 //-------------------------------------------------------------------
-void Hxi_SimStruct_destroy(SimStruct *S)
+extern "C" void Hxi_SFunction_close(SimStruct *S)
 {
   if (S == NULL)
     return;
@@ -58,51 +125,6 @@ void Hxi_SimStruct_destroy(SimStruct *S)
   if (handle)
     dlclose(handle);
 #endif
-
-  // free memory
-  delete S;
-}
-
-//-------------------------------------------------------------------
-void mdlInitializeSizes(SimStruct *S)
-{
-  // get handle to binary S-function
-#if defined(_MSC_VER) || defined(__MINGW32__)
-  HMODULE handle = LoadLibrary(ssGetPath(S));
-  if (!handle) {
-    ssSetErrorStatus(S, "LoadLibrary failed");
-    return;
-  }
-#else
-  void *handle = dlopen(ssGetPath(S), RTLD_LAZY);
-  if (!handle) {
-    ssSetErrorStatus(S, dlerror());
-    return;
-  }
-#endif
-
-  // get pointer to entry point Hxi_SimStruct_init
-  initFunction_t *initFunction_p;
-#if defined(_MSC_VER) || defined(__MINGW32__)
-  initFunction_p = (initFunction_t *)GetProcAddress(handle,
-                                                    "Hxi_SimStruct_init");
-  if (!initFunction_p) {
-    ssSetErrorStatus(S, "GetProcAddress failed for Hxi_SimStruct_init");
-    return;
-  }
-#else
-  initFunction_p = (initFunction_t *)dlsym(handle, "Hxi_SimStruct_init");
-  if (!initFunction_p) {
-    ssSetErrorStatus(S, dlerror());
-    return;
-  }
-#endif
-
-  // initialize SimStruct
-  (*initFunction_p)(S);
-
-  // call S-function method mdlInitializeSizes
-  (*(S->getmdlInitializeSizes()))(S);
 }
 
 

@@ -32,11 +32,7 @@
 
 #include <If_Command.h>
 
-#if defined(OMU_WITH_MEX)
-#include <Hxi_MEX_SFunction.h>
-#else
 #include <Hxi_SFunction.h>
-#endif
 
 /**
  * Basic functionality for formulating an optimization problem for

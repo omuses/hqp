@@ -3,8 +3,6 @@
  *   Interface to a Simulink(R) S-function given as binary object.
  *   Several S-function methods are supported that redirect the call
  *   to the binary object. Data is communicated through a SimStruct.
- *   The two functions Hxi_SimStruct_create and Hxi_SimStruct_destroy
- *   are provided for allocating and releasing the SimStruct.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -34,37 +32,59 @@
 #if !defined(Hxi_SFunction_H)
 #define Hxi_SFunction_H
 
-#if defined(MATLAB_MEX_FILE)
-#error "Hxi_SFunction can't be used for MATLAB_MEX_FILE"
-#endif
+#include "Hxi_SimStruct.h"
 
-#include <simstruc.h>
-
-/** Create SimStruct for S-function. */
-SimStruct *Hxi_SimStruct_create();
-
-/** Realease S-function and SimStruct. */
-void Hxi_SimStruct_destroy(SimStruct *S);
-
-/** Load binary object and initialize sizes of data vectors in S. 
-    This function loads the shared object found under ssGetPath(S),
+/** @name Supported S-function methods. */
+//@{
+/** Initialize sizes of data vectors in %SimStruct. 
+    This function works with the shared object found under ssGetPath(S),
     calls the S-function method mdlInitializeSizes
     and allocates memory required for a level 2 S-function.
     The model parameters must have been initialized prior to calling this
     function. */
-void mdlInitializeSizes(SimStruct *S);
+inline void mdlInitializeSizes(SimStruct *S) {
+  Hxi_mdlInitializeSizes(S);
+}
 
-/// @name Macros for calling S-function methods
-//@{
-#define mdlCheckParameters(S) 	    (*((S)->getmdlCheckParameters()))(S)
-#define mdlInitializeSampleTimes(S) (*((S)->getmdlInitializeSampleTimes()))(S)
-#define mdlStart(S) 		    (*((S)->getmdlStart()))(S)
-#define mdlInitializeConditions(S)  (*((S)->getmdlInitializeConditions()))(S)
-#define mdlOutputs(S, tid) 	    (*((S)->getmdlOutputs()))(S, tid)
-#define mdlUpdate(S, tid) 	    (*((S)->getmdlUpdate()))(S, tid)
-#define mdlDerivatives(S) 	    (*((S)->getmdlDerivatives()))(S)
-#define mdlJacobian(S) 		    (*((S)->getmdlJacobian()))(S)
-#define mdlTerminate(S) 	    (*((S)->getmdlTerminate()))(S)
+/** Optional: Allocate local ressources for simulation. */
+inline void mdlStart(SimStruct *S) {
+  Hxi_mdlStart(S);
+}
+
+/** Initialize sample times. */
+inline void mdlInitializeSampleTimes(SimStruct *S) {
+  Hxi_mdlInitializeSampleTimes(S);
+}
+
+/** Optional: Compute initial conditions. */
+inline void mdlInitializeConditions(SimStruct *S) {
+  Hxi_mdlInitializeConditions(S);
+}
+
+/** Compute model outputs. */
+inline void mdlOutputs(SimStruct *S, int_T tid) {
+  Hxi_mdlOutputs(S, tid);
+}
+
+/** Optional: Update discrete-time states. */
+inline void mdlUpdate(SimStruct *S, int_T tid) {
+  Hxi_mdlUpdate(S, tid);
+}
+
+/** Optional: Compute derivatives for continuous-time states. */
+inline void mdlDerivatives(SimStruct *S) {
+  Hxi_mdlDerivatives(S);
+}
+
+/** Optional: Compute Jacobian J = d(dxc,xd,y)/d(xc,xd,u). */
+inline void mdlJacobian(SimStruct *S) {
+  Hxi_mdlJacobian(S);
+}
+
+/** Release resources allocated for simulation. */
+inline void mdlTerminate(SimStruct *S) {
+  Hxi_mdlTerminate(S);
+}
 //@}
 
 

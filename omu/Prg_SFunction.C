@@ -206,14 +206,10 @@ void Prg_SFunction::setup_model()
     Hxi_SimStruct_destroy(_S);
   }
 
-  _S = Hxi_SimStruct_create();
+  _S = Hxi_SimStruct_create(_mdl_path[0] != '\0'? _mdl_path: _mdl_name);
 
-  // initialize model name and path
+  // initialize model name
   ssSetModelName(_S, _mdl_name);
-  if (_mdl_path[0] != '\0')
-    ssSetPath(_S, _mdl_path);
-  else
-    ssSetPath(_S, _mdl_name);
 
   // initialize S-function parameters
   ssSetSFcnParamsCount(_S, _mdl_nargs);
@@ -226,7 +222,7 @@ void Prg_SFunction::setup_model()
   ssSetVariableStepSolver(_S, 1);
   // (note: preselect major time steps requiring complete model evaluation --
   //  minor time steps would require support for events and zero crossings)
-  ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
+  ssSetMinorTimeStep(_S, 0);
 
   // initialize model
   SMETHOD_CALL(mdlInitializeSizes, _S);

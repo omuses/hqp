@@ -12,7 +12,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -34,132 +34,18 @@
 #if !defined(Hxi_MEX_SFunction_H)
 #define Hxi_MEX_SFunction_H
 
-#include <assert.h>
-
-/** define MATLAB_MEX_FILE prior to inclusion of simstruc.h,
+/** define HXI_MEX_S_FUNCTION prior to inclusion of simstruc.h,
     in order to select the MEX version of SimStruct. */
-#if !defined(MATLAB_MEX_FILE)
-#define MATLAB_MEX_FILE 1
-#endif
+#define HXI_MEX_S_FUNCTION
+#include "simstruc.h"
 
-#include <simstruc.h>
+/** Create a MEX SimStruct */
+SimStruct *Hxi_MEX_SimStruct_create();
 
-#if !defined(Hxi_MEX_SFunction_C)
+/** Free memory of MEX SimStruct */
+void Hxi_MEX_SimStruct_destroy(SimStruct *S);
 
-/** Redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers */
-#undef ssSetSFcnParamsCount
-#if MATLAB_VERSION >= 61
-# define ssSetSFcnParamsCount(S,n) \
-  _ssSetSFcnParamsCount(S,n); \
-  mxFree(ssGetSFcnParamsPtr(S)); \
-  ssSetSFcnParamsPtr(S, (mxArray **)mxCalloc(sizeof(mxArray *), n))
-#else
-# define ssSetSFcnParamsCount(S,n) \
-  _ssSetSFcnParamsCount(S,n); \
-  mxFree(ssGetSFcnParamsPtr(S)); \
-  ssSetSFcnParamsPtr(S, (const mxArray **)mxCalloc(sizeof(mxArray *), n))
-#endif
-
-/** @name Unsupported macros
-  Disable macros that are critical for memory management and must
-  not be used.
-*/ 
-//@{
-#undef ssSetRWork
-#define ssSetRWork(S, rwork) ssSetRWork_cannot_be_used_with_Hxi_MEX_SFunction
-
-#undef ssSetPWork
-#define ssSetPWork(S, pwork) ssSetPWork_cannot_be_used_with_Hxi_MEX_SFunction
-
-#undef ssSetIWork
-#define ssSetIWork(S, iwork) ssSetIWork_cannot_be_used_with_Hxi_MEX_SFunction
-
-#undef ssSetTPtr
-#define ssSetTPtr(S, tptr) ssSetTPtr_cannot_be_used_with_Hxi_MEX_SFunction
-//@}
+/** Initialize MEX S-function, including call to mdlInitializeSizes */
+void Hxi_MEX_SFunction_init(SimStruct *S);
 
 #endif
-
-/** Create SimStruct for S-function. */
-SimStruct *Hxi_SimStruct_create();
-
-/** Realease S-function and SimStruct. */
-void Hxi_SimStruct_destroy(SimStruct *S);
-
-/** @name Supported S-function methods. */
-//@{
-/** Load MEX object and initialize sizes of data vectors in S. 
-    This function loads the shared object found under ssGetPath(S),
-    calls the S-function method mdlInitializeSizes
-    and allocates memory required for a level 2 S-function.
-    The models parameters must be initialized prior to calling this
-    function. */
-void mdlInitializeSizes(SimStruct *S);
-
-/** Optional: Allocate local ressources for simulation. */
-inline void mdlStart(SimStruct *S)
-{
-  assert(ssGetmdlStart(S) != NULL);
-  sfcnStart(S);
-}
-
-/** Initialize sample times. */
-inline void mdlInitializeSampleTimes(SimStruct *S)
-{
-  sfcnInitializeSampleTimes(S);
-}
-
-/** Optional: Compute initial conditions. */
-inline void mdlInitializeConditions(SimStruct *S)
-{
-  assert(ssGetmdlInitializeConditions(S) != NULL);
-  if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
-    sfcnInitializeConditionsLevel1(ssGetX(S), S);
-  else
-    sfcnInitializeConditions(S);
-}
-
-/** Compute model outputs. */
-inline void mdlOutputs(SimStruct *S, int_T tid)
-{
-  if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
-    sfcnOutputsLevel1(ssGetY(S), ssGetX(S), ssGetU(S), S, tid);
-  else
-    sfcnOutputs(S, tid);
-}
-
-/** Optional: Update discrete-time states. */
-inline void mdlUpdate(SimStruct *S, int_T tid)
-{
-  assert(ssGetmdlUpdate(S) != NULL);
-  if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
-    sfcnUpdateLevel1(ssGetX(S), ssGetU(S), S, tid);
-  else
-    sfcnUpdate(S, tid);
-}
-
-/** Optional: Compute derivatives for continuous-time states. */
-inline void mdlDerivatives(SimStruct *S)
-{
-  assert(ssGetmdlDerivatives(S) != NULL);
-  if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
-    sfcnDerivativesLevel1(ssGetdX(S), ssGetX(S), ssGetU(S), S, 0);
-  else
-    sfcnDerivatives(S);
-}
-
-/** Optional: Compute Jacobian J = d(dxc,xd,y)/d(xc,xd,u). */
-inline void mdlJacobian(SimStruct *S)
-{
-  assert(ssGetmdlJacobian(S) != NULL);
-  sfcnJacobian(S);
-}
-
-/** Release resources allocated for simulation. */
-inline void mdlTerminate(SimStruct *S)
-{
-  sfcnTerminate(S);
-}
-//@}
-
-#endif // !defined(Hxi_MEX_SFunction_H)

@@ -43,44 +43,47 @@
 #if defined(HXI_INLINE_S_FUNCTION)
 static
 #else
-extern "C"
-#if defined(OMU_API)
-OMU_API
+extern
+#  if defined(__cplusplus)
+   "C"
+#  endif
+#  if defined(_MSC_VER)
+   __declspec(dllexport)
+#  endif
 #endif
-#endif
-void Hxi_SimStruct_init(Hxi::SimStruct *S) {
+void Hxi_SimStruct_init(SimStruct *S) {
   // S-function name and level
   ssSetModelName(S, HXI_STRINGIFY(S_FUNCTION_NAME));
   ssSetVersion(S, S_FUNCTION_LEVEL);
 
   // required S-function methods
-  ssSetmdlInitializeSizes(S, &::mdlInitializeSizes);
-  ssSetmdlInitializeSampleTimes(S, &::mdlInitializeSampleTimes);
-  ssSetmdlOutputs(S, &::mdlOutputs);
-  ssSetmdlTerminate(S, &::mdlTerminate);
+  ssSetmdlInitializeSizes(S, &mdlInitializeSizes);
+  ssSetmdlInitializeSampleTimes(S, &mdlInitializeSampleTimes);
+  ssSetmdlOutputs(S, &mdlOutputs);
+  ssSetmdlTerminate(S, &mdlTerminate);
 
   // optional S-function methods
 #if defined(MDL_CHECK_PARAMETERS)
-  ssSetmdlStart(S, &::mdlCheckParameters);
+  ssSetmdlStart(S, &mdlCheckParameters);
 #endif
 
 #if defined(MDL_START)
-  ssSetmdlStart(S, &::mdlStart);
+  ssSetmdlStart(S, &mdlStart);
 #endif
 
 #if defined(MDL_INITIALIZE_CONDITIONS)
-  ssSetmdlInitializeConditions(S, &::mdlInitializeConditions);
+  ssSetmdlInitializeConditions(S, &mdlInitializeConditions);
 #endif
 
 #if defined(MDL_UPDATE)
-  ssSetmdlUpdate(S, &::mdlUpdate);
+  ssSetmdlUpdate(S, &mdlUpdate);
 #endif
 
 #if defined(MDL_DERIVATIVES)
-  ssSetmdlDerivatives(S, &::mdlDerivatives);
+  ssSetmdlDerivatives(S, &mdlDerivatives);
 #endif
 
 #if defined(MDL_JACOBIAN)
-  ssSetmdlJacobian(S, &::mdlJacobian);
+  ssSetmdlJacobian(S, &mdlJacobian);
 #endif
 }

@@ -51,7 +51,7 @@ void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
     mdlTerminate(_S);
     Hxi_SimStruct_destroy(_S);
   }
-  _S = Hxi_SimStruct_create();
+  _S = Hxi_SimStruct_create(""); // no path argument for inlined S-function
 
   // initialize model parameters
   mxGetPr(_mx_dt)[0] = _dt;

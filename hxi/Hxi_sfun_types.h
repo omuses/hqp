@@ -32,14 +32,14 @@
 #define Hxi_sfun_types_H
 
 /** Use this macro to avoid compiler warning about unused function args. */
+#if !defined(UNUSED_ARG)
 #define UNUSED_ARG(arg) 		(arg)=(arg)
+#endif
 
 /** HXI_REAL_T can be defined before including this file (default: double). */
 #if !defined(HXI_REAL_T)
 #define HXI_REAL_T double
 #endif
-
-namespace Hxi {
 
 /** Real type used in S-function. */
 typedef HXI_REAL_T real_T;
@@ -56,7 +56,14 @@ typedef unsigned uint_T;
 /** Character type used in S-function. */
 typedef char char_T;
 
-}; // namespace Hxi
+/** mxArray element types */
+typedef enum mxComplexity {mxREAL=0, mxComplex} mxComplexity;
 
+#if defined(__cplusplus)
+/** ADOL-C's value function for double. It may be needed to compile
+    code written for real_T adouble with real_T double. */
+inline double value(double a) {return a;}
 #endif
 
+
+#endif

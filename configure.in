@@ -17,7 +17,6 @@ ALL_DEFS=""
 HQP_DEFS=""
 OMU_DEFS=""
 IF_DEFS=""
-HXI_DEFS=""
 
 # collect machine objects required for linking
 HQP_MACH_OBJS=""
@@ -272,7 +271,6 @@ if test $uname_found = "yes" ; then
       ;;
     CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
-      EXE_SUFFIX=".exe"
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         LIB_PREFIX=""
@@ -284,11 +282,12 @@ if test $uname_found = "yes" ; then
         RFLAG="-L"
         AC_PROG_RANLIB
       fi
+      SHLIB_SUFFIX=".dll"
+      EXE_SUFFIX=".exe"
       ;;
     CL)
       # note: -nodefaultlib:msvcrt is required when using Tcl stubs
       SHLD="link -dll -nologo -nodefaultlib:msvcrt"
-      HXI_DEFS="$HXI_DEFS -DOMU_API=__declspec\(dllexport\)"
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         MKLIB_SUFFIX=".dll"
@@ -316,6 +315,7 @@ if test $uname_found = "yes" ; then
 	LD="$LD -debug"
 	LDFLAGS_START="$LDFLAGS_START -debug"
       fi
+      SHLD="$SHLD -out:"
       LD="$LD -out:"
       ;;
   esac
@@ -495,7 +495,7 @@ if test "$omu_mex" != no; then
     else
       AC_MSG_RESULT([guessing --with-matlab-libs... $MEX_LIBDIR])
     fi
-    OMU_DEFS="${OMU_DEFS} -DOMU_WITH_MEX=1"
+    OMU_DEFS="${OMU_DEFS} -DHXI_WITH_MEX=1"
   fi
   if test -z "${MEX_LIBDIR}"; then
     AC_MSG_ERROR([can't find Matlab libs, specify --with-matlab and --with-matlab-libs])
@@ -802,7 +802,6 @@ AC_SUBST(ASCEND_SRCS)
 
 AC_SUBST(HQP_DEFS)
 AC_SUBST(IF_DEFS)
-AC_SUBST(HXI_DEFS)
 
 AC_SUBST(HQP_MACH_OBJS)
 AC_SUBST(HQP_DOCP_MACH_OBJS)

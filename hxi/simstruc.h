@@ -7,10 +7,9 @@
  *  An S-function including this file can either be compiled to a 
  *  stand-alone MEX S-function or it can be inlined with an Hqp 
  *  optimization problem.
- *  - Define the macro MATLAB_MEX_FILE (as when invoking the MATLAB(R) 
- *  command mex) if the S-function should be compiled to a MEX S-function.
- *  Then the original %simulink/%include/%simstruc.h found in the path
- *  will be included.
+ *  - Define the macro HXI_MEX_S_FUNCTION if the S-function should be
+ *  compiled to a MATLAB MEX S-function. Then the original
+ *  %simulink/%include/%simstruc.h found in the path will be included.
  *  - The alternative file Hxi_SimStruct.h will be included to compile
  *  the S-function with Hqp.
  *
@@ -22,19 +21,17 @@
 #if !defined(HXI_SIMSTRUC_H)
 #define HXI_SIMSTRUC_H
 
-#if defined(MATLAB_MEX_FILE)
-// The S-function is being compiled as Matlab MEX file;
-// we include the simstruc.h found under simulink/include.
+#if defined(HXI_MEX_S_FUNCTION)
+/* The S-function is being compiled as MATLAB MEX file;
+ * we include the simstruc.h found under simulink/include. */
 
-// Note: define MathWorks_h to get in simulink/include/simstruc.h the 
-// use SS_SL_INTERNAL. This enables macros for setting up the SimStruct 
-// passed to model methods (introduced with Matlab 6.5).
-#undef MATLAB_MEX_FILE
+/* Note: define MathWorks_h to get in simulink/include/simstruc.h the 
+ * use SS_SL_INTERNAL. This enables macros for setting up the SimStruct 
+ * passed to model methods (introduced with Matlab 6.5). */
 #define MathWorks_h // Matlab 6.5
 #define SL_INTERNAL // Matlab 7.0
 #include <simulink/include/simstruc.h>
 #undef MathWorks_h
-#define MATLAB_MEX_FILE
 
 # if !defined(ssGetNumInputPorts)
 # define ssGetNumInputPorts(S) 	(S)->sizes.in.numInputPorts
@@ -43,6 +40,21 @@
 # if !defined(ssGetNumOutputPorts)
 # define ssGetNumOutputPorts(S) (S)->sizes.out.numOutputPorts
 # endif
+
+# if !defined(ssSetMinorTimeStep)
+# define ssSetMinorTimeStep(S, flag) \
+  ssSetSimTimeStep(S, (flag)? MINOR_TIME_STEP: MAJOR_TIME_STEP)
+# endif
+
+# if defined(ssSetInputPortVectorDimension)
+# undef ssSetInputPortVectorDimension
+# endif
+# define ssSetInputPortVectorDimension 	ssSetInputPortWidth
+
+# if defined(ssSetOutputPortVectorDimension)
+# undef ssSetOutputPortVectorDimension
+# endif
+# define ssSetOutputPortVectorDimension ssSetOutputPortWidth
 
 // guess MATLAB version (times 10 to avoid decimal point)
 #if defined(SS_OPTION_ASYNCHRONOUS_INTERRUPT)
@@ -62,17 +74,9 @@
  * For example an S-function can be accessed via a MEX interface using
  * the MEX %SimStruct or it can be inlined with Hqp using Hxi::SimStruct.
  */
-namespace Hxi {};
 
 #include "Hxi_SimStruct.h"
 
-// make Hxi implementations visible in global scope
-using namespace Hxi;
+#endif /* defined(HXI_MEX_S_FUNCTION) */
 
-#endif // defined(MATLAB_MEX_FILE)
-
-/** ADOL-C's value function for double. It may be needed to compile
-    code written for real_T adouble with real_T double. */
-inline double value(double a) {return a;}
-
-#endif // !defined(HXI_SIMSTRUC_H)
+#endif /* !defined(HXI_SIMSTRUC_H) */

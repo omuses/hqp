@@ -1,3 +1,28 @@
+2005-01-17  <rfranke>
+
+	* hxi/Hxi_MEX_SFunction.[hC], hxi/Hxi_SFunction.[hC], hxi/cg_sfun.h, 
+	  hxi/Hxi_SimStruct.h, hxi/Hxi_sfun_types.h, hxi/simstruc.h,
+	  omu/Makefile, omu/Prg_SFunction.h:
+	  - hide implementation details of SimStruct behind C calling interface
+
+	* hxi/Hxi_SimStruct_methods.h:
+	  - new file collecting supported SimStruct and mxArray methods
+
+	* hxi/Hxi_SimStruct.C: 
+	  - new file implementing Hxi::SimStruct and optionally directing
+	    calls to MEX S-function
+
+	* hxi/Hxi_mxArray.h:
+	  - remove separate file for Hxi::mxArray
+
+	* odc/mex.tcl.in, odc/Prg_DID_SFunction.C, odc/Prg_DIC_SFunction.C,
+	   omu/Prg_SFunction.C:
+	  - adapt to SimStruct changes
+
+	* configure.in: rename OMU_WITH_MEX to HXI_WITH_MEX, remove HXI_DEFS
+
+	* makedefs.in, Makefile: adapt MEX test to only run for shared build
+
 2005-01-14  <e_arnold>
 
 	* adol-c, configure.in, configure, Makefile, makedirs.in,
