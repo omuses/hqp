@@ -1,3 +1,18 @@
+2002-05-11    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]: introduce terms at final time
+	  - mdl_yf_min, mdl_yf_max for constraints at final time
+	  - mdl_yf_weight1, mdl_yf_weight2 for objective
+
+	* omu/Prg_SFunction.C: consider IOs of more than one port
+	  as long as they are contiguous in memory
+	  (e.g. Hxi_MEX_SFunction.C arranges all IOs contiguous)
+
+	* omu/Prg_SFunctionEst.[hC]: remove _mdl_x0 as Prg_SFunction has it
+
+	* iftcl/If_Command.C, iftcl/If_Variable.C (tclCmd):
+	  fix treatment of TCL_ERROR (bug introduced 2002-04-08)
+
 2002-05-10    <rfranke>
 
 	* omu/Prg_SFunction.C: initialize mdl_args with empty default

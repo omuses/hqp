@@ -58,8 +58,13 @@
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
          y_{soft\_weight1}\,s^{kk} + y_{soft\_weight2}\,s^{kk}s^{kk}
-        \right\}_i
-      \quad\to\quad \min
+    \right\}_i
+    \\[4ex] \displaystyle \qquad
+    \ + \ \sum_{i=1}^{n_y} \left\{
+      y_{f\_weight1}\,y(t_f)
+      \ +\ y_{f\_weight2}\left[y(t_f)-\frac{y_{ref}}{y_{nominal}}\right]^2
+    \right\}_i
+    \quad\to\quad \min
    \end{array}
    @f]
    with
@@ -112,7 +117,9 @@
         kk=0,\ldots,KK, \\[3ex]
     \displaystyle \frac{y_{min\_soft}}{y_{nominal}} - s^{kk} &<& y(t^{kk})
         &<& \displaystyle \frac{y_{max\_soft}}{y_{nominal}} + s^{kk}, 
-        \ \ s^{kk} > 0, \quad & kk=0,\ldots,KK.
+        \ \ s^{kk} > 0, \quad & kk=0,\ldots,KK, \\[3ex]
+    \displaystyle \frac{y_{f\_min}}{y_{nominal}} &<& y(t_f)
+        &<& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
    \end{array}
    @f]
    The problem is treated as multi-stage problem with K stages. 
@@ -138,7 +145,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   VECP 		_mdl_u_min;	///< lower bounds for optimized inputs
   VECP 		_mdl_u_max;	///< upper bounds for optimized inputs
   VECP 		_mdl_u_ref;	///< reference to be reached for control inputs
-  VECP 		_mdl_u_weight2;	///< weight for quadratic objective
+  VECP 		_mdl_u_weight2;	///< weight for quadratic objective term
   VECP 		_mdl_der_u_min;	///< lower bounds for rate of change
   VECP 		_mdl_der_u_max;	///< upper bounds for rate of change
   VECP 		_mdl_der_u_weight2;///< weight for rate of change of controls
@@ -150,15 +157,21 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   VECP 		_mdl_y_min;	///< lower bounds for outputs
   VECP 		_mdl_y_max;	///< upper bounds for outputs
   VECP 		_mdl_y_ref;	///< reference to be reached for active outputs
-  VECP 		_mdl_y_weight2;	///< weight for quadratic objective terms
+  VECP 		_mdl_y_weight2;	///< weight for quadratic objective term
   VECP 		_mdl_y_min_soft;      ///< lower soft bound
   VECP 		_mdl_y_max_soft;      ///< upper soft bound
   VECP 		_mdl_y_soft_weight1;  ///< linear weight for bound violation
   VECP 		_mdl_y_soft_weight2;  ///< quadratic weight for bound violation
+  IVECP		_mdl_yf_active; ///< indicate active outputs at final time
+  VECP 		_mdl_yf_min; 	///< lower bounds on outputs at final time
+  VECP 		_mdl_yf_max; 	///< upper bounds on outputs at final time
+  VECP 		_mdl_yf_weight1;///< weight for linear final term in objective
+  VECP 		_mdl_yf_weight2;///< weight for quadratic final objective term
 
   int		_nx;	///< number of states for optimizer
   int		_nu;	///< number of optimized control inputs
   int		_nc;	///< number of constrained outputs
+  int		_ncf;	///< number of constrained outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
 

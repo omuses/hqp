@@ -82,6 +82,11 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_max_soft = v_get(_mdl_ny);
   _mdl_y_soft_weight1 = v_get(_mdl_ny);
   _mdl_y_soft_weight2 = v_get(_mdl_ny);
+  _mdl_yf_active = iv_get(_mdl_ny);
+  _mdl_yf_min = v_get(_mdl_ny);
+  _mdl_yf_max = v_get(_mdl_ny);
+  _mdl_yf_weight1 = v_get(_mdl_ny);
+  _mdl_yf_weight2 = v_get(_mdl_ny);
   iv_zero(_mdl_y_active);
   v_set(_mdl_y_nominal, 1.0);
   v_set(_mdl_y_bias, 0.0);
@@ -93,6 +98,11 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   v_set(_mdl_y_max_soft, INF);
   v_set(_mdl_y_soft_weight1, 0.0);
   v_set(_mdl_y_soft_weight2, 0.0);
+  iv_zero(_mdl_yf_active);
+  v_set(_mdl_yf_min, -INF);
+  v_set(_mdl_yf_max, INF);
+  v_set(_mdl_yf_weight1, 0.0);
+  v_set(_mdl_yf_weight2, 0.0);
 
   // numbers of optimization variables
   _nu = 0;
@@ -100,6 +110,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _nc = 0;
   _ns = 0;
   _nsc = 0;
+  _ncf = 0;
 
   _mdl_us = m_get(_KK+1, _mdl_nu);
   _mdl_ys = m_get(_KK+1, _mdl_ny);
@@ -129,6 +140,10 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec("mdl_y_max_soft", &_mdl_y_max_soft));
   _ifList.append(new If_RealVec("mdl_y_soft_weight1", &_mdl_y_soft_weight1));
   _ifList.append(new If_RealVec("mdl_y_soft_weight2", &_mdl_y_soft_weight2));
+  _ifList.append(new If_RealVec("mdl_yf_min", &_mdl_yf_min));
+  _ifList.append(new If_RealVec("mdl_yf_max", &_mdl_yf_max));
+  _ifList.append(new If_RealVec("mdl_yf_weight1", &_mdl_yf_weight1));
+  _ifList.append(new If_RealVec("mdl_yf_weight2", &_mdl_yf_weight2));
 
   _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
 
@@ -144,6 +159,11 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   m_free(_mdl_ys);
   m_free(_mdl_us);
   v_free(_mdl_x_nominal);
+  iv_free(_mdl_yf_active);
+  v_free(_mdl_yf_weight2);
+  v_free(_mdl_yf_weight1);
+  v_free(_mdl_yf_min);
+  v_free(_mdl_yf_max);
   v_free(_mdl_y_soft_weight2);
   v_free(_mdl_y_soft_weight1);
   v_free(_mdl_y_max_soft);
@@ -167,8 +187,6 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
 //--------------------------------------------------------------------------
 void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 {
-  int i;
-
   // setup optimization problem
   _K = _KK/_sps;
   stages_alloc(ks, ts, _K, _sps);
@@ -213,10 +231,15 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   v_resize(_mdl_y_max_soft, _mdl_ny);
   v_resize(_mdl_y_soft_weight1, _mdl_ny);
   v_resize(_mdl_y_soft_weight2, _mdl_ny);
+  iv_resize(_mdl_yf_active, _mdl_ny);
+  v_resize(_mdl_yf_min, _mdl_ny);
+  v_resize(_mdl_yf_max, _mdl_ny);
+  v_resize(_mdl_yf_weight1, _mdl_ny);
+  v_resize(_mdl_yf_weight2, _mdl_ny);
   iv_zero(_mdl_y_active);
   v_set(_mdl_y_nominal, 1.0);
-  v_set(_mdl_y_min, -INF);
   v_set(_mdl_y_bias, 0.0);
+  v_set(_mdl_y_min, -INF);
   v_set(_mdl_y_max, INF);
   v_set(_mdl_y_ref, 0.0);
   v_set(_mdl_y_weight2, 0.0);
@@ -224,6 +247,11 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   v_set(_mdl_y_max_soft, INF);
   v_set(_mdl_y_soft_weight1, 0.0);
   v_set(_mdl_y_soft_weight2, 0.0);
+  iv_zero(_mdl_yf_active);
+  v_set(_mdl_yf_min, -INF);
+  v_set(_mdl_yf_max, INF);
+  v_set(_mdl_yf_weight1, 0.0);
+  v_set(_mdl_yf_weight2, 0.0);
 
   m_resize(_mdl_us, _KK+1, _mdl_nu);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
@@ -248,6 +276,7 @@ void Prg_SFunctionOpt::setup(int k,
     _nc = 0;
     _ns = 0;
     _nsc = 0;
+    _ncf = 0;
     for (idx = 0; idx < _mdl_ny; idx++) {
       if (_mdl_y_min[idx] > -INF || _mdl_y_max[idx] < INF
 	  || _mdl_y_weight2[idx] != 0.0) {
@@ -263,6 +292,11 @@ void Prg_SFunctionOpt::setup(int k,
       if (_mdl_y_min_soft[idx] > -INF || _mdl_y_max_soft[idx] < INF) {
 	_ns++;
       }
+      if (_mdl_yf_min[idx] > -INF || _mdl_yf_max[idx] < INF
+	  || _mdl_yf_weight1[idx] != 0.0 || _mdl_yf_weight2[idx] != 0.0) {
+	_mdl_yf_active[idx] = 1;
+	_ncf++;
+      }
     }
   }
 
@@ -272,14 +306,15 @@ void Prg_SFunctionOpt::setup(int k,
     spsk = _sps;
     x.alloc(_nx);
     u.alloc(_nu + spsk*_ns);
+    c.alloc(spsk*(_nc+_nsc));
   }
   else {
     spsk = 1;
     // at final time allocate additional final states for slack variables
     // as no control parameters allowed here
     x.alloc(_nx + spsk*_ns);
+    c.alloc(spsk*(_nc+_nsc) + _ncf);
   }
-  c.alloc(spsk*(_nc+_nsc));
 
   // setup initial states
   if (k == 0) {
@@ -358,6 +393,18 @@ void Prg_SFunctionOpt::setup(int k,
       x.min[i] = 0.0;
       x.initial[i] = 0.0;
     }
+
+  // setup output constraints at final time
+  if (k == _K) {
+    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
+      if (_mdl_yf_min[idx] > -INF)
+	c.min[i] = _mdl_yf_min[idx] / _mdl_y_nominal[idx];
+      if (_mdl_yf_max[idx] < INF)
+	c.max[i] = _mdl_yf_max[idx] / _mdl_y_nominal[idx];
+      if (_mdl_yf_active[idx])
+	i++;
+    }
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -499,7 +546,6 @@ void Prg_SFunctionOpt::update(int kk,
       is += spsk;
     }
   }
-
   // consider step length in objective (trapezoidal integration rule)
   if (kk == 0)
     f0 *= 0.5*(ts(kk+1) - ts(kk));
@@ -507,11 +553,25 @@ void Prg_SFunctionOpt::update(int kk,
     f0 *= 0.5*(ts(kk) - ts(kk-1));
   else
     f0 *= 0.5*(ts(kk+1) - ts(kk-1));
-#if 0
-  // apply higher weight at final time 
-  if (kk == _KK)
-    f0 *= 100.0;
-#endif
+
+  // additional terms at final time
+  if (kk == _KK) {
+    for (i = _nc+_nsc, idx = 0; idx < _mdl_ny; idx++) {
+      // assign used outputs to constraints
+      if (_mdl_yf_active[idx]) {
+	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
+	i++;
+      }
+      // final objective terms
+      if (_mdl_yf_weight1[idx] != 0.0)
+	f0 += _mdl_yf_weight1[idx] * mdl_y[idx] / _mdl_y_nominal[idx];
+      if (_mdl_yf_weight2[idx] != 0.0) {
+	help = (mdl_y[idx] - _mdl_y_ref[idx]) / _mdl_y_nominal[idx];
+	f0 += _mdl_yf_weight2[idx]*help*help;
+      }
+    }
+  }
+
   // store values of model outputs
   for (i = 0; i < _mdl_ny; i++)
     _mdl_ys[kk][i] = value(mdl_y[i]);
@@ -582,6 +642,24 @@ void Prg_SFunctionOpt::update(int kk,
       }
       if (_mdl_y_min_soft[idx] > -INF || _mdl_y_max_soft[idx] < INF) {
 	is += spsk;
+      }
+    }
+    // additional terms at final time
+    if (kk == _KK) {
+      for (i = _nc+_nsc, idx = 0; idx < _mdl_ny; idx++) {
+	// contributions of final objective terms
+	if (_mdl_yf_weight1[idx] != 0.0) {
+	  for (j = 0; j < _nx; j++)
+	    f0.gx[j] += _mdl_yf_weight1[idx] * c.Jx[i][j];
+	}
+	if (_mdl_yf_weight2[idx] != 0.0) {
+	  for (j = 0; j < _nx; j++)
+	    f0.gx[j] += _mdl_yf_weight2[idx] *
+	      2.0 * (c[i] - _mdl_y_ref[idx]/_mdl_y_nominal[idx]) *
+	      c.Jx[i][j];
+	}
+	if (_mdl_yf_active[idx])
+	  i++;
       }
     }
 #endif
