@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -53,10 +53,10 @@ SPMAT	*spLUfactor2(SPMAT *A, PERM *px)
 	alpha = 0.1;
 #endif
 	if ( ! A || ! px )
-		error(E_NULL,"spLUfctr");
+		m_error(E_NULL,"spLUfctr");
 #ifndef SPLU_MOD
 	if ( alpha <= 0.0 || alpha > 1.0 )
-		error(E_RANGE,"alpha in spLUfctr");
+		m_error(E_RANGE,"alpha in spLUfctr");
 #endif
 	if ( (int)px->size <= A->m )
 		px = px_resize(px,A->m);
@@ -221,9 +221,9 @@ void sprow_zero(SPROW *row)
 VEC *v_part(VEC *v, int offs, int dim, VEC *head)
 {
   if (!v)
-    error(E_NULL,"v_part");
+    m_error(E_NULL,"v_part");
   if ((int)v->dim < offs + dim)
-    error(E_SIZES,"v_part");
+    m_error(E_SIZES,"v_part");
 
   head->dim = dim;
   head->max_dim = 0;
@@ -278,9 +278,9 @@ VEC *v_expand(VEC *v, int nel, int granul)
 IVEC *iv_part(IVEC *iv, int offs, int dim, IVEC *head)
 {
   if (!iv)
-    error(E_NULL,"iv_part");
+    m_error(E_NULL,"iv_part");
   if ((int)iv->dim < offs + dim)
-    error(E_SIZES,"iv_part");
+    m_error(E_SIZES,"iv_part");
 
   head->dim = dim;
   head->max_dim = 0;
@@ -342,13 +342,13 @@ VEC *bd_mv_mlt(const BAND *A, const VEC *x, VEC *out)
   Real sum;
 
   if (!A || !x)
-    error(E_NULL,"bd_mv_mlt");
+    m_error(E_NULL,"bd_mv_mlt");
   if (x->dim != A->mat->n)
-    error(E_SIZES,"bd_mv_mlt");
+    m_error(E_SIZES,"bd_mv_mlt");
   if (!out || out->dim != A->mat->n)
     out = v_resize(out, A->mat->n);
   if (out == x)
-    error(E_INSITU,"bd_mv_mlt");
+    m_error(E_INSITU,"bd_mv_mlt");
 
   n = A->mat->n;
   m = A->mat->m;
@@ -380,11 +380,11 @@ MAT *m_mltadd(const MAT *IN, const MAT *A, const MAT *B, MAT *OUT)
   Real	**A_v, **B_v;
 
   if (A == (MAT *)NULL || B == (MAT *)NULL || IN == (MAT *)NULL)
-    error(E_NULL,"m_mltadd");
+    m_error(E_NULL,"m_mltadd");
   if (A->n != B->m || IN->m != A->m || IN->n != B->n)
-    error(E_SIZES,"m_mltadd");
+    m_error(E_SIZES,"m_mltadd");
   if (A == OUT || B == OUT)
-    error(E_INSITU,"m_mltadd");
+    m_error(E_INSITU,"m_mltadd");
 
   if (IN != OUT)
     OUT = m_copy(IN, OUT);
@@ -411,7 +411,7 @@ SPMAT *sp_copy3(const SPMAT *src, SPMAT *dst)
   int	i, n, m;
 
   if (!src)
-    error(E_NULL, "sp_copy3");
+    m_error(E_NULL, "sp_copy3");
   n = src->n;
   m = src->m;
   if (!dst || dst->n != n || dst->m != m)
@@ -445,9 +445,9 @@ int sp_update_val(SPMAT *A, int i, int j, Real val)
   int	idx;
    
   if ( A == SMNULL )
-    error(E_NULL,"sp_update_val");
+    m_error(E_NULL,"sp_update_val");
   if ( i < 0 || i >= A->m || j < 0 || j >= A->n )
-    error(E_SIZES,"sp_update_val");
+    m_error(E_SIZES,"sp_update_val");
    
   row = A->row+i;
   idx = sprow_idx(row, j);
@@ -472,9 +472,9 @@ void sp_insert_mrow(SPMAT *dst, int i_offs, int j_offs, const MAT *src, int i)
   double val;
 
   if (!dst || !src)
-    error(E_NULL, "sp_insert_mrow");
+    m_error(E_NULL, "sp_insert_mrow");
   if (i < 0 || i >= (int)src->m)
-    error(E_BOUNDS, "sp_insert_mrow");
+    m_error(E_BOUNDS, "sp_insert_mrow");
 
   for(j=0; j<jend; j++) {
     val = src->me[i][j];
@@ -493,16 +493,16 @@ void sp_update_mrow(SPMAT *dst, int i_offs, int j_offs, const MAT *src, int i)
   int	j, j_idx, j_end;
 
   if (!dst || !src)
-    error(E_NULL, "sp_update_mrow");
+    m_error(E_NULL, "sp_update_mrow");
   if (i < 0 || i >= (int)src->m)
-    error(E_BOUNDS, "sp_update_mrow");
+    m_error(E_BOUNDS, "sp_update_mrow");
 
   j_end = src->n;
   row = dst->row + i_offs + i;
   j_idx = sprow_idx(row, j_offs);
   if (j_idx < 0) {
     if (j_idx == -1)
-      error(E_BOUNDS,"sp_update_mrow");
+      m_error(E_BOUNDS,"sp_update_mrow");
     j_idx = -(j_idx + 2);
   }
   while (j_idx < row->len) {
@@ -521,9 +521,9 @@ void sp_extract_mrow(const SPMAT *src, int i_offs, int j_offs, MAT *dst, int i)
   int j, j_end, j_idx;
 
   if (!src || !dst)
-    error(E_NULL, "sp_extract_mrow");
+    m_error(E_NULL, "sp_extract_mrow");
   if (i < 0 || i >= (int)dst->m)
-    error(E_BOUNDS, "sp_extract_mrow");
+    m_error(E_BOUNDS, "sp_extract_mrow");
 
   j_end = dst->n;
   for (j=0; j<j_end; j++)
@@ -533,7 +533,7 @@ void sp_extract_mrow(const SPMAT *src, int i_offs, int j_offs, MAT *dst, int i)
   j_idx = sprow_idx(row, j_offs);
   if (j_idx < 0) {
     if (j_idx == -1)
-      error(E_BOUNDS,"sp_extract_mrow");
+      m_error(E_BOUNDS,"sp_extract_mrow");
     j_idx = -(j_idx + 2);
   }
   while (j_idx < row->len) {
@@ -599,7 +599,7 @@ void sp_update_mat(SPMAT *dst, int i_offs, int j_offs, const MAT *src)
     j_idx = sprow_idx(row, j_offs);
     if (j_idx < 0) {
       if (j_idx == -1)
-	error(E_BOUNDS,"sp_update_mat");
+	m_error(E_BOUNDS,"sp_update_mat");
       j_idx = -(j_idx + 2);
     }
     while (j_idx < row->len) {
@@ -628,7 +628,7 @@ void sp_extract_mat(const SPMAT *src, int i_offs, int j_offs, MAT *dst)
     j_idx = sprow_idx(row, j_offs);
     if (j_idx < 0) {
       if (j_idx == -1)
-	error(E_BOUNDS,"sp_extract_mat");
+	m_error(E_BOUNDS,"sp_extract_mat");
       j_idx = -(j_idx + 2);
     }
     while (j_idx < row->len) {
@@ -658,7 +658,7 @@ void symsp_extract_mat(const SPMAT *src, int offs, MAT *dst)
     j_idx = sprow_idx(row, offs + i);
     if (j_idx < 0) {
       if (j_idx == -1)
-	error(E_BOUNDS,"sp_extract_mat");
+	m_error(E_BOUNDS,"sp_extract_mat");
       j_idx = -(j_idx + 2);
     }
     while (j_idx < row->len) {
@@ -695,7 +695,7 @@ Real sp_norm_inf(SPMAT *A)
   Real rsum, norm = 0.0;
   
   if ( ! A )
-    error(E_NULL,"sp_norm_inf");
+    m_error(E_NULL,"sp_norm_inf");
   
   for (i = 0; i < A->m; i++) {
     elt = A->row[i].elt;
@@ -716,7 +716,7 @@ SPMAT	*sp_ones( SPMAT *A)
   row_elt	*elt;
   
   if ( ! A )
-    error(E_NULL,"sp_ones");
+    m_error(E_NULL,"sp_ones");
   
   for ( i = 0; i < A->m; i++ )
     {
@@ -744,9 +744,9 @@ SPMAT *sp_transp(const SPMAT *A, SPMAT *T)
   SPROW *srow, *drow;
 
   if (!A)
-    error(E_NULL, "sp_transp");
+    m_error(E_NULL, "sp_transp");
   if (A == T)
-    error(E_INSITU, "sp_transp");
+    m_error(E_INSITU, "sp_transp");
 
   n = A->n;
   m = A->m;
@@ -803,9 +803,9 @@ VEC	*sp_mv_mltadd(const VEC *v1, const VEC *v2, const SPMAT *A,
   row_elt	*elts;
   
   if ( !A || !v1 || !v2 )
-    error(E_NULL,"sp_mv_mltadd");
+    m_error(E_NULL,"sp_mv_mltadd");
   if ( (int)v1->dim != A->m || (int)v2->dim != A->n )
-    error(E_SIZES,"sp_mv_mltadd");
+    m_error(E_SIZES,"sp_mv_mltadd");
   if ( !out || (int)out->dim != A->m )
     out = v_resize(out, A->m);
 
@@ -843,13 +843,13 @@ VEC	*sp_mv_symmlt(SPMAT *A, const VEC *v, VEC *out)
   row_elt *elts;
   
   if ( !A || !v )
-    error(E_NULL, "sp_mv_symmlt");
+    m_error(E_NULL, "sp_mv_symmlt");
   if ( (int)v->dim != A->m )
-    error(E_SIZES, "sp_mv_symmlt");
+    m_error(E_SIZES, "sp_mv_symmlt");
   if ( !out || (int)out->dim != A->m )
     out = v_resize(out, A->m);
   if (out == v)
-    error(E_INSITU, "sp_mv_symmlt");
+    m_error(E_INSITU, "sp_mv_symmlt");
 
   if (!A->flag_diag)
     sp_diag_access(A);
@@ -898,11 +898,11 @@ VEC *sp_vm_mltadd(const VEC *v1, const VEC *v2, const SPMAT *A,
   row_elt *elt;
 
   if ( ! v1 || ! v2 || ! A )
-    error(E_NULL,"sp_vm_mltadd");
+    m_error(E_NULL,"sp_vm_mltadd");
   if ( v2 == out )
-    error(E_INSITU,"sp_vm_mltadd");
+    m_error(E_INSITU,"sp_vm_mltadd");
   if ( (int)v1->dim != A->n || A->m != (int)v2->dim )
-    error(E_SIZES,"sp_vm_mltadd");
+    m_error(E_SIZES,"sp_vm_mltadd");
   if ( !out || (int)out->dim != A->n )
     out = v_resize(out, A->n);
 

@@ -47,16 +47,16 @@ int If_Command::tclCmd(ClientData cld, Tcl_Interp *interp,
 {
   If_Command *cmd = (If_Command *)cld;
 
-  catchall(// try
-	   // use tractcatch to get error message printed to stderr
-	   tracecatch(// try
-		      cmd->invoke(argc, argv, &interp->result),
-		      // catch and throw
-		      "If_Command::tclCmd"),
-	   // catch
-	   Tcl_AppendResult(theInterp, "error evaluating ",
-			    cmd->_ifName, NULL);
-	   return TCL_ERROR);
-
+  m_catchall(// try
+	     // use tractcatch to get error message printed to stderr
+	     m_tracecatch(// try
+			  cmd->invoke(argc, argv, &interp->result),
+			  // catch and throw
+			  "If_Command::tclCmd"),
+	     // catch
+	     Tcl_AppendResult(theInterp, "error evaluating ",
+			      cmd->_ifName, NULL);
+	     return TCL_ERROR);
+  
   return TCL_OK;
 }

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -72,12 +72,12 @@ void Omu_IntODE::init_stage(int k,
 			    bool sa)
 {
   if (!x.D_is_const) {
-    error(E_FORMAT,
-	  "Omu_IntODE::init_stage, which was called for non const dF/dxp");
+    m_error(E_FORMAT,
+	    "Omu_IntODE::init_stage, which was called for non const dF/dxp");
   }
   if (x.na > 0) {
-    error(E_FORMAT,
-	  "Omu_IntODE::init_stage, which was called for algebraic states");
+    m_error(E_FORMAT,
+	    "Omu_IntODE::init_stage, which was called for algebraic states");
   }
   Omu_Integrator::init_stage(k, x, u, sa);
   realloc();

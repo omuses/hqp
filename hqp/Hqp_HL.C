@@ -180,7 +180,7 @@ void Hqp_HL::est_y(Hqp_SqpProgram *prg, VEC *y)
     SPROW       *row;
 
     if ( y == VNULL )
-	error(E_NULL, "Hqp_HL::est_y");
+	m_error(E_NULL, "Hqp_HL::est_y");
 
     // allocate memory 
     n = qp->c->dim;
@@ -275,7 +275,7 @@ void Hqp_HL::posdef(Hqp_SqpProgram *prg)
     j_idx = row->diag + 1;
     if (j_idx <= 0) {
       // there must always be a diagonal entry
-      error(E_INTERN, "Hqp_HL::posdef");
+      m_error(E_INTERN, "Hqp_HL::posdef");
     }
     elt = row->elt + j_idx;
     for (; j_idx < j_end; j_idx++, elt++) {

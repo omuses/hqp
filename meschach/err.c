@@ -31,12 +31,12 @@
   Ported to Pyramid 9810 late 1987
   */
 
-static	char	rcsid[] = "$Id: err.c,v 1.1 2001/03/01 17:18:34 rfranke Exp $";
+static	char	rcsid[] = "$Id: err.c,v 1.2 2002/05/01 17:50:39 rfranke Exp $";
 
 #include	<stdio.h>
 #include	<setjmp.h>
 #include	<ctype.h>
-#include        "m_err.h"
+#include        "err.h"
 
 
 #ifdef SYSV

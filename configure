@@ -3452,8 +3452,8 @@ echo "$as_me:3451: result: $odc_gmalloc" >&5
 echo "${ECHO_T}$odc_gmalloc" >&6
 
 if test "$odc_gmalloc" = no; then
-  echo "$as_me:3455: checking \"for malloc(0) == NULL\"" >&5
-echo $ECHO_N "checking \"for malloc(0) == NULL\"... $ECHO_C" >&6
+  echo "$as_me:3455: checking \"if malloc returns NULL\"" >&5
+echo $ECHO_N "checking \"if malloc returns NULL\"... $ECHO_C" >&6
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

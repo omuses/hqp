@@ -30,12 +30,12 @@
 
 #ifndef	MATRIXH
 
-/* RCS id: $Id: matrix.h,v 1.2 2001/04/02 08:18:27 rfranke Exp $ */
+/* RCS id: $Id: matrix.h,v 1.3 2002/05/01 17:50:39 rfranke Exp $ */
 
 #define	MATRIXH	
 
 #include	"machine.h"
-#include        "m_err.h"
+#include        "err.h"
 #include 	"meminfo.h"
 
 /* unsigned integer type */

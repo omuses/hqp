@@ -12,7 +12,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -173,13 +173,13 @@ Real Hqp_SqpSolver::norm_inf(const Hqp_Program *qp)
 int Hqp_SqpSolver::init(IF_CMD_ARGS)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_SqpSolver::init");
+    m_error(E_NULL, "Hqp_SqpSolver::init");
   }
 
   Hqp_Program *qp = _prg->qp();
 
   if (!qp || !(VEC *)qp->c || !(VEC *)qp->b || !(VEC *)qp->d) {
-    error(E_NULL, "Hqp_SqpSolver::init");
+    m_error(E_NULL, "Hqp_SqpSolver::init");
   }
 
   _hela->setup(_prg);
@@ -208,13 +208,13 @@ int Hqp_SqpSolver::init(IF_CMD_ARGS)
 int Hqp_SqpSolver::qp_update(int, char *[], char **)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_SqpSolver::qp_update");
+    m_error(E_NULL, "Hqp_SqpSolver::qp_update");
   }
 
   Hqp_Program *qp = _prg->qp();
 
   if (!qp || !(VEC *)qp->c || !(VEC *)qp->b || !(VEC *)qp->d) {
-    error(E_NULL, "Hqp_SqpSolver::qp_update");
+    m_error(E_NULL, "Hqp_SqpSolver::qp_update");
   }
 
   if (_iter == 0) {
@@ -274,13 +274,13 @@ int Hqp_SqpSolver::qp_update(int, char *[], char **)
 int Hqp_SqpSolver::qp_solve(int, char *[], char **)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_SqpSolver::qp_solve");
+    m_error(E_NULL, "Hqp_SqpSolver::qp_solve");
   }
 
   Hqp_Program *qp = _prg->qp();
 
   if (!qp || !(VEC *)qp->c || !(VEC *)qp->b || !(VEC *)qp->d) {
-    error(E_NULL, "Hqp_SqpSolver::qp_update");
+    m_error(E_NULL, "Hqp_SqpSolver::qp_update");
   }
 
   _f_bak = _prg->f();
@@ -311,7 +311,7 @@ int Hqp_SqpSolver::qp_solve(int, char *[], char **)
 int Hqp_SqpSolver::hela_restart(int, char *[], char **)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_SqpSolver::hela_restart");
+    m_error(E_NULL, "Hqp_SqpSolver::hela_restart");
   }
 
   sp_zero(_prg->qp()->Q);
@@ -329,7 +329,7 @@ int Hqp_SqpSolver::hela_restart(int, char *[], char **)
 int Hqp_SqpSolver::qp_reinit_bd(int, char *[], char **)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_SqpSolver::qp_reinit_bd");
+    m_error(E_NULL, "Hqp_SqpSolver::qp_reinit_bd");
   }
 
   // reinit bounds in qp->b and qp->d
@@ -382,13 +382,13 @@ void Hqp_SqpSolver::feasible_vals()
 int Hqp_SqpSolver::step(int, char *[], char **)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_SqpSolver::step");
+    m_error(E_NULL, "Hqp_SqpSolver::step");
   }
 
   Hqp_Program *qp = _prg->qp();
 
   if (!qp || !(VEC *)qp->c || !(VEC *)qp->b || !(VEC *)qp->d) {
-    error(E_NULL, "Hqp_SqpSolver::step");
+    m_error(E_NULL, "Hqp_SqpSolver::step");
   }
 
   _status = _solver->result();

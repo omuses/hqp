@@ -4,7 +4,7 @@
 #
 # Copyright (C) David Stewart & Zbigniew Leyk 1993
 #
-# $Id: makefile,v 1.2 2002/04/23 14:17:35 rfranke Exp $
+# $Id: makefile,v 1.3 2002/05/01 17:50:39 rfranke Exp $
 #
 
 include ../makedefs
@@ -57,7 +57,7 @@ OLDLIST = conjgrad$O lanczos$O arnoldi$O
 
 ALL_LISTS = $(LIST1) $(LIST2) $(LIST3) $(ZLIST1) $(ZLIST2) $(OLDLIST)
 
-HBASE = m_err.h meminfo.h machine.h matrix.h
+HBASE = err.h meminfo.h machine.h matrix.h
 
 HLIST = $(HBASE) iter.h matlab.h matrix2.h  oldnames.h sparse.h \
 	sparse2.h  zmatrix.h zmatrix2.h

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1996--2001  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2002  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -96,13 +96,13 @@ static void RES(freal *t, freal *y, freal *yprime, freal *,
 //--------------------------------------------------------------------------
 static void PSOL()
 {
-  error(E_INTERN, "DASPK, which called PSOL");
+  m_error(E_INTERN, "DASPK, which called PSOL");
 }
 
 //--------------------------------------------------------------------------
 static void G_RES()
 {
-  error(E_INTERN, "DASPK, which called G_RES");
+  m_error(E_INTERN, "DASPK, which called G_RES");
 }
 
 //--------------------------------------------------------------------------
@@ -552,7 +552,7 @@ void Omu_IntDASPK::solve(int kk, double tstart, double tend,
     v_foutput(stderr, _yprime);
     v_foutput(stderr, _y);
     */
-    error(E_UNKNOWN,
+    m_error(E_UNKNOWN,
 	  "Omu_IntDASPK::solve that failed in calling DASPK");
   }
 
@@ -653,7 +653,7 @@ void Omu_IntDASPK::jac(freal *t, freal *y, freal *yprime,
 {
   if (*ijac != 0)
     // don't know how to treat
-    error(E_INTERN, "Omu_IntDASPK::jac");
+    m_error(E_INTERN, "Omu_IntDASPK::jac");
 
   int i, j;
   Omu_DepVec &Fc = *_Fc_ptr;

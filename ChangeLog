@@ -1,3 +1,15 @@
+2002-05-01    <rfranke>
+
+	
+	* meschach/err.h: rename back from m_err.h,
+	  as includes are now bundled in a meschach subdirectory
+	* meschach/{err.[hc], makefile, matdef.h, matrix.h, version.c}:
+	  prepend m_ to macros error, warning, catchall, tracecath
+	  to avoid name conflicts with othe software packages;
+	* iftcl/*.C, hqp/*.C, omu/*.[hC]: use new names for error handling
+
+	* configure.in: change message for malloc check (for mingw)
+
 2002-04-23    <h_linke>
 
 	* omu/Omu_IntSDIRK.[hC]: remove adolc from sensitivity computation

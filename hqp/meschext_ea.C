@@ -75,7 +75,7 @@ MAT	*m_copy1(const MAT *in, MAT *out)
 	u_int	i /* ,j */;
 
 	if ( in==MNULL )
-		error(E_NULL,"m_copy1");
+		m_error(E_NULL,"m_copy1");
 	if ( in==out )
 		return (out);
 	if ( out==MNULL || out->m != in->m || out->n != in->n )
@@ -100,7 +100,7 @@ VEC	*v_copy1(const VEC *in, VEC *out)
 	/* u_int	i,j; */
 
 	if ( in==VNULL )
-		error(E_NULL,"_v_copy1");
+		m_error(E_NULL,"_v_copy1");
 	if ( in==out )
 		return (out);
 	if ( out==VNULL || out->dim != in->dim )
@@ -120,7 +120,7 @@ VEC	*v_copy1(const VEC *in, VEC *out)
 VEC *v_diag(MAT *A, VEC *C) {
   int i, n;
   if ( A == MNULL )
-    error(E_NULL,"v_diag");
+    m_error(E_NULL,"v_diag");
   n = A->m;
   if ( n >  (int) A->n ) 
     n = A->n;
@@ -138,9 +138,9 @@ MAT *dm_mlt(MAT *A, VEC *B, MAT *C) {
   int i, j;
   double val;
   if ( ( A == MNULL ) || ( B == VNULL ) )
-    error(E_NULL, "dm_mlt");
+    m_error(E_NULL, "dm_mlt");
   if ( A->m !=  B->dim )
-    error(E_SIZES, "dm_mlt");
+    m_error(E_SIZES, "dm_mlt");
   C = m_resize(C, A->m, A->n);
   for ( i = 0; i < (int) A->m; i++) {
     val = v_entry(B, i);
@@ -158,9 +158,9 @@ MAT *md_mlt(MAT *A, VEC *B, MAT *C) {
   int i, j;
   double val;
   if ( ( A == MNULL ) || ( B == VNULL ) )
-    error(E_NULL, "md_mlt");
+    m_error(E_NULL, "md_mlt");
   if ( A->n !=  B->dim )
-    error(E_SIZES, "md_mlt");
+    m_error(E_SIZES, "md_mlt");
   C = m_resize(C, A->m, A->n);
   for ( i = 0; i < (int) A->n; i++ ) {
     val = v_entry(B, i);
@@ -182,10 +182,10 @@ MAT	*m_symm(const MAT *in, MAT *out)
 	u_int	i , j;
 
 	if ( in == MNULL )
-	  error(E_NULL,"m_symm");
+	  m_error(E_NULL,"m_symm");
 
 	if ( in->m != in->n )
-	  error(E_SQUARE,"m_symm");
+	  m_error(E_SQUARE,"m_symm");
 
 	if ( out == MNULL || out->m != in->m || out->n != in->n )
 		out = m_resize(out, in->m, in->n);
@@ -210,10 +210,10 @@ double	rel_symm(const MAT *in)
 	double r;
 
 	if ( in == MNULL )
-	  error(E_NULL,"rel_symm");
+	  m_error(E_NULL,"rel_symm");
 
 	if ( in->m != in->n )
-	  error(E_SQUARE,"rel_symm");
+	  m_error(E_SQUARE,"rel_symm");
 
 	for ( r = 0.0, i = 0; i < in->m; i++ )
 	  for ( j = i+1; j < in->m; j++ ) {
@@ -236,11 +236,11 @@ MAT *CHsolveM(MAT *A, MAT *B, MAT *C)
   u_int i;
 
   if ( ( A == MNULL ) || ( B == MNULL ) )
-    error(E_NULL,"CHsolveM");
+    m_error(E_NULL,"CHsolveM");
   if ( A->m != A->n )
-    error(E_SQUARE,"CHsolveM");
+    m_error(E_SQUARE,"CHsolveM");
   if ( A->m != B->m )
-    error(E_SIZES,"CHsolveM");
+    m_error(E_SIZES,"CHsolveM");
 
   v1 = v_resize(v1, B->m);
   MEM_STAT_REG(v1, TYPE_VEC);
@@ -265,13 +265,13 @@ MAT *CHsolveMT(MAT *A, MAT *B, MAT *C)
   u_int i;
 
   if ( ( A == MNULL ) || ( B == MNULL ) )
-    error(E_NULL,"CHsolveMT");
+    m_error(E_NULL,"CHsolveMT");
   if ( A->m != A->n )
-    error(E_SQUARE,"CHsolveMT");
+    m_error(E_SQUARE,"CHsolveMT");
   if ( A->m != B->n )
-    error(E_SIZES,"CHsolveMT");
+    m_error(E_SIZES,"CHsolveMT");
   if ( B == C)
-    error(E_INSITU,"CHsolveMT");
+    m_error(E_INSITU,"CHsolveMT");
 
   v1 = v_resize(v1, B->n);
   MEM_STAT_REG(v1, TYPE_VEC);
@@ -296,11 +296,11 @@ MAT *BKPsolveM(MAT *A, PERM *pivot, PERM *blocks, MAT *B, MAT *C)
   u_int i;
 
   if ( ( A == MNULL ) || ( B == MNULL ) )
-    error(E_NULL,"BKPsolveM");
+    m_error(E_NULL,"BKPsolveM");
   if ( A->m != A->n )
-    error(E_SQUARE,"BKPsolveM");
+    m_error(E_SQUARE,"BKPsolveM");
   if ( A->m != B->m )
-    error(E_SIZES,"BKPsolveM");
+    m_error(E_SIZES,"BKPsolveM");
 
   v1 = v_resize(v1, B->m);
   MEM_STAT_REG(v1, TYPE_VEC);
@@ -325,13 +325,13 @@ MAT *BKPsolveMT(MAT *A, PERM *pivot, PERM *blocks, MAT *B, MAT *C)
   u_int i;
 
   if ( ( A == MNULL ) || ( B == MNULL ) )
-    error(E_NULL,"BKPsolveMT");
+    m_error(E_NULL,"BKPsolveMT");
   if ( A->m != A->n )
-    error(E_SQUARE,"BKPsolveMT");
+    m_error(E_SQUARE,"BKPsolveMT");
   if ( A->m != B->n )
-    error(E_SIZES,"BKPsolveMT");
+    m_error(E_SIZES,"BKPsolveMT");
   if ( B == C)
-    error(E_INSITU,"BKPsolveMT");
+    m_error(E_INSITU,"BKPsolveMT");
 
   v1 = v_resize(v1, B->n);
   MEM_STAT_REG(v1, TYPE_VEC);
@@ -356,11 +356,11 @@ MAT *LUsolveM(MAT *A, PERM *pivot, MAT *B, MAT *C)
   u_int i;
 
   if ( ( A == MNULL ) || ( B == MNULL ) )
-    error(E_NULL,"LUsolveM");
+    m_error(E_NULL,"LUsolveM");
   if ( A->m != A->n )
-    error(E_SQUARE,"LUsolveM");
+    m_error(E_SQUARE,"LUsolveM");
   if ( A->m != B->m )
-    error(E_SIZES,"LUsolveM");
+    m_error(E_SIZES,"LUsolveM");
 
   v1 = v_resize(v1, B->m);
   MEM_STAT_REG(v1, TYPE_VEC);
@@ -385,13 +385,13 @@ MAT *LUsolveMT(MAT *A, PERM *pivot, MAT *B, MAT *C)
   u_int i;
 
   if ( ( A == MNULL ) || ( B == MNULL ) )
-    error(E_NULL,"LUsolveMT");
+    m_error(E_NULL,"LUsolveMT");
   if ( A->m != A->n )
-    error(E_SQUARE,"LUsolveMT");
+    m_error(E_SQUARE,"LUsolveMT");
   if ( A->m != B->n )
-    error(E_SIZES,"LUsolveMT");
+    m_error(E_SIZES,"LUsolveMT");
   if ( B == C)
-    error(E_INSITU,"LUsolveMT");
+    m_error(E_INSITU,"LUsolveMT");
 
   v1 = v_resize(v1, B->n);
   MEM_STAT_REG(v1, TYPE_VEC);
@@ -421,7 +421,7 @@ void GE_QP(MAT *A, MAT *S, MAT *Z, MAT *PQ, double eps)
   u_int i, m, r;
 
   if ( ( A == MNULL ) || ( S == MNULL) || ( Z == MNULL ) || ( PQ == MNULL ) )
-    error(E_NULL, "GE_QP");
+    m_error(E_NULL, "GE_QP");
 
   m = A->n;
 
@@ -496,11 +496,11 @@ MAT *m_concatc(MAT *A, MAT *B, MAT *C)
 {
   int am;
   if ( ! A || ! B )
-    error(E_NULL, "m_concatc");
+    m_error(E_NULL, "m_concatc");
   if ( A->n != B->n )
-    error(E_SIZES, "m_concatc");
+    m_error(E_SIZES, "m_concatc");
   if ( B == C ) 
-    error(E_INSITU, "m_concatc"); 
+    m_error(E_INSITU, "m_concatc"); 
   am = A->m;
   C = m_resize(C, am+B->m, A->n);
   if ( A != C )
@@ -517,9 +517,9 @@ VEC *v_concat(VEC *A, VEC *B, VEC *C)
 {
   u_int adim;
   if ( ! A || ! B )
-    error(E_NULL, "v_concat");
+    m_error(E_NULL, "v_concat");
   if ( B == C ) 
-    error(E_INSITU, "v_concat");
+    m_error(E_INSITU, "v_concat");
   adim = A->dim;
   C = v_resize(C, adim+B->dim);
   if ( A != C )
@@ -537,9 +537,9 @@ VEC *v_move_iv(const VEC *A, const IVEC *iv, VEC *C)
 {
   int i;
   if ( ! A || ! iv )
-    error(E_NULL, "v_move_iv");
+    m_error(E_NULL, "v_move_iv");
   if (  A == C )
-    error(E_INSITU, "v_move_iv");
+    m_error(E_INSITU, "v_move_iv");
   C = v_resize(C, iv->dim);
   for ( i = 0; i < (int) iv->dim; i++)
     v_set_val(C, i, v_entry(A, iv_entry(iv, i)));
@@ -554,11 +554,11 @@ VEC *v_set_iv(VEC *A, IVEC *iv, VEC *C)
 {
   int i;
   if ( ! A || ! iv || ! C)
-    error(E_NULL, "v_set_iv");
+    m_error(E_NULL, "v_set_iv");
   if ( A == C )
-    error(E_INSITU, "v_set_iv");
+    m_error(E_INSITU, "v_set_iv");
   if ( ! ( A->dim == iv->dim ) )
-    error(E_SIZES, "v_set_iv");
+    m_error(E_SIZES, "v_set_iv");
   for ( i = 0; i < (int) iv->dim; i++)
     v_set_val(C, iv_entry(iv, i), v_entry(A, i));
   return C;
@@ -574,7 +574,7 @@ Real sprow_norm2(const SPROW *r)
   int i;
 
   if ( r == (SPROW *) NULL )
-    error(E_NULL, "sprow_norm2");
+    m_error(E_NULL, "sprow_norm2");
 
   for ( i = 0; i < r->len; i++ )
     sum += r->elt[i].val*r->elt[i].val;
@@ -592,7 +592,7 @@ Real sprow_norm1(const SPROW *r)
   int i;
 
   if ( r == (SPROW *) NULL )
-    error(E_NULL, "sprow_norm1");
+    m_error(E_NULL, "sprow_norm1");
 
   for ( i = 0; i < r->len; i++ )
       sum += fabs(r->elt[i].val);
@@ -613,9 +613,9 @@ void sp_extract_mat_iv(const SPMAT *src, const IVEC *iv, int j_offs, MAT *dst)
   int i_end, j_end, j_idx;
 
   if ( ( src == SMNULL ) || ( iv == IVNULL ) || ( dst == MNULL ) )
-    error(E_NULL, "sp_extract_mat_iv");
+    m_error(E_NULL, "sp_extract_mat_iv");
   if ( iv->dim != dst->m )
-    error(E_SIZES, "sp_extract_mat_iv");
+    m_error(E_SIZES, "sp_extract_mat_iv");
   m_zero(dst);
 
   i_end = dst->m;
@@ -625,7 +625,7 @@ void sp_extract_mat_iv(const SPMAT *src, const IVEC *iv, int j_offs, MAT *dst)
     j_idx = sprow_idx(row, j_offs);
     if (j_idx < 0) {
       if (j_idx == -1)
-	error(E_BOUNDS,"sp_extract_mat_iv");
+	m_error(E_BOUNDS,"sp_extract_mat_iv");
       j_idx = -(j_idx + 2);
     }
     while (j_idx < row->len) {
@@ -649,11 +649,11 @@ MAT *bspm_mlt(const SPMAT *A, int i0, int j0, int m0, const MAT *B, MAT *C)
   int i, j, j_idx;
 
   if ( ( A == SMNULL ) || ( B == MNULL ) )
-    error(E_NULL, "bspm_mlt");
+    m_error(E_NULL, "bspm_mlt");
   if ( ( j0+(int)B->m > A->n) || ( i0 + m0 > A->m ) )
-    error(E_SIZES, "bspm_mlt");
+    m_error(E_SIZES, "bspm_mlt");
   if ( B == C ) 
-    error(E_INSITU, "bspm_mlt");
+    m_error(E_INSITU, "bspm_mlt");
 
   if ( ( C == MNULL ) || ( (int)C->m != m0 ) || ( C->n != B->n ) )
     C = m_resize(C, m0, B->n);
@@ -664,7 +664,7 @@ MAT *bspm_mlt(const SPMAT *A, int i0, int j0, int m0, const MAT *B, MAT *C)
     j_idx = sprow_idx(row, j0);
     if ( j_idx < 0 ) {
       if ( j_idx == -1 )
-	error(E_BOUNDS,"bspm_mlt");
+	m_error(E_BOUNDS,"bspm_mlt");
       j_idx = -(j_idx + 2);
     }
     while ( j_idx < row->len ) {
@@ -692,11 +692,11 @@ MAT *mbsptr_mlt(const MAT *B, const SPMAT *A, int i0, int j0, int n0, MAT *C)
   int i, j, j_idx, k;
 
   if ( ( A == SMNULL ) || ( B == MNULL ) )
-    error(E_NULL, "mbsptr_mlt");
+    m_error(E_NULL, "mbsptr_mlt");
   if ( ( i0+(int)B->n > A->n) || ( j0 + n0 > A->m ) )
-    error(E_SIZES, "mbsptr_mlt");
+    m_error(E_SIZES, "mbsptr_mlt");
   if ( B == C ) 
-    error(E_INSITU, "msptr_mlt");
+    m_error(E_INSITU, "msptr_mlt");
 
   if ( ( C == MNULL ) || ( (int)C->n != n0 ) || ( C->m != B->m ) )
     C = m_resize(C, B->m, n0);
@@ -707,7 +707,7 @@ MAT *mbsptr_mlt(const MAT *B, const SPMAT *A, int i0, int j0, int n0, MAT *C)
     j_idx = sprow_idx(row, i0);
     if ( j_idx < 0 ) {
       if ( j_idx == -1 )
-	error(E_BOUNDS,"msptr_mlt");
+	m_error(E_BOUNDS,"msptr_mlt");
       j_idx = -(j_idx + 2);
     }
     while ( j_idx < row->len ) {
@@ -734,11 +734,11 @@ VEC *bspv_mlt(const SPMAT *A, int i0, int j0, int m0, const VEC *B, VEC *C)
   int i, j, j_idx;
 
   if ( ( A == SMNULL ) || ( B == VNULL ) )
-    error(E_NULL, "bspv_mlt");
+    m_error(E_NULL, "bspv_mlt");
   if ( ( j0+(int)B->dim > A->n) || ( i0+m0 > A->m ) )
-    error(E_SIZES, "bspv_mlt");
+    m_error(E_SIZES, "bspv_mlt");
   if ( B == C ) 
-    error(E_INSITU, "bspv_mlt");
+    m_error(E_INSITU, "bspv_mlt");
 
   if ( ( C == VNULL ) || ( (int)C->dim != m0 ) )
     C = v_resize(C, m0);
@@ -748,7 +748,7 @@ VEC *bspv_mlt(const SPMAT *A, int i0, int j0, int m0, const VEC *B, VEC *C)
     j_idx = sprow_idx(row, j0);
     if ( j_idx < 0 ) {
       if ( j_idx == -1 )
-	error(E_BOUNDS,"bspv_mlt");
+	m_error(E_BOUNDS,"bspv_mlt");
       j_idx = -(j_idx + 2);
     }
     val = 0.0;
@@ -772,7 +772,7 @@ void check_sparse(SPMAT *C)
 { 
   int i, j, j_idx;
   if ( ! C )
-    error(E_NULL,"check_sparse");
+    m_error(E_NULL,"check_sparse");
   for ( i = 0; i < C->m; i++ )
     for ( j = 0; j < C->row[i].len; j++ ) {
       j_idx = C->row[i].elt[j].col;
@@ -800,9 +800,9 @@ SPMAT *sp_transp_ea(const SPMAT *A, SPMAT *T)
   SPROW *srow, *drow;
 
   if (!A)
-    error(E_NULL, "sp_transp_ea");
+    m_error(E_NULL, "sp_transp_ea");
   if (A == T)
-    error(E_INSITU, "sp_transp_ea");
+    m_error(E_INSITU, "sp_transp_ea");
 
   n = A->n;
   m = A->m;

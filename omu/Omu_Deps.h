@@ -46,7 +46,7 @@ public:
 
   void set_linear(int wrt = Omu_Dependent::WRT_ALL, bool value = true) {
     if (!c_setup)
-      error(E_OVERWRITE, "Omu_Dep::set_linear");
+      m_error(E_OVERWRITE, "Omu_Dep::set_linear");
     if (value)
       _linear_flags |= wrt;
     else
@@ -84,7 +84,7 @@ public:
 
   void set_linear(int wrt = Omu_Dependent::WRT_ALL, bool value = true) {
     if (!c_setup)
-      error(E_OVERWRITE, "Omu_DepVec::set_linear");
+      m_error(E_OVERWRITE, "Omu_DepVec::set_linear");
     for (int i = 0; i < (int)_linear_flags->dim; i++)
       if (value)
 	_linear_flags[i] |= wrt;
@@ -101,7 +101,7 @@ public:
   void set_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL,
 			  bool value = true) {
     if (!c_setup)
-      error(E_OVERWRITE, "Omu_DepVec::set_linear_element");
+      m_error(E_OVERWRITE, "Omu_DepVec::set_linear_element");
     if (value)
       _linear_flags[i] |= wrt;
     else

@@ -61,43 +61,44 @@ int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
 {
   If_Variable *var = (If_Variable *)cld;
 
-  catchall(// try
-	   // use tractcatch to get error message printed to stderr
-	   tracecatch(// try
-		      switch (objc) {
+  m_catchall(// try
+	     // use tractcatch to get error message printed to stderr
+	     m_tracecatch(// try
+			  switch (objc) {
 
-		      case 1:
-			if (var->_mode & IF_READ)
-			  return var->get();
-			else {
-			  Tcl_AppendResult(theInterp,
-					   "read permission denied for ",
-					   var->_ifName, NULL);
-			  return TCL_ERROR;
-			}
+			  case 1:
+			    if (var->_mode & IF_READ)
+			      return var->get();
+			    else {
+			      Tcl_AppendResult(theInterp,
+					       "read permission denied for ",
+					       var->_ifName, NULL);
+			      return TCL_ERROR;
+			    }
 
-		      case 2:
-			if (var->_mode & IF_WRITE)
-			  return var->put(objv[1]);
-			else {
-			  Tcl_AppendResult(theInterp,
-					   "write permission denied for ",
-					   var->_ifName, NULL);
-			  return TCL_ERROR;
-			}
+			  case 2:
+			    if (var->_mode & IF_WRITE)
+			      return var->put(objv[1]);
+			    else {
+			      Tcl_AppendResult(theInterp,
+					       "write permission denied for ",
+					       var->_ifName, NULL);
+			      return TCL_ERROR;
+			    }
 
-		      default:
-			Tcl_AppendResult(theInterp,
-					 "wrong # args, should be: ",
-					 var->_ifName, " [new value]", NULL);
-			return TCL_ERROR;
-		      },
-		      // catch and throw
-		      "If_Variable::tclCmd"),
-	   // catch
-	   Tcl_AppendResult(theInterp, "error accessing ",
-			    var->_ifName, NULL);
-	   return TCL_ERROR);
+			  default:
+			    Tcl_AppendResult(theInterp,
+					     "wrong # args, should be: ",
+					     var->_ifName, " [new value]",
+					     NULL);
+			    return TCL_ERROR;
+			  },
+			  // catch and throw
+			  "If_Variable::tclCmd"),
+	     // catch
+	     Tcl_AppendResult(theInterp, "error accessing ",
+			      var->_ifName, NULL);
+	     return TCL_ERROR);
 }
 
 

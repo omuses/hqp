@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.4 2002/04/23 15:23:31 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.5 2002/05/01 17:50:39 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -77,12 +77,19 @@ void	m_version()
 	/* rf, 04/02/01 */
 	printf("\tmatrix.h, matdef.h: allocate at least 1 element in NEW_A (as some c/malloc's return NULL for 0 elements)\n");
 	/* rf, 04/23/02 */
-	printf("\tmakefile: add add splufctr to list of compiled objects\n");
+	printf("\tmakefile: add splufctr to list of compiled objects\n");
 	printf("\tsplufctr.c: disable spLUfactor, spLUTsolve and spILUfactor via SPARSE_COL_ACCESS\n");
+	/* rf, 05/01/02 */
+	printf("\trename m_err.h back to err.h, as includes are bundled in meschach subdir\n");
+	printf("\terr.h, matdef.h: prepend m_ to macros error, warning, catchall, tracecatch to avoid name conflicts\n");
+	printf("\tother files: adapt to new macro names\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.5  2002/05/01 17:50:39  rfranke
+/* add prefix m_ to Meschach error macros
+/*
 /* Revision 1.4  2002/04/23 15:23:31  rfranke
 /* include additional factorization routines
 /*

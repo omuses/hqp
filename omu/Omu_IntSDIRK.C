@@ -405,13 +405,13 @@ void Omu_IntSDIRK::init_stage(int k,
   for(i = 0; i < _irk_stages-1; i++)
     for(j = i+1; j < _irk_stages; j++)
       if(_a[i][j] != 0.0)
-	error(E_INTERN,"Omu_IntSDIRK::init_stage - 
-                        sdirk method not correctly defined!");
+	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - 
+                          sdirk method not correctly defined!");
 
   for(i = 1; i < _irk_stages; i++)
       if(_a[i][i] != _a[0][0])
-	error(E_INTERN,"Omu_IntSDIRK::init_stage - 
-                        sdirk method not correctly defined!");
+	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - 
+                          sdirk method not correctly defined!");
 
   if (_jac_sbw >= 0) {
     // take user-defined value
@@ -486,7 +486,7 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
       _h_new = min(_hinit,tend-tstart);
     else
       _h_new = (tend - tstart)/1.0e4;
-  //      error(E_INTERN,"Omu_IntSDIRK::solve no step size provided");
+  //      m_error(E_INTERN,"Omu_IntSDIRK::solve no step size provided");
 
   v_zero(_y);
 
@@ -823,8 +823,8 @@ void Omu_IntSDIRK::solve_stage(int stage, VECP y, VECP yprime)
     if(ok) 
       break;
     else if (i == _maxiters-1)
-      error(E_INTERN, 
-	    "Omu_IntSDIRK::ode_solve Newton method failed to converge");
+      m_error(E_INTERN, 
+	      "Omu_IntSDIRK::ode_solve Newton method failed to converge");
     
     // (re)calculate and factorize Jacobian
     if(_recalc_jac) {
@@ -985,8 +985,8 @@ void Omu_IntSDIRK::solve_stage_lsqr(int stage, VECP y, VECP yprime)
       break;
     else 
       if(i == _maxiters-1)
-	error(E_INTERN, 
-	      "Omu_IntSDIRK::ode_solve Newton method failed to converge");
+	m_error(E_INTERN, 
+		"Omu_IntSDIRK::ode_solve Newton method failed to converge");
     
     // (re)calculate and factorize Jacobian
     if(_recalc_jac) {
@@ -1135,8 +1135,8 @@ void Omu_IntSDIRK::solve_final(VECP y, VECP yprime)
     if(ok) 
       break;
     else if (i == _maxiters-1)
-      error(E_INTERN, 
-	    "Omu_IntSDIRK::ode_solve Newton method failed to converge");
+      m_error(E_INTERN, 
+	      "Omu_IntSDIRK::ode_solve Newton method failed to converge");
     
     // (re)calculate and factorize Jacobian
     if(_recalc_jac) {
@@ -2361,8 +2361,8 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const VECP y, const VECP u,
     if(ok) 
       break;
     else if (i == _maxiters-1)
-      error(E_INTERN, 
-	    "Omu_IntSDIRK::init_yprime Newton method failed to converge");
+      m_error(E_INTERN, 
+	      "Omu_IntSDIRK::init_yprime Newton method failed to converge");
       
 
     // (re)calculate and factorize Jacobian

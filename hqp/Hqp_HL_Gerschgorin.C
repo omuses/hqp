@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -88,7 +88,7 @@ void Hqp_HL_Gerschgorin::update(const VEC *, const VEC *, Real,
     j_idx = row->diag + 1;
     if (j_idx <= 0) {
       // there must always be a diagonal entry
-      error(E_INTERN, "Hqp_HL_Gerschgorin::update_Q");
+      m_error(E_INTERN, "Hqp_HL_Gerschgorin::update_Q");
     }
     elt = row->elt + j_idx;
     for (; j_idx < j_end; j_idx++, elt++) {

@@ -352,7 +352,7 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
     mindec(rc,zos_forward(tag,n,n,0,_aa1,_ab1)); 
 
     if( rc < 0)
-      error(E_INTERN,"Omu_IntOdeTs::solve");
+      m_error(E_INTERN,"Omu_IntOdeTs::solve");
 
     taut = _tau/(1+deg);      
     tayl_max = 0.0;
@@ -365,7 +365,7 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
 
       mindec(rc,hos_forward(tag,n,n,deg,0,_aa1,_aa,_ab1,_ab));	
       if( rc < 0)
-        error(E_INTERN,"Omu_IntOdeTs::solve");
+        m_error(E_INTERN,"Omu_IntOdeTs::solve");
 
       taut = _tau/(1+deg);      
       tayl_max = 0.0;
@@ -374,7 +374,7 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
 	if(!is_finite(_ab[i][deg-1])) {
 	  tayl_finite = 0;
 	  printf("Taylor-series contains infinite or NaN elements!\n");
-	  error(E_INTERN,"Omu_IntOdeTs::solve");
+	  m_error(E_INTERN,"Omu_IntOdeTs::solve");
 	}
 
       /*
@@ -413,7 +413,7 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
     mindec(rc,hos_forward(tag,n,n,deg,deg+1,_aa1,_aa,_ab1,_ab));
 
     if( rc < 0)
-      error(E_INTERN,"Omu_IntOdeTs::solve");
+      m_error(E_INTERN,"Omu_IntOdeTs::solve");
     
     taut = _tau/(1+deg);
     tayl_max = 0.0;
@@ -438,7 +438,7 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
     }
 
     if(h == 0.0) {
-      error(E_SING,"Omu_IntOdeTs::solve");
+      m_error(E_SING,"Omu_IntOdeTs::solve");
       printf("Taylor-coeficient: %g \n",tayl_max);
     }
 

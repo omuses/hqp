@@ -1,7 +1,7 @@
 /*
 		Type definitions for general purpose maths package
 */
-/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.2 2001/04/02 08:18:27 rfranke Exp $ */
+/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.3 2002/05/01 17:50:39 rfranke Exp $ */
 
 #include "machine.h"
 
@@ -79,7 +79,7 @@ extern int	ev_err(char *, int, int, char *);
 #else
 /* extern int	ev_err(); */
 #endif
-#define	error(err_num,fn_name)	ev_err(__FILE__,err_num,__LINE__,fn_name)
+#define	m_error(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name)
 #define	E_UNKNOWN	0
 #define	E_SIZES		1
 #define	E_BOUNDS	2
@@ -104,7 +104,7 @@ extern int	ev_err(char *, int, int, char *);
 #define	EF_ABORT	1
 #define	EF_JUMP		2
 #define	EF_SILENT	3
-#define	tracecatch(ok_part,function) \
+#define	m_tracecatch(ok_part,function) \
 	{	jmp_buf _save;	int _err_num, _old_flag; \
 		_old_flag = set_err_flag(EF_JUMP); \
 		mem_copy(restart,_save,sizeof(jmp_buf)); \

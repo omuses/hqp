@@ -25,9 +25,8 @@
 
 
 /* err.h  28/09/1993 */
-/* renamed to m_err.h, rf 12/05/2000 */
 
-/*  RCS id: $Id: m_err.h,v 1.1 2001/03/01 17:18:43 rfranke Exp $  */
+/*  RCS id: $Id: err.h,v 1.1 2002/05/01 17:50:39 rfranke Exp $  */
 
 
 #ifndef M_ERRHEADER
@@ -70,12 +69,12 @@ extern  int err_list_free(int list_num);   /* freeing a list of errors */
 #endif
 
 
-/* error(E_TYPE,"myfunc") raises error type E_TYPE for function my_func() */
-#define	error(err_num,fn_name)	ev_err(__FILE__,err_num,__LINE__,fn_name,0)
+/* m_error(E_TYPE,"myfunc") raises error type E_TYPE for function my_func() */
+#define	m_error(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name,0)
 
-/* warning(WARN_TYPE,"myfunc") raises warning type WARN_TYPE for 
+/* m_warning(WARN_TYPE,"myfunc") raises warning type WARN_TYPE for 
    function my_func() */
-#define warning(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name,1) 
+#define m_warning(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name,1) 
 
 
 /* error flags */
@@ -140,13 +139,13 @@ extern  int err_list_free(int list_num);   /* freeing a list of errors */
 			err_part;	} \
 		else {	set_err_flag(_old_flag); \
 			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
-			error(_err_num,"m_catch"); \
+			m_error(_err_num,"m_catch"); \
 		} \
 	}
 
 
 /* execute err_part if any error raised while executing ok_part */
-#define	catchall(ok_part,err_part) \
+#define	m_catchall(ok_part,err_part) \
 	{	jmp_buf _save;	int _err_num, _old_flag; \
 		_old_flag = set_err_flag(EF_SILENT); \
 		MEM_COPY(restart,_save,sizeof(jmp_buf)); \
@@ -163,7 +162,7 @@ extern  int err_list_free(int list_num);   /* freeing a list of errors */
 
 /* print message if error raised while executing ok_part,
                 then re-raise error to trace calls */
-#define	tracecatch(ok_part,function) \
+#define	m_tracecatch(ok_part,function) \
 	{	jmp_buf _save;	int _err_num, _old_flag; \
 		_old_flag = set_err_flag(EF_JUMP); \
 		MEM_COPY(restart,_save,sizeof(jmp_buf)); \
@@ -174,9 +173,16 @@ extern  int err_list_free(int list_num);   /* freeing a list of errors */
 		else \
 		{	set_err_flag(_old_flag);  \
 			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
-			error(_err_num,function);	} \
+			m_error(_err_num,function);	} \
 	}
 
 
+#ifdef TRADITIONAL
+/* keep original names for Meschach implementation files */
+#define error(err_num,fn_name) 		m_error(err_num,fn_name)
+#define warning(err_num,fn_name) 	m_warning(err_num,fn_name)
+#define	catchall(ok_part,err_part) 	m_catchall(ok_part,err_part)
+#define	tracecatch(ok_part,function) 	m_tracecatch(ok_part,function)
+#endif
 
 #endif   /* ERRHEADER */

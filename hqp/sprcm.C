@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -68,9 +68,9 @@ IVEC *sp_rcm_scan(const SPMAT *Q, const SPMAT *A, const SPMAT *C,
   row_elt *elt;
 
   if (!Q || !degree || !neigh_start)
-    error(E_NULL, "sp_rcm_scan");
+    m_error(E_NULL, "sp_rcm_scan");
   if (Q->n != Q->m)
-    error(E_SIZES, "sp_rcm_scan");
+    m_error(E_SIZES, "sp_rcm_scan");
 
   n = Q->n;
   if (A)
@@ -79,7 +79,7 @@ IVEC *sp_rcm_scan(const SPMAT *Q, const SPMAT *A, const SPMAT *C,
     n += C->m;
 
   if ((int)degree->dim != n || (int)neigh_start->dim != n + 1)
-    error(E_SIZES, "sp_rcm_scan");
+    m_error(E_SIZES, "sp_rcm_scan");
 
   /*
    * first pass:
@@ -239,11 +239,11 @@ PERM *sp_rcm_order(const IVEC *degree, const IVEC *neigh_start,
   int cluster_start;
 
   if (!degree || !neigh_start || !neighs)
-    error(E_NULL, "sp_rcm_order");
+    m_error(E_NULL, "sp_rcm_order");
   n = degree->dim;
   if (n + 1 != (int)neigh_start->dim
       || neigh_start->ive[n] != (int)neighs->dim)
-    error(E_SIZES, "sp_rcm_order");
+    m_error(E_SIZES, "sp_rcm_order");
 
   if (!order || (int)order->size != n)
     order = px_resize(order, n);
@@ -252,7 +252,7 @@ PERM *sp_rcm_order(const IVEC *degree, const IVEC *neigh_start,
   glob_marks = (char *)malloc(n);
   levels = (Node *)calloc(n, sizeof(Node));
   if (!marks || !glob_marks || !levels)
-    error(E_MEM, "sp_rcm_order");
+    m_error(E_MEM, "sp_rcm_order");
 
   n_ive = neighs->ive;
   s_ive = neigh_start->ive;
@@ -338,7 +338,7 @@ PERM *sp_rcm_order(const IVEC *degree, const IVEC *neigh_start,
       } while (count > l_end);
 
       if (nlevels_old > nlevels)
-	warning(WARN_UNKNOWN, "sp_rcm_order: Levels decreased!");
+	m_warning(WARN_UNKNOWN, "sp_rcm_order: Levels decreased!");
 
       /*
        * choose the node with the smallest degree in the last level
@@ -431,10 +431,10 @@ PERM *sp_symrcm(const SPMAT *Q, PERM *order)
   IVEC *degree, *neigh_start, *neighs;
 
   if (!Q)
-    error(E_NULL, "sp_symrcm");
+    m_error(E_NULL, "sp_symrcm");
   n = Q->n;
   if (n != Q->m)
-    error(E_SIZES, "sp_symrcm");
+    m_error(E_SIZES, "sp_symrcm");
 
   degree = iv_get(n);
   neigh_start = iv_get(n + 1);
@@ -462,9 +462,9 @@ PERM *sp_kktrcm(const SPMAT *Q, const SPMAT *A, const SPMAT *C,
   IVEC *degree, *neigh_start, *neighs;
 
   if (!Q)
-    error(E_NULL, "sp_kktrcm");
+    m_error(E_NULL, "sp_kktrcm");
   if (Q->n != Q->m)
-    error(E_SIZES, "sp_kktrcm");
+    m_error(E_SIZES, "sp_kktrcm");
 
   n = Q->n;
   if (A)
@@ -496,7 +496,7 @@ static SPMAT *sp_copy_rcm(const SPMAT *src, SPMAT *dst)
   int	i, n, m;
 
   if (!src)
-    error(E_NULL, "sp_copy_rcm");
+    m_error(E_NULL, "sp_copy_rcm");
   n = src->n;
   m = src->m;
   if (!dst || dst->n != n || dst->m != m)
@@ -530,7 +530,7 @@ static int cmp_row_elt(const row_elt *elt1, const row_elt *elt2)
   ret = elt1->col - elt2->col;
   if (ret == 0)
     /* invalid multiple occurence of same column index */
-    error(E_INTERN, "pxinv_spcols");
+    m_error(E_INTERN, "pxinv_spcols");
   return ret;
 }
 
@@ -541,10 +541,10 @@ SPMAT *pxinv_spcols(const PERM *px, const SPMAT *src, SPMAT *dst)
   row_elt *elt;
 
   if (!src || !px)
-    error(E_NULL, "pxinv_spcols");
+    m_error(E_NULL, "pxinv_spcols");
   m = src->m;
   if (m != (int)px->size)
-    error(E_SIZES, "pxinv_spcols");
+    m_error(E_SIZES, "pxinv_spcols");
 
   /*
    * copy src into dst
@@ -589,11 +589,11 @@ SPMAT *pxinv_sprows(const PERM *px, const SPMAT *src, SPMAT *dst)
   SPROW tmp, tmp_new;
 
   if (!src || !px)
-    error(E_NULL, "pxinv_sprows");
+    m_error(E_NULL, "pxinv_sprows");
   m = src->m;
   size = px->size;
   if (m != size)
-    error(E_SIZES, "pxinv_sprows");
+    m_error(E_SIZES, "pxinv_sprows");
 
   /*
    * copy src into dst
@@ -624,7 +624,7 @@ SPMAT *pxinv_sprows(const PERM *px, const SPMAT *src, SPMAT *dst)
       i_new = px->pe[i];
       if (i_new >= size)
 	/* invalid multiple occurence of same row index */
-	error(E_INTERN, "pxinv_sprows");
+	m_error(E_INTERN, "pxinv_sprows");
       if (i != i_new) {
 	tmp = tmp_new;
 	tmp_new = dst->row[i_new];
@@ -652,11 +652,11 @@ VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst)
   Real tmp, tmp_new;
 
   if (!px || !src)
-    error(E_NULL, "pxinv_vec");
+    m_error(E_NULL, "pxinv_vec");
   dim = src->dim;
   size = px->size;
   if (dim != size)
-    error(E_SIZES, "pxinv_vec");
+    m_error(E_SIZES, "pxinv_vec");
 
   /*
    * copy src into dst
@@ -683,7 +683,7 @@ VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst)
       i_new = px->pe[i];
       if (i_new >= size)
 	/* invalid multiple occurence of same row index */
-	error(E_INTERN, "pxinv_vec");
+	m_error(E_INTERN, "pxinv_vec");
       if (i != i_new) {
 	tmp = tmp_new;
 	tmp_new = dst->ve[i_new];

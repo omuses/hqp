@@ -12,7 +12,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -78,9 +78,9 @@ MAT *matBKPfactor(MAT *A, PERM *pivot)
   Real	det, s, t;
 
   if (!A || !pivot)
-    error(E_NULL,"matBKPfactor");
+    m_error(E_NULL,"matBKPfactor");
   if (A->n != pivot->size)
-    error(E_SIZES,"matBKPfactor");
+    m_error(E_SIZES,"matBKPfactor");
 
   n = A->n;
   px_ident(pivot);
@@ -190,10 +190,10 @@ VEC *matBKPsolve(const MAT *A, const PERM *pivot, const VEC *b, VEC *x)
   u_int *p_pe;
 
   if (!A || !pivot || !b) 
-    error(E_NULL, "matBKPsolve");
+    m_error(E_NULL, "matBKPsolve");
   n = A->n;
   if ((int)b->dim != n || (int)pivot->size != n)
-    error(E_SIZES, "matBKPsolve");
+    m_error(E_SIZES, "matBKPsolve");
   if (!x || (int)x->dim != n)
     x = v_resize(x,n);
 
@@ -215,7 +215,7 @@ VEC *matBKPsolve(const MAT *A, const PERM *pivot, const VEC *b, VEC *x)
       x_ve[p_pe[i]] = x_ve[i];
       aii = A(i,i);
       if (aii == 0.0)
-	error(E_SING, "matBKPsolve");
+	m_error(E_SING, "matBKPsolve");
       x_ve[i] = save / aii;
       for (j = ip1; j < n; j++)
 	x_ve[j] -= save * A(i,j);
@@ -232,7 +232,7 @@ VEC *matBKPsolve(const MAT *A, const PERM *pivot, const VEC *b, VEC *x)
       aiip1 = A(i,ip1);
       det = aii * aip1 - aiip1 * aiip1;
       if (det == 0.0)
-	error(E_SING, "matBKPsolve");
+	m_error(E_SING, "matBKPsolve");
       x_ve[i] = (tmp * aip1 - save * aiip1) / det;
       x_ve[ip1] = (save * aii - tmp * aiip1) / det;
       for (j = i+2; j < n; j++)
@@ -243,7 +243,7 @@ VEC *matBKPsolve(const MAT *A, const PERM *pivot, const VEC *b, VEC *x)
   if (i == n-1) {
     aii = A(i,i);
     if (aii == 0.0)
-      error(E_SING, "matBKPsolve");
+      m_error(E_SING, "matBKPsolve");
     x_ve[i] /= aii;
     i = n - 2;
   }

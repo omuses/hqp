@@ -263,7 +263,7 @@ void Hqp_Omuses::setup_vars(int k,
 			    VECP c, VECP cmin, VECP cmax)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::setup_vars");
+    m_error(E_NULL, "Hqp_Omuses::setup_vars");
   }
 
   int i, nx;
@@ -311,7 +311,7 @@ void Hqp_Omuses::setup_vars(int k,
 void Hqp_Omuses::init_vars(int k, VECP x, VECP u)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::init_vars");
+    m_error(E_NULL, "Hqp_Omuses::init_vars");
   }
 
   int i;
@@ -337,7 +337,7 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 			      MATP Lxx, MATP Luu, MATP Lxu)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::setup_struct");
+    m_error(E_NULL, "Hqp_Omuses::setup_struct");
   }
 
   // obtain references to variables and dependents of stage k
@@ -498,7 +498,7 @@ void Hqp_Omuses::obtain_structure(int k,
 				  Omu_DynVarVec &xk, const Omu_VarVec &uk)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::obtain_structure");
+    m_error(E_NULL, "Hqp_Omuses::obtain_structure");
   }
 
   //
@@ -615,7 +615,7 @@ void Hqp_Omuses::obtain_structure(int k,
 void Hqp_Omuses::init_simulation(int k, VECP x, VECP u)
 {
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::init_simulation");
+    m_error(E_NULL, "Hqp_Omuses::init_simulation");
   }
 
   int i;
@@ -633,7 +633,7 @@ void Hqp_Omuses::init_simulation(int k, VECP x, VECP u)
 
   _prg->init_simulation(k, xk, uk);
   if (xk->dim != nxt || uk->dim != nu) {
-    error(E_FORMAT, "Hqp_Omuses::init_simulation; modified vector sizes");
+    m_error(E_FORMAT, "Hqp_Omuses::init_simulation; modified vector sizes");
   }
 
   for (i = 0; i < nx; i++)
@@ -668,7 +668,7 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
 
   assert(xk.nd >= 0);	// setup_struct must have been called before
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::update_vals");
+    m_error(E_NULL, "Hqp_Omuses::update_vals");
   }
 
   xtk.set_required_J(false);
@@ -713,12 +713,12 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
       v_copy(xtk, xfk);
 
       _integrator->init_sample(kk, _prg->ts(kk), _prg->ts(kk+1));
-      catchall(// try
-	       _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				  xk, uk, _prg, Fk, xfk),
-	       // catch
-	       f0 = Inf;
-	       return);
+      m_catchall(// try
+		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+				    xk, uk, _prg, Fk, xfk),
+		 // catch
+		 f0 = Inf;
+		 return);
     }
 
     f0k = 0.0;
@@ -778,7 +778,7 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
   assert(xk.nd >= 0);	// init_vals() must have been called before
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::update_stage");
+    m_error(E_NULL, "Hqp_Omuses::update_stage");
   }
 
   xtk.set_required_J(true);
@@ -844,12 +844,12 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
       m_add(xfk.Su, xtk.Ju, xfk.Su);
 
       _integrator->init_sample(kk, _prg->ts(kk), _prg->ts(kk+1));
-      catchall(// try
-	       _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				  xk, uk, _prg, Fk, xfk),
-	       // catch
-	       f0 = Inf;
-	       return);
+      m_catchall(// try
+		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+				    xk, uk, _prg, Fk, xfk),
+		 // catch
+		 f0 = Inf;
+		 return);
     }
 
     //
@@ -964,7 +964,7 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
 
   assert(nd >= 0);	// obtain_structure() must have been called before
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::update_vals");
+    m_error(E_NULL, "Hqp_Omuses::update_vals");
   }
 
   adouble af0;
@@ -1003,11 +1003,12 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
     if (nxt > nd) {
       _prg->consistic(kk, _prg->ts(kk), xk, uk, _xt);
       _integrator->init_sample(kk, _prg->ts(kk), _prg->ts(kk+1));
-      catchall(// try
-	       _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1), xk, uk, _prg, _xt),
-	       // catch
-	       f0 = Inf;
-	       return);
+      m_catchall(// try
+		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+				    xk, uk, _prg, _xt),
+		 // catch
+		 f0 = Inf;
+		 return);
     }
 
     af0 <<= 0.0;
@@ -1074,7 +1075,7 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
   assert(nd >= 0);	// init_vals() must have been called before
   if (!_prg) {
-    error(E_NULL, "Hqp_Omuses::update_stage");
+    m_error(E_NULL, "Hqp_Omuses::update_stage");
   }
 
   adouble af0;
@@ -1148,12 +1149,12 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 	}
       }
       _integrator->init_sample(kk, _prg->ts(kk), _prg->ts(kk+1));
-      catchall(// try
-	       _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				  xk, uk, _prg, _xt, _Sx, _Su),
-	       // catch
-	       f0 = Inf;
-	       return);
+      m_catchall(// try
+		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+				    xk, uk, _prg, _xt, _Sx, _Su),
+		 // catch
+		 f0 = Inf;
+		 return);
     }
     else if (kk > _prg->ks(k)) {
       // second or further sample of stage without continuous-time equations

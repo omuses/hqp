@@ -38,7 +38,7 @@
 
 // redefine assert to throw an error instead of aborting
 #undef assert
-#define assert(expr) if (!(expr)) error(E_INTERN, "assert(" #expr ")");
+#define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
 
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
@@ -395,7 +395,7 @@ void Prg_SFunctionEst::update(int kk,
 	fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 		ssGetErrorStatus(_S));
 	ssSetErrorStatus(_S, NULL);
-	error(E_RANGE, "mdlInitializeConditions");
+	m_error(E_RANGE, "mdlInitializeConditions");
       }
     }
 
@@ -409,7 +409,7 @@ void Prg_SFunctionEst::update(int kk,
     if (ssGetErrorStatus(_S)) {
       fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      error(E_RANGE, "mdlOutputs");
+      m_error(E_RANGE, "mdlOutputs");
     }
 
     // store outputs in constraints
@@ -447,7 +447,7 @@ void Prg_SFunctionEst::update(int kk,
 	fprintf(stderr, "Error from mdlDerivatives: %s\n",
 		ssGetErrorStatus(_S));
 	ssSetErrorStatus(_S, NULL);
-	error(E_RANGE, "mdlDerivatives");
+	m_error(E_RANGE, "mdlDerivatives");
       }
       for (i = 0; i < _mdl_nx; i++) {
 	if (_mdl_x0_steady[i]) {
@@ -564,7 +564,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
       fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 	      ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      error(E_RANGE, "mdlInitializeConditions");
+      m_error(E_RANGE, "mdlInitializeConditions");
     }
     // call mdlOutputs as mdlInitializeConditions might not really
     // perform the initialization
@@ -572,7 +572,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
     if (ssGetErrorStatus(_S)) {
       fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      error(E_RANGE, "mdlOutputs");
+      m_error(E_RANGE, "mdlOutputs");
     }
   }
 
@@ -614,7 +614,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 	fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 		ssGetErrorStatus(_S));
 	ssSetErrorStatus(_S, NULL);
-	error(E_RANGE, "mdlInitializeConditions");
+	m_error(E_RANGE, "mdlInitializeConditions");
       }
       // call mdlOutput as mdlInitializeConditions might not actually
       // perform initialization
@@ -622,7 +622,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
       if (ssGetErrorStatus(_S)) {
 	fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
 	ssSetErrorStatus(_S, NULL);
-	error(E_RANGE, "mdlOutputs");
+	m_error(E_RANGE, "mdlOutputs");
       }
     }
 
@@ -636,7 +636,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
     if (ssGetErrorStatus(_S)) {
       fprintf(stderr, "Error from mdlDerivatives: %s\n", ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      error(E_RANGE, "mdlDerivatives");
+      m_error(E_RANGE, "mdlDerivatives");
     }
 
     // get model derivatives and change to residual form

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -40,10 +40,10 @@ void Omu_VarVec::alloc(int n, int n_expand)
   n_expand = max(n, n_expand);
 
   if (!c_alloc)
-    error(E_OVERWRITE, "Omu_VarVec::alloc");
+    m_error(E_OVERWRITE, "Omu_VarVec::alloc");
 
   if (!c_expand && n_expand > n)
-    error(E_RANGE, "Omu_VarVec::alloc_expanded");
+    m_error(E_RANGE, "Omu_VarVec::alloc_expanded");
 
   v_resize(_v, n_expand);
   v_resize(initial, n_expand);

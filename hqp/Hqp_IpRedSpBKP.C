@@ -154,7 +154,7 @@ SPMAT *Hqp_IpRedSpBKP::sub_CTC(const PERM *px, SPMAT *Q)
 	    qj_idx = sprow_idx(qrow, qj);
 	    if (qj_idx < 0) {
 	      // the structure must already have been allocated in init()
-	      error(E_INTERN, "Hqp_IpRedSpBKP");
+	      m_error(E_INTERN, "Hqp_IpRedSpBKP");
 	    }
 	    else {
 	      qrow->elt[qj_idx].val -= sum;
@@ -165,7 +165,7 @@ SPMAT *Hqp_IpRedSpBKP::sub_CTC(const PERM *px, SPMAT *Q)
 	    qj_idx = sprow_idx(qrow, qi);
 	    if (qj_idx < 0) {
 	      // the structure must already have been allocated in init()
-	      error(E_INTERN, "Hqp_IpRedSpBKP");
+	      m_error(E_INTERN, "Hqp_IpRedSpBKP");
 	    }
 	    else {
 	      qrow->elt[qj_idx].val -= sum;

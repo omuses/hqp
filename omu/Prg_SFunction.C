@@ -36,7 +36,7 @@
 
 // redefine assert to throw an error instead of aborting
 #undef assert
-#define assert(expr) if (!(expr)) error(E_INTERN, "assert(" #expr ")");
+#define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
 
 typedef If_Method<Prg_SFunction> If_Cmd;
 
@@ -163,12 +163,12 @@ void Prg_SFunction::setup_sfun()
     fprintf(stderr, "Error from mdlInitializeSizes: %s\n",
 	    ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    error(E_FORMAT, "mdlInitializeSizes");
+    m_error(E_FORMAT, "mdlInitializeSizes");
   }
   if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
     fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
 	    ssGetNumSFcnParams(_S), ssGetSFcnParamsCount(_S));
-    error(E_FORMAT, "mdlInitializeSizes");
+    m_error(E_FORMAT, "mdlInitializeSizes");
   }
 
   // obtain model sizes

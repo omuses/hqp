@@ -59,9 +59,9 @@ static double	sp_set_val3(SPMAT *A, int i, int j, double val)
    int	idx, idx2, new_len;
    
    if ( A == SMNULL )
-     error(E_NULL,"sp_set_val3");
+     m_error(E_NULL,"sp_set_val3");
    if ( i < 0 || i >= A->m || j < 0 || j >= A->n )
-     error(E_SIZES,"sp_set_val3");
+     m_error(E_SIZES,"sp_set_val3");
    
    r = A->row+i;
    idx = sprow_idx(r,j);
@@ -86,7 +86,7 @@ static double	sp_set_val3(SPMAT *A, int i, int j, double val)
 
 	 r->elt = RENEW(r->elt,new_len,row_elt);
 	 if ( ! r->elt )	/* can't allocate */
-	   error(E_MEM,"sp_set_val");
+	   m_error(E_MEM,"sp_set_val");
 	 r->maxlen = new_len;
       }
       for ( idx2 = r->len-1; idx2 >= idx; idx2-- )
@@ -225,7 +225,7 @@ SPMAT *Hqp_IpSpSC::sub_CTC(const PERM *px, SPMAT *Q)
 	    qj_idx = sprow_idx(qrow, qj);
 	    if (qj_idx < 0) {
 	      // the structure must already have been allocated in init()
-	      error(E_INTERN, "Hqp_IpSpSC");
+	      m_error(E_INTERN, "Hqp_IpSpSC");
 	    }
 	    else {
 	      qrow->elt[qj_idx].val -= sum;
@@ -236,7 +236,7 @@ SPMAT *Hqp_IpSpSC::sub_CTC(const PERM *px, SPMAT *Q)
 	    qj_idx = sprow_idx(qrow, qi);
 	    if (qj_idx < 0) {
 	      // the structure must already have been allocated in init()
-	      error(E_INTERN, "Hqp_IpSpSC");
+	      m_error(E_INTERN, "Hqp_IpSpSC");
 	    }
 	    else {
 	      qrow->elt[qj_idx].val -= sum;

@@ -20,7 +20,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -84,7 +84,7 @@ static Real sprow_ins_val(SPROW *r, int idx, Real val, int j, int type)
   int  new_len;
   
   if (!r)
-    error(E_NULL,"sprow_ins_val");
+    m_error(E_NULL,"sprow_ins_val");
   
   /* shift & insert new value */
   if (idx < 0)
@@ -99,7 +99,7 @@ static Real sprow_ins_val(SPROW *r, int idx, Real val, int j, int type)
     
     r->elt = RENEW(r->elt,new_len,row_elt);
     if ( ! r->elt )        /* can't allocate */
-      error(E_MEM,"sprow_ins_val");
+      m_error(E_MEM,"sprow_ins_val");
     r->maxlen = new_len;
   }
   if ( idx < r->len )
@@ -131,13 +131,13 @@ static SPROW *spbkp_mltadd(const SPROW *r1, const SPROW *r2, int r2_idx0,
   row_elt	*elt1, *elt2, *elt_out;
   
   if (!r1 || !r2)
-    error(E_NULL,"spbkp_mltadd");
+    m_error(E_NULL,"spbkp_mltadd");
   if (r1 == r_out || r2 == r_out)
-    error(E_INSITU,"spbkp_mltadd");
+    m_error(E_INSITU,"spbkp_mltadd");
   if (!r_out)
     /* don't use sprow_get() because of Meschach memory management */
     /* r_out = sprow_get(MINROWLEN); */
-    error(E_NULL,"spbkp_mltadd");
+    m_error(E_NULL,"spbkp_mltadd");
   
   /* Initialise */
   len1 = r1->len;
@@ -383,11 +383,11 @@ SPMAT *spBKPfactor(SPMAT *A, PERM *pivot, Real tol)
   Real alpha;
 
   if (!A || !pivot)
-    error(E_NULL, "spBKPfactor");
+    m_error(E_NULL, "spBKPfactor");
   if (A->n != (int)pivot->size || A->n != A->m)
-    error(E_SIZES, "spBKPfactor");
+    m_error(E_SIZES, "spBKPfactor");
   if (tol < 0.0 || tol > 1.0 )
-    error(E_RANGE, "spBKPfactor");
+    m_error(E_RANGE, "spBKPfactor");
 
   alpha = tol * 0.6403882032022076; /* = tol * (1+sqrt(17))/8 */
 
@@ -660,12 +660,12 @@ VEC *spBKPsolve(const SPMAT *A, const PERM *pivot, const VEC *b, VEC *x)
   row_elt *elt;
 
   if (!A || !pivot || !b) 
-    error(E_NULL, "spBKPsolve");
+    m_error(E_NULL, "spBKPsolve");
   if (!A->flag_diag)
-    error(E_FORMAT, "spBKPsolve");
+    m_error(E_FORMAT, "spBKPsolve");
   n = A->n;
   if ((int)b->dim != n || (int)pivot->size != n || A->n != A->m)
-    error(E_SIZES, "spBKPsolve");
+    m_error(E_SIZES, "spBKPsolve");
   if (!x || (int)x->dim != n)
     x = v_resize(x,n);
 
@@ -697,7 +697,7 @@ VEC *spBKPsolve(const SPMAT *A, const PERM *pivot, const VEC *b, VEC *x)
        */
       x_ve[p_pe[i]] = x_ve[i];
       if (aii == 0.0)
-	error(E_SING, "spBKPsolve");
+	m_error(E_SING, "spBKPsolve");
       x_ve[i] = save / aii;
       elt = row->elt + idx;
       len = row->len;
@@ -729,7 +729,7 @@ VEC *spBKPsolve(const SPMAT *A, const PERM *pivot, const VEC *b, VEC *x)
       }
       det = aii * aip1 - aiip1 * aiip1;
       if (det == 0.0)
-	error(E_SING, "spBKPsolve");
+	m_error(E_SING, "spBKPsolve");
       x_ve[i] = (tmp * aip1 - save * aiip1) / det;
       x_ve[ip1] = (save * aii - tmp * aiip1) / det;
       elt = row->elt + idx;
@@ -753,7 +753,7 @@ VEC *spBKPsolve(const SPMAT *A, const PERM *pivot, const VEC *b, VEC *x)
     else
       aii = 0.0;
     if (aii == 0.0)
-      error(E_SING, "spBKPsolve");
+      m_error(E_SING, "spBKPsolve");
     x_ve[i] /= aii;
     i = n - 2;
   }

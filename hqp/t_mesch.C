@@ -65,14 +65,14 @@ void TVECP::resize(int kmax, int n)
 {
   int k;
   if ( ( kmax <= 0 ) || ( n < 0 ) )
-    error(E_BOUNDS,"TVECP::resize");
+    m_error(E_BOUNDS,"TVECP::resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
     tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new VECP[_kmax+1];
     if ( _x == NULL )
-      error(E_MEM,"TVECP::resize");
+      m_error(E_MEM,"TVECP::resize");
     for ( k = 0; k <= _kmax; k++ ) 
       _x[k] = VNULL;
   }
@@ -121,14 +121,14 @@ void TIVECP::resize(int kmax, int n)
 {
   int k;
   if ( ( kmax <= 0 ) || ( n < 0 ) )
-    error(E_BOUNDS,"TIVECP::resize");
+    m_error(E_BOUNDS,"TIVECP::resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
     tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new IVECP[_kmax+1];
     if ( _x == NULL )
-      error(E_MEM,"TIVECP::resize");
+      m_error(E_MEM,"TIVECP::resize");
     for ( k = 0; k <= _kmax; k++ ) 
       _x[k] = IVNULL;
   }
@@ -177,14 +177,14 @@ void TPERMP::resize(int kmax, int n)
 {
   int k;
   if ( ( kmax <= 0 ) || ( n < 0 ) )
-    error(E_BOUNDS,"TPERMP::resize");
+    m_error(E_BOUNDS,"TPERMP::resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
     tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new PERMP[_kmax+1];
     if ( _x == NULL )
-      error(E_MEM,"TPERMP::resize");
+      m_error(E_MEM,"TPERMP::resize");
     for ( k = 0; k <= _kmax; k++ ) 
       _x[k] = PNULL;
   }
@@ -233,14 +233,14 @@ void TMATP::resize(int kmax, int m, int n)
 {
   int k;
   if ( ( kmax <= 0 ) || ( n < 0 )  || ( m < 0 ) )
-    error(E_BOUNDS,"TMATP:resize");
+    m_error(E_BOUNDS,"TMATP:resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
     tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new MATP[_kmax+1];
     if ( _x == NULL )
-      error(E_MEM,"TMATP::resize");
+      m_error(E_MEM,"TMATP::resize");
     for ( k = 0; k <= _kmax; k++ ) 
       _x[k] = MNULL;
   }

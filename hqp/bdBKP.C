@@ -15,7 +15,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -47,7 +47,7 @@ static PERM *bd_relief(const BAND *A, PERM *relief)
   Real **A_me;
 
   if (!A)
-    error(E_NULL,"bd_relief");
+    m_error(E_NULL,"bd_relief");
   n = A->mat->n;
   lb = A->lb;
   ub = A->ub;
@@ -92,7 +92,7 @@ static void bdBKPchange(BAND *A, int i, int j, PERM *relief)
   k_end = max(offs1, offs2);
   // check storage limits of the band data structure
   if (k_end > i + 1 + ub2 || i >= j)
-    error(E_INTERN, "bdBKPchange");
+    m_error(E_INTERN, "bdBKPchange");
   k = j + 1;
   offs1 = lb + 1; /* - j + k */
   offs2 = lb - i + k;
@@ -133,10 +133,10 @@ BAND *bdBKPfactor(BAND *A, PERM *pivot, PERM *relief)
   int	offs1, offs2;
 
   if (!A || !pivot || !relief)
-    error(E_NULL,"bdBKPfactor");
+    m_error(E_NULL,"bdBKPfactor");
   n = A->mat->n;
   if (n != (int)pivot->size || n != (int)relief->size)
-    error(E_SIZES,"bdBKPfactor");
+    m_error(E_SIZES,"bdBKPfactor");
 
   /*
    * initialize relief
@@ -229,7 +229,7 @@ BAND *bdBKPfactor(BAND *A, PERM *pivot, PERM *relief)
     aip1 = A_diag[ip1] / det;
     k_end = max(re_ve[i], re_ve[ip1]);
     if (k_end > ip1 + ub2)
-      error(E_INTERN, "bdBKPfactor");
+      m_error(E_INTERN, "bdBKPfactor");
     j = ip2;
     offs1 = lb + j;
     for (; j < k_end; j++, offs1++) {
@@ -290,10 +290,10 @@ VEC *bdBKPsolve(const BAND *A, const PERM *pivot, const PERM *relief,
   u_int *p_pe, *re_ve;
 
   if (!A || !pivot || !b) 
-    error(E_NULL, "bdBKPsolve");
+    m_error(E_NULL, "bdBKPsolve");
   n = A->mat->n;
   if ((int)b->dim != n || (int)pivot->size != n || (int)relief->size != n)
-    error(E_SIZES, "bdBKPsolve");
+    m_error(E_SIZES, "bdBKPsolve");
   if (!x || (int)x->dim != n)
     x = v_resize(x,n);
 
@@ -318,7 +318,7 @@ VEC *bdBKPsolve(const BAND *A, const PERM *pivot, const PERM *relief,
       x_ve[p_pe[i]] = x_ve[i];
       aii = A_me[lb][i];
       if (aii == 0.0)
-	error(E_SING, "bdBKPsolve");
+	m_error(E_SING, "bdBKPsolve");
       x_ve[i] = save / aii;
       j_end = re_ve[i];
       j = ip1;
@@ -338,7 +338,7 @@ VEC *bdBKPsolve(const BAND *A, const PERM *pivot, const PERM *relief,
       aiip1 = A_me[lb+1][ip1]; /*lb - i + ip1 */
       det = aii * aip1 - aiip1 * aiip1;
       if (det == 0.0)
-	error(E_SING, "bdBKPsolve");
+	m_error(E_SING, "bdBKPsolve");
       x_ve[i] = (tmp * aip1 - save * aiip1) / det;
       x_ve[ip1] = (save * aii - tmp * aiip1) / det;
       j_end = max(re_ve[i], re_ve[ip1]);
@@ -352,7 +352,7 @@ VEC *bdBKPsolve(const BAND *A, const PERM *pivot, const PERM *relief,
   if (i == n-1) {
     aii = A_me[lb][i];
     if (aii == 0.0)
-      error(E_SING, "bdBKPsolve");
+      m_error(E_SING, "bdBKPsolve");
     x_ve[i] /= aii;
     i = n - 2;
   }

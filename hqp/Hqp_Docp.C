@@ -665,7 +665,7 @@ void Hqp_Docp::reinit_bd()
       || cns_eq_dim != _cns_eq->dim
       || cns_lb_dim != _cns_lb->dim
       || cns_ub_dim != _cns_ub->dim) {
-    error(E_SIZES, "Hqp_Docp::reinit_bd");
+    m_error(E_SIZES, "Hqp_Docp::reinit_bd");
   }
 
   update_bounds();
@@ -852,9 +852,9 @@ void Hqp_Docp::update(const VECP y, const VECP z)
   int offs;
 
   if ((const VEC *)y == NULL || (const VEC *)z == NULL)
-    error(E_NULL, "Hqp_Docp::update");
+    m_error(E_NULL, "Hqp_Docp::update");
   if (y->dim != _qp->b->dim || z->dim != _qp->d->dim)
-    error(E_SIZES, "Hqp_Docp::update");
+    m_error(E_SIZES, "Hqp_Docp::update");
 
   c = v_get(1);
 

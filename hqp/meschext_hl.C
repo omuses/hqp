@@ -44,7 +44,7 @@ static Real sprow_ins_val(SPROW *r, int idx, Real val, int j, int type)
   int  new_len;
   
   if (!r)
-    error(E_NULL,"sprow_ins_val");
+    m_error(E_NULL,"sprow_ins_val");
   
   /* shift & insert new value */
   if (idx < 0)
@@ -59,7 +59,7 @@ static Real sprow_ins_val(SPROW *r, int idx, Real val, int j, int type)
     
     r->elt = RENEW(r->elt,new_len,row_elt);
     if ( ! r->elt )        /* can't allocate */
-      error(E_MEM,"sprow_ins_val");
+      m_error(E_MEM,"sprow_ins_val");
     r->maxlen = new_len;
   }
   
@@ -131,11 +131,11 @@ SPROW	*sprow_cpy(const SPROW *r1, SPROW *r_out, int type)
    int	len1, len_out;
    
    if ( ! r1 )
-     error(E_NULL,"sprow_cpy");
+     m_error(E_NULL,"sprow_cpy");
    if ( ! r_out )
-     error(E_NULL,"sprow_cpy");
+     m_error(E_NULL,"sprow_cpy");
    if ( r1 == r_out )
-     error(E_INSITU,"sprow_cpy");
+     m_error(E_INSITU,"sprow_cpy");
    
    /* Initialise */
    len1 = r1->len;	
@@ -150,7 +150,7 @@ SPROW	*sprow_cpy(const SPROW *r1, SPROW *r_out, int type)
     
      r_out->elt = RENEW(r_out->elt,len1,row_elt);
      if ( ! r_out->elt )        /* can't allocate */
-      error(E_MEM,"sprow_cpy");
+      m_error(E_MEM,"sprow_cpy");
      r_out->maxlen = len1;
 
    };
@@ -177,9 +177,9 @@ SPROW	*sprow_smlt_full(SPROW *r1, double alpha, SPROW *r_out, int type)
    row_elt  *elt, *elt_out;
    
    if ( ! r1 )
-     error(E_NULL,"sprow_smlt r1");
+     m_error(E_NULL,"sprow_smlt r1");
    if ( ! r_out )
-     error(E_NULL,"sprow_smlt r_out");
+     m_error(E_NULL,"sprow_smlt r_out");
    
    /* Initialise */
    len = r1->len;
@@ -211,11 +211,11 @@ SPROW	*sprow_mltadd_full(SPROW *r1, SPROW *r2, double alpha,
    row_elt  *elt1, *elt2, *elt_out;
    
    if ( ! r1 || ! r2 )
-     error(E_NULL,"sprow_mltadd");
+     m_error(E_NULL,"sprow_mltadd");
    if ( r1 == r_out || r2 == r_out )
-     error(E_INSITU,"sprow_mltadd");
+     m_error(E_INSITU,"sprow_mltadd");
    if ( ! r_out )
-     error(E_NULL,"sprow_mltadd");
+     m_error(E_NULL,"sprow_mltadd");
    
    /* Initialise */
    len1 = r1->len;
@@ -276,7 +276,7 @@ SPROW	*sprow_smlt_idx(SPROW *r1, int idx, double alpha)
    row_elt  *elt;
    
    if ( ! r1 )
-     error(E_NULL,"sprow_smlt");
+     m_error(E_NULL,"sprow_smlt");
 
    len = r1->len;
    elt = r1->elt + idx;
@@ -305,13 +305,13 @@ static SPROW *spbkp_mltadd(const SPROW *r1, const SPROW *r2, int r2_idx0,
   row_elt	*elt1, *elt2, *elt_out;
   
   if (!r1 || !r2)
-    error(E_NULL,"spbkp_mltadd");
+    m_error(E_NULL,"spbkp_mltadd");
   if (r1 == r_out || r2 == r_out)
-    error(E_INSITU,"spbkp_mltadd");
+    m_error(E_INSITU,"spbkp_mltadd");
   if (!r_out)
     /* don't use sprow_get() because of Meschach memory management */
     /* r_out = sprow_get(MINROWLEN); */
-    error(E_NULL,"spbkp_mltadd");
+    m_error(E_NULL,"spbkp_mltadd");
   
   /* Initialise */
   len1 = r1->len;
@@ -395,7 +395,7 @@ double	sprow_ip(SPROW *row1, SPROW *row2, int lim)
 		idx1 = SPROW_IDX(row1,elts2->col);
 		idx1 = (idx1 < 0) ? -(idx1+2) : idx1;
 		if ( idx1 < 0 )
-			error(E_UNKNOWN,"sprow_ip");
+			m_error(E_UNKNOWN,"sprow_ip");
 		len1 -= idx1;
 	}
 	else if ( len2 > 2*len1 )
@@ -403,7 +403,7 @@ double	sprow_ip(SPROW *row1, SPROW *row2, int lim)
 		idx2 = SPROW_IDX(row2,elts1->col);
 		idx2 = (idx2 < 0) ? -(idx2+2) : idx2;
 		if ( idx2 < 0 )
-			error(E_UNKNOWN,"sprow_ip");
+			m_error(E_UNKNOWN,"sprow_ip");
 		len2 -= idx2;
 	}
 	if ( len1 <= 0 || len2 <= 0 )
@@ -470,12 +470,12 @@ SPMAT *sp_mmt_mlt(const SPMAT *A, SPMAT *AAT)
   
 
   if ( ! A )
-    error(E_NULL,"sp_AAT");
+    m_error(E_NULL,"sp_AAT");
   if ( ! AAT )
-    error(E_NULL,"sp_AAT");
+    m_error(E_NULL,"sp_AAT");
 
   if(AAT->m != A->m || AAT->n != A->m)
-    error(E_SIZES,"sp_AAT");
+    m_error(E_SIZES,"sp_AAT");
 
   for (i = 0; i < AAT->m; i++)
     AAT->row[i].len = 0;
@@ -562,13 +562,13 @@ SPMAT *sp_mmt2_mlt(const SPMAT *A,const SPMAT *AT, SPMAT *AAT)
   
 
   if ( ! A || !AT || !AAT)
-    error(E_NULL,"sp_AAT");
+    m_error(E_NULL,"sp_AAT");
 
   if(AAT->m != A->m || AAT->n != A->m)
-    error(E_SIZES,"sp_AAT");
+    m_error(E_SIZES,"sp_AAT");
 
   if(AAT->m != AT->n || AAT->n != AT->n)
-    error(E_SIZES,"sp_AAT");
+    m_error(E_SIZES,"sp_AAT");
 
   for (i = 0; i < AAT->m; i++)
     AAT->row[i].len = 0;
@@ -624,13 +624,13 @@ SPMAT *sp_mmt2_mlt_u(const SPMAT *A,const SPMAT *AT, SPMAT *AAT)
   
 
   if ( ! A || !AT || !AAT)
-    error(E_NULL,"sp_AAT");
+    m_error(E_NULL,"sp_AAT");
 
   if(AAT->m != A->m || AAT->n != A->m)
-    error(E_SIZES,"sp_AAT");
+    m_error(E_SIZES,"sp_AAT");
 
   if(AAT->m != AT->n || AAT->n != AT->n)
-    error(E_SIZES,"sp_AAT");
+    m_error(E_SIZES,"sp_AAT");
 
   for (i = 0; i < AAT->m; i++) {
     AAT->row[i].len = 0;
@@ -695,11 +695,11 @@ SPMAT *spLMsolve(SPMAT *L, const SPMAT *B,SPMAT *OUT)
 
 
   if ( L == SMNULL || B == SMNULL )
-    error(E_NULL,"spLsolve");
+    m_error(E_NULL,"spLsolve");
   if ( L->m != L->n )
-    error(E_SQUARE,"spLsolve");
+    m_error(E_SQUARE,"spLsolve");
   if ( B->m != L->m )
-    error(E_SIZES,"spLsolve");
+    m_error(E_SIZES,"spLsolve");
   //  if ( ! L->flag_diag )
     sp_diag_access(L);
   if( !OUT) 
@@ -738,7 +738,7 @@ SPMAT *spLMsolve(SPMAT *L, const SPMAT *B,SPMAT *OUT)
 		      OUT->row+i,TYPE_SPMAT);
     }
     else
-      error(E_SING,"spLMsolve");
+      m_error(E_SING,"spLMsolve");
   };
 
   sp_free(tmp_mat);
@@ -758,11 +758,11 @@ VEC	*spLDLTsolve(SPMAT *L,const VEC *b,VEC *out)
   Real	   diag_val, sum, *out_ve;
 
   if ( L == SMNULL || b == VNULL )
-    error(E_NULL,"spCHsolve");
+    m_error(E_NULL,"spCHsolve");
   if ( L->m != L->n )
-    error(E_SQUARE,"spCHsolve");
+    m_error(E_SQUARE,"spCHsolve");
   if ((int)b->dim != L->m )
-    error(E_SIZES,"spCHsolve");
+    m_error(E_SIZES,"spCHsolve");
   
   if ( ! L->flag_diag )
     sp_diag_access(L);
@@ -787,7 +787,7 @@ VEC	*spLDLTsolve(SPMAT *L,const VEC *b,VEC *out)
     }
   
     out_ve[i] = sum;
-    if ( row->diag < 0 )  error(E_SING,"spLDLTsolve");
+    if ( row->diag < 0 )  m_error(E_SING,"spLDLTsolve");
 
   };
 
@@ -839,9 +839,9 @@ SPMAT *spCHOLfac(SPMAT *A)
   row_elt *elt;
 
   if (!A )
-    error(E_NULL, "spCHOLfac");
+    m_error(E_NULL, "spCHOLfac");
   if (A->n != A->m)
-    error(E_SIZES, "spCHOLfac");
+    m_error(E_SIZES, "spCHOLfac");
 
   n = A->n;
 
@@ -864,11 +864,11 @@ SPMAT *spCHOLfac(SPMAT *A)
       if( aii > 0.0 )
 	aii = row->elt[idx].val = sqrt(aii);
       else
-	error(E_POSDEF,"spCHfactor");
+	m_error(E_POSDEF,"spCHfactor");
       idx ++;
     }
     else
-      error(E_POSDEF,"spCHfactor");
+      m_error(E_POSDEF,"spCHfactor");
 
     sprow_smlt_idx(row,idx,1.0/aii);
 
@@ -896,10 +896,10 @@ SPMAT *spCHOLfac(SPMAT *A)
       if( aii > 0.0 )
 	row->elt[idx].val = sqrt(aii);
       else
-	error(E_POSDEF,"spCHfactor");
+	m_error(E_POSDEF,"spCHfactor");
     }
     else
-      error(E_POSDEF,"spCHfactor");
+      m_error(E_POSDEF,"spCHfactor");
   }
 
   /* sprow_free(swap); */
@@ -925,11 +925,11 @@ SPMAT *spMODCHOLfac(SPMAT *A,VEC *b,double eps)
   row_elt *elt;
 
   if (!A )
-    error(E_NULL, "spMODCHOLfac");
+    m_error(E_NULL, "spMODCHOLfac");
   if (A->n != A->m)
-    error(E_SIZES, "spMODCHOLfac");
+    m_error(E_SIZES, "spMODCHOLfac");
   if ((int)A->n != (int)b->dim)
-    error(E_SIZES, "spMODCHOLfac");
+    m_error(E_SIZES, "spMODCHOLfac");
 
   n = A->n;
 
@@ -1025,11 +1025,11 @@ VEC	*spCHOLsol(SPMAT *L,VEC *b,VEC *x)
   Real	   *x_ve, tmp;
 
   if ( L == SMNULL || b == VNULL )
-    error(E_NULL,"spCHsolve");
+    m_error(E_NULL,"spCHsolve");
   if ( L->m != L->n )
-    error(E_SQUARE,"spCHsolve");
+    m_error(E_SQUARE,"spCHsolve");
   if ((int)b->dim != L->m )
-    error(E_SIZES,"spCHsolve");
+    m_error(E_SIZES,"spCHsolve");
   if ( ! L->flag_diag )
     sp_diag_access(L);
   
@@ -1055,9 +1055,9 @@ VEC	*spCHOLsol(SPMAT *L,VEC *b,VEC *x)
 	idx++;
 	elt++;
       }
-      else error(E_SING,"forward neg spCHsolve");
+      else m_error(E_SING,"forward neg spCHsolve");
     }
-    else error(E_SING,"forward idx spCHsolve");
+    else m_error(E_SING,"forward idx spCHsolve");
 
     for(; idx < len; idx++, elt++)
       x_ve[elt->col] -= tmp * elt->val;
@@ -1075,9 +1075,9 @@ VEC	*spCHOLsol(SPMAT *L,VEC *b,VEC *x)
       if(elt->val > 0.0) {
 	x_ve[n-1] /= elt->val*elt->val;
       }
-      else error(E_SING,"backward neg spCHsolve");
+      else m_error(E_SING,"backward neg spCHsolve");
     }
-    else error(E_SING,"backward idx spCHsolve");
+    else m_error(E_SING,"backward idx spCHsolve");
   }
 
   /* backward substitution: solve L^T.out = x for out */
@@ -1119,11 +1119,11 @@ SPMAT *spLTMsolve(SPMAT *L,SPMAT *B,SPMAT *OUT)
 
 
   if ( L == SMNULL || B == SMNULL )
-    error(E_NULL,"spLTMsolve");
+    m_error(E_NULL,"spLTMsolve");
   if ( L->m != L->n )
-    error(E_SQUARE,"spLTMsolve");
+    m_error(E_SQUARE,"spLTMsolve");
   if ( B->m != L->m )
-    error(E_SIZES,"spLTMsolve");
+    m_error(E_SIZES,"spLTMsolve");
   if ( ! L->flag_diag )
     sp_diag_access(L);
   if( !OUT) 
@@ -1163,9 +1163,9 @@ SPMAT *spLTMsolve(SPMAT *L,SPMAT *B,SPMAT *OUT)
 	idx++;
 	elt++;
       }
-      else error(E_SING,"spLTMsolve");
+      else m_error(E_SING,"spLTMsolve");
     }
-    else error(E_SING,"spLTMsolve");
+    else m_error(E_SING,"spLTMsolve");
 
     for(; idx < len; idx++, elt++) {
 
@@ -1196,11 +1196,11 @@ MAT  *spmm_mlt(SPMAT *A, MAT *B, MAT *OUT)
   row_elt  *elt;
 
   if ( A==(SPMAT *)NULL || B==(MAT *)NULL )
-    error(E_NULL,"spmm_mlt");
+    m_error(E_NULL,"spmm_mlt");
   if ((int)A->n != (int)B->m )
-    error(E_SIZES,"spmm_mlt");
+    m_error(E_SIZES,"spmm_mlt");
   if ( B == OUT )
-    error(E_INSITU,"spmm_mlt");
+    m_error(E_INSITU,"spmm_mlt");
   
   m = A->m;
   n = B->n;
@@ -1248,11 +1248,11 @@ MAT  *spm_m_spmtr_mlt(SPMAT *A, MAT *B, MAT *OUT)
   row_elt  *elt;
 
   if ( A==(SPMAT *)NULL || B==(MAT *)NULL )
-    error(E_NULL,"m_mlt");
+    m_error(E_NULL,"m_mlt");
   if ((int)A->n != (int)B->m )
-    error(E_SIZES,"m_mlt");
+    m_error(E_SIZES,"m_mlt");
   if ( B == OUT )
-    error(E_INSITU,"m_mlt");
+    m_error(E_INSITU,"m_mlt");
   
   if ( OUT==(MAT *)NULL || (int)OUT->m != (int)A->m || 
        (int)OUT->n != (int)A->m )

@@ -73,10 +73,10 @@ SPMAT *CTDC(const SPMAT *CT, const VEC *yny, SPMAT *CTC)
   Real sum;
 
   if ( ( CT == SMNULL ) || ( yny == VNULL) || ( CTC == SMNULL ) )
-    error(E_NULL, "CTDC");
+    m_error(E_NULL, "CTDC");
   if ( ( CT->n != (int) yny->dim ) || ( CT->m != CTC->m ) || 
        ( CTC->m != CTC->n ) )
-    error(E_SIZES, "CTDC");
+    m_error(E_SIZES, "CTDC");
   //  if ( !CTC->flag_diag )
   //    sp_diag_access(CTC);
 
@@ -1169,8 +1169,8 @@ void Hqp_IpLQDOCP::FormGxxSp(int k)
   for ( i = 0; i < _nk[k]+_mk[k]; i++, row++) {
     if ( row->len > 0 ) {
       if ( ( row->diag < 0 ) || ( row->diag >= row->len ) )
-	error(E_INTERN,
-	      "LQDOCP::FormGxxSp: invalid diagonal access path in FormGxx");
+	m_error(E_INTERN,
+		"LQDOCP::FormGxxSp: invalid diagonal access path in FormGxx");
       elt = row->elt+row->diag;
       for ( j = row->diag; j < row->len; j++, elt++ ) {
 	col = elt->col-knm;
@@ -1190,8 +1190,8 @@ void Hqp_IpLQDOCP::FormGxxSp(int k)
   for ( i = 0; i < _nk[k]+_mk[k]; i++, row++) {
     if ( row->len > 0 ) {
       if ( ( row->diag < 0 ) || ( row->diag >= row->len ) )
-	error(E_INTERN,
-	      "LQDOCP::FormGxxSp: invalid diagonal access path in FormGxx");
+	m_error(E_INTERN,
+		"LQDOCP::FormGxxSp: invalid diagonal access path in FormGxx");
       elt = row->elt+row->diag;
       for ( j = row->diag; j < row->len; j++, elt++ ) {
 	col = elt->col-knm;
@@ -1521,7 +1521,7 @@ void Hqp_IpLQDOCP::ExRiccatiFactor(void)
       if ( rel_symm(Vxx[k])  > 1e-3 ) {
 	m_foutput(stderr, Vxx[k]);
 	//	dump();
-	//	error(E_POSDEF,"ExRiccatiFactor");
+	//	m_error(E_POSDEF,"ExRiccatiFactor");
       }
     }
     Vxx[k] = m_symm(Vxx[k], Vxx[k]);
@@ -1544,7 +1544,7 @@ void Hqp_IpLQDOCP::ExRiccatiFactor(void)
 	fprintf(stderr, "cbx1: "); m_output(cbx[k]);
 	fprintf(stderr, "cbx2: "); m_output(m2);
 	dump();
-	error(E_POSDEF,"LQDOCP::ExRiccatiFactor");
+	m_error(E_POSDEF,"LQDOCP::ExRiccatiFactor");
       }
       
       //  db 
@@ -1558,7 +1558,7 @@ void Hqp_IpLQDOCP::ExRiccatiFactor(void)
 	fprintf(stderr, "LQDOCP: symmetry check db[%d]:\n", k); 
 	m_foutput(stderr, db);
 	dump();
-	error(E_POSDEF,"LQDOCP::ExRiccatiFactor");
+	m_error(E_POSDEF,"LQDOCP::ExRiccatiFactor");
       }
     } else
       db = m_copy1(d22, db);
@@ -1950,7 +1950,7 @@ void Hqp_IpLQDOCP::ExRiccatiFactorSc(void)
 		"LQDOCP: symmetry check Vxx[%d]: %g\n", k, rel_symm(Vxx[k]));
 	//	m_output(Vxx[k]);
 	//	dump();
-	//	error(E_POSDEF,"ExRiccatiFactor");
+	//	m_error(E_POSDEF,"ExRiccatiFactor");
       }
     }
     //    printf("vor m_symm \n"); 

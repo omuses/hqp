@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -154,7 +154,7 @@ void Omu_IntRKsuite::ode_solve(Real tstart, VECP y, const VECP u, Real tend)
     if (CFLAG > 1)
       fprintf(stderr, "RKsuite message %d at time %g\n", CFLAG, TNOW);
     if (CFLAG > 4)
-      error(E_UNKNOWN, "Omu_IntRKsuite::step");
+      m_error(E_UNKNOWN, "Omu_IntRKsuite::step");
   }
 
   integer TOTF, STPCST, STPSOK;
