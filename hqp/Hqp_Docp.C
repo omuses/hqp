@@ -318,6 +318,9 @@ void Hqp_Docp::parse_constr(const VECP cmin, const VECP cmax,
 //-------------------------------------------------------------------------
 void Hqp_Docp::setup()
 {
+  // reset counter for function evaluations
+  _fbd_evals = 0;
+
   // setup optimization horizon
   setup_horizon(_k0, _kf);
 
