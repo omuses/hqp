@@ -111,13 +111,6 @@ Hqp_DocpStub::~Hqp_DocpStub()
 }
 
 //-------------------------------------------------------------------------
-void Hqp_DocpStub::horizon(int k0, int kf)
-{
-  _k0 = k0;
-  _kf = kf;
-}
-
-//-------------------------------------------------------------------------
 void Hqp_DocpStub::setup_horizon(int &k0, int &kf)
 {
   k0 = _k0;

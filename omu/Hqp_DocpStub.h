@@ -1,13 +1,13 @@
-/*
- * Hqp_DocpStub.h --
- * Client stub for Hqp_Docp interface
+/**
+ * @file Hqp_DocpStub.h
+ *   client stub for Hqp_Docp interface
  *
  * rf, 10/31/00
  *
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,7 +30,10 @@
 
 #include <Hqp.h>
 
-//-------------------
+/**
+ * Stub for accessing DOCP (discrete-time optimal control problem)
+ * interface of Hqp.
+ */
 class Hqp_DocpStub {
 
 private:
@@ -42,30 +45,36 @@ public:
   Hqp_DocpStub();
   virtual ~Hqp_DocpStub();
 
-  // methods that may be called by implementation
-  //---------------------------------------------
-  void horizon(int k0, int kf);
-
-  // methods that are provided by implementation
-  //--------------------------------------------
+  /**
+   * @name Interface to be implemented by derived classes
+   */
+  //@{
+  /** Optional: setup optimization horizon [k0,kf] */
   virtual void setup_horizon(int &k0, int &kf);
 
+  /** Required: setup variables for one stage k */
   virtual void setup_vars(int k,
 			  VECP x, VECP xmin, VECP xmax,
 			  VECP u, VECP umin, VECP umax,
 			  VECP c, VECP cmin, VECP cmax) = 0;
 
+  /** Optional: setup structure of Jacobians and Hessians for one stage k */
   virtual void setup_struct(int k, const VECP x, const VECP u,
 			    MATP fx, MATP fu, IVECP f_lin,
 			    VECP f0x, VECP f0u, int &f0_lin,
 			    MATP cx, MATP cu, IVECP c_lin,
 			    MATP Lxx, MATP Luu, MATP Lxu) {}
 
+  /** Optional: override values used during simulation of initial guess
+      for one stage k */
   virtual void init_simulation(int k, VECP x, VECP u) {}
 
+  /** Required: evaluate system equations f, objective f0, and constraints c
+      for one stage k */
   virtual void update_vals(int k, const VECP x, const VECP u,
 			   VECP f, Real &f0, VECP c) = 0;
 
+  /** Optional: evaluate equations, Jacobians and Hessians for one stage k */
   virtual void update_stage(int k, const VECP x, const VECP u,
 			    VECP f, Real &f0, VECP c,
 			    MATP fx, MATP fu, VECP f0x, VECP f0u,
@@ -78,9 +87,9 @@ public:
 			  fx, fu, f0x, f0u, cx, cu,
 			  rf, rc, Lxx, Luu, Lxu);
   }
+  //@}
 
-  // utility routines that may be called by implementation
-  //------------------------------------------------------
+  /** allocate variables from implementation of setup_vars */
   void	alloc_vars(VECP v, VECP vmin, VECP vmax, int n);
 };  
 
