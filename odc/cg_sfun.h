@@ -1,5 +1,5 @@
 /*
- * cg_sfun.h: emulation of code generation registration function for HQP
+ * cg_sfun.h: dummy code generation include file for HQP
  *
  * rf, 05/05/2001
  */
