@@ -56,7 +56,7 @@ LDFLAGS = $(HQP_LIBDIR) $(TCL_LIBDIR)
 GMALLOC_O = @GMALLOC_O@
 
 SRCS = 	Docp_Main.C \
-	Prg_Di.C
+	Prg_DI.C
 
 OBJS = $(SRCS:.C=$O) $(GMALLOC_O)
 

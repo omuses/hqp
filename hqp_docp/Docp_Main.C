@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "Prg_Di.h"
+#include "Prg_DI.h"
 
 /** Handle used for calls to Hqp Docp instance */
 Hqp_Docp_handle theHqp_Docp_handle;
@@ -31,8 +31,8 @@ int main(int, char *[])
   assert(If_SizeOfInt() == sizeof(int));
   assert(If_SizeOfReal() == sizeof(Real));
 
-  // Create Docp specification from problem as declared in file Prg_Di.h
-  Hqp_Docp_spec spec = Prg_Di_spec();
+  // Create Docp specification from problem as declared in file Prg_DI.h
+  Hqp_Docp_spec spec = Prg_DI_spec();
 
   // Create Hqp_Docp and register callback functions
   theHqp_Docp_handle = Hqp_Docp_create(spec, NULL);
