@@ -102,13 +102,15 @@
 	\quad & l=1,\ldots,N_{ex}.
    \end{array}
    @f]
-   The problem is treated with @f$K_{N_{ex}}@f$ stages and one
-   sample period per stage. 
+   The problem is treated as multistage problem with @f$K_{N_{ex}}@f$ stages
+   and one sample period per stage per default. 
    Discrete-time state variables with unknown initial value are introduced
    for the estimated parameters p, in order to preserve a sparse structure.
    Additional @f$K_{N_{ex}}@f$ junction conditions (equality constraints)
    are introduced for the estimated parameters and @f$K_{N_{ex}}-N_{ex}+1@f$
    junction conditions are introduced for the state variables x.
+   Alternatively the problem can be treated without stages hiding model
+   states from the optimizer.
 
    In addition to the estimated parameters and initial states, the 
    measurement matrix M is calculated in each optimization iteration.
@@ -142,10 +144,7 @@
 class Prg_SFunctionEst: public Prg_SFunction {
 
  protected:
-  int		_mdl_args_p_idx; ///< index of p in S-function parameters
-  mxArray 	*_mx_p;  ///< model parameters for S-function
-
-  int		_mdl_np;///< number of model parameters
+  int		_mdl_np;	///< number of model parameters
 
   Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)
   Omu_VariableVec _mdl_x0;	///< initial states
@@ -214,6 +213,18 @@ class Prg_SFunctionEst: public Prg_SFunction {
   void continuous(int kk, double t,
 		  const Omu_StateVec &x, const Omu_Vec &u,
 		  const Omu_StateVec &xp, Omu_DependentVec &F);
+  //@}
+
+  /**
+   * @name Helper methods for reading and writing S-function arguments.
+   * The arguments are read from / written to the vector p.
+   * The method write_active_mx_args assumes a vector packed with actually
+   * estimated (active) parameters scaled with nominal values.
+   */
+  //@{
+  void read_mx_args(VECP p);
+  void write_mx_args(VECP p);
+  void write_active_mx_args(VECP p);
   //@}
 
  public:

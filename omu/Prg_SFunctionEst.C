@@ -49,9 +49,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _KK = 0;
   _multistage = true;
 
-  _mx_p = NULL;
-  _mdl_args_p_idx = -1;
-
   _mdl_np = 0;
 
   _mdl_p_active = iv_get(_mdl_np);
@@ -91,8 +88,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _dydpx0 = m_resize(m_get(1, 1), _ny, _np+_nx0);
   _dxfdx = m_resize(m_get(1, 1), _nx, _nx);
   _dxfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
-
-  _ifList.append(new If_Int("mdl_args_p_idx", &_mdl_args_p_idx));
 
   _ifList.append(new If_IntVec("mdl_p_active", &_mdl_p_active));
   _ifList.append(new If_IntVec("mdl_x0_active", &_mdl_x0_active));
@@ -149,6 +144,62 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
 }
 
 //--------------------------------------------------------------------------
+void Prg_SFunctionEst::read_mx_args(VECP p)
+{
+  mxArray *arg;
+  int i, j, idx, nargs, nel;
+
+  nargs = mxGetNumberOfElements(_mx_args);
+  for (idx = 0, j = 0; j < nargs; j++) {
+    arg = mxGetCell(_mx_args, j);
+    if (mxIsDouble(arg)) {
+      nel = mxGetNumberOfElements(arg);
+      for (i = 0; i < nel; i++, idx++)
+	p[idx] = mxGetPr(arg)[i];
+    }
+  }
+  assert(idx == _mdl_np); // S-function parameters must not have changed
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunctionEst::write_mx_args(VECP p)
+{
+  mxArray *arg;
+  int i, j, idx, nargs, nel;
+
+  nargs = mxGetNumberOfElements(_mx_args);
+  for (idx = 0, j = 0; j < nargs; j++) {
+    arg = mxGetCell(_mx_args, j);
+    if (mxIsDouble(arg)) {
+      nel = mxGetNumberOfElements(arg);
+      for (i = 0; i < nel; i++, idx++)
+	mxGetPr(arg)[i] = p[idx];
+    }
+  }
+  assert(idx == _mdl_np); // S-function parameters must not have changed
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunctionEst::write_active_mx_args(VECP p)
+{
+  mxArray *arg;
+  int i, j, ip, idx, nargs, nel;
+
+  nargs = mxGetNumberOfElements(_mx_args);
+  for (ip = 0, idx = 0, j = 0; j < nargs; j++) {
+    arg = mxGetCell(_mx_args, j);
+    if (mxIsDouble(arg)) {
+      nel = mxGetNumberOfElements(arg);
+      for (i = 0; i < nel; i++, idx++)
+	if (_mdl_p_active[idx])
+	  mxGetPr(arg)[i] = p[ip++] * _mdl_p_nominal[idx];
+    }
+  }
+  assert(idx == _mdl_np); // S-function parameters must not have changed
+  assert(ip == _np);	  // _np must not have changed since setup_stages
+}
+
+//--------------------------------------------------------------------------
 void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
 {
   int i, j;
@@ -176,13 +227,14 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   assert(ssGetmdlDerivatives(_S) != NULL);
 
   // determine number of parameters
-  if (_mdl_args_p_idx >= 0) {
-    _mx_p = mxGetCell(_mx_args, _mdl_args_p_idx);
-    _mdl_np = mxGetNumberOfElements(_mx_p);
-  }
-  else {
-    _mx_p = NULL;
-    _mdl_np = 0;
+  mxArray *arg;
+  int nargs = mxGetNumberOfElements(_mx_args);
+  _mdl_np = 0;
+  for (j = 0; j < nargs; j++) {
+    arg = mxGetCell(_mx_args, j);
+    // only consider parameters in double format for accessing via mxGetPr()
+    if (mxIsDouble(arg))
+      _mdl_np += mxGetNumberOfElements(arg);
   }
   
   // adapt sizes of model vectors
@@ -222,8 +274,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
   // store parameters in _mdl_p
-  for (i = 0; i < _mdl_np; i++)
-    _mdl_p[i] = mxGetPr(_mx_p)[i];
+  read_mx_args(_mdl_p);
 }
 
 //--------------------------------------------------------------------------
@@ -234,8 +285,7 @@ void Prg_SFunctionEst::setup(int k,
   int i, idx, kk;
 
   // take over possibly modified _mdl_p
-  for (i = 0; i < _mdl_np; i++)
-    mxGetPr(_mx_p)[i] = _mdl_p[i];
+  write_mx_args(_mdl_p);
 
   // initialize number of experiment
   int ex = 0;
@@ -286,13 +336,21 @@ void Prg_SFunctionEst::setup(int k,
     m_resize(_dxfdpx0, _nx, _np+_nx0);
   }
 
+  if (!_multistage && _nx0 > 0)
+    m_error(E_FORMAT, "Prg_SFunctionEst::setup: "
+	    "estimation of initial states requires prg_multistage=true");
+
   // allocate optimization variables
   if (k > 0 && new_experiment) {
     x.alloc(_np, _nx);
     u.alloc(_mdl_nx);
   }
-  else
-    x.alloc(_nx);
+  else {
+    if (_multistage || k == _K)
+      x.alloc(_nx);
+    else
+      x.alloc(_np, _nx);
+  }
 
   if (k == 0) {
     // setup parameters
@@ -454,12 +512,7 @@ void Prg_SFunctionEst::update(int kk,
   ssSetT(_S, ts(kk));
 
   // pass estimated parameters to model
-  for (i = 0, idx = 0; idx < _mdl_np; idx++) {
-    if (_mdl_p_active[idx]) {
-      mxGetPr(_mx_p)[idx] = x[i++] * _mdl_p_nominal[idx];
-    }
-  }
-  assert(i == _np);	// _np must not have changed since setup_stages
+  write_active_mx_args(x);
 
   // initialize model inputs
   real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
@@ -553,10 +606,13 @@ void Prg_SFunctionEst::update(int kk,
   // obtain Jacobians if required
   if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
 
-    // store current model states and parameters
+    // store current model parameters and states
+    if (kk == 0) {
+      // store model parameters
+      read_mx_args(_mdl_p);
+    }
     if (new_experiment) {
-      for (idx = 0; idx < _mdl_np; idx++)
-	_mdl_p[idx] = mxGetPr(_mx_p)[idx];
+      // store model states
       real_T *mdl_x = ssGetContStates(_S);
       for (idx = 0; idx < _mdl_nx; idx++)
 	_mdl_x0s[ex][idx] = mdl_x[idx];
@@ -638,7 +694,11 @@ void Prg_SFunctionEst::update(int kk,
 	    _dxfdx[i][j] = xf.Su[i][j-_np];
 	}
       }
-      m_mlt(_dxfdx, _dxdpx0, _dxfdpx0);
+      if (_multistage)
+	m_mlt(_dxfdx, _dxdpx0, _dxfdpx0);
+      else
+	// if not multistage, then dxf/dx == dxf/d(p,x0) as x == (p,x0)
+	m_copy(_dxfdx, _dxfdpx0);
     }
   }
 }
@@ -659,13 +719,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
     ssSetT(_S, t);
 
     // pass estimated parameters to model
-    int ip = 0;
-    for (i = 0; i < _mdl_np; i++) {
-      if (_mdl_p_active[i]) {
-	mxGetPr(_mx_p)[i] = x[ip++] * _mdl_p_nominal[i];
-      }
-    }
-    assert(ip == _np);	// _np must not have changed since setup_stages
+    write_active_mx_args(x);
 
     // initialize model inputs
     real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
@@ -712,13 +766,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   ssSetT(_S, t);
 
   // pass estimated parameters to model
-  int ip = 0;
-  for (i = 0; i < _mdl_np; i++) {
-    if (_mdl_p_active[i]) {
-      mxGetPr(_mx_p)[i] = x[ip++] * _mdl_p_nominal[i];
-    }
-  }
-  assert(ip == _np);	// _np must not have changed since setup_stages
+  write_active_mx_args(x);
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));

@@ -64,10 +64,8 @@ mdl_name sfun_dic
 mdl_path ./sfun_dic[mex_extension sfun_dic]
 
 # S-function arguments (default parameter value)
-# Note: mdl_args expects the syntax of the Simulink block configuration,
-#       mdl_args_p_idx indicates the index of parameters in mdl_args
+# Note: mdl_args expects the syntax of the Simulink block configuration.
 mdl_args        "1.0"
-mdl_args_p_idx  0
 
 # setup stages and number of experiments
 prg_K [expr $K1+$K2+1]
