@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -63,6 +63,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_der_x0_min = v_get(_mdl_nx);
   _mdl_der_x0_max = v_get(_mdl_nx);
+  _mdl_u_order = iv_get(_mdl_nu);
   _mdl_y_active = iv_get(_mdl_ny);
   _mdl_p_nominal = v_get(_mdl_np);
   _mdl_x_nominal = v_get(_mdl_nx);
@@ -71,6 +72,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   iv_zero(_mdl_x0_active);
   v_set(_mdl_der_x0_min, -Inf);
   v_set(_mdl_der_x0_max, Inf);
+  iv_set(_mdl_u_order, 1);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_p_nominal);
   v_ones(_mdl_x_nominal);
@@ -113,6 +115,8 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
 
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
+
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_active)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
 
@@ -144,6 +148,7 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   v_free(_mdl_der_x0_max);
   v_free(_mdl_der_x0_min);
   iv_free(_mdl_x0_active);
+  iv_free(_mdl_u_order);
   iv_free(_mdl_y_active);
   v_free(_mdl_y_nominal);
   v_free(_mdl_x_nominal);
@@ -251,6 +256,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   iv_resize(_mdl_x0_active, _mdl_nx);
   v_resize(_mdl_der_x0_min, _mdl_nx);
   v_resize(_mdl_der_x0_max, _mdl_nx);
+  iv_resize(_mdl_u_order, _mdl_nu);
   iv_resize(_mdl_y_active, _mdl_ny);
   v_resize(_mdl_p_nominal, _mdl_np);
   v_resize(_mdl_x_nominal, _mdl_nx);
@@ -259,6 +265,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   iv_zero(_mdl_x0_active);
   v_set(_mdl_der_x0_min, -Inf);
   v_set(_mdl_der_x0_max, Inf);
+  iv_set(_mdl_u_order, 1);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_p_nominal);
   v_ones(_mdl_x_nominal);
@@ -518,9 +525,13 @@ void Prg_SFunctionEst::update(int kk,
   write_active_mx_args(x);
 
   // initialize model inputs
-  real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u;
+  if (ssGetInputPortRequiredContiguous(_S, 0))
+    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  else
+    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
   for (idx = 0; idx < _mdl_nu; idx++)
-    *mdl_u[idx] = _mdl_us[kk][idx];
+    mdl_u[idx] = _mdl_us[kk][idx];
 
   // initialize model (this is required here as parameters change)
   if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
@@ -724,9 +735,13 @@ void Prg_SFunctionEst::consistic(int kk, double t,
     write_active_mx_args(x);
 
     // initialize model inputs
-    real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
+    real_T *mdl_u;
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
     for (i = 0; i < _mdl_nu; i++)
-      *mdl_u[i] = _mdl_us[kk][i];
+      mdl_u[i] = _mdl_us[kk][i];
 
     // initialize model
     mdlInitializeConditions(_S);
@@ -764,9 +779,17 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
-  real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
-  for (i = 0; i < _mdl_nu; i++)
-    *mdl_u[i] = _mdl_us[kk][i] * (1 - rt) + _mdl_us[kk+1][i] * rt;
+  real_T *mdl_u;
+  if (ssGetInputPortRequiredContiguous(_S, 0))
+    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  else
+    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  for (i = 0; i < _mdl_nu; i++) {
+    if (_mdl_u_order[i] == 0)
+      mdl_u[i] = _mdl_us[kk][i];
+    else
+      mdl_u[i] = _mdl_us[kk][i] * (1 - rt) + _mdl_us[kk+1][i] * rt;
+  }
 
   if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
     // initialize model (this is required as parameters change)

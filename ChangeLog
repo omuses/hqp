@@ -1,3 +1,31 @@
+2003-02-15    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEpt.[hC]:
+	  add mdl_u_order to specify interpolation order for input
+	  trajectories, allowing linear interpolation and zero order hold
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  add support for S-functions requiring contiguous inputs
+	  (crashed before)
+
+	* omu/Prg_SFunctionOpt.C (continuous_grds): bug fix
+
+	* omu/Hqp_Omuses.[hC]: clean up depreciated code
+
+	* omu/Omu_IntSDIRK.C, omu/Omu_IntIMP.[hC], omu/Omu_IntDASPK.[hC],
+	  omu/Omu_Vars.[hC], omu/Omu_Dependents.[hC], omu/Omu_Deps.h,
+	  omu/Hqp_Omuses.C:
+	  rename alloc/realloc to size/resize
+
+	* omu/Omu_Integrator.h, omu/Omu_Dependents.h, omu/Omu_Deps.h:
+	  extend documentation
+
+	* omu/Hqp_DocpStub.h: remove horizon method; add documentation
+	
+	* odc/dic_mex_sfunction_est.tcl, odc/dic_mex_sfunction.tcl:
+	  - only compile sfun_dic.c if S-function not yet there,
+	  - plot into main window
+
 2002-12-21    <e_arnold>
 
 	* odc/crane.tcl: enable plots if Tk and BLT are available

@@ -7,7 +7,10 @@
 
 puts "Compiling MEX S-function..."
 source mex.tcl
-mex sfun_dic.c
+if {![file exists sfun_dic[mex_extension]]
+    || [file mtime sfun_dic.c] > [file mtime sfun_dic[mex_extension]]} {
+    mex sfun_dic.c
+}
 
 ## prepare estimation data set
 ## (calculate reference outputs from known solution and add noise)
@@ -80,6 +83,9 @@ prg_ts [concat $ts1 $ts2]
 mdl_p_active    {1}
 mdl_x0_active   {1 0}
 
+# interpolation order for inputs
+mdl_u_order 	{0}
+
 # define outputs used for estimation, i.e. use first output
 mdl_y_active    {1 0}
 
@@ -119,7 +125,7 @@ puts ""
 
 # plot signals
 puts "Plotting resulting signals..."
-if {[catch {package require Tk}] || [catch {package require BLT}]} {
+if {[catch {set tk_version}] || [catch {package require BLT}]} {
     puts "Skipping plot as no blt::graph available."
     exit
 } else {
@@ -147,9 +153,9 @@ if {[catch {package require Tk}] || [catch {package require BLT}]} {
     }	
 
     # create blt::graph in a toplevel window and plot data
-    destroy .est
-    toplevel .est
-    set graph [blt::graph .est.g -title "[prg_name] demo"]
+    set graph .g
+    destroy $graph
+    blt::graph $graph -title "[prg_name] demo"
     $graph element create u -xdata $times -ydata $us -color red -symbol ""
     $graph element create y1 -xdata $times -ydata $y1 -color blue -symbol ""
     $graph element create y2 -xdata $times -ydata $y2 -color green -symbol ""
@@ -157,5 +163,5 @@ if {[catch {package require Tk}] || [catch {package require BLT}]} {
 	-color blue -linewidth 0 -pixels 3
     $graph axis configure x -title "Time (cumulative)"
     $graph axis configure y -title "Signals"
-    pack $graph
+    pack $graph -fill both -expand true
 }

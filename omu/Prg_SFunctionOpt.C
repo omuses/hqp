@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -94,12 +94,14 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _sps = 1;
   _multistage = true;
 
+  _mdl_u_order = iv_get(_mdl_nu);
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
   _t_nominal = 1.0;
   _mdl_y_bias = v_get(_mdl_ny);
   _nus_fixed = iv_get(_mdl_nu);
+  iv_set(_mdl_u_order, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
@@ -120,6 +122,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_Int("prg_sps", &_sps));
   _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
 
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_active)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_min)));
@@ -172,6 +175,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   v_free(_mdl_y_nominal);
   v_free(_mdl_x_nominal);
   v_free(_mdl_u_nominal);
+  iv_free(_mdl_u_order);
   iv_free(_nus_fixed);
 }
 
@@ -205,11 +209,13 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   _mdl_y_soft.resize(_mdl_ny);
   _mdl_yf.resize(_mdl_ny);
 
+  iv_resize(_mdl_u_order, _mdl_nu);
   v_resize(_mdl_u_nominal, _mdl_nu);
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_resize(_nus_fixed, _mdl_nu);
+  iv_set(_mdl_u_order, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
@@ -373,6 +379,16 @@ void Prg_SFunctionOpt::setup(int k,
 	    u.min[i+j] = u.max[i+j] = u.initial[i+j];
 	}
       }
+      // for zero order hold: constraint u parameter of last interval to zero
+      // as control must not change at final time, compared to last interval
+      if (k == _K-1 && _mdl_u_order[idx] == 0) {
+	if (_multistage)
+	  u.min[i] = u.max[i] = u.initial[i] = 0.0;
+	else {
+	  j = upsk - 1;
+	  u.min[i+j] = u.max[i+j] = u.initial[i+j] = 0.0;
+	}
+      }
       i += upsk;
     }
   }
@@ -432,7 +448,7 @@ void Prg_SFunctionOpt::setup_struct(int k,
 				    Omu_DependentVec &f,
 				    Omu_Dependent &f0, Omu_DependentVec &c)
 {
-  int i;
+  int i, idx;
 
   // consistic just takes states from optimizer
   m_ident(xt.Jx);
@@ -444,20 +460,20 @@ void Prg_SFunctionOpt::setup_struct(int k,
   sm_mlt(-1.0, F.Jxp, F.Jxp);
   F.set_linear(Omu_Dependent::WRT_xp);
 
-  // u goes in linear for building piecewise linear mdl_u
-  // (note: F.Ju changes over sample periods if not multistage)
+  // F.Ju is constant if not multistage
   if (_multistage && k < _K) {
     m_zero(F.Ju);
-    for (i = 0; i < _nu; i++)
-      F.Ju[i][i] = 1.0/_t_nominal;
+    // F.Ju is non-zero for linear interpolation
+    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+      if (_mdl_u.active[idx]) {
+	if (_mdl_u_order[idx] > 0) {
+	  F.Ju[i][i] = 1.0/_t_nominal;
+	}
+	i++;
+      }
+    }
     F.set_linear(Omu_Dependent::WRT_u);
   }
-
-  // linear relation for f in update
-  m_zero(f.Ju);
-  m_zero(f.Jx);
-  m_ident(f.Jxf);
-  f.set_linear();
 
   // constraints c in update do not depend on xf
   m_zero(c.Jxf);
@@ -494,7 +510,23 @@ void Prg_SFunctionOpt::update(int kk,
 
   // junction conditions for continuous-time equations
   if (kk < _KK) {
-    for (i = 0; i < _nx; i++)
+    // controlled inputs
+    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+      if (_mdl_u.active[idx]) {
+	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0))
+	  // zero order hold at end of stage:
+	  // apply step in u for subsequent stage
+	  f[i] = x[i] + ((ts(kk+1) - ts(kk-spsk/upsk+1)) * u[i*upsk + kk%upsk]
+			 /_t_nominal);
+	else
+	  // piecewise linear interpolation or within stage with zoh
+	  f[i] = xf[i];
+	i++;
+      }
+    }
+    assert(i == _nu); // problem structure must not have changed
+    // states
+    for (; i < _nx; i++)
       f[i] = xf[i];
   }
 
@@ -502,11 +534,15 @@ void Prg_SFunctionOpt::update(int kk,
   ssSetT(_S, ts(kk));
 
   // initialize model inputs
-  real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u;
+  if (ssGetInputPortRequiredContiguous(_S, 0))
+    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  else
+    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       _mdl_us[kk][idx] = x[i++] * _mdl_u_nominal[idx];
-    *mdl_u[idx] = _mdl_us[kk][idx];
+    mdl_u[idx] = _mdl_us[kk][idx];
   }
 
   // pass current states to model
@@ -532,6 +568,20 @@ void Prg_SFunctionOpt::update(int kk,
   // utilize model outputs for constraints and optimization objective
   double help;
   f0 = 0.0;
+
+  double dt; 	// factor for linear interpol. (trapezoidal integration rule)
+  double dt0; 	// factor for zero order hold
+  if (kk == 0) {
+    dt = 0.5*(ts(kk+1) - ts(kk));
+    dt0 = ts(kk+1) - ts(kk);
+  } else if (kk == _KK) {
+    dt = 0.5*(ts(kk) - ts(kk-1));
+    dt0 = 0.0;
+  } else {
+    dt = 0.5*(ts(kk+1) - ts(kk-1));
+    dt0 = ts(kk+1) - ts(kk);
+  }
+
   // contribution of controlled inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
@@ -539,12 +589,16 @@ void Prg_SFunctionOpt::update(int kk,
       f0 += _mdl_u.weight1[idx] * _mdl_us[kk][idx] / _mdl_u_nominal[idx];
       help = (_mdl_us[kk][idx] - _mdl_u.ref[idx]) / _mdl_u_nominal[idx];
       f0 += _mdl_u.weight2[idx]*help*help;
+      if (_mdl_u_order[idx] == 0)
+	f0 *= dt0;
+      else
+	f0 *= dt;
       // rates of change
       if (kk < _KK) {
-	f0 += _mdl_der_u.weight1[idx] * u[i*upsk + kk%upsk]/_t_nominal;
+	f0 += dt * _mdl_der_u.weight1[idx] * u[i*upsk + kk%upsk]/_t_nominal;
 	help = u[i*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
 	  / _mdl_u_nominal[idx];
-	f0 += _mdl_der_u.weight2[idx]*help*help;
+	f0 += dt * _mdl_der_u.weight2[idx]*help*help;
       }
       i++;
     }
@@ -565,10 +619,10 @@ void Prg_SFunctionOpt::update(int kk,
     }
     // calculate objective term
     if (_mdl_y.weight1[idx] != 0.0)
-      f0 += _mdl_y.weight1[idx] * mdl_y[idx] / _mdl_y_nominal[idx];
+      f0 += dt * _mdl_y.weight1[idx] * mdl_y[idx] / _mdl_y_nominal[idx];
     if (_mdl_y.weight2[idx] != 0.0) {
       help = (mdl_y[idx] - _mdl_y.ref[idx]) / _mdl_y_nominal[idx];
-      f0 += _mdl_y.weight2[idx]*help*help;
+      f0 += dt * _mdl_y.weight2[idx]*help*help;
     }
     // consider soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
@@ -577,7 +631,8 @@ void Prg_SFunctionOpt::update(int kk,
       else
 	help = x[_nx + is + kk%spsk];
 
-      f0 += _mdl_y_soft.weight1[idx]*help + _mdl_y_soft.weight2[idx]*help*help;
+      f0 += dt * (_mdl_y_soft.weight1[idx]*help
+		  + _mdl_y_soft.weight2[idx]*help*help);
 
       if (_mdl_y_soft.min[idx] > -Inf) {
 	c[spsk*_nc + isc + kk%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
@@ -590,16 +645,6 @@ void Prg_SFunctionOpt::update(int kk,
       is += spsk;
     }
   }
-
-  // consider step length in objective (trapezoidal integration rule)
-  double dt;
-  if (kk == 0)
-    dt = 0.5*(ts(kk+1) - ts(kk));
-  else if (kk == _KK)
-    dt = 0.5*(ts(kk) - ts(kk-1));
-  else
-    dt = 0.5*(ts(kk+1) - ts(kk-1));
-  f0 *= dt;
 
   // additional terms at final time
   if (kk == _KK) {
@@ -714,7 +759,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
     // (note: these are states for the optimizer)
     for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
       mdl_u_idx = jdx - _mdl_nx;
-      if (_mdl_u.active[jdx - _mdl_nx]) {
+      if (_mdl_u.active[mdl_u_idx]) {
 	for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
 	       ii = _nc+_nsc, iidx = _mdl_nx,
 	       rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
@@ -796,16 +841,42 @@ void Prg_SFunctionOpt::update_grds(int kk,
     }
   }
 
+  // junction conditions for continuous-time equations
+  if (kk < _KK) {
+    // default values
+    m_zero(f.Ju);
+    m_zero(f.Jx);
+    m_ident(f.Jxf);
+    // modifications for controlled inputs with zero order hold
+    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+      if (_mdl_u.active[idx]) {
+	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0)) {
+	  // zero order hold at end of stage:
+	  // apply step in u for subsequent stage
+	  f.Jxf[i][i] = 0.0;
+	  f.Jx[i][i] = 1.0;
+	  f.Ju[i][i*upsk + kk%upsk] = ((ts(kk+1) - ts(kk-spsk/upsk+1))
+				       /_t_nominal);
+	}
+      }
+    }
+  }
+
   // apply chain rule to calculate gradient of f0 
   // (do this as well if Omu_Program::update_grds was used, as complete
   //  numeric differentiation gives bad results for quadratic terms)
-  double dt;
-  if (kk == 0)
+  double dt; 	// factor for linear interpol. (trapezoidal integration rule)
+  double dt0; 	// factor for zero order hold
+  if (kk == 0) {
     dt = 0.5*(ts(kk+1) - ts(kk));
-  else if (kk == _KK)
+    dt0 = ts(kk+1) - ts(kk);
+  } else if (kk == _KK) {
     dt = 0.5*(ts(kk) - ts(kk-1));
-  else
+    dt0 = 0.0;
+  } else {
     dt = 0.5*(ts(kk+1) - ts(kk-1));
+    dt0 = ts(kk+1) - ts(kk);
+  }
 
   v_zero(f0.gx);
   v_zero(f0.gu);
@@ -813,10 +884,11 @@ void Prg_SFunctionOpt::update_grds(int kk,
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     // contribution of objective term
     if (_mdl_u.active[idx]) {
-      // control inputs
-      f0.gx[i] += dt * _mdl_u.weight1[idx];
-      f0.gx[i] += dt * _mdl_u.weight2[idx] *
+      // controlled inputs
+      f0.gx[i] += _mdl_u.weight1[idx];
+      f0.gx[i] += _mdl_u.weight2[idx] *
 	2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
+      f0.gx[i] *= _mdl_u_order[idx] == 0? dt0: dt;
       // rates of change
       if (kk < _KK) {
 	f0.gu[i] += dt * _mdl_der_u.weight1[idx]/_t_nominal;
@@ -890,12 +962,16 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
 
     // initialize model inputs using linear interpolation over time
     double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
-    real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
+    real_T *mdl_u;
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
     for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx])
-	*mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
+	mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
       else
-	*mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
+	mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
     }
 
     // initialize model
@@ -925,12 +1001,20 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
-  real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u;
+  if (ssGetInputPortRequiredContiguous(_S, 0))
+    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  else
+    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
-      *mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
-    else
-      *mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
+      mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
+    else {
+      if (_mdl_u_order[idx] == 0)
+	mdl_u[idx] = _mdl_us[kk][idx];
+      else
+	mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
+    }
   }
 
   // pass current states to model
@@ -960,9 +1044,19 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   for (i = 0; i < _mdl_nx; i++)
     F[_nu + i] = mdl_xp[i]/_mdl_x_nominal[i] - xp[_nu + i];
 
-  // model equations for piecewise linear control inputs
-  for (i = 0; i < _nu; i++)
-    F[i] = u[i*upsk + kk%upsk]/_t_nominal - xp[i];
+  // model equations for controlled inputs
+  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    if (_mdl_u.active[idx]) {
+      if (_mdl_u_order[idx] == 0)
+	// zero order hold
+	F[i] = 0.0 - xp[i];
+      else
+	// piecewise linear interpolation
+	F[i] = u[i*upsk + kk%upsk]/_t_nominal - xp[i];
+      i++;
+    }
+  }
+  assert(i == _nu); // problem structure must not have changed
 
   // obtain Jacobians if required
   if (F.is_required_J())
@@ -1012,19 +1106,14 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
     // (note: these are states for the optimizer)
     for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
       mdl_u_idx = jdx - _mdl_nx;
-      if (_mdl_u.active[jdx - _mdl_nx]) {
-	for (i = _mdl_nu, idx = 0, rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
-	  if (ir[rdx] >= _mdl_nx)
+      if (_mdl_u.active[mdl_u_idx]) {
+	for (rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
+	  idx = ir[rdx];
+	  if (idx >= _mdl_nx)
 	    break;
-	  if (_mdl_u.active[ir[rdx]]) {
-	    // need to loop through idx to obtain i considering active inputs
-	    for (; idx < ir[rdx]; idx++) {
-	      if (_mdl_u.active[idx])
-		i++;
-	    }
-	    F.Jx[i][j] = pr[rdx] /
-	      _mdl_x_nominal[i-_mdl_nu] * _mdl_u_nominal[mdl_u_idx];
-          }
+	  i = _mdl_nu + idx;
+	  F.Jx[i][j] = pr[rdx] /
+	    _mdl_x_nominal[i-_mdl_nu] * _mdl_u_nominal[mdl_u_idx];
 	}
 	j++;
       }
@@ -1035,8 +1124,14 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
     if (!_multistage) {
       int upsk = _KK;
       m_zero(F.Ju);
-      for (i = 0; i < _nu; i++)
-	F.Ju[i][i*upsk + kk%upsk] = 1.0/_t_nominal;
+      for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+	if (_mdl_u.active[idx]) {
+	  if (_mdl_u_order[idx] > 0)
+	    // piecewise linear interpolation
+	    F.Ju[i][i*upsk + kk%upsk] = 1.0/_t_nominal;
+	  i++;
+	}
+      }
     }
   }
 }

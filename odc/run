@@ -3,10 +3,13 @@
 # rf, 2/7/97
 #
 
+## dynamically load Tk for plots (only works with newer Tcl versions)
+#package require Tk
+
 ## say Hello
 
 set version "Omuses [omu_version]"
-catch {package require Tk}
+
 if [catch {
   label .l \
     -text $version

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -45,20 +45,23 @@ public:
 };
 
 /**
-   Optimal control problem for a model given as MEX S-function.
+   Optimal control problem for a model given as MEX S-function treated with
+   multi-stage control vector parameterization.
    The optimization time horizon @f$[t_0,t_f]@f$ is split into @f$k=0,...,K@f$ 
    stages with time points @f$t_0=t^0<t^1<\ldots<t^K=t_f@f$. Each stage may 
-   be further subdivided. This leads to @f$KK=sps\,K@f$ sample periods, 
-   where sps is the number of samples periods per stage, and with the sample
-   time points @f$t^{kk}, kk=0,...,KK@f$. Additional sample time points within
-   a stage are for instance useful for better treating path constraints.
+   be further subdivided into @f$sps@f$ sample periods per stage. This leads 
+   to the overall number of @f$KK=sps\,K@f$ sample periods with the sample
+   time points @f$t^{kk}, kk=0,...,KK@f$ (sample time points within
+   a stage are for instance useful to better treat path constraints).
+   Sought control trajectories are described piecewise as constant or
+   linear functions of control parameters in each stage.
 
    In the following all vector operations are defined element wise.
    The treated optimization problem reads
    @f[
    \begin{array}{l}
     \displaystyle{}
-    J\ =\ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_u} \left\{
+    J\ =\ \sum_{kk=0}^{KK} \Delta t_{u,i}^{kk} \sum_{i=1}^{n_u} \left\{
       u_{weight1}\,u(t^{kk})
       \ +\ u_{weight2}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]^2
       \right\}_i
@@ -87,11 +90,18 @@ public:
    @f]
    with
    @f[
-    \Delta t^{kk} = \frac{1}{2}\left\{\begin{array}{ll}
+   \begin{array}{l}
+    \displaystyle \Delta t_{u,i}^{kk} = \left\{\begin{array}{ll}
+      t^{kk+1} - t^{kk}, & u_{order,i} = 0 \ \ \mbox{and}\ \ kk < KK, \\
+      0, & u_{order,i} = 0 \ \ \mbox{and}\ \ kk = KK, \\
+      \Delta t^{kk}, & u_{order,i} = 1,
+    \end{array}\right. \\[5ex]
+    \displaystyle \Delta t^{kk} = \frac{1}{2}\left\{\begin{array}{ll}
       t^{kk+1} - t^{kk}, & kk=0, \\
       t^{kk} - t^{kk-1}, & kk=KK, \\
       t^{kk+1} - t^{kk-1}, & \mbox{else},
     \end{array}\right.
+   \end{array}
    @f]
    subject to the model given with the S-function methods
    mdlDerivatives @f$f@f$ and mdlOutputs @f$g,\ t\in[t_0,t_f]@f$
@@ -104,18 +114,23 @@ public:
       \ +\ \frac{y_{bias}}{y_{nominal}},
    \end{array}
    @f]
-   with piecewise linear approximation of @f$u(t)@f$ 
-   either using optimized control parameters @f$du^k@f$ or given inputs 
-   @f$us@f$ 
+   with piecewise constant or linear approximation of @f$u(t)@f$ either
+   using optimized control parameters @f$du^k@f$ or given inputs @f$us@f$ 
    @f[
    \begin{array}{ll}
-    \left\{ \dot{u}(t) = du^{k}
-    \right\}_i, & i \in \mbox{find}(u_{active}), \\[1ex]
+    \left\{ u(t) = u(t^{k-1}) + (t^{k}-t^{k-1})du^{k} \right\}_i,
+    & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=0), \\[1ex]
+    & t\in[t^{k},t^{k+1}),\ k=1,\ldots,K-1, \\[3ex]
+    \left\{ \dot{u}(t) = du^{k} \right\}_i,
+    & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=1), \\[1ex]
     & t\in[t^{k},t^{k+1}),\ k=0,\ldots,K-1, \\[3ex]
-    \left\{ u(t) = \displaystyle 
-        \frac{t^{kk+1}-t}{t^{kk+1}-t^{kk}}\ \frac{us^{kk}}{u_{nominal}}
+    \left\{ u(t) = \displaystyle \frac{us^{kk}}{u_{nominal}} \right\}_i, &
+    i \in \mbox{find}(\mbox{not}\ u_{active}\ \mbox{and}\ u_{order}=0),\\[3ex]
+    \left\{ u(t) = \displaystyle
+      \frac{t^{kk+1}-t}{t^{kk+1}-t^{kk}}\ \frac{us^{kk}}{u_{nominal}}
       + \frac{t-t^{kk}}{t^{kk+1}-t^{kk}} \ \frac{us^{kk+1}}{u_{nominal}}
-    \right\}_i, & i \notin \mbox{find}(u_{active}), \\[1ex]
+    \right\}_i, &
+    i \in \mbox{find}(\mbox{not}\ u_{active}\ \mbox{and}\ u_{order}=1), \\[3ex]
     & t\in[t^{kk},t^{kk+1}),\ kk=0,\ldots,KK-1,
    \end{array}
    @f]
@@ -166,7 +181,7 @@ public:
    Model inputs and outputs can be accessed through
    @f[
    \begin{array}{l}
-    us^{kk} = u_{nominal}\,u(t^{kk}), \quad kk=1,\ldots,KK, \\[1ex]
+    us^{kk} = u_{nominal}\,u(t^{kk}), \\[1ex]
     ys^{kk} = y_{nominal}\,y(t^{kk}), \quad kk=0,\ldots,KK.
    \end{array}
    @f]
@@ -179,6 +194,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Omu_OptVarVec _mdl_y; 	///< model outputs
   Omu_OptVarVec _mdl_y_soft; 	///< attributes for relaxed output constraints
   Omu_OptVarVec _mdl_yf; 	///< model outputs at final time
+
+  IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
 
   double 	_t_nominal; 	///< nominal time (used internally for scaling)
   VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
@@ -301,6 +318,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * problem description.
    */
   //@{
+  ///< interpolation order (0 (constant) or 1 (linear), default: 1)
+  const IVECP mdl_u_order() const {return _mdl_u_order;}
+
   /// indicate optimized inputs
   const IVECP mdl_u_active() const {return _mdl_u.active;}
 
@@ -396,6 +416,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @name Write methods for model specific members (no If prefix).
    */
   //@{
+  ///< set interpolation order
+  void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
+
   /// set optimized inputs
   void set_mdl_u_active(const IVECP v) {iv_copy_elements(v, _mdl_u.active);}
 

@@ -73,13 +73,16 @@
         \quad k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}
    \end{array}
    @f]
-   with piecewise linear interpolation of the inputs
+   with piecewise constant or linear interpolation of the inputs
    @f[
-   \begin{array}{l}
-      u(t) = \displaystyle \frac{t^{k_l+1}-t}{t^{k_l+1}-t^{k_l}}\ us^{k_l} 
+   \begin{array}{ll}
+      u_i(t)\ = & \left\{\begin{array}{ll}
+        us_i^{k_l}, & i \in \mbox{find}(u_{order} = 0) \\[1ex]
+        \displaystyle \frac{t^{k_l+1}-t}{t^{k_l+1}-t^{k_l}}\ us^{k_l} 
              + \frac{t-t^{k_l}}{t^{k_l+1}-t^{k_l}}\ us^{k_l+1},
-       \quad t\in[t^{k_l},t^{k_l+1}), \quad k_l=k_{l,0},\ldots,K_l-1,
-       \quad l=1,\ldots,N_{ex},
+	& \mbox{else} \end{array}\right. \\[5ex]
+      & \quad t\in[t^{k_l},t^{k_l+1}), \quad k_l=k_{l,0},\ldots,K_l-1,
+        \quad l=1,\ldots,N_{ex},
    \end{array}
    @f]
    and subject to the constraints
@@ -153,6 +156,7 @@ class Prg_SFunctionEst: public Prg_SFunction {
   IVECP		_mdl_x0_active; ///< indicate estimated states
   VECP		_mdl_der_x0_min;///< minimum for time derivative of x0
   VECP		_mdl_der_x0_max;///< maximum for time derivative of x0
+  IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
   IVECP		_mdl_y_active; 	///< indicate measured outputs
   VECP 		_mdl_p_nominal;	///< nominal parameter values (for scaling)
   VECP 		_mdl_x_nominal; ///< nominal state values (for scaling)
@@ -300,6 +304,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// nominal state values (for scaling)
   const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
 
+  ///< interpolation order (0 (constant) or 1 (linear), default: 1)
+  const IVECP mdl_u_order() const {return _mdl_u_order;}
+
   /// indicate measured outputs
   const IVECP mdl_y_active() const {return _mdl_y_active;}
 
@@ -355,6 +362,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   /// set nominal states
   void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
+
+  /// set interpolation order for inputs
+  void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
 
   /// set measured outputs
   void set_mdl_y_active(const IVECP v) {iv_copy_elements(v, _mdl_y_active);}
