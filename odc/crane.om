@@ -1,0 +1,78 @@
+%
+% Omola model for a container crane
+%
+% rf, 1/10/97
+%
+
+library Crane;
+
+%
+% state space model of a container crane
+%
+
+Crane isa Model with
+  u isa ControlInput with control.default := -1.0; end;
+
+  Fscale isa Parameter with default := 1000.0; end; 	% [N]
+  ml isa Parameter with default := 4000.0; end;		% [kg]
+  md isa Parameter with default := 1000.0; end;		% [kg]
+  g isa Parameter with default := 9.81; end;		% [m/s2]
+  l isa Parameter with default := 10.0; end;		% [m]
+
+  s, v, phi, omega isa Variable;
+
+  mdl, sinphi, den type real;
+
+  mdl = md + ml;
+  sinphi = sin(phi);
+  den = md + ml * sinphi^2;
+
+  s' = v;
+  v' = (0.5 * ml * g * sin(2*phi)
+        + ml * l * omega^2 * sinphi
+        + u * Fscale) / den;
+  phi' = omega;
+  omega' = (-mdl * g * sinphi 
+            - 0.5 * ml * l * omega^2 * sin(2*phi)
+	    - u * Fscale * cos(phi)) / (l * den);
+end;
+
+%
+% input definitions
+%  - ControlInput and MeasureInput are SimpleTerminals
+%  - easy change between several input types possible
+%  - treatment by fla2c
+%
+
+PolynomInput isa ContinuousInput with
+  svalue type real;
+  scale type real := 1.0;
+  offset type real := 0.0;
+  svalue := scale * value + offset;
+end;
+
+SampledInput isa ContinuousInput with
+  svalue type discrete real;
+  rate type real := 0.1;
+  scale type real := 1.0;
+  offset type real := 0.0;
+  init, sample isan event;
+  onevent init or sample do
+    new(svalue) := scale * value + offset;
+    schedule(sample, rate);
+  end;
+end;
+
+%InputType isa SampledInput;	% piecewise constant inputs
+InputType isa PolynomInput;	% continuous, piecewise linear inputs
+
+ControlInput isa SimpleTerminal with
+  control isa InputType;
+  value := control.svalue;
+end;
+
+MeasureInput isa SimpleTerminal with
+  input isa InputType;
+  value := input.svalue;
+end;
+

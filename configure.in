@@ -1,0 +1,524 @@
+dnl  Process this file with the GNU "autoconf" to produce a configure script
+dnl  for HQP/Omuses
+
+AC_INIT(hqp/Hqp.h)
+
+MAJOR_VERSION=1
+MINOR_VERSION=7
+PATCHLEVEL=b1
+
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}${PATCHLEVEL}
+
+AC_DEFINE_UNQUOTED(VERSION, "${VERSION}")
+
+# collect HQP defines
+HQP_DEFS=""
+
+# collect IF defines
+IF_DEFS=""
+
+# -----------------------------------------------------------------------
+# 	Check for Tcl 8
+# -----------------------------------------------------------------------
+
+# first try --with-tcl (as defined for TEA)
+
+AC_MSG_CHECKING([--with-tcl])
+AC_ARG_WITH(tcl,
+    [  --with-tcl    directory containing tcl configuration (tclConfig.sh)],
+    [with_tcl=$withval])
+AC_MSG_RESULT("$with_tcl")
+
+if test ! -z "${with_tcl}"; then
+  AC_MSG_CHECKING([for existence of ${with_tcl}/tclConfig.sh])
+  if test -f "${with_tcl}/tclConfig.sh" ; then
+    AC_MSG_RESULT([loading])
+    . ${with_tcl}/tclConfig.sh
+  else
+    AC_MSG_RESULT([file not found])
+    AC_MSG_ERROR([wrong --with-tcl specification])
+  fi
+  # apply eval to vars used from tclConfig.h
+  # (this documents and it is partly required for substituitions)
+  eval TCL_VERSION=${TCL_VERSION}
+  eval TCL_MAJOR_VERSION=${TCL_MAJOR_VERSION}
+  eval TCL_MINOR_VERSION=${TCL_MINOR_VERSION}
+  eval TCL_PREFIX=${TCL_PREFIX}
+  eval TCL_EXEC_PREFIX=${TCL_EXEC_PREFIX}
+  eval TCL_LIB_FILE=${TCL_LIB_FILE}
+  # TCL_LIB_SPEC overrides TCL_LIBS as defined below
+  eval TCL_LIB_SPEC='${TCL_LIB_SPEC}'
+
+else
+  # check for tclsh in PATH (only if no --with-tcl given)
+  AC_PATH_PROG(TCLSH, tclsh)
+  if test -z "$TCLSH"; then
+    AC_MSG_ERROR([Please specify --with-tcl (directory of tclConfig.sh).])
+  fi
+  AC_MSG_CHECKING("for tclsh version")
+  TCL_VERSION=`echo 'puts -nonewline $tcl_version' | $TCLSH`
+  AC_MSG_RESULT("$TCL_VERSION")
+  if test -z "$TCL_VERSION"; then
+    AC_MSG_ERROR([Require Tcl 8.0 or greater. Specify --with-tcl.])
+  fi
+  TCL_MAJOR_VERSION=`echo 'scan $tcl_version %d.%d ma mi; puts -nonewline $ma' | $TCLSH`
+  TCL_MINOR_VERSION=`echo 'scan $tcl_version %d.%d ma mi; puts -nonewline $mi' | $TCLSH`
+  # guess Tcl prefix
+  TCL_PREFIX=`dirname ${TCLSH}`
+  TCL_PREFIX=`dirname ${TCL_PREFIX}`
+  TCL_EXEC_PREFIX=${TCL_PREFIX}
+  # guess Tcl library file
+  TCL_LIB_FILE=`ls ${TCL_EXEC_PREFIX}/lib/libtcl${TCL_MAJOR_VERSION}*.*`
+  TCL_LIB_FILE=`basename "${TCL_LIB_FILE}"`
+fi
+
+if test $TCL_MAJOR_VERSION -lt 8; then
+  AC_MSG_ERROR("Require Tcl version 8.0 or greater.")
+fi
+
+# -----------------------------------------------------------------------
+# 	Compiler and flags
+# -----------------------------------------------------------------------
+
+AC_PROG_CC
+CFLAGS=-O2
+CXXFLAGS=-O2
+WFLAG="-W"
+GFLAG="-g"
+if test "$CC" = cl; then
+  CC="cl -nologo"
+  CXX=$CC
+  CXXFLAGS="-TP $CXXFLAGS"
+  WFLAG="-W3"
+  GFLAG=""
+fi
+AC_PROG_CXX
+
+AC_SUBST(WFLAG)
+AC_SUBST(GFLAG)
+
+AC_MSG_CHECKING([for u_int used by Meschach])
+AC_LANG_C
+AC_TRY_COMPILE([#include <sys/types.h>], [
+               u_int ui;
+               ], have_u_int=yes, have_u_int=no)
+AC_MSG_RESULT(${have_u_int})
+if test $have_u_int = yes; then
+  U_INT_DEF="-DU_INT_DEF=1"
+else
+  U_INT_DEF=""
+fi
+AC_SUBST(U_INT_DEF)
+
+if test "$GXX" = yes; then
+  AC_MSG_CHECKING([for g++ compiler bug])
+  AC_LANG_CPLUSPLUS
+  AC_TRY_COMPILE(, [
+                 class A { void realloc(); void mymethod() { realloc(); } };
+                 ], gcc_bug=no, gcc_bug=yes)
+  AC_MSG_RESULT(${gcc_bug})
+  if test $gcc_bug = yes; then
+    AC_MSG_ERROR("Your $CXX is buggy -- please install a newer version.")
+  fi
+fi
+
+# -----------------------------------------------------------------------
+# 	Check for includes
+# -----------------------------------------------------------------------
+
+#AC_CHECK_HEADERS(ieeefp.h)
+
+# -----------------------------------------------------------------------
+# 	Linker, machine specific settings
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--disable-shared])
+AC_ARG_ENABLE(shared,
+    [  --disable-shared    disable dynamic loading of HQP/Omuses],
+    [hqp_shared=$enableval], [hqp_shared=yes])
+AC_MSG_RESULT($hqp_shared)
+
+# default configuration
+PICFLAG="-fPIC"
+OBJ_SUFFIX=".o"
+LIB_PREFIX="lib"
+LIB_SUFFIX=".so"
+LDLIB_PREFIX="-l"
+LDLIB_SUFFIX=""
+EXE_SUFFIX=""
+LD="$CC -shared -o "
+LDFLAGS_START=""
+LIB_SUFFIX=".so"
+LFLAG="-L"
+RFLAG="-Wl,-rpath,"
+
+# Suffix used for making a library
+# (will be set to LIB_SUFFIX if not specified differently)
+MKLIB_SUFFIX=""
+
+# Tcl libraries
+if test ! -z "$TCL_LIB_SPEC"; then
+  # take from tclConfig.sh
+  TCL_LIBS=$TCL_LIB_SPEC
+else
+  TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
+fi
+
+AC_PROGRAM_CHECK(uname_found, uname, yes, no)
+if test $uname_found = "yes" ; then
+  if test "$CC" != "cl -nologo"; then
+    target=`uname -s`
+  else
+    target="CL"
+  fi
+  case "$target" in 
+    Linux*)
+      if test "$hqp_shared" = "yes"; then
+        # guess Tcl libs if no tclConfig.sh available
+        if test -z "$TCL_LIB_SPEC"; then
+          AC_CHECK_LIB(dl, dlopen, have_dl=yes, have_dl=no)
+          if test $have_dl = "yes"; then
+            TCL_LIBS="$TCL_LIBS -ldl"
+          else
+            AC_CHECK_HEADER(dld.h, [
+              LD="ld -shared -o "
+              TCL_LIBS="$TCL_LIBS -ldld"])
+          fi
+        fi
+      else
+        PICFLAG=""
+        LD="ar -cr "
+        LIB_SUFFIX=".a"
+        AC_DEFINE(IF_CLASS_STATIC)
+        RFLAG="-L"
+        AC_PROG_RANLIB
+      fi
+      ;;
+    SunOS*) 
+      RFLAG="-R"
+      ;;
+    OSF1*) 
+      LD="$CC -shared -Wl,-expect_unresolved,\"*\" -o "
+      MES_CC="cc"
+      MES_CFLAGS="-O"
+      # no automatic concatenation of multiple rflags
+      RFLAG="-Wl,-rpath,../lib:"
+      ;;
+    IRIX*) 
+      MES_CC="cc"
+      MES_CFLAGS="-O -KPIC"
+      ;;
+    HP-UX*)
+      PICFLAG=""
+      LD="ar -cr "
+      LIB_SUFFIX=".a"
+      AC_DEFINE(IF_CLASS_STATIC)
+      RFLAG="-Wl,+b,"
+      AC_PROG_RANLIB
+      ;;
+    CYGWIN*)
+      PICFLAG=""
+      LD="ar -cr "
+      LIB_SUFFIX=".a"
+      EXE_SUFFIX=".exe"
+      AC_DEFINE(IF_CLASS_STATIC)
+      RFLAG="-L"
+      AC_PROG_RANLIB
+      ;;
+    CL)
+      if test "$hqp_shared" = "yes"; then
+        MKLIB_SUFFIX=".dll"
+        LD="link -dll -nologo -out:"
+	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
+	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
+        AC_DEFINE(IF_CLASS_STATIC)
+      else
+        LD="link -lib -nologo -out:"
+      fi
+      LDFLAGS_START="-link"
+      OBJ_SUFFIX=".obj"
+      LIB_PREFIX=""
+      LIB_SUFFIX=".lib"
+      LDLIB_PREFIX=""
+      LDLIB_SUFFIX=".lib"
+      EXE_SUFFIX=".exe"
+      PICFLAG=""
+      LFLAG="-LIBPATH:"
+      RFLAG="-LIBPATH:"
+      if test -z "$TCL_LIB_SPEC"; then
+        # take "." out of TCL_VERSION in case of no tclConfig.sh
+        TCL_VERSION="${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}"
+        TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
+      fi
+      ;;
+  esac
+fi
+
+
+CFLAGS="$CFLAGS $PICFLAG"
+CXXFLAGS="$CXXFLAGS $PICFLAG"
+
+if test -z "$MKLIB_SUFFIX"; then
+  MKLIB_SUFFIX="$LIB_SUFFIX"
+fi
+
+if test -z "$RANLIB"; then
+  RANLIB=":"
+fi
+
+if test -z "$MES_CC"; then
+  MES_CC="$CC"
+  MES_CFLAGS="$CFLAGS"
+fi
+
+AC_SUBST(OBJ_SUFFIX)
+AC_SUBST(LIB_PREFIX)
+AC_SUBST(LIB_SUFFIX)
+AC_SUBST(MKLIB_SUFFIX)
+AC_SUBST(LDLIB_PREFIX)
+AC_SUBST(LDLIB_SUFFIX)
+AC_SUBST(EXE_SUFFIX)
+AC_SUBST(LD)
+AC_SUBST(LDFLAGS_START)
+AC_SUBST(LFLAG)
+AC_SUBST(RFLAG)
+AC_SUBST(TCL_LIBS)
+AC_SUBST(RANLIB)
+
+AC_SUBST(MES_CC)
+AC_SUBST(MES_CFLAGS)
+
+# -----------------------------------------------------------------------
+# 	Check for existence of install programs
+# -----------------------------------------------------------------------
+
+AC_PROG_INSTALL
+
+# -----------------------------------------------------------------------
+# 	Check for location of Tcl includes and libraries
+# -----------------------------------------------------------------------
+
+# first try --with-tclinclude (as defined for TEA)
+
+AC_MSG_CHECKING([--with-tclinclude])
+AC_ARG_WITH(tclinclude,
+    [  --with-tclinclude   directory containing include file tcl.h],
+    [with_tclinclude=${withval}])
+AC_MSG_RESULT("$with_tclinclude")
+
+AC_MSG_CHECKING([for tcl.h])
+
+if test -z "${with_tclinclude}"; then
+  # guess standard location
+  with_tclinclude=${TCL_PREFIX}/include
+fi
+
+if test -f ${with_tclinclude}/tcl.h; then
+  AC_MSG_RESULT([${with_tclinclude}/tcl.h])
+  TCL_INCDIR="${with_tclinclude}"
+  AC_SUBST(TCL_INCDIR) 
+else
+  AC_MSG_RESULT([file not found])
+  AC_MSG_ERROR([Specify path of tcl.h via --with-tclinclude])
+fi
+
+# Tcl lib
+
+AC_MSG_CHECKING([for Tcl lib ${TCL_LIB_FILE}])
+with_tcllib=${TCL_EXEC_PREFIX}/lib
+if test -f ${with_tcllib}/${TCL_LIB_FILE}; then
+  AC_MSG_RESULT([${with_tcllib}/${TCL_LIB_FILE}])
+else
+  AC_MSG_RESULT([file not found])
+fi
+TCL_LIBDIR="$with_tcllib"
+AC_SUBST(TCL_LIBDIR)
+
+# Tcl lib is required for generating a DLL
+HQP_MACH_OBJS=""
+if test "$target" = CL; then
+  if test "$hqp_shared" = "yes"; then
+    HQP_MACH_OBJS="\$(TCL_LIBDIR) $TCL_LIBS"
+  fi
+fi
+AC_SUBST(HQP_MACH_OBJS)
+
+# -----------------------------------------------------------------------
+# 	Configure DASPK and RKsuite if enabled
+# -----------------------------------------------------------------------
+
+# defaults to disable Fortran
+OMU_DEFS=""
+FORTRAN_COMP=""
+FORTRAN_FLAGS=""
+FORTRAN_LIBS=""
+
+# defaults to disable DASPK
+OMU_INTDASPK_C=""
+DASPK=""
+DASPK_OBJS=""
+
+# defaults to disable RKsuite
+OMU_INTRKSUITE_C=""
+RKSUITE_O=""
+RKSUITE_COMPILE_CMD=""
+
+AC_MSG_CHECKING([--enable-fortran])
+AC_ARG_ENABLE(fortran,
+    [  --enable-fortran    include DASPK and RKsuite with Omuses],
+    [omu_fortran=$enableval], [omu_fortran=no])
+AC_MSG_RESULT($omu_fortran)
+
+if test "$omu_fortran" != no; then
+  AC_PATH_PROG(fortran_f77, f77)
+  if test ! -z "$fortran_f77"; then
+    fortran_ftn="f77"
+  else
+    AC_PATH_PROG(fortran_g77, g77)
+    if test ! -z "$fortran_g77"; then
+      fortran_ftn="g77"
+    else
+      AC_MSG_ERROR("Require f77 or g77 to enable RKsuite.")
+    fi
+  fi
+
+  # default settings to enable Fortran
+  # (MES_CFLAGS are assumed to be valid for machine Fortran)
+  OMU_DEFS="-DOMU_WITH_FORTRAN=1"
+  FORTRAN_COMP="${fortran_ftn}"
+  FORTRAN_FLAGS="${MES_CFLAGS}"
+
+  # default settings for DASPK
+  OMU_INTDASPK_C="Omu_IntDASPK.C"
+  DASPK="daspk"
+  DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
+
+  # default settings with RKsuite
+  OMU_INTRKSUITE_C="Omu_IntRKsuite.C"
+  RKSUITE_O="`pwd`/rksuite/rksuite.o"
+
+  # try to figure out Fortran environment
+  AC_CHECK_LIB(f2c, pow_dd, fortran_lib=f2c, fortran_lib="")
+  AC_CHECK_LIB(g2c, pow_dd, fortran_lib=g2c)
+  if test "${fortran_f77}" = "f77"; then
+    AC_CHECK_LIB(ftn, pow_dd, fortran_lib=ftn)
+  fi
+
+  case "$fortran_lib" in
+    ftn)
+      FORTRAN_LIBS="-lftn"
+      ;;
+    g2c)
+# don't use g2c.h due to name clash with ADOL-C (symbol "address")
+#      AC_CHECK_HEADER(g2c.h, OMU_DEFS="$OMU_DEFS -DHAVE_G2C_H=1")
+      FORTRAN_LIBS="-lg2c"
+      ;;
+    f2c)
+# don't use f2c.h due to name clash with ADOL-C (symbol "address")
+#      AC_CHECK_HEADER(f2c.h, OMU_DEFS="$OMU_DEFS -DHAVE_F2C_H=1")
+      FORTRAN_LIBS="-lf2c"
+      ;;
+  esac
+fi
+
+if test "$RKSUITE_O" != ""; then
+  AC_MSG_RESULT("enabling DASPK and RKsuite")
+fi
+
+AC_SUBST(OMU_DEFS)
+AC_SUBST(FORTRAN_COMP)
+AC_SUBST(FORTRAN_FLAGS)
+AC_SUBST(FORTRAN_LIBS)
+
+AC_SUBST(OMU_INTDASPK_C)
+AC_SUBST(DASPK)
+AC_SUBST(DASPK_OBJS)
+
+AC_SUBST(OMU_INTRKSUITE_C)
+AC_SUBST(RKSUITE_O)
+
+# -----------------------------------------------------------------------
+# 	Configure GNU malloc if enabled or if system malloc is buggy
+# -----------------------------------------------------------------------
+
+# defaults to disable GNU malloc
+GMALLOC_O=""
+
+AC_MSG_CHECKING([--enable_gmalloc])
+AC_ARG_ENABLE(gmalloc,
+    [  --enable-gmalloc    link ODC with GNU malloc],
+    [odc_gmalloc=$enableval], [odc_gmalloc=no])
+AC_MSG_RESULT($odc_gmalloc)
+
+if test "$odc_gmalloc" = no; then
+  AC_MSG_CHECKING("for malloc bug")
+  AC_LANG_C
+  AC_TRY_RUN([
+  #include <stdlib.h>
+  int main()
+  {
+    if (malloc(0) == NULL)
+      return 1;
+    return 0;
+  }
+  ], odc_gmalloc=no, odc_gmalloc=yes, odc_gmalloc=yes)
+  AC_MSG_RESULT("$odc_gmalloc")
+fi
+if test "$odc_gmalloc" != no; then
+  GMALLOC_O="`pwd`/malloc/gmalloc.o"
+fi
+
+if test "$GMALLOC_O" != ""; then
+  AC_MSG_RESULT("enabling GNU malloc")
+fi
+
+AC_SUBST(GMALLOC_O)
+
+# -----------------------------------------------------------------------
+# 	Configure support for CUTE
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--enable_cute])
+AC_ARG_ENABLE(cute,
+    [  --enable-cute     include CUTE interface with HQP],
+    [hqp_cute=$enableval], [hqp_cute=no])
+AC_MSG_RESULT($hqp_cute)
+
+if test "$hqp_cute" != no; then
+  CUTE_SRCS="Hqp_CUTE_stubs_.C Hqp_CUTE_dummies.C Prg_CUTE.C Prg_CUTE_ST.C Hqp_CUTE.C"
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_CUTE=1"
+else
+  CUTE_SRCS=""
+fi
+AC_SUBST(CUTE_SRCS)
+
+
+# -----------------------------------------------------------------------
+# 	Configure support for Ascend
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--enable_ascend])
+AC_ARG_ENABLE(ascend,
+    [  --enable-ascend     include preliminary Ascend4 interface with HQP],
+    [hqp_ascend=$enableval], [hqp_ascend=no])
+AC_MSG_RESULT($hqp_ascend)
+
+if test "$hqp_ascend" != no; then
+  ASCEND_INCDIR="-I../../ascend4"
+  ASCEND_SRCS="Hqp_ASCEND_dummies.C Prg_ASCEND.C"
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_ASCEND=1"
+else
+  ASCEND_INCDIR=""
+  ASCEND_SRCS=""
+fi
+AC_SUBST(ASCEND_INCDIR)
+AC_SUBST(ASCEND_SRCS)
+
+AC_SUBST(HQP_DEFS)
+AC_SUBST(IF_DEFS)
+
+# -----------------------------------------------------------------------
+# 	Produce outputs
+# -----------------------------------------------------------------------
+
+AC_OUTPUT(makedefs makedirs odc/Makefile hqp_docp/Makefile)

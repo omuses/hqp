@@ -1,0 +1,33 @@
+
+include makedefs
+
+all:
+	cd meschach; $(MAKE); cd ..
+	cd iftcl; $(MAKE); cd ..
+	cd hqp; $(MAKE); cd ..
+	mv hqp/$(LIB_PREFIX)hqp.* lib
+	if test -f lib/hqp.dll; then cp lib/*.dll hqp_docp; fi
+	cd hqp_docp; $(MAKE); ./docp; cd ..
+
+clean:
+	cd hqp_docp; $(MAKE) clean; cd ..
+	rm -f hqp_docp/*.dll
+	cd malloc; $(MAKE) clean; cd ..
+	cd hqp; $(MAKE) clean; cd ..
+	cd iftcl; $(MAKE) clean; cd ..
+	rm -f meschach/*.o meschach/*.obj meschach/*~
+	rm -f lib/*.* config.* *~
+
+distclean: clean
+	rm -f makedefs makedirs hqp_docp/Makefile
+
+LIB_DIR = $(INSTALL_PREFIX)/lib
+INC_DIR_ROOT = $(INSTALL_PREFIX)/include
+INC_DIR = $(INC_DIR_ROOT)/hqp
+install:
+	@if test ! -d $(LIB_DIR); then mkdir $(LIB_DIR); fi
+	$(INSTALL) lib/libhqp$(LD_SUFFIX) $(LIB_DIR)
+	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
+	@if test ! -d $(INC_DIR); then mkdir $(INC_DIR); fi
+	for f in meschach/*.h iftcl/*.h hqp/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR); done

@@ -1,0 +1,25 @@
+#!/bin/sh
+# installation script for HQP
+# (assumes an existing CUTE installation)
+# rf, 2/4/97
+#
+
+# check for valid environment variable CUTEDIR
+
+if test ! -d "$CUTEDIR"; then
+  echo "CUTE installation not found"
+  exit 1
+fi
+
+# create directory $CUTEDIR/hqp
+
+if test ! -d $CUTEDIR/hqp; then
+  mkdir $CUTEDIR/hqp
+fi
+
+# copy files for HQP into the CUTE installation
+
+cp hqp_cute.tcl $CUTEDIR/hqp
+cp hqpma.f $CUTEDIR/tools/sources
+cp sdhqp $CUTEDIR/interfaces
+cp hqp $CUTEDIR/interfaces

@@ -1,0 +1,213 @@
+#!/bin/csh
+# sdGEN: script to decode a sif file and then run GEN on the output
+#
+# version for SUN workstations under UNIX
+#
+# Use: sdgen [-s] [-h] [-k] [-o j] [-l secs] probname
+#
+# where: options -s : run the single precision version
+#                     (Default: run the double precision version)
+#                -h : print this help and stop execution
+#                -k : keep the load module after use
+#                     (Default: delete the load module)
+#                -o : 0 for silent mode, 1 for brief description of
+#                     the stages executed.
+#                     (Default: -o 0)
+#                -l : sets a limit of secs second on the runtime
+#                     (Default: 99999999 seconds)
+#
+#       probname      probname.SIF is the name of the file containing
+#                     the SIF file for the problem of interest.
+#
+
+#
+#  A. Conn, Nick Gould and Ph. Toint, October 28th, 1991, for CGT Productions.
+#
+#  modified for HQP by R. Franke, 10/30/1995
+#
+# ** Correction report.
+# ** Correction 1. 21/09/93: set METHOD=3 (not 0 as before)
+# ** Correction 2. 10/04/94: added check for installation of requested precision
+# ** End of Correction report.
+
+#
+#  define the package to which you wish to make an interface
+#
+
+set GEN = hqp
+
+#
+#  basic system commands
+#
+
+set LS = ls
+set RM = "rm -f"
+set PWD = pwd
+unset noclobber
+
+#
+#  directory for temporary files
+#
+
+set TMP=/tmp
+
+#
+#  variables for each option
+#
+
+#
+#  LIMIT (maximum cputime)
+#
+
+set LIMIT=99999999
+
+#
+# PRECISION = 0 (single precision), = 1 (double precision)
+#
+
+set PRECISION=1
+
+#
+# KEEP = 0 (discard load module after use), = 1 (keep it)
+#
+
+set KEEP = 0
+
+#
+# OUTPUT = 0 (summary output), = 1 (detailed output from decoder)
+#
+
+set OUTPUT=0
+
+#
+#  interpret arguments
+#
+
+set METHOD=3
+
+@ last = $#argv
+
+if($last == 0) then
+  echo 'Use: sdhqp [-s] [-k] [-k] [-o j] [-l secs] probname'
+  exit 1
+endif
+
+@ i=1
+
+while ($i <= $last)
+  set opt=$argv[$i]
+  if("$opt" == '-h')then
+    echo ' Use: sdhqp [-s] [-h] [-k] [-o j] [-l secs] probname'
+    echo ' '
+    echo ' where: options -s : run the single precision version'
+    echo '                     (Default: run the double precision version)'
+    echo '                -h : print this help and stop execution'
+    echo '                -k : keep the load module after use '
+    echo '                     (Default: delete the load module)'
+    echo '                -o : 0 for silent mode, 1 for brief description of'
+    echo '                     the stages executed'
+    echo '                     (Default: -o 0)'
+    echo '                -l : sets a limit of secs second on the runtime'
+    echo '                     (Default: unlimited cputime)'
+    echo ' '
+    echo '       probname      probname.SIF is the name of the file containing'
+    echo '                     the SIF file for the problem of interest.'
+    exit 0
+  else if("$opt" == '-s')then
+    set PRECISION=0
+  else if("$opt" == '-k')then
+    set KEEP=1
+  else if("$opt" == '-o')then
+    @ i++
+    set OUTPUT=$argv[$i]
+  else if("$opt" == '-l')then
+    @ i++
+    set LIMIT=$argv[$i]
+  endif
+  @ i++
+end
+
+if (! -e "$argv[$last].SIF") then
+  echo "file $argv[$last].SIF is not known in directory $PWD."
+  echo "possible choices are:"
+  echo ' '
+  $LS *.SIF
+  echo ' '
+  exit 2
+endif
+
+# ** Correction 2. 10/04/94: added check for installation of requested precision
+
+if (! $PRECISION) then
+  if (! -e $CUTEDIR/sifdec_s) then
+    echo ' '
+    echo 'Single-precision SIF decoder sifdec_s not in '$CUTEDIR
+    echo 'Terminating execution.'
+    exit 4
+  endif
+else
+  if (! -e $CUTEDIR/sifdec_d) then
+    echo ' '
+    echo 'Double-precision SIF decoder sifdec_d not in '$CUTEDIR
+    echo 'Terminating execution.'
+    exit 4
+  endif
+endif
+
+# ** End of Correction 2.
+
+if ($OUTPUT) then
+  echo 'convert the sif file into data and routines suitable for optimizer...'
+  echo ' '
+  echo 'problem details will be given'
+  echo ' '
+endif
+
+if (-e EXTERN.f) $RM EXTERN.f
+
+# call with two argument allows user to chose minimization method
+
+echo $argv[$last] > $TMP/sd${GEN}.input
+echo $METHOD >> $TMP/sd${GEN}.input
+echo $OUTPUT >> $TMP/sd${GEN}.input
+
+if (! $PRECISION && ! $KEEP) then
+  $CUTEDIR/sifdec_s < $TMP/sd${GEN}.input
+  if ($OUTPUT) echo ' '
+  if (! -e OUTSDIF.d) then
+    echo ' '
+    echo "error exit from decoding stage. terminating execution."
+    exit 3
+  endif
+  if ($OUTPUT) echo ' '
+  $CUTEDIR/interfaces/$GEN -n -s -o $OUTPUT -l $LIMIT
+else if (! $PRECISION && $KEEP) then
+  $CUTEDIR/sifdec_s < $TMP/sd${GEN}.input
+  if (! -e OUTSDIF.d) then
+    echo ' '
+    echo "error exit from decoding stage. terminating execution."
+    exit 3
+  endif
+  if ($OUTPUT) echo ' '
+  $CUTEDIR/interfaces/$GEN -n -s -k -o $OUTPUT -l $LIMIT
+else if ($PRECISION && ! $KEEP) then
+  $CUTEDIR/sifdec_d < $TMP/sd${GEN}.input
+  if (! -e OUTSDIF.d) then
+    echo ' '
+    echo "error exit from decoding stage. terminating execution."
+    exit 3
+  endif
+  if ($OUTPUT) echo ' '
+  $CUTEDIR/interfaces/$GEN -n -o $OUTPUT -l $LIMIT
+else if ($PRECISION && $KEEP) then
+  $CUTEDIR/sifdec_d < $TMP/sd${GEN}.input
+  if (! -e OUTSDIF.d) then
+    echo ' '
+    echo "error exit from decoding stage. terminating execution."
+    exit 3
+  endif
+  if ($OUTPUT) echo ' '
+  $CUTEDIR/interfaces/$GEN -n -k -o $OUTPUT -l $LIMIT
+endif
+
+$RM $TMP/sd${GEN}.input

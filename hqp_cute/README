@@ -1,0 +1,63 @@
+
+README for hqp_cute, the interface for HQP 1.5 to CUTE
+Ruediger Franke, 9/13/98
+
+HQP is a solver for nonlinearly constrained large-scale optimization
+problems. It is developed with respect to problems that have a
+sufficient regular sparsity structure, e.g. discrete-time optimal
+control problems. Its key features are:
+
+ + implementation with algorithms and data structures for sparse matrices
+ + interior point procedure for the treatment of constraints
+ + Newton-type SQP procedure for the treatment of nonlinearities
+
+The compiled HQP library is available for several major platforms from
+ ftp://olymp.systemtechnik.tu-ilmenau.de/pub/tools/omuses
+
+This distribution contains the files needed to run HQP in the CUTE 
+environment. The constrained and unconstrained testing environment CUTE 
+is available from 
+ ftp://joyous-gard.cc.rl.ac.uk/pub/cute.
+Furthermore, you need a Tcl installation (version 8.0 or higher). See
+ http://www.scriptics.com
+
+HQP can be installed in addition to CUTE as follows:
+
+(1) 
+Four files have to be copied into an existing CUTE installation:
+
+ $CUTEDIR +- interfaces +--------- sdhqp        (call the SIF decoder)
+          |             |
+          |             +--------- hqp          (compile and call a binary)
+          |
+          +- hqp ----------------- hqp_cute.tcl (HQP options and execution)
+          |
+          +- tools --- sources --- hqpma.f      (Fortran interface code)
+
+Please check the installation script and execute it for copying the files
+
+   ./copycute
+
+Add the new Fortran module hqpma.o to 
+ $CUTEDIR/tools/sources/makefile, line 79 (variable OB)
+and compile it, e.g.
+
+   $CUTEDIR/instll double large
+
+
+(2) 
+Install the HQP library in a directory known to your loader.
+In the file
+  $CUTEDIR/interfaces/hqp, line 51ff,
+modify compiler options, libraries, and paths according to your 
+installation. In particular add the C++ libraries (CCLIBS) needed by 
+libhqp (e.g. if libhqp was compiled using gcc and you don't use g77, 
+then add libgcc -- otherwise the symol __pure_virtual can't be resolved).
+
+
+(3) 
+Apply HQP as described in the documentation (doc directory).
+
+
+(4)
+Send correspondence to: hqp@rz.tu-ilmenau.de

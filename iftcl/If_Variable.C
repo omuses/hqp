@@ -1,0 +1,92 @@
+/*
+ *  If_Variable.C
+ *
+ *
+ *  rf, 6/22/94
+ */
+
+/*
+    Copyright (C) 1994--1998  Ruediger Franke
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; 
+    version 2 of the License.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library (file COPYING.LIB);
+    if not, write to the Free Software Foundation, Inc.,
+    59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include <stdio.h>
+#include <string.h>
+
+#include "If_Variable.h"
+
+#define IF_READ  1
+#define IF_WRITE 2
+
+//--------------------------------------------------------------------------
+If_Variable::If_Variable(const char *ifName, const char *mode)
+:If_Element(ifName)
+{
+  Tcl_CreateObjCommand(theInterp, _ifName,
+		       tclCmd, (ClientData)this, NULL);
+
+  int len = strlen(mode);
+  _mode = 0;
+  if (len > 0) {
+    if (mode[0] == 'r')
+      _mode |= IF_READ;
+    if (mode[0] == 'w' || len > 1 && mode[1] == 'w')
+      _mode |= IF_WRITE;
+  }
+}
+
+//--------------------------------------------------------------------------
+If_Variable::~If_Variable()
+{
+  Tcl_DeleteCommand(theInterp, _ifName);
+}
+
+//--------------------------------------------------------------------------
+int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
+			int objc, Tcl_Obj *CONST objv[])
+{
+  If_Variable *var = (If_Variable *)cld;
+
+  switch (objc) {
+
+  case 1:
+    if (var->_mode & IF_READ)
+      return var->get();
+    else {
+      Tcl_AppendResult(theInterp, "read permission denied for ",
+		       var->_ifName, NULL);
+      return TCL_ERROR;
+    }
+
+  case 2:
+    if (var->_mode & IF_WRITE)
+      return var->put(objv[1]);
+    else {
+      Tcl_AppendResult(theInterp, "write permission denied for ",
+		       var->_ifName, NULL);
+      return TCL_ERROR;
+    }
+
+  default:
+    Tcl_AppendResult(theInterp, "wrong # args, should be: ",
+		     var->_ifName, " [new value]", NULL);
+    return TCL_ERROR;
+  }
+}
+
+
+//==========================================================================

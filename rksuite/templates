@@ -1,0 +1,1837 @@
+# to unbundle, sh this file (in an empty directory)
+echo tmpl1.out 1>&2
+sed >tmpl1.out <<'//GO.SYSIN DD tmpl1.out' 's/^-//'
+-
+-Template 1a with METHOD =          2
+-
+-   t           y        true y   
+-
+- 0.000      0.0000      0.0000
+-            1.0000      1.0000
+-
+- 0.785      0.7071      0.7071
+-            0.7071      0.7071
+-
+- 1.571      1.0000      1.0000
+-            0.0000      0.0000
+-
+- 2.356      0.7071      0.7071
+-           -0.7071     -0.7071
+-
+- 3.142      0.0000      0.0000
+-           -1.0000     -1.0000
+-
+- 3.927     -0.7071     -0.7071
+-           -0.7071     -0.7071
+-
+- 4.712     -1.0000     -1.0000
+-            0.0000      0.0000
+-
+- 5.498     -0.7071     -0.7071
+-            0.7071      0.7071
+-
+- 6.283      0.0000      0.0000
+-            1.0000      1.0000
+-
+-            YMAX(L) 
+-
+-            1.00E+00
+-            1.00E+00
+-
+-The cost of the integration in evaluations of F is       109
+-
+-*******************************************************************************
+-
+-Template 1a with METHOD =          1
+-
+-   t           y        true y   
+-
+- 0.000      0.0000      0.0000
+-            1.0000      1.0000
+-
+- 0.785      0.7071      0.7071
+-            0.7071      0.7071
+-
+- 1.571      1.0000      1.0000
+-            0.0000      0.0000
+-
+- 2.356      0.7071      0.7071
+-           -0.7071     -0.7071
+-
+- 3.142      0.0000      0.0000
+-           -0.9999     -1.0000
+-
+- 3.927     -0.7070     -0.7071
+-           -0.7070     -0.7071
+-
+- 4.712     -0.9999     -1.0000
+-            0.0000      0.0000
+-
+- 5.498     -0.7070     -0.7071
+-            0.7070      0.7071
+-
+- 6.283      0.0000      0.0000
+-            0.9998      1.0000
+-
+-            YMAX(L) 
+-
+-            1.00E+00
+-            1.00E+00
+-
+-The cost of the integration in evaluations of F is       292
+-
+-*******************************************************************************
+-
+-Template 1a with METHOD =          3
+-
+-   t           y        true y   
+-
+- 0.000      0.0000      0.0000
+-            1.0000      1.0000
+-
+- 0.785      0.7071      0.7071
+-            0.7071      0.7071
+-
+- 1.571      1.0000      1.0000
+-            0.0000      0.0000
+-
+- 2.356      0.7071      0.7071
+-           -0.7071     -0.7071
+-
+- 3.142      0.0000      0.0000
+-           -1.0000     -1.0000
+-
+- 3.927     -0.7071     -0.7071
+-           -0.7071     -0.7071
+-
+- 4.712     -1.0000     -1.0000
+-            0.0000      0.0000
+-
+- 5.498     -0.7071     -0.7071
+-            0.7071      0.7071
+-
+- 6.283      0.0000      0.0000
+-            1.0000      1.0000
+-
+-            YMAX(L) 
+-
+-            1.00E+00
+-            1.00E+00
+-
+-The cost of the integration in evaluations of F is       105
+-
+-*******************************************************************************
+-
+-Template 1b with METHOD =          2
+-
+-   t           y        true y   
+-
+- 0.000      0.0000      0.0000
+-            1.0000      1.0000
+-
+- 0.785      0.7071      0.7071
+-            0.7071      0.7071
+-
+- 1.571      1.0000      1.0000
+-            0.0000      0.0000
+-
+- 2.356      0.7071      0.7071
+-           -0.7071     -0.7071
+-
+- 3.142      0.0000      0.0000
+-           -1.0000     -1.0000
+-
+- 3.927     -0.7071     -0.7071
+-           -0.7071     -0.7071
+-
+- 4.712     -1.0000     -1.0000
+-            0.0000      0.0000
+-
+- 5.498     -0.7071     -0.7071
+-            0.7071      0.7071
+-
+- 6.283      0.0000      0.0000
+-            1.0000      1.0000
+-
+-            YMAX(L) 
+-
+-            1.00E+00
+-            1.00E+00
+-
+-The tolerance was  5.00E-05
+-The worst global error observed was  4.13E-05.  (It occurred at  6.16E+00.)
+-The RMS errors in the individual components were:
+-                                                  1.84E-05
+-                                                  1.67E-05
+-
+-The cost of the integration in evaluations of F was       249
+-
+-*******************************************************************************
+-
+-Template 1b with METHOD =          1
+-
+-   t           y        true y   
+-
+- 0.000      0.0000      0.0000
+-            1.0000      1.0000
+-
+- 0.785      0.7071      0.7071
+-            0.7071      0.7071
+-
+- 1.571      1.0000      1.0000
+-            0.0000      0.0000
+-
+- 2.356      0.7071      0.7071
+-           -0.7071     -0.7071
+-
+- 3.142      0.0000      0.0000
+-           -0.9999     -1.0000
+-
+- 3.927     -0.7070     -0.7071
+-           -0.7070     -0.7071
+-
+- 4.712     -0.9999     -1.0000
+-            0.0000      0.0000
+-
+- 5.498     -0.7070     -0.7071
+-            0.7070      0.7071
+-
+- 6.283      0.0000      0.0000
+-            0.9998      1.0000
+-
+-            YMAX(L) 
+-
+-            1.00E+00
+-            1.00E+00
+-
+-The tolerance was  5.00E-05
+-The worst global error observed was  8.81E-04.  (It occurred at  6.30E+00.)
+-The RMS errors in the individual components were:
+-                                                  1.53E-04
+-                                                  1.22E-04
+-
+-The cost of the integration in evaluations of F was      1120
+-
+-*******************************************************************************
+-
+-Template 1b with METHOD =          3
+-
+-   t           y        true y   
+-
+- 0.000      0.0000      0.0000
+-            1.0000      1.0000
+-
+- 0.785      0.7071      0.7071
+-            0.7071      0.7071
+-
+- 1.571      1.0000      1.0000
+-            0.0000      0.0000
+-
+- 2.356      0.7071      0.7071
+-           -0.7071     -0.7071
+-
+- 3.142      0.0000      0.0000
+-           -1.0000     -1.0000
+-
+- 3.927     -0.7071     -0.7071
+-           -0.7071     -0.7071
+-
+- 4.712     -1.0000     -1.0000
+-            0.0000      0.0000
+-
+- 5.498     -0.7071     -0.7071
+-            0.7071      0.7071
+-
+- 6.283      0.0000      0.0000
+-            1.0000      1.0000
+-
+-            YMAX(L) 
+-
+-            1.00E+00
+-            1.00E+00
+-
+-The tolerance was  5.00E-05
+-The worst global error observed was  5.13E-08.  (It occurred at  6.28E+00.)
+-The RMS errors in the individual components were:
+-                                                  2.27E-08
+-                                                  1.71E-08
+-
+-The cost of the integration in evaluations of F was       313
+//GO.SYSIN DD tmpl1.out
+echo tmpl1a.f 1>&2
+sed >tmpl1a.f <<'//GO.SYSIN DD tmpl1a.f' 's/^-//'
+-C
+-C                             Template 1a
+-C
+-C  This template comes in two variants, 1a and 1b, in files tmpl1a.for and
+-C  tmpl1b.for, respectively.  The variant 1b differs only in that the true,
+-C  or global, error of the integration in 1a is assessed.  Output from both
+-C  variants run with all three methods is found in the file tmpl1.out.
+-C
+-C  Problem:  Compute about four correct figures in the solution of
+-C
+-C               y'' = -y
+-C
+-C            on the range [0,2*pi] at intervals of length pi/4, given
+-C            that y(0)=0,  y'(0)=1.
+-C
+-C  Solution: Let y1 = y and y2 = y' to obtain the first order system
+-C
+-C               y1' =   y2     with initial values   y1 = 0
+-C               y2' = - y1                           y2 = 1
+-C
+-C            This is a "Usual Task" that is appropriately solved with UT.
+-C            Although the code controls the local error rather than the true
+-C            error, it is "tuned" so that the true error will be comparable to
+-C            the local error tolerance for typical problems. Thus a relative
+-C            error tolerance TOL of 5.0D-5 is appropriate.  In this range of
+-C            tolerances, METHOD = 2 is likely to be the most efficient choice.
+-C            The solution components are expected to get as large as 1.0D0.
+-C            With this in mind, solution components smaller than, say, 1.0D-10
+-C            are not very interesting, and requiring five correct figures then
+-C            is not worth the cost. For this reason, the threshold values are
+-C            specified as THRES(L) = 1.0D-10 for L = 1,2.  When solution
+-C            component L is smaller than this threshold, the code will control
+-C            the local error to be no more than TOL*THRES(L) = 5.0D-15.  Error
+-C            and warning messages, if any, will be printed out.  Answers will
+-C            be computed at equally spaced points, and the true values of y
+-C            and y' will be printed out for comparison.
+-C
+-C  NOTES:    Typically problems are solved for a number of tolerances, initial
+-C            conditions, intervals, parameter values, ... .  A prudent person
+-C            would make at least one run with global error assessment as a
+-C            spot check on the reliability of the results.  Variant 1b shows
+-C            how to do this.
+-C
+-C            For TOL in this range, METHOD = 2 is generally the most efficient
+-C            choice.  Indeed, for this specific problem and tolerance (and a
+-C            specific computer, precision, compiler, ... ), the results found
+-C            in tmpl1.out show that the cost with METHOD = 2 is 109 calls to
+-C            the subroutine F, with METHOD = 1 it is 292 calls, and with
+-C            METHOD = 3 it is 105 calls. At relaxed tolerances, METHOD = 1 is
+-C            generally the most efficient choice, and at stringent tolerances,
+-C            METHOD = 3 is generally the most efficient.
+-C
+-C            In typical use of UT, the cost is scarcely affected by the
+-C            number of answers, but when a "large" number of answers is
+-C            required, this is not true of METHOD = 3.  In such a situation
+-C            its cost is proportional to the number of answers.
+-C
+-C            Working storage must be provided in the array WORK(*) of length
+-C            LENWRK.  Because storage is no problem with only NEQ = 2
+-C            equations, LENWRK is taken here to be 32*NEQ, enough to handle
+-C            all three methods with and without global error assessment.
+-C
+-C     .. Parameters ..
+-      INTEGER           NEQ, LENWRK, METHOD
+-      PARAMETER         (NEQ=2,LENWRK=32*NEQ,METHOD=2)
+-      DOUBLE PRECISION  ZERO, ONE, TWO, FOUR
+-      PARAMETER         (ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0,FOUR=4.0D0)
+-C     .. Local Scalars ..
+-      DOUBLE PRECISION  HNEXT, HSTART, PI, T, TEND, TINC,
+-     &                  TLAST, TOL, TSTART, TWANT, WASTE
+-      INTEGER           L, NOUT, STPCST, STPSOK, TOTF, UFLAG
+-      LOGICAL           ERRASS, MESAGE
+-C     .. Local Arrays ..
+-      DOUBLE PRECISION  THRES(NEQ), WORK(LENWRK), Y(NEQ), YMAX(NEQ),
+-     &                  YP(NEQ), YSTART(NEQ)
+-C     .. External Subroutines ..
+-      EXTERNAL          F, SETUP, STAT, UT
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         ATAN, COS, SIN
+-C     .. Executable Statements ..
+-C
+-C  Set the initial conditions.  Note that TEND is taken well past
+-C  the last output point, TLAST.  When this is possible, and it
+-C  usually is, it is good practice.
+-C
+-      TSTART = ZERO
+-      YSTART(1) = ZERO
+-      YSTART(2) = ONE
+-      PI = FOUR*ATAN(ONE)
+-      TLAST = TWO*PI
+-      TEND = TLAST + PI
+-C
+-C  Initialize output.
+-C
+-      WRITE (*,'(A,I10)')  ' Template 1a with METHOD = ', METHOD
+-      WRITE (*,'(/A/)')    '    t           y        true y   '
+-      WRITE (*,'(1X,F6.3,3X,F9.4,3X,F9.4)')
+-     &                              TSTART, YSTART(1), SIN(TSTART)
+-      WRITE (*,'(1X,9X,F9.4,3X,F9.4/)') YSTART(2), COS(TSTART)
+-C
+-C  Set error control parameters.
+-C
+-      TOL = 5.0D-5
+-      DO 20 L = 1, NEQ
+-         THRES(L) = 1.0D-10
+-   20 CONTINUE
+-C
+-C  Call the setup routine. Because messages are requested, MESAGE = .TRUE.,
+-C  there is no need later to test values of flags and print out explanations.
+-C  In this variant no error assessment is done, so ERRASS is set .FALSE..
+-C  By setting HSTART to zero, the code is told to find a starting (initial)
+-C  step size automatically .
+-C
+-      MESAGE = .TRUE.
+-      ERRASS = .FALSE.
+-      HSTART = ZERO
+-      CALL SETUP(NEQ,TSTART,YSTART,TEND,TOL,THRES,METHOD,'Usual Task',
+-     &           ERRASS,HSTART,WORK,LENWRK,MESAGE)
+-C
+-C  Compute answers at NOUT equally spaced output points. It is good
+-C  practice to code the calculation of TWANT so that the last value
+-C  is exactly TLAST.
+-C
+-      NOUT = 8
+-      TINC = (TLAST-TSTART)/NOUT
+-C
+-      DO 40 L = 1, NOUT
+-         TWANT = TLAST + (L-NOUT)*TINC
+-         CALL UT(F,TWANT,T,Y,YP,YMAX,WORK,UFLAG)
+-C
+-         IF (UFLAG.GT.2) GO TO 60
+-C
+-C  Success. T = TWANT. Output computed and true solution components.
+-         WRITE (*,'(1X,F6.3,3X,F9.4,3X,F9.4)') T, Y(1), SIN(T)
+-         WRITE (*,'(1X,9X,F9.4,3X,F9.4/)')        Y(2), COS(T)
+-   40 CONTINUE
+-C
+-C  The integration is complete or has failed in a way reported in a
+-C  message to the standard output channel.
+-   60 CONTINUE
+-C
+-C  YMAX(L) is the largest magnitude computed for the solution component
+-C  Y(L) in the course of the integration from TSTART to the last T.  It
+-C  is used to decide whether THRES(L) is reasonable and to select a new
+-C  THRES(L) if it is not.
+-C
+-      WRITE (*,'(A/)') '             YMAX(L) '
+-      DO 80 L = 1, NEQ
+-         WRITE (*,'(13X,1PE8.2)')    YMAX(L)
+-   80 CONTINUE
+-C
+-C  The subroutine STAT is used to obtain some information about the progress
+-C  of the integration. TOTF is the total number of calls to F made so far
+-C  in the integration; it is a machine-independent measure of work.  At present
+-C  the integration is finished, so the value printed out refers to the overall
+-C  cost of the integration.
+-C
+-      CALL STAT(TOTF,STPCST,WASTE,STPSOK,HNEXT)
+-      WRITE (*,'(/A,I10)')
+-     &  ' The cost of the integration in evaluations of F is', TOTF
+-C
+-      STOP
+-      END
+-      SUBROUTINE F(T,Y,YP)
+-C     .. Scalar Arguments ..
+-      DOUBLE PRECISION  T
+-C     .. Array Arguments ..
+-      DOUBLE PRECISION  Y(*), YP(*)
+-C     .. Executable Statements ..
+-      YP(1) =  Y(2)
+-      YP(2) = -Y(1)
+-      RETURN
+-      END
+//GO.SYSIN DD tmpl1a.f
+echo tmpl1b.f 1>&2
+sed >tmpl1b.f <<'//GO.SYSIN DD tmpl1b.f' 's/^-//'
+-C
+-C                             Template 1b
+-C
+-C  This template comes in two variants, 1a and 1b, in files tmpl1a.for and
+-C  tmpl1b.for, respectively.  The variant 1b differs only in that the true,
+-C  or global, error of the integration in 1a is assessed.  Output from both
+-C  variants run with all three methods is found in the file tmpl1.out.
+-C
+-C  In this variant there is no need to repeat the statement of the problem
+-C  and the formulation of its solution since it differs only in that global
+-C  error assessment is done.  To emphasize what is different in this variant,
+-C  all comments not specifically related to the matter have been removed (a
+-C  practice not to be imitated).
+-C
+-C  Although you might well prefer an estimate of the global error in the
+-C  approximate solution at TWANT, and the code does have such an estimate at
+-C  its disposal, it is not made available to you because it is very difficult
+-C  to obtain a reliable estimate of the global error at a single point.  This
+-C  is easy to understand near a change of sign of the error, but at crude
+-C  tolerances and at limiting precision and when the problem is not smooth,
+-C  methods for estimation of global error may break down. Because an
+-C  assessment of the general size of the global error in the course of an
+-C  integration can be obtained with much greater reliability at acceptable
+-C  cost than an estimate at any one point, this is what is provided.  A
+-C  reliable global error assessment is relatively expensive, particularly for
+-C  METHOD = 1 because it is normally used only at crude tolerances and it
+-C  is difficult to get a reliable assessment then.  The assessment costs 
+-C  roughly double the cost of the integration itself for METHOD = 2 or 3, 
+-C  and triple for METHOD = 1.
+-C
+-C  After any return from UT with the integration advanced to T, the subroutine
+-C  GLBERR can be called to obtain an assessment of the global error.  Two kinds
+-C  of assessment are provided.  An array RMS(*) of length NEQ contains the
+-C  estimated root-mean-square error in each solution component.  This average
+-C  is over all solution values from the given initial value through the last
+-C  computed value. (UT may have advanced the integration past your last TWANT
+-C  and obtained a result there by interpolation, so the average can be over
+-C  values past TWANT.)  A scalar ERRMAX provides the largest error seen in any
+-C  solution component at any step of the integration so far.  The scalar
+-C  TERRMAX reports where the value ERRMAX was attained.  All errors are
+-C  measured with the same weights used in the integration so that they may
+-C  be compared with the local error tolerance TOL.
+-C
+-C  For the simple example problem of this template, the true solution is
+-C  readily available.  The output of variant 1a compares the computed to the
+-C  true solutions at selected points.  Examination of the file tmpl1.out
+-C  provided shows that the global error assessments of variant 1b are in
+-C  agreement with these true errors at individual output points.  With
+-C  METHOD = 2, the global error is quite closely related to the local error
+-C  tolerance TOL.  METHOD = 1 has a global error that is somewhat larger than
+-C  TOL.  METHOD = 3 has a global error that is considerably smaller than TOL.
+-C  Unlike the other two methods, this one does not have an interpolation
+-C  capability.  This particular problem is sufficiently easy for the method
+-C  and the output points are sufficiently close to one another that the step
+-C  size must be shortened to obtain solutions at the specified output points.
+-C  Reducing the step size for this reason results in more accuracy (and a
+-C  greater cost).
+-C
+-C  Global error assessment requires some storage.  Here the amount of
+-C  storage, LENWRK, allocated in WORK(*) is the same as in variant 1a
+-C  because it was taken there to be enough for all three methods with
+-C  and without global error assessment.
+-C
+-      INTEGER           NEQ, LENWRK, METHOD
+-      PARAMETER         (NEQ=2,LENWRK=32*NEQ,METHOD=2)
+-      DOUBLE PRECISION  ZERO, ONE, TWO, FOUR
+-      PARAMETER         (ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0,FOUR=4.0D0)
+-      DOUBLE PRECISION  HNEXT, HSTART, PI, T, TEND, TINC,
+-     &                  TLAST, TOL, TSTART, TWANT, WASTE
+-      INTEGER           L, NOUT, STPCST, STPSOK, TOTF, UFLAG
+-      LOGICAL           ERRASS, MESAGE
+-      DOUBLE PRECISION  THRES(NEQ), WORK(LENWRK), Y(NEQ), YMAX(NEQ),
+-     &                  YP(NEQ), YSTART(NEQ)
+-C
+-C  Some additional quantities must be declared for global error assessment.
+-C
+-      DOUBLE PRECISION  ERRMAX, TERRMX
+-      DOUBLE PRECISION  RMSERR(NEQ)
+-C     
+-      EXTERNAL          F, SETUP, STAT, UT
+-      INTRINSIC         ATAN, COS, SIN
+-C
+-      TSTART = ZERO
+-      YSTART(1) = ZERO
+-      YSTART(2) = ONE
+-      PI = FOUR*ATAN(ONE)
+-      TLAST = TWO*PI
+-      TEND = TLAST + PI
+-C
+-      WRITE (*,'(A,I10)')  ' Template 1b with METHOD = ', METHOD
+-      WRITE (*,'(/A/)')    '    t           y        true y   '
+-      WRITE (*,'(1X,F6.3,3X,F9.4,3X,F9.4)')
+-     &                              TSTART, YSTART(1), SIN(TSTART)
+-      WRITE (*,'(1X,9X,F9.4,3X,F9.4/)') YSTART(2), COS(TSTART)
+-C
+-      TOL = 5.0D-5
+-      DO 20 L = 1, NEQ
+-         THRES(L) = 1.0D-10
+-   20 CONTINUE
+-      MESAGE = .TRUE.
+-C
+-C  In this variant error assessment is desired, so ERRASS is set .TRUE.
+-C  in the call to the setup routine.
+-C
+-      ERRASS = .TRUE.
+-      HSTART = ZERO
+-      CALL SETUP(NEQ,TSTART,YSTART,TEND,TOL,THRES,METHOD,'Usual Task',
+-     &           ERRASS,HSTART,WORK,LENWRK,MESAGE)
+-C
+-      NOUT = 8
+-      TINC = (TLAST-TSTART)/NOUT
+-C
+-      DO 40 L = 1, NOUT
+-         TWANT = TLAST + (L-NOUT)*TINC
+-         CALL UT(F,TWANT,T,Y,YP,YMAX,WORK,UFLAG)
+-C
+-C  A global error assessment is useless unless it is reliable, so the code
+-C  monitors computation of the assessment for credibility.  If the code has
+-C  any doubts about the reliability of the assessment, it will return  with
+-C  a message to this effect and UFLAG set to 6.  An attempt to continue
+-C  integrating after such a return is a fatal error.  As coded, the
+-C  integration is terminated when UFLAG = 6 and the global error is assessed
+-C  up to last point where the code believes the assessment to be reliable.
+-C
+-         IF (UFLAG.GT.2) GO TO 60
+-C
+-         WRITE (*,'(1X,F6.3,3X,F9.4,3X,F9.4)') T, Y(1), SIN(T)
+-         WRITE (*,'(1X,9X,F9.4,3X,F9.4/)')        Y(2), COS(T)
+-   40 CONTINUE
+-C
+-   60 CONTINUE
+-C
+-      WRITE (*,'(A/)') '             YMAX(L) '
+-      DO 80 L = 1, NEQ
+-         WRITE (*,'(13X,1PE8.2)')    YMAX(L)
+-   80 CONTINUE
+-C
+-C  The assessment is obtained by a call to GLBERR.
+-C
+-      CALL GLBERR(RMSERR,ERRMAX,TERRMX,WORK)
+-      WRITE (*,'(/A,1PE9.2)')
+-     &' The tolerance was ',TOL
+-      WRITE (*,'(A,1PE9.2,A,1PE9.2,A)')
+-     &' The worst global error observed was ',ERRMAX,
+-     &'.  (It occurred at ',TERRMX,'.)'
+-      WRITE (*,'(A)')
+-     &' The RMS errors in the individual components were:'
+-      DO 100 L = 1,NEQ
+-         WRITE (*,'(50X,1PE9.2)') RMSERR(L)
+-  100 CONTINUE
+-C
+-      CALL STAT(TOTF,STPCST,WASTE,STPSOK,HNEXT)
+-      WRITE (*,'(/A,I10)')
+-     &' The cost of the integration in evaluations of F was', TOTF
+-C
+-      STOP
+-      END
+-      SUBROUTINE F(T,Y,YP)
+-      DOUBLE PRECISION  T
+-      DOUBLE PRECISION  Y(*), YP(*)
+-      YP(1) =  Y(2)
+-      YP(2) = -Y(1)
+-      RETURN
+-      END
+//GO.SYSIN DD tmpl1b.f
+echo tmpl2.out 1>&2
+sed >tmpl2.out <<'//GO.SYSIN DD tmpl2.out' 's/^-//'
+-
+-Template 2a with METHOD =          3
+-
+-            YMAX(L) 
+-
+-            1.90E+00
+-            4.36E-01
+-            2.29E+00
+-            4.36E+00
+-
+-The integration reached                        2.00E+01
+-The cost of the integration in calls to F was      4631
+-The number of calls to F per step is                 13
+-The fraction of failed steps was                   0.02
+-The number of accepted steps was                    344
+-
+-At t = 20, the error is 1.22E-09
+-The tolerance is        1.00E-10
+-
+-*******************************************************************************
+-
+-Template 2a with METHOD =          2
+-
+-
+-**
+-** Approximately   5000 function evaluations have been                         
+-** used to compute the solution since the integration                          
+-** started or since this message was last printed.                             
+-**
+-** Warning from routine CT     with flag set  3.
+-** You can continue integrating this problem.
+-**
+-            YMAX(L) 
+-
+-            1.90E+00
+-            4.36E-01
+-            2.29E+00
+-            4.36E+00
+-
+-The integration reached                        2.00E+01
+-The cost of the integration in calls to F was      8091
+-The number of calls to F per step is                  7
+-The fraction of failed steps was                   0.00
+-The number of accepted steps was                   1146
+-
+-At t = 20, the error is 9.22E-10
+-The tolerance is        1.00E-10
+-
+-*******************************************************************************
+-
+-Template 2b with METHOD =          3
+-
+-            YMAX(L) 
+-
+-            1.90E+00
+-            4.36E-01
+-            2.29E+00
+-            4.36E+00
+-
+-The integration reached                        2.00E+01
+-The cost of the integration in calls to F was     13575
+-The number of calls to F per step is                 13
+-The fraction of failed steps was                   0.02
+-The number of accepted steps was                    344
+-
+-At t = 20, the error is 1.22E-09
+-The tolerance is        1.00E-10
+-The worst global error observed was  6.28E-07.  (It occurred at  1.89E+01.)
+-The RMS errors in the individual components were:
+-                                                  3.13E-08
+-                                                  6.00E-08
+-                                                  5.94E-08
+-                                                  6.14E-09
+-
+-*******************************************************************************
+-
+-Template 2b with METHOD =          2
+-
+-
+-**
+-** Approximately   5000 function evaluations have been                         
+-** used to compute the solution since the integration                          
+-** started or since this message was last printed.                             
+-**
+-** Warning from routine CT     with flag set  3.
+-** You can continue integrating this problem.
+-**
+-            YMAX(L) 
+-
+-            1.90E+00
+-            4.36E-01
+-            2.29E+00
+-            4.36E+00
+-
+-The integration reached                        2.00E+01
+-The cost of the integration in calls to F was     24135
+-The number of calls to F per step is                  7
+-The fraction of failed steps was                   0.00
+-The number of accepted steps was                   1146
+-
+-At t = 20, the error is 9.22E-10
+-The tolerance is        1.00E-10
+-The worst global error observed was  2.30E-06.  (It occurred at  1.88E+01.)
+-The RMS errors in the individual components were:
+-                                                  5.67E-08
+-                                                  1.03E-07
+-                                                  1.03E-07
+-                                                  5.46E-09
+//GO.SYSIN DD tmpl2.out
+echo tmpl2a.f 1>&2
+sed >tmpl2a.f <<'//GO.SYSIN DD tmpl2a.f' 's/^-//'
+-C
+-C                            Template 2a
+-C
+-C  This template comes in two variants, 2a and 2b, in files tmpl2a.for and
+-C  tmpl2b.for, respectively.  The variant 2b differs only in that the true,
+-C  or global, error of the integration in 2a is assessed.  The output to the
+-C  standard output channel from both variants run with both METHODs 2 and 3 
+-C  is found in the file tmpl2.out.
+-C
+-C  Problem:  Integrate a two body problem.  The equations for the coordinates
+-C            (x(t),y(t)) of one body as functions of time t in a suitable
+-C            frame of reference are
+-C
+-C               x'' = - x/r**3,
+-C               y'' = - y/r**3,   where   r = SQRT(x**2 + y**2).
+-C
+-C            The initial conditions lead to elliptic motion with eccentricity
+-C            ECC.  This parameter will be taken to be 0.9.
+-C
+-C               x(0) = 1-ECC,     x'(0) = 0,
+-C               y(0) = 0,         y'(0) = SQRT((1+ECC)/(1-ECC)).
+-C
+-C            An accurate solution that shows the general behavior of the
+-C            orbit is desired.  The coordinates will be returned at every
+-C            time step in [0,20].  This is a standard test problem for which
+-C            there is a semi-analytical solution.  It will be compared to the
+-C            computed solution at the end of the interval.
+-C
+-C  Solution: Substitute y1 = x, y2 = y, y3 = x', and y4 = y' to obtain
+-C
+-C               y1' = y3,            y1(0) = 1-ECC,
+-C               y2' = y4,            y2(0) = 0,
+-C               y3' = - y1/r**3,     y3(0) = 0,
+-C               y4' = - y2/r**3,     y4(0) = SQRT((1+ECC)/(1-ECC)),
+-C            where
+-C               r = SQRT(y1**2 + y2**2).
+-C
+-C            Since it is the general behavior of the solution that is desired,
+-C            it is best to let the integrator choose where to provide answers.
+-C            It will produce answers more frequently where the solution
+-C            changes more rapidly.  Because the solution is inspected at
+-C            every step, the task is a "Complex Task" that is solved with CT.
+-C
+-C            On physical grounds the solution is expected to be somewhat
+-C            unstable when one body approaches the other. To obtain an
+-C            accurate solution, a  stringent relative error tolerance should
+-C            be imposed -- TOL = 1.0D-10 will be used.  At a tolerance this
+-C            stringent the highest order pair, METHOD = 3, is likely to be
+-C            the most efficient choice. This method is inefficient when it
+-C            is to produce answers at a great many specific points. It is
+-C            most effective when used as in this template.  The solution
+-C            components are expected to be of order 1, so threshold values
+-C            THRES(*) = 1.0D-13 are reasonable.  When a solution component is
+-C            smaller in magnitude than this threshold, the code will control
+-C            the local error to be no more than TOL*THRES(L) = 1.0D-23.  The
+-C            reasonableness of this choice will be monitored by printing out
+-C            the maximum value seen for each solution component in the course
+-C            of the integration.  Error and warning messages, if any, will be
+-C            printed out.
+-C
+-C            This is the standard test problem D5 of T.E. Hull, W.H. Enright,
+-C            B.M. Fellen, and A.E. Sedgwick, "Comparing Numerical Methods
+-C            for Ordinary Differential Equations," SIAM Journal on Numerical
+-C            Analysis, Vol. 9, pp. 603-637, 1972.  The analytical solution
+-C            in terms of the numerical solution of Kepler's equation can be
+-C            found there as well as in most discussions of the two body
+-C            problem.  The results for the particular choice of eccentricity,
+-C            initial conditions, and interval of this template are provided
+-C            here in a DATA statement.
+-C
+-C  NOTES:    Typically problems are solved for a number of tolerances, initial
+-C            conditions, intervals, parameter values, ... .  A prudent person
+-C            would make at least one run with global error assessment as a
+-C            spot check on the reliability of the results.  Variant 2b shows
+-C            how to do this.
+-C
+-C            For TOL in this range, METHOD = 3 is generally the most efficient
+-C            choice.  Indeed, for this specific problem and tolerance (and a
+-C            specific computer, precision, compiler, ... ), the results found
+-C            in tmpl2.out show that the cost with METHOD = 3 is 4631 calls to
+-C            the subroutine F.  With METHOD = 2 the cost is 8091 calls, so
+-C            the higher order pair is quite advantageous at a tolerance as
+-C            stringent as TOL = 1.0D-10.  Of course, one should not even
+-C            consider using METHOD = 1 at tolerances this stringent.
+-C
+-C            With METHOD = 3, the template writes to an output file results
+-C            at 344 steps, which is more than adequate to see how the solution
+-C            components behave. The global error at the end of the run is about
+-C            1.2D-9, rather bigger than the local error tolerance TOL.  This
+-C            illustrates the point that at best one can anticipate global
+-C            errors comparable to the tolerance.  In point of fact, this
+-C            problem is unstable at some points of the integration and the
+-C            global error assessment of variant 2b reveals that the worst
+-C            global error is considerably worse than the error at the end 
+-C            -- an example of the value of the global error assessment
+-C            capability.
+-C
+-C            Working storage must be provided in the array WORK(*) of length
+-C            LENWRK.  Because storage is no problem with only NEQ = 4
+-C            equations, LENWRK is taken here to be 32*NEQ, enough to handle
+-C            all three methods with and without global error assessment.
+-C
+-C     .. Parameters ..
+-      INTEGER           NEQ, METHOD, LENWRK, OUTFIL
+-      PARAMETER         (NEQ=4,METHOD=3,LENWRK=32*NEQ,OUTFIL=9)
+-      DOUBLE PRECISION  ECC, ZERO, ONE
+-      PARAMETER         (ECC=0.9D0,ZERO=0.0D0,ONE=1.0D0)
+-C     .. Local Scalars ..
+-      DOUBLE PRECISION  ERROR, HNEXT, HSTART, TEND, TNOW,
+-     &                  TOL, TSTART, WASTE, WEIGHT
+-      INTEGER           CFLAG, CFLAG3, L, STPCST, STPSOK, TOTF
+-      LOGICAL           ERRASS, MESAGE
+-C     .. Local Arrays ..
+-      DOUBLE PRECISION  THRES(NEQ), TRUY(NEQ), WORK(LENWRK), YMAX(NEQ),
+-     &                  YNOW(NEQ), YPNOW(NEQ), YSTART(NEQ)
+-C     .. External Subroutines ..
+-      EXTERNAL          CT, F, SETUP, STAT
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         ABS, MAX, SQRT
+-C     .. Data statements ..
+-      DATA              TRUY/-1.29526625098758D0,  0.400393896379232D0,
+-     &                       -0.67753909247075D0, -0.127083815427869D0/
+-C     .. Executable Statements ..
+-C
+-C  Initialize output.
+-C
+-      WRITE (*,'(A,I10/)') ' Template 2a with METHOD = ', METHOD
+-C
+-C  Set initial conditions and the end of the interval of interest.
+-C
+-      TSTART = ZERO
+-      YSTART(1) = ONE - ECC
+-      YSTART(2) = ZERO
+-      YSTART(3) = ZERO
+-      YSTART(4) = SQRT((ONE+ECC)/(ONE-ECC))
+-      TEND = 20.0D0
+-C
+-C  Because the solution components may be computed at many points, they are
+-C  written to a file on unit OUTFIL.  Subsequently, the results can be studied,
+-C  plotted, or manipulated as necessary.  Naming of files is system-dependent,
+-C  so the name here, RESULT, may need to be changed.  For simplicity, list-
+-C  directed output is used.  The data could be manipulated later as required
+-C  by, e.g., a plot package, or the WRITE statements in this template could be
+-C  altered so as to output the results in the desired form.  Begin by writing
+-C  the initial values to RESULT.
+-C
+-      OPEN (UNIT=OUTFIL,FILE='RESULT')
+-      WRITE (OUTFIL,*) TSTART, YSTART(1), YSTART(2), YSTART(3),
+-     &  YSTART(4)
+-C
+-C  To monitor the reasonableness of the choice of THRES(L), the maximum
+-C  magnitude YMAX(L) of solution component L is computed and returned.
+-C  It is initialized here.
+-C
+-      DO 20 L = 1, NEQ
+-         YMAX(L) = ABS(YSTART(L))
+-   20 CONTINUE
+-C
+-C  Set error control parameters.
+-C
+-      TOL = 1.0D-10
+-      DO 40 L = 1, NEQ
+-         THRES(L) = 1.0D-13
+-   40 CONTINUE
+-C
+-C  Call the setup routine. Because messages are requested, MESAGE = .TRUE.,
+-C  there is no need later to test values of flags and print out explanations.
+-C  In this variant no error assessment is done, so ERRASS is set .FALSE..
+-C  By setting HSTART = ZERO, the code is told to find a starting (initial)
+-C  step size automatically .
+-C
+-      MESAGE = .TRUE.
+-      ERRASS = .FALSE.
+-      HSTART = ZERO
+-      CALL SETUP(NEQ,TSTART,YSTART,TEND,TOL,THRES,METHOD,'Complex Task',
+-     &           ERRASS,HSTART,WORK,LENWRK,MESAGE)
+-C
+-C  Advance the integration one step.  Note that messages are written to 
+-C  the standard output channel rather than to the file where the results
+-C  are being accumulated.  The code will not go past the specified TEND.
+-C  Because it will step to exactly TEND, this fact can be used to terminate
+-C  the run.
+-C
+-      CFLAG3 = 0
+-   60 CONTINUE
+-      CALL CT(F,TNOW,YNOW,YPNOW,WORK,CFLAG)
+-C
+-C  Update the maximum magnitudes of the solution components.
+-      DO 80 L = 1, NEQ
+-         YMAX(L) = MAX(YMAX(L),ABS(YNOW(L)))
+-   80 CONTINUE
+-C
+-      IF (CFLAG.LE.3) THEN
+-C
+-C  Success.  Record the results and go on towards TEND.  The combination of
+-C  the tolerance and the length of the interval is sufficiently demanding that
+-C  the code might return with CFLAG = 3 to report that 5000 calls have been
+-C  made to the subroutine F.  The evaluations in F are not expensive, so
+-C  three such returns are permitted before terminating the run.
+-C
+-         WRITE (OUTFIL,*) TNOW, YNOW(1), YNOW(2), YPNOW(1), YPNOW(2)
+-         IF (CFLAG.EQ.3) CFLAG3 = CFLAG3 + 1
+-         IF (TNOW.LT.TEND .AND. CFLAG3.LT.3) GO TO 60
+-      END IF
+-      CLOSE (OUTFIL)
+-C
+-C  At the end of the run, the maximum magnitudes of the solution components
+-C  are reported so that the reasonableness of the threshold values THRES(*)
+-C  can be checked.
+-C
+-      WRITE (*,'(A/)') '             YMAX(L) '
+-      DO 100 L = 1, NEQ
+-         WRITE (*,'(13X,1PE8.2)') YMAX(L)
+-  100 CONTINUE
+-C
+-C  The subroutine STAT is used to obtain some information about the progress
+-C  of the integration. TOTF is the total number of calls to F made so far
+-C  in the integration; it is a machine-independent measure of work.  At present
+-C  the integration is finished, so the value printed out refers to the overall
+-C  cost of the integration.  STPCST is the cost in calls to F of a typical
+-C  step with this method.  WASTE is the fraction of steps after the first that
+-C  were rejected.  A "large" value of WASTE is usually the result of a mistake
+-C  in the coding of F.  It can also be the result of a solution component that
+-C  is not smooth -- singular or with many places where a low order derivative
+-C  is not continuous.  STPSOK is the number of accepted steps.
+-C
+-      CALL STAT(TOTF,STPCST,WASTE,STPSOK,HNEXT)
+-      WRITE (*,'(/A,1PE10.2,0P/A,I10/A,I10/A,F10.2/A,I10)')
+-     &' The integration reached                      ', TNOW,
+-     &' The cost of the integration in calls to F was', TOTF,
+-     &' The number of calls to F per step is         ', STPCST,
+-     &' The fraction of failed steps was             ', WASTE,
+-     &' The number of accepted steps was             ', STPSOK
+-C
+-C  For this particular problem a semi-analytical solution is available to
+-C  study the relationship between local error tolerance and true (global)
+-C  error.  The true solution at t = 20 is provided in TRUY(*).  If the
+-C  integration reached this point, the error of the computed solution is
+-C  computed and returned.  To interpret the results properly, the error
+-C  must be measured in the same way that it is measured in the code.
+-C
+-      IF (TNOW.EQ.TEND) THEN
+-         ERROR = ZERO
+-         DO 120 L = 1, NEQ
+-            WEIGHT = MAX(ABS(YNOW(L)),THRES(L))
+-            ERROR = MAX(ERROR,ABS(TRUY(L)-YNOW(L))/WEIGHT)
+-  120    CONTINUE
+-         WRITE (*,'(/A,1PE9.2)')
+-     &' At t = 20, the error is',ERROR
+-         WRITE (*,'(A,1PE9.2)') ' The tolerance is       ', TOL
+-      END IF
+-C
+-      STOP
+-      END
+-      SUBROUTINE F(T,Y,YP)
+-C     .. Scalar Arguments ..
+-      DOUBLE PRECISION  T
+-C     .. Array Arguments ..
+-      DOUBLE PRECISION  Y(*), YP(*)
+-C     .. Local Scalars ..
+-      DOUBLE PRECISION  R
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         SQRT
+-C     .. Executable Statements ..
+-      R = SQRT(Y(1)**2+Y(2)**2)
+-      YP(1) = Y(3)
+-      YP(2) = Y(4)
+-      YP(3) = -Y(1)/R**3
+-      YP(4) = -Y(2)/R**3
+-      RETURN
+-      END
+//GO.SYSIN DD tmpl2a.f
+echo tmpl2b.f 1>&2
+sed >tmpl2b.f <<'//GO.SYSIN DD tmpl2b.f' 's/^-//'
+-C
+-C                            Template 2b
+-C
+-C  This template comes in two variants, 2a and 2b, in files tmpl2a.for and
+-C  tmpl2b.for, respectively.  The variant 2b differs only in that the true,
+-C  or global, error of the integration in 2a is assessed.  The output to the
+-C  standard output channel from both variants run with both METHOD 2 and 3 is
+-C  found in the file tmpl2.out.
+-C
+-C  In this variant there is no need to repeat the statement of the problem
+-C  and the formulation of its solution since it differs only in that global
+-C  error assessment is done.  To emphasize what is different in this variant,
+-C  all comments not specifically related to the matter have been removed (a
+-C  practice not to be imitated).
+-C
+-C  Although you might well prefer an estimate of the global error in the
+-C  approximate solution at TNOW, and the code does have such an estimate at
+-C  its disposal, it is not made available to you because it is very difficult
+-C  to obtain a reliable estimate of the global error at a single point.  This
+-C  is easy to understand near a change of sign of the error, but at crude
+-C  tolerances and at limiting precision and when the problem is not smooth,
+-C  methods for estimation of global error may break down. Because an
+-C  assessment of the general size of the global error in the course of an
+-C  integration can be obtained with much greater reliability at acceptable
+-C  cost than an estimate at any one point, this is what is provided.  A
+-C  reliable global error assessment is relatively expensive, particularly for
+-C  METHOD = 1 because it is normally used only at crude tolerances and it
+-C  is difficult to get a reliable assessment then.  The assessment costs 
+-C  roughly double the cost of the integration itself for METHOD = 2 or 3, 
+-C  and triple for METHOD = 1.
+-C
+-C  After any return from CT with the integration advanced to TNOW, the
+-C  subroutine GLBERR can be called to obtain an assessment of the global error.
+-C  Two kinds of assessment are provided.  An array RMS(*) of length NEQ
+-C  contains the estimated root-mean-square error in each solution component.
+-C  This average is over all solution values from the given initial value
+-C  through the last computed value. A scalar ERRMAX provides the largest error
+-C  seen in any solution component at any step of the integration so far.  The
+-C  scalar TERRMX reports where the value ERRMAX was attained.  All errors are
+-C  measured with the same weights used in the integration so that they may
+-C  be compared with the local error tolerance TOL.
+-C
+-C  The output of variant 2a compares the computed to the true solution
+-C  components at the end of the interval of integration.  The error at this
+-C  point is found to be somewhat bigger than the tolerance.  However,
+-C  examination of the file tmpl2.out provided shows that the RMS errors are
+-C  rather bigger than the error at this one point, and moreover, the worst
+-C  global error is considerably bigger.  This illustrates the fact that
+-C  global errors can decrease as well as increase in the course of an
+-C  integration.
+-C
+-C  Global error assessment requires some storage.  Here the amount of
+-C  storage, LENWRK, allocated in WORK(*) is the same as in variant 2a
+-C  because it was taken there to be enough for all three methods with
+-C  and without global error assessment.
+-C
+-      INTEGER           NEQ, METHOD, LENWRK, OUTFIL
+-      PARAMETER         (NEQ=4,METHOD=3,LENWRK=32*NEQ,OUTFIL=9)
+-      DOUBLE PRECISION  ECC, ZERO, ONE
+-      PARAMETER         (ECC=0.9D0,ZERO=0.0D0,ONE=1.0D0)
+-      DOUBLE PRECISION  ERROR, HNEXT, HSTART, TEND, TNOW,
+-     &                  TOL, TSTART, WASTE, WEIGHT
+-      INTEGER           CFLAG, CFLAG3, L, STPCST, STPSOK, TOTF
+-      LOGICAL           ERRASS, MESAGE
+-      DOUBLE PRECISION  THRES(NEQ), TRUY(NEQ), WORK(LENWRK), YMAX(NEQ),
+-     &                  YNOW(NEQ), YPNOW(NEQ), YSTART(NEQ)
+-C
+-C  Some additional quantities must be declared for global error assessment.
+-C
+-      DOUBLE PRECISION  ERRMAX,TERRMX
+-      DOUBLE PRECISION  RMSERR(NEQ)
+-C
+-      EXTERNAL          CT, F, SETUP, STAT
+-      INTRINSIC         ABS, MAX, SQRT
+-      DATA              TRUY/-1.29526625098758D0,  0.400393896379232D0,
+-     &                       -0.67753909247075D0, -0.127083815427869D0/
+-C
+-      WRITE (*,'(A,I10/)') ' Template 2b with METHOD = ', METHOD
+-C
+-      TSTART = ZERO
+-      YSTART(1) = ONE - ECC
+-      YSTART(2) = ZERO
+-      YSTART(3) = ZERO
+-      YSTART(4) = SQRT((ONE+ECC)/(ONE-ECC))
+-      TEND = 20.0D0
+-C
+-      OPEN (UNIT=OUTFIL,FILE='RESULT')
+-      WRITE (OUTFIL,*) TSTART, YSTART(1), YSTART(2), YSTART(3),
+-     &  YSTART(4)
+-C
+-      DO 20 L = 1, NEQ
+-         YMAX(L) = ABS(YSTART(L))
+-   20 CONTINUE
+-C
+-      TOL = 1.0D-10
+-      DO 40 L = 1, NEQ
+-         THRES(L) = 1.0D-13
+-   40 CONTINUE
+-C
+-      MESAGE = .TRUE.
+-C
+-C  In this variant error assessment is desired, so ERRASS is set .TRUE. in
+-C  the call to the setup routine.
+-C
+-      ERRASS = .TRUE.
+-      HSTART = ZERO
+-      CALL SETUP(NEQ,TSTART,YSTART,TEND,TOL,THRES,METHOD,'Complex Task',
+-     &           ERRASS,HSTART,WORK,LENWRK,MESAGE)
+-C
+-      CFLAG3 = 0
+-   60 CONTINUE
+-      CALL CT(F,TNOW,YNOW,YPNOW,WORK,CFLAG)
+-C
+-      DO 80 L = 1, NEQ
+-         YMAX(L) = MAX(YMAX(L),ABS(YNOW(L)))
+-   80 CONTINUE
+-C
+-C  A global error assessment is useless unless it is reliable, so the code
+-C  monitors the computation of the assessment for credibility.  If the code
+-C  has any doubts about the reliability of the assessment, it will return
+-C  with a message to this effect and CFLAG set to 6.  An attempt to continue
+-C  integrating after such a return is a fatal error.  When CFLAG = 6 the
+-C  integration is terminated and the global error is assessed through the
+-C  last point where the code believes the assessment to be reliable.
+-C
+-      IF (CFLAG.LE.3) THEN
+-C
+-         WRITE (OUTFIL,*) TNOW, YNOW(1), YNOW(2), YPNOW(1), YPNOW(2)
+-         IF (CFLAG.EQ.3) CFLAG3 = CFLAG3 + 1
+-         IF (TNOW.LT.TEND .AND. CFLAG3.LT.3) GO TO 60
+-      END IF
+-      CLOSE (OUTFIL)
+-C
+-      WRITE (*,'(A/)') '             YMAX(L) '
+-      DO 100 L = 1, NEQ
+-         WRITE (*,'(13X,1PE8.2)') YMAX(L)
+-  100 CONTINUE
+-C
+-      CALL STAT(TOTF,STPCST,WASTE,STPSOK,HNEXT)
+-      WRITE (*,'(/A,1PE10.2,0P/A,I10/A,I10/A,F10.2/A,I10)')
+-     &' The integration reached                      ', TNOW,
+-     &' The cost of the integration in calls to F was', TOTF,
+-     &' The number of calls to F per step is         ', STPCST,
+-     &' The fraction of failed steps was             ', WASTE,
+-     &' The number of accepted steps was             ', STPSOK
+-C
+-      IF (TNOW.EQ.TEND) THEN
+-         ERROR = ZERO
+-         DO 120 L = 1, NEQ
+-            WEIGHT = MAX(ABS(YNOW(L)),THRES(L))
+-            ERROR = MAX(ERROR,ABS(TRUY(L)-YNOW(L))/WEIGHT)
+-  120    CONTINUE
+-         WRITE (*,'(/A,1PE9.2)') 
+-     &' At t = 20, the error is', ERROR
+-         WRITE (*,'(A,1PE9.2)')  ' The tolerance is       ', TOL
+-      END IF
+-C
+-C  The assessment is obtained by a call to GLBERR.
+-C
+-      CALL GLBERR(RMSERR,ERRMAX,TERRMX,WORK)
+-      WRITE (*,'(A,1PE9.2,A,1PE9.2,A)')
+-     &' The worst global error observed was ',ERRMAX,
+-     &'.  (It occurred at ',TERRMX,'.)'
+-      WRITE (*,'(A)')
+-     &' The RMS errors in the individual components were:'
+-      DO 140 L = 1,NEQ
+-         WRITE (*,'(50X,1PE9.2)') RMSERR(L)
+-  140 CONTINUE
+-C
+-      STOP
+-      END
+-      SUBROUTINE F(T,Y,YP)
+-      DOUBLE PRECISION  T
+-      DOUBLE PRECISION  Y(*), YP(*)
+-      DOUBLE PRECISION  R
+-      INTRINSIC         SQRT
+-      R = SQRT(Y(1)**2+Y(2)**2)
+-      YP(1) = Y(3)
+-      YP(2) = Y(4)
+-      YP(3) = -Y(1)/R**3
+-      YP(4) = -Y(2)/R**3
+-      RETURN
+-      END
+//GO.SYSIN DD tmpl2b.f
+echo tmpl3.out 1>&2
+sed >tmpl3.out <<'//GO.SYSIN DD tmpl3.out' 's/^-//'
+-
+-Template 3a with METHOD =   2 and B =   9.8
+-
+-
+-The integration reached                        6.28E+02
+-The cost of the integration in calls to F was     29366
+-The number of calls to F per step is                  7
+-The fraction of failed steps was                   0.12
+-The number of accepted steps was                   3726
+-
+-*******************************************************************************
+-
+-Template 3a with METHOD =   2 and B =  11.0
+-
+-
+-The integration reached                        6.28E+02
+-The cost of the integration in calls to F was     31161
+-The number of calls to F per step is                  7
+-The fraction of failed steps was                   0.15
+-The number of accepted steps was                   3854
+-
+-*******************************************************************************
+-
+-Template 3b with METHOD =   3 and B =  11.0
+-
+-Global error estimation broke down. 
+-
+-
+-The tolerance was  1.00E-07
+-The worst global error observed was  6.77E-02.  (It occurred at  1.21E+02.)
+-The RMS errors in the individual components were:
+-                                                  2.92E-03
+-                                                  8.09E-04
+-
+-The integration reached                        1.21E+02
+-The cost of the integration in calls to F was     34348
+-The number of calls to F per step is                 13
+-The fraction of failed steps was                   0.16
+-The number of accepted steps was                    832
+-
+-*******************************************************************************
+-
+-Template 3b  with METHOD =   3 and B =   9.8
+-
+-
+-The tolerance was  1.00E-07
+-The worst global error observed was  1.13E-04.  (It occurred at  8.48E+01.)
+-The RMS errors in the individual components were:
+-                                                  3.37E-06
+-                                                  5.08E-06
+-
+-The integration reached                        6.28E+02
+-The cost of the integration in calls to F was    169555
+-The number of calls to F per step is                 13
+-The fraction of failed steps was                   0.17
+-The number of accepted steps was                   4090
+//GO.SYSIN DD tmpl3.out
+echo tmpl3a.f 1>&2
+sed >tmpl3a.f <<'//GO.SYSIN DD tmpl3a.f' 's/^-//'
+-C
+-C                             Template 3a
+-C
+-C  This template comes in two variants, 3a and 3b, in files tmpl3a.for and
+-C  tmpl3b.for, respectively.  They illustrate different aspects of the RK
+-C  suite on the same problem.  The task could be handled more simply with
+-C  UT; the purpose of the template is to illustrate how to use CT when more
+-C  control over the integration is required.  Specifically, variant 3a
+-C  illustrates how to use CT with METHOD = 2 to advance the integration a
+-C  step at a time and how to use INTRP with this METHOD to get answers at
+-C  specific points by interpolation.
+-C
+-C  Problem:  Integrate a forced Duffing equation that models an electric
+-C            circuit with a nonlinear inductor.  The behavior of solutions
+-C            depends on the value of a parameter B that governs the size of
+-C            the forcing term.  This problem is discussed at length in F.C.
+-C            Moon, Chaotic Vibrations, John Wiley & Sons, Inc., New York,
+-C            1987;  numerical results are reported on p. 272.  Written as
+-C            a first order system, the second order equation is
+-C
+-C               y1' = y2,
+-C               y2' = - 0.1 y2 - y1**3 + B cos(t).
+-C
+-C            A Poincare map is used to study the qualitative behavior of the
+-C            solutions.  This means that solution values are to be computed
+-C            at t = 2*pi*k for k = 1,2,...,n and y2(t) plotted against y1(t).
+-C
+-C            Exploration of the qualitative behavior of solutions could lead
+-C            to integration of the differential equation for a great many
+-C            initial values.  Here the single set of initial values
+-C                         y1(0) = 3.3,        y2(0) = -3.3
+-C            is considered. It is planned that the integration extend for
+-C            many multiples of the period 2*pi of the forcing function.
+-C            The template takes n = 100.  To have some accuracy at the end
+-C            of a "long" integration, it is necessary to specify a moderately
+-C            stringent tolerance.  In this variant TOL is taken to be 1.0D-5.
+-C            The general scaling of the initial values and the anticipated
+-C            behavior of the solution components suggest that threshold
+-C            values of 1.0D-10 on each component might be reasonable.
+-C
+-C            At this tolerance METHOD = 2 is a reasonable choice.  Output
+-C            is desired at specific points.  By using INTRP, output this
+-C            infrequently has no impact on the cost of the integration.
+-C
+-C            The character of the problem depends on the value of B. According
+-C            to Moon, the solution is periodic when B = 9.8 and becomes
+-C            chaotic when B is about 10.0.  The behavior of the global error
+-C            is very different in these circumstances.  By definition the
+-C            solution is very sensitive to changes in the initial conditions
+-C            when there is chaos.  This means that it is very difficult to
+-C            compute accurately a specific solution curve -- the global error
+-C            must get large rather quickly. Variant 3a takes B = 9.8 so that
+-C            the solution is periodic.  Also included in tmpl3.out is the
+-C            output when B = 11.0, a chaotic solution.
+-C
+-C            With both variants of the template the integrations are
+-C            sufficiently expensive that if MESAGE is set .TRUE., there are
+-C            a considerable number of returns reporting that 5000 function
+-C            evaluations have been made since the last message.  To suppress
+-C            these messages, MESAGE is set .FALSE.  Another purpose of this
+-C            template is to illustrate the processing of error messages and
+-C            the decisions that are made at each step of an integration.
+-C
+-C  NOTES:    Working storage must be provided in the array WORK(*) of
+-C            length LENWRK.  Although storage is no problem with only
+-C            NEQ = 2 equations, LENWRK is taken here to be 14*NEQ,
+-C            the least that can be used in CT with METHOD = 2 when global
+-C            error assessment is not done (ERRASS = .FALSE.).  Storage must
+-C            also be supplied for interpolation in the array WRKINT(*) of
+-C            length NINT.  The  amount depends on the number NWANT of
+-C            solution components desired.  In this template, all the
+-C            components are approximated so NWANT = NEQ.  NINT is taken
+-C            here to be the minimum needed with this METHOD, namely
+-C            NEQ+MAX(NEQ,5*NWANT) = 6*NEQ.
+-C
+-C     .. Parameters ..
+-      INTEGER           NEQ, METHOD, NWANT, NINT, 
+-     &                  LENWRK, OUTFIL, MAXPER
+-      PARAMETER         (NEQ=2,METHOD=2,NWANT=NEQ,NINT=6*NEQ,
+-     &                  LENWRK=14*NEQ,OUTFIL=9,MAXPER=100)
+-      DOUBLE PRECISION  ZERO, ONE, FOUR
+-      PARAMETER         (ZERO=0.0D0,ONE=1.0D0,FOUR=4.0D0)
+-C     .. Local Scalars ..
+-      DOUBLE PRECISION  HNEXT, HSTART, PI, TEND, TNOW,
+-     &                  TOL, TOUT, TSTART, TWOPI, WASTE
+-      INTEGER           CFLAG, KOUNTR, L, STPCST, STPSOK, TOTF
+-      LOGICAL           ERRASS, MESAGE
+-C     .. Local Arrays ..
+-      DOUBLE PRECISION  THRES(NEQ), WORK(LENWRK), WRKINT(NINT),
+-     &                  YNOW(NEQ), YOUT(NEQ), YPNOW(NEQ), YPOUT(1),
+-     &                  YSTART(NEQ)
+-C     .. External Subroutines ..
+-      EXTERNAL          CT, F, INTRP, SETUP, STAT
+-C     .. Scalars in Common ..
+-      DOUBLE PRECISION  B
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         ATAN
+-C     .. Common blocks ..
+-      COMMON            /BPARAM/B
+-C     .. Executable Statements ..
+-C
+-      PI = FOUR*ATAN(ONE)
+-      TWOPI = PI + PI
+-C
+-C  Set the parameter defining the character of the solutions.
+-C
+-      B = 9.8D0
+-C
+-C  Initialize output.
+-C
+-      WRITE (*,'(A,I3,A,F5.1/)')
+-     &' Template 3a with METHOD = ',METHOD,' and B = ', B
+-C
+-C  Set the initial conditions.  TEND is well past the last point
+-C  of interest, MAXPER*2*PI, so that the code can step past this
+-C  point and obtain the answer there by interpolation.
+-C
+-      TSTART = ZERO
+-      YSTART(1) =  3.3D0
+-      YSTART(2) = -3.3D0
+-      TEND = TSTART + MAXPER*TWOPI + TWOPI
+-C
+-C  Because the solution components may be computed at many points, they are
+-C  written to a file on unit OUTFIL.  Subsequently, the results can be studied,
+-C  plotted, or manipulated as necessary.  Naming of files is system-dependent,
+-C  so the name here, PLOT.DAT, may need to be changed.  Begin by writing the
+-C  initial values to PLOT.DAT in a form suitable for plotting y2 against y1.
+-C
+-      OPEN (UNIT=OUTFIL,FILE='PLOT.DAT')
+-C
+-      WRITE (OUTFIL,'(2E13.5)') YSTART(1), YSTART(2)
+-C
+-C  Set error control parameters.
+-C
+-      TOL = 1.0D-5
+-      DO 20 L = 1, NEQ
+-         THRES(L) = 1.0D-10
+-   20 CONTINUE
+-C
+-C  Call the setup routine. Set MESAGE = .FALSE. because this will be a
+-C  a relatively expensive integration and it is annoying to be told
+-C  repeatedly that 5000 function evaluations have been required.  The
+-C  global error is not assessed. Automatic selection of an initial step
+-C  size is specified by setting HSTART to zero.
+-C
+-      MESAGE = .FALSE.
+-      ERRASS = .FALSE.
+-      HSTART = ZERO
+-      CALL SETUP(NEQ,TSTART,YSTART,TEND,TOL,THRES,METHOD,'Complex Task',
+-     &           ERRASS,HSTART,WORK,LENWRK,MESAGE)
+-C
+-C  KOUNTR counts the number of output points.
+-C
+-      KOUNTR = 1
+-      TOUT = TSTART + TWOPI
+-   40 CONTINUE
+-      CALL CT(F,TNOW,YNOW,YPNOW,WORK,CFLAG)
+-C
+-C  Loop until an output point is reached, or the code gets into
+-C  trouble.  Interrogate CFLAG to decide on an appropriate course
+-C  of action.  Because MESAGE = .FALSE., it is necessary to write 
+-C  out an explanation of any trouble except for a catastrophe when an
+-C  explanation is provided automatically.
+-C
+-C  Start of "CASE" statement implemented with COMPUTED GO TO.
+-      GO TO (60,60,100,120,140,160) CFLAG
+-C
+-   60 CONTINUE
+-C
+-C  CFLAG = 1 or 2.  Successful step.  Have we reached an output point?
+-   80 CONTINUE
+-      IF (TNOW.LT.TOUT) THEN
+-C
+-C  Take another step.
+-         GO TO 40
+-      ELSE
+-C
+-C  Reached an output point.  Call INTRP to obtain the answer at TOUT.
+-C  Specify 'Solution only' and all the components of the solution
+-C  (NWANT = NEQ).  The values are output in YOUT(*).  It is necessary
+-C  to provide storage only for the number of components requested and
+-C  here YPOUT is a dummy.  In general more than one output point might
+-C  be obtained by interpolation after a single step by CT.  That is the
+-C  reason for the jump to the statement labelled 80.  For many problems 
+-C  it is very important to take advantage of this possibility.
+-C
+-         CALL INTRP(TOUT,'Solution only',NWANT,YOUT,YPOUT,F,WORK,
+-     &              WRKINT,NINT)
+-         WRITE (OUTFIL,'(2E13.5)') YOUT(1), YOUT(2)
+-         IF (KOUNTR.LT.MAXPER) THEN
+-            KOUNTR = KOUNTR + 1
+-            TOUT = TOUT + TWOPI
+-            GO TO 80
+-         END IF
+-         GO TO 180
+-      END IF
+-C
+-  100 CONTINUE
+-C
+-C  CFLAG = 3.  Although a considerable amount of work has been done, continue.
+-      GO TO 40
+-C
+-  120 CONTINUE
+-C
+-C  CFLAG = 4.  The problem appears to be stiff.
+-      WRITE (*,'(A/)') ' The problem appears to be stiff. '
+-      STOP
+-C
+-  140 CONTINUE
+-C
+-C  CFLAG = 5.  The accuracy request is too stringent.
+-      WRITE (*,'(A/)') ' The accuracy request is too stringent. '
+-      STOP
+-C
+-  160 CONTINUE
+-C
+-C  CFLAG = 6.  The global error estimation scheme broke down.  This 
+-C  cannot occur because we did not ask for global error estimation.
+-C
+-      WRITE (*,'(A/)') ' Global error estimation broke down. '
+-      STOP
+-C
+-  180 CONTINUE
+-C  End of "CASE" statement implemented with COMPUTED GO TO.
+-C
+-      CLOSE (OUTFIL)
+-C
+-C  The subroutine STAT is used to obtain some information about the progress
+-C  of the integration. TOTF is the total number of calls to F made so far
+-C  in the integration; it is a machine-independent measure of work.  At present
+-C  the integration is finished, so the value printed out refers to the overall
+-C  cost of the integration.  STPCST is the cost in calls to F of a typical
+-C  step with this method.  WASTE is the fraction of steps after the first that
+-C  were rejected.  A "large" value of WASTE is usually the result of a mistake
+-C  in the coding of F.  It can also be the result of a solution component that
+-C  is not smooth -- singular or with many places where a low order derivative
+-C  is not continuous.  STPSOK is the number of accepted steps.
+-C
+-      CALL STAT(TOTF,STPCST,WASTE,STPSOK,HNEXT)
+-      WRITE (*,'(/A,1PE10.2,0P/A,I10/A,I10/A,F10.2/A,I10)')
+-     &' The integration reached                      ', TNOW,
+-     &' The cost of the integration in calls to F was', TOTF,
+-     &' The number of calls to F per step is         ', STPCST,
+-     &' The fraction of failed steps was             ', WASTE,
+-     &' The number of accepted steps was             ', STPSOK
+-C
+-      STOP
+-      END
+-      SUBROUTINE F(T,Y,YP)
+-C     .. Scalar Arguments ..
+-      DOUBLE PRECISION  T
+-C     .. Array Arguments ..
+-      DOUBLE PRECISION  Y(*), YP(*)
+-C     .. Parameters ..
+-      DOUBLE PRECISION  K
+-      PARAMETER         (K=0.1)
+-C     .. Scalars in Common ..
+-      DOUBLE PRECISION  B
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         COS
+-C     .. Common blocks ..
+-      COMMON            /BPARAM/B
+-C     .. Executable Statements ..
+-      YP(1) = Y(2)
+-      YP(2) = -K*Y(2) - Y(1)**3 + B*COS(T)
+-      RETURN
+-      END
+//GO.SYSIN DD tmpl3a.f
+echo tmpl3b.f 1>&2
+sed >tmpl3b.f <<'//GO.SYSIN DD tmpl3b.f' 's/^-//'
+-C
+-C                             Template 3b
+-C
+-C  This template comes in two variants, 3a and 3b, in files tmpl3a.for and
+-C  tmpl3b.for, respectively.  They illustrate different aspects of the RK
+-C  suite on the same problem.  The task could be handled more simply with
+-C  UT; the purpose of the template is to illustrate how to use CT when more
+-C  control over the integration is required.  Specifically, variant 3b
+-C  illustrates how to use CT with METHOD = 3 to advance the integration a
+-C  step at a time and how to get answers at specific points.  It also
+-C  illustrates how to assess the global error with GLBERR.
+-C
+-C  Problem:  Integrate a forced Duffing equation that models an electric
+-C            circuit with a nonlinear inductor.  The behavior of solutions
+-C            depends on the value of a parameter B that governs the size of
+-C            the forcing term.  This problem is discussed at length in F.C.
+-C            Moon, Chaotic Vibrations, John Wiley & Sons, Inc., New York,
+-C            1987;  numerical results are reported on p. 272.  Written as
+-C            a first order system, the second order equation is
+-C
+-C               y1' = y2,
+-C               y2' = - 0.1 y2 - y1**3 + B cos(t).
+-C
+-C            A Poincare map is used to study the qualitative behavior of the
+-C            solutions.  This means that solution values are to be computed
+-C            at t = 2*pi*k for k = 1,2,...,n and y2(t) plotted against y1(t).
+-C
+-C            Exploration of the qualitative behavior of solutions could lead
+-C            to integration of the differential equation for a great many
+-C            initial values.  Here the single set of initial values
+-C                         y1(0) = 3.3,        y2(0) = -3.3
+-C            is considered. It is planned that the integration extend for
+-C            many multiples of the period 2*pi of the forcing function.
+-C            The template takes n = 100.  To have some accuracy at the end
+-C            of a "long" integration, it is necessary to specify a moderately
+-C            stringent tolerance.  In this variant TOL is taken to be 1.0D-7.
+-C            The general scaling of the initial values and the anticipated
+-C            behavior of the solution components suggest that threshold
+-C            values of 1.0D-10 on each component might be reasonable.
+-C
+-C            The tolerance has been reduced substantially from the value
+-C            used in Variant 3a.  At this tolerance METHOD = 3 is preferred.
+-C            Although output is desired at specific points, they do not
+-C            occur frequently enough to impact the integration -- the
+-C            tolerance is stringent enough that there are a number of steps
+-C            between output points.  One purpose of this template is to show
+-C            how to obtain output at specific points with METHOD = 3.
+-C
+-C            Another purpose of this template is to illustrate global error
+-C            assessment. GLBERR can be called after any call to CT to assess
+-C            the global error.  If the global error gets too large to be
+-C            meaningful or if the code has evidence that the scheme for
+-C            assessing the global error might be unreliable, the integration
+-C            is terminated by CT.  In the template the global error is reported
+-C            at the end of the run or whenever the assessment breaks down.
+-C
+-C            The character of the problem depends on the value of B. According
+-C            to Moon, the solution is periodic when B = 9.8 and becomes
+-C            chaotic when B is about 10.0.  The behavior of the global error
+-C            is very different in these circumstances.  By definition the
+-C            solution is very sensitive to changes in the initial conditions
+-C            when there is chaos.  This means that it is very difficult to
+-C            compute accurately a specific solution curve -- the global error
+-C            must get large rather quickly. Variant 3b takes B = 11.0 so that 
+-C            chaos is present, and the global error assessment will eventually
+-C            break down.  Also included in tmpl3.out is the output when 
+-C            B = 9.8, a periodic solution.
+-C
+-C            With the codes of RKSUITE, precisely the same results are 
+-C            obtained whether or not global error assessment is requested.
+-C            When METHOD = 2 or 3, a run costs approximately three times as 
+-C            many calls to the routine defining the differential equations 
+-C            when ERRASS is .TRUE. as when it is .FALSE., and when METHOD = 1,
+-C            it costs approximately four times as many.  For this reason the
+-C            facility is normally used only for spot checks.  A run with
+-C            B = 9.8 is relatively expensive; you might want to reduce the
+-C            the run time by reducing MAXPER.
+-C
+-C            With both variants of the template the integrations are
+-C            sufficiently expensive that if MESAGE is set .TRUE., there are
+-C            a number of returns reporting that 5000 function evaluations
+-C            have been made since the last message.  To suppress these
+-C            messages, MESAGE is set .FALSE.  Another purpose of this
+-C            template is to illustrate the processing of error messages and
+-C            the decisions that are made at each step of an integration.
+-C
+-C  NOTES:    As may be seen in tmpl3.out, with a specific computer, precision,
+-C            compiler, ... , the global error assessment breaks down at about
+-C            t = 121 after 34348 function evaluations have been made.  The
+-C            maximum weighted error seen at any step prior to this point is
+-C            about 0.07!  A more realistic assessment of the accuracy is
+-C            provided by the individual RMS weighted errors.  At this point
+-C            the larger is about 0.003.  Obviously it is difficult to follow
+-C            a solution in the presence of chaos even with a stringent
+-C            tolerance.  If the global error assessment is turned off, the
+-C            integration will proceed to completion at t = 200*pi.  It costs
+-C            65414 function evaluations.  It is important to understand what
+-C            all this means.  The integration is successful because the code
+-C            controls the local error at each step -- what it is supposed to
+-C            do.  However, when the problem itself is not stable, control of
+-C            local error does not imply control of the global error that
+-C            really interests us.  The global error assessment brings to our
+-C            attention that we are not getting what we want.  The situation
+-C            is different when B = 9.8 and the solution is periodic.  As the
+-C            results for this case in tmpl3.out show, this solution has an
+-C            acceptable accuracy for the whole interval of integration.
+-C
+-C            For the typical problem that is moderately stable the global
+-C            error is comparable to the local tolerance, and users come to
+-C            expect this.  It is unfortunate that the global error assessment
+-C            facility is too expensive for routine use because there is no 
+-C            doubt that many solutions of initial value problem are not nearly
+-C            as accurate as the users of the software think they are.
+-C
+-C            Working storage must be provided in the array WORK(*) of
+-C            length LENWRK.  Although storage is no problem with only
+-C            NEQ = 2 equations, LENWRK is taken here to be 21*NEQ,
+-C            the least that can be used in CT with METHOD = 3 when global
+-C            error assessment is done (ERRASS = .TRUE.).
+-C
+-C     .. Parameters ..
+-      INTEGER           NEQ, METHOD, LENWRK, OUTFIL, MAXPER
+-      PARAMETER         (NEQ=2,METHOD=3,LENWRK=21*NEQ,OUTFIL=9,
+-     &                  MAXPER=100)
+-      DOUBLE PRECISION  ZERO, ONE, FOUR
+-      PARAMETER         (ZERO=0.0D0,ONE=1.0D0,FOUR=4.0D0)
+-C     .. Local Scalars ..
+-      DOUBLE PRECISION  ERRMAX, HNEXT, HSTART, PI, TEND, TERRMX,
+-     &                  TNOW, TOL, TSTART, TWOPI, WASTE
+-      INTEGER           CFLAG, KOUNTR, L, STPCST, STPSOK, TOTF
+-      LOGICAL           ERRASS, MESAGE
+-C     .. Local Arrays ..
+-      DOUBLE PRECISION  RMSERR(NEQ), THRES(NEQ), WORK(LENWRK),
+-     &                  YNOW(NEQ), YPNOW(NEQ), YSTART(NEQ)
+-C     .. External Subroutines ..
+-      EXTERNAL          CT, ENVIRN, F, GLBERR, RESET, SETUP, STAT
+-C     .. Scalars in Common ..
+-      DOUBLE PRECISION  B
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         ATAN
+-C     .. Common blocks ..
+-      COMMON            /BPARAM/B
+-C     .. Executable Statements ..
+-C
+-      PI = FOUR*ATAN(ONE)
+-      TWOPI = PI + PI
+-C
+-C  Set the parameter defining the character of the solutions.
+-C
+-      B = 11.0D0
+-C
+-C  Initialize output.
+-C
+-      WRITE (*,'(A,I3,A,F5.1/)')
+-     &' Template 3b with METHOD = ',METHOD,' and B = ', B
+-C
+-C  Set the initial conditions.  TEND is set to the first output point
+-C  because with METHOD = 3, output is obtained by integrating to TEND
+-C  and then resetting TEND to obtain the next output point.
+-C
+-      TSTART = ZERO
+-      YSTART(1) =  3.3D0
+-      YSTART(2) = -3.3D0
+-      TEND = TSTART + TWOPI
+-C
+-C  Because the solution components may be computed at many points, they are
+-C  written to a file on unit OUTFIL.  Subsequently, the results can be studied,
+-C  plotted, or manipulated as necessary.  Naming of files is system-dependent,
+-C  so the name here, PLOT.DAT, may need to be changed.  Begin by writing the
+-C  initial values to PLOT.DAT in a form suitable for plotting y2 against y1.
+-C
+-      OPEN (UNIT=OUTFIL,FILE='PLOT.DAT')
+-C
+-      WRITE (OUTFIL,'(2E13.5)') YSTART(1), YSTART(2)
+-C
+-C  Set error control parameters.
+-C
+-      TOL = 1.0D-7
+-      DO 20 L = 1, NEQ
+-         THRES(L) = 1.0D-10
+-   20 CONTINUE
+-C
+-C  Call the setup routine. Set MESAGE = .FALSE. because this will be a
+-C  a relatively expensive integration and it is annoying to be told
+-C  repeatedly that 5000 function evaluations have been required.  The
+-C  global error is assessed. Automatic selection of an initial step
+-C  size is specified by setting HSTART to zero.
+-C
+-      MESAGE = .FALSE.
+-      ERRASS = .TRUE.
+-      HSTART = ZERO
+-      CALL SETUP(NEQ,TSTART,YSTART,TEND,TOL,THRES,METHOD,'Complex Task',
+-     &           ERRASS,HSTART,WORK,LENWRK,MESAGE)
+-C
+-C  KOUNTR counts the number of output points.
+-C
+-      KOUNTR = 1
+-   40 CONTINUE
+-      CALL CT(F,TNOW,YNOW,YPNOW,WORK,CFLAG)
+-C
+-C  The code is not permitted to go past TEND, the end of the interval of
+-C  integration, so it will shorten the step when necessary so as to produce
+-C  an answer at TEND exactly.  To obtain answers at specific points with
+-C  METHOD = 3, which has no interpolation capability, this fact is exploited
+-C  by stepping to TEND, and then resetting TEND to the next outpoint point
+-C  with the subroutine RESET.  KOUNTR counts the number of output points.
+-C
+-C  Loop until an output point is reached, or the code gets into trouble.
+-C  Interrogate CFLAG to decide on an appropriate course of action.
+-C  Because MESAGE = .FALSE., it is necessary to write out an explanation
+-C  of any trouble except for a catastrophe when an explanation is provided
+-C  automatically.
+-C
+-C  Start of "CASE" statement implemented with COMPUTED GO TO.
+-      GO TO (60,60,80,100,120,140) CFLAG
+-C
+-   60 CONTINUE
+-C
+-C  CFLAG = 1 or 2.  Successful step.  Have we reached an output point?
+-      IF (TNOW.LT.TEND) THEN
+-C
+-C  Take another step.
+-         GO TO 40
+-      ELSE
+-C
+-C  Reached an output point.  Save the solution and reset the end point to
+-C  continue on. After MAXPER output points, jump to where the global error
+-C  assessment is obtained.
+-C
+-         WRITE (OUTFIL,'(2E13.5)') YNOW(1), YNOW(2)
+-         IF (KOUNTR.LT.MAXPER) THEN
+-            KOUNTR = KOUNTR + 1
+-            TEND = TEND + TWOPI
+-            CALL RESET(TEND)
+-            GO TO 40
+-         ELSE
+-            GO TO 160
+-         END IF
+-      END IF
+-C
+-   80 CONTINUE
+-C
+-C  CFLAG = 3.  Although a considerable amount of work has been done, continue.
+-      GO TO 40
+-C
+-  100 CONTINUE
+-C
+-C  CFLAG = 4.  The problem appears to be stiff.
+-      WRITE (*,'(A/)') 
+-     &' The problem appears to be stiff. '
+-      STOP
+-C
+-  120 CONTINUE
+-C
+-C  CFLAG = 5.  The accuracy request is too stringent.
+-      WRITE (*,'(A/)')
+-     &' The accuracy request is too stringent. '
+-      STOP
+-C
+-  140 CONTINUE
+-C
+-C  CFLAG = 6.  The global error estimation scheme broke down.  Report this
+-C              fact and then jump to where the assessment is obtained.
+-C
+-      WRITE (*,'(A/)') 
+-     &' Global error estimation broke down. '
+-      GO TO 160
+-C
+-  160 CONTINUE
+-C  End of "CASE" statement implemented with computed GO TO.
+-C
+-      CLOSE (OUTFIL)
+-C
+-C  Obtain the global error assessment by a call to GLBERR and report it. To
+-C  facilitate experimentation with the cost of global error assessment, test
+-C  whether ERRASS was set .TRUE. so that a call to GLBERR makes sense.
+-C
+-      IF (ERRASS) THEN
+-         CALL GLBERR(RMSERR,ERRMAX,TERRMX,WORK)
+-         WRITE (*,'(/A,1PE9.2)')
+-     &' The tolerance was ',TOL
+-         WRITE (*,'(A,1PE9.2,A,1PE9.2,A)')
+-     &' The worst global error observed was ',ERRMAX,
+-     &'.  (It occurred at ',TERRMX,'.)'
+-         WRITE (*,'(A)')
+-     &' The RMS errors in the individual components were:'
+-         DO 180 L = 1,NEQ
+-            WRITE (*,'(50X,1PE9.2)') RMSERR(L)
+-  180    CONTINUE
+-      END IF
+-C
+-C  The subroutine STAT is used to obtain some information about the progress
+-C  of the integration. TOTF is the total number of calls to F made so far
+-C  in the integration; it is a machine-independent measure of work.  At present
+-C  the integration is finished, so the value printed out refers to the overall
+-C  cost of the integration.  STPCST is the cost in calls to F of a typical
+-C  step with this method.  WASTE is the fraction of steps after the first that
+-C  were rejected.  A "large" value of WASTE is usually the result of a mistake
+-C  in the coding of F.  It can also be the result of a solution component that
+-C  is not smooth -- singular or with many places where a low order derivative
+-C  is not continuous.  STPSOK is the number of accepted steps.
+-C
+-      CALL STAT(TOTF,STPCST,WASTE,STPSOK,HNEXT)
+-      WRITE (*,'(/A,1PE10.2,0P/A,I10/A,I10/A,F10.2/A,I10)')
+-     &' The integration reached                      ', TNOW,
+-     &' The cost of the integration in calls to F was', TOTF,
+-     &' The number of calls to F per step is         ', STPCST,
+-     &' The fraction of failed steps was             ', WASTE,
+-     &' The number of accepted steps was             ', STPSOK
+-C
+-      STOP
+-      END
+-      SUBROUTINE F(T,Y,YP)
+-C     .. Scalar Arguments ..
+-      DOUBLE PRECISION  T
+-C     .. Array Arguments ..
+-      DOUBLE PRECISION  Y(*), YP(*)
+-C     .. Parameters ..
+-      DOUBLE PRECISION  K
+-      PARAMETER         (K=0.1)
+-C     .. Scalars in Common ..
+-      DOUBLE PRECISION  B
+-C     .. Intrinsic Functions ..
+-      INTRINSIC         COS
+-C     .. Common blocks ..
+-      COMMON            /BPARAM/B
+-C     .. Executable Statements ..
+-      YP(1) = Y(2)
+-      YP(2) = -K*Y(2) - Y(1)**3 + B*COS(T)
+-      RETURN
+-      END
+//GO.SYSIN DD tmpl3b.f

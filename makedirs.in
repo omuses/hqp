@@ -1,0 +1,14 @@
+#
+# Directories used for building HQP
+#
+
+TCL_INCDIR = -I@TCL_INCDIR@
+TCL_LIBDIR = @LFLAG@@TCL_LIBDIR@ @RFLAG@@TCL_LIBDIR@
+
+ASCEND_INCDIR = @ASCEND_INCDIR@
+
+OMU_INCDIR = -I../omu
+ADOL_INCDIR = -I../adol-c/SRC
+HQP_INCDIR = -I../hqp
+IF_INCDIR = -I../iftcl
+MES_INCDIR = -I../meschach

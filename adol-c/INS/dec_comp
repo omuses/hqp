@@ -1,0 +1,44 @@
+#**************************************************************************
+# Which compilers do you use?                                    COMPILER *
+CC  = cxx  # C++
+MCC = cc   # C
+
+
+#**************************************************************************
+#                                                          COMPILER FLAGS *
+# GENERAL FLAGS (e. g. optimization) 
+#CFLAG = -g
+#CFLAG = 
+CFLAG = -O2
+#CFLAG = -O3 
+
+# INCLUDES
+IFLAG = -I$(ADHEADERS) 
+
+# LIBRARIES (COMPILING)
+LFLAG = -L$(ADLIB)
+
+# LIBRARIES (LINKING)
+LIBS  = -lad -lm
+
+# PREPROCESSOR FLAGS
+PPFLAGS = -E -C
+
+
+#**************************************************************************
+# ar/ranlib utility                                         LIBRARY TOOLS *
+ARCHIVE = ar rcv  
+RANLIB  = ar qs
+# RANLIB =`if [ -r /bin/ranlib -o -r /usr/bin/ranlib ]; \
+#         then echo ranlib; else echo true; fi`
+
+
+
+
+
+
+
+
+
+
+

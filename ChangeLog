@@ -1,0 +1,328 @@
+02/26/01: rf: change version to 1.7b1
+
+02/26/01: rf
+	- omu/Hqp_Omuses.[hC], omu/Omu_Program.[hC]:
+	  move _ks and _ts from Hqp_Omuses to Omu_Program
+	- omu/Omu_Program: new public method setup_stages() without
+	  call arguments to be called by Hqp_Omuses;
+	- omu/Omu_Program:  new public methods ts() and ks()
+	  for accessing _ts and _ks
+	
+02/15/01: rf
+	- hqp/hqp_solve.tcl: introduce hqp_logging to optionally
+	  disable log output
+
+02/07/01: rf
+	- add omu/Omu_IntEuler.[hC], extend omu/Makefile, omu/Omu_Init.C
+	- omu/Omu_IntRK4.C: add support for Omu_Integrator::_stepsize
+	
+01/27/01: rf
+	- hqp/Hqp_Init.C: disable Meschach's error counting & exit
+	  (call count_errs(0) in Hqp_Init())
+	
+01/27/01: rf
+	- omu/Omu_Integrator: introduce _stepsize (prg_int_stepsize)
+	- omu/Omu_IntDASPK, omu/Omu_IntIMP: implement support for _stepsize
+	- Makefile, Makefile.hqp: replace "make" with $(MAKE)
+	  (as proposed by Christian Schulz)
+	
+12/05/00: rf: resolve meschach/err.h, catch conflict
+	- configure.in: change version to 1.7a5
+	- rename meschach/err.h to meschach/m_err.h
+	- m_err.h: rename macro catch to m_catch
+	- adapt meschach/{matrix.h, err.c, torture.c, ztorture.c, makefile,
+	  version.c}
+	- hqp/Meschach.h: don't need to redefine catch anymore
+	- hqp/Hqp_IpsMehrotra.C, hqp/HqpIpsFranke.C: use m_catch
+
+12/03/00: rf
+	- configure.in: change version to 1.7a4
+	- iftcl/If.[hC], hqp_docp/Docp_Main.C: change name "Float" to "Real"
+	- iftcl: add If_Real.h, If_RealVec.h, If_RealMat.h
+	  (should be used instead of If_Float* includes and types)
+	
+12/01/00: rf
+	- configure.in: change version to 1.7a3
+	
+12/01/00: rf
+	- moved PERMP from hqp/t_mesch.h to hqp/Meschach.h
+	- configure.in: remove check for HUGE_VAL
+	  (as this was a temporary problem of intermediate Cygwin 1.1)
+	
+11/29/00: rf: remove newly defined types from Hqp_Docp C calling interface
+	(use same types as in Hqp implementation, i.e. Real, VECP, ...
+	 instead of Float, FloatVec, ...
+	 reserve the new names for a possible future component interface)
+	- remove iftcl/If_types.h
+	- modify iftcl/If.[hC], hqp/Hqp.[hC], omu/Hqp_Docp_stub.[hC],
+	  hqp_docp/Docp_Main.C, hqp_docp/Prg_Di.[hC]
+	
+11/25/00: rf
+	- hqp/sprcm.C: bug fix in function sp_rcm_scan
+	- hqp/Hqp_Docp.C: modified problem setup for correct hot start
+	- hqp_docp/Prg_Di.C, hqp_docp/Docp_Main.C: new theHqp_Docp_handle
+	- hqp/Hqp.[hC] corrections for new data types
+	
+11/23/00: rf: improved error handling
+	- hqp/Meschach.h: introduce macro "catcherr" using Meschach's catch
+	- hqp/Hqp_IpsFranke.C, hqp/Hqp_IpsMehrotra.C: use catcherr
+	  to detect degeneration, instead of direct access to setjmp()
+	- omu/Hqp_Omuses.C: apply Meschach's "catchall" to integrator->solve,
+	  so that integration errors result in SQP step shortening
+	  
+11/22/00: rf
+	- omu/Omu_Init.C, omu/Makefile: add Omu_IntSDIRK
+	  (provided by H. Linke)
+	- hqp/Hqp_Docp.C: break updating stages when _f becomes infinite
+	
+11/20/00: rf
+	- omu/Hqp_Omuses.[hC]: implemet setup_struct() and call
+	  obtain_structure from there (instead from setup_vars)
+	- hqp/Hqp_Docp.C: call setup_horizon() from general setup()
+	  (instead from setup_x)
+	
+11/15/00: rf
+	- hqp/Hqp_SqpSolver::feasible_vals:
+	  introduce check for is_finite(_prg->f())
+	- iftcl/If.[hC]: introduce If_SizeOfInt() and If_SizeOfFloat()
+	  (as proposed by Christian Schulz)
+
+11/09/00: rf: introduced C calling interface to iftcl
+	- change version to 1.7a2
+	- mv iftcl/If.h to iftcl/If_id.h
+	- new file iftcl/If.h for public declarations,
+	  iftcl/If.C for implementation, iftcl/If_types.h for types
+	- Hqp.C: Hqp_Docp_create initializes Tcl internally,
+	  if this has not been done by calling program
+	- ./configure.in: slight modification for building a DLL
+	- hqp_docp: demo new features in Docp_Main.C
+	
+11/07/00: rf: improved generation of Hqp shared object
+	- change version to 1.7a1
+	- Hqp.[hC]: provide new Hqp Docp interface
+	  that hides implementation details
+	  (i.e. no C++ inheritance from implementation in hqp/Hqp_Docp)
+	- adapt hqp_docp to demonstrate new interface
+	- new file hqp/Hqp_Docp_wrapper.h to connect interface to Hqp_Docp
+	- new files omu/Hqp_Docp_stub.[hC] to mimic Hqp_Docp for Omuses
+	- omu/Hqp_Omuses is now derived from omu/Hqp_Docp_stub
+	- extensions to configure.in for generation of hqp.dll using cl
+	
+11/03/00: rf: add support for cl compiler
+	- hqp/Hqp_IpSpSC.C: correct prototype for spCHOLsol()
+	- hqp/meschext_ea.h: remove argument lists after #undef's
+	- new file makedirs (former directories part of makedefs)
+	  that is also included by hqp_docp/Makefile and odc/Makefile
+	  (as automatically configured paths need to be customized for cl)
+	- extensions in configure.in, makedefs.in, and Makefiles
+	- hqp/Meschach.h: additionally include math.h before matrix.h for cl
+
+11/03/00: rf:
+	- hqp/Meschach.h: add std C++ methods "size" to VECP, MATP and IVECP
+	- separate hqp/Hqp.h into hqp/Hqp.h (external visible declarations)
+	  and hqp/Hqp_impl.h (further declarations for HQP implementation)
+	- former Hqp.C becomes Hqp_impl.C
+
+11/01/00: rf:
+	- bug fix in meschach/hessen.c after call to hhvec in hsehldr.c 
+	  to avoid infinite loop in symmeig()
+	- hqp/Hqp_HL_BFGS.C: change default _eigen_control to true
+	- omu/Omu_IntDASPK.C (realloc): more sensible allocation of memory
+	  when using direct solver
+
+08/02/00: rf:
+	- change version to 1.6.1
+	- omu/Omu_IntDASPK.C: add _nsteps (prg_int_nsteps) for
+	  user-defined number of integrator steps
+	
+06/06/00: release HQP 1.6
+
+06/05/00: rf:
+	- omu/Omu_IntDASPK.C changed defaults for _krylov_prec
+	  to false;
+	  changed _krylov and staggert mode back to their original
+	  values, false and true, respectively!?
+
+05/30/00: ea:
+	- omu/Omu_IntIMP.[hC] added
+	  implicit midpoint rule for stiff ODEs
+	
+05/22/00: rf:
+        - omu/Omu_Init.C: correct include Omu_IntOdeTS.h to Omu_IntOdeTs.h
+          as reported by H. Mittelmann
+
+05/18/00: release HQP 1.6b2
+	
+05/17/00: rf:
+	- omu/Omu_Vector.C: add explicit call to constructor of VECP from
+	  copy constructor of Omu_Vector
+	- omu/Hqp_Omuses.C: add check that vector dimension is not changed
+	  in Omu_Program::init_simultion
+
+05/13/00: rf:
+	- omu/Omu_Program.[hC]: add high-level contsistic
+	
+05/13/00: rf:
+	- omu/Hqp_Omuses.C, omu/Omu_IntDASPK.C, omu/Omu_IntODE.[hC]:
+	  add support for _nv>0 expansion variables, i.e. sensitivities 
+	  are only calculated with respect to _nx states used by optimization
+	- omu/Omu_Integrator.[hC]:
+	  new member _nx for number of states used as optimization variables
+	- omu/Omu_IntDASPK.C: don't provide analytical Jacobian to DASPK,
+	  if it is not explicitly given via low level continuous
+	
+04/29/00: rf:
+	- extend omu/Omu_IntDASPK.[hC] with iterative Krylov capabilities
+	  as worked out by hl
+	- omu/Omu_Integrator: introduce new flag _serr (prg_int_serr)
+	  for user coice if sensitivities should be considered in error test
+	  (default: false)
+	- omu/Omu_IntRKsuite, omu/Omu_IntDASPK: add support for _serr
+	- omu/Hqp_Omuses::obtain_struct:
+	  exclude discrete states from determination of semi-bandwidths
+	- hqp/Hqp_Docp.[hC], omu/Hqp_Omuses.[hC]:
+	  remove method reinit_bounds() and call init_vars() directly
+	  from Hqp_Docp::reinit_bd
+	- hqp/Hqp_SqpSolver.C: take out update of Jacobians if hot started
+
+04/14/00: release HQP 1.6b1 
+	
+04/09/00: rf: integrate DASPK3.0 with Omuses
+	- add files omu/Omu_IntDASPK.[hC]
+	- omu/Omu_Integrator.[hC]: remove dimensions from init_sample()
+  	  as they are constant within one stage;
+	  pass xk and uk to init_stage() instead.
+	  omu/Hqp_Omuses.C: change calls appropriately
+	- omu/Hqp_Omuses.C, omu/Omu_Vars.[hC]: introduce flag D_is_const
+	  to indicate explicit differential equations
+	- omu/Omu_Integrator.[hC]: introduce new variables
+	  _n (number of continuous states) and _m (number of parameters)
+	- omu/Omu_Integrator.[hC]: introduce general _res_evals,
+	  _sen_evals, and _jac_evals;
+	  update other integrators appropreately
+	- omu/Omu_Program.C: bug fix in ll. continuous for DAE integrators
+
+04/07/00: rf
+	- omu/Omu_Integrator.C: change default _rtol from 1e-6 to 1e-8
+	
+04/06/00: rf: add hot start feature to Sqp solver:
+	- hqp/Hqp_SqpSolver.[hC]: new method qp_reinit_bd 
+	  (Tcl command sqp_qp_reinit_bd), 
+	  which causes a re-initialization of bounds
+	- hqp/Hqp_SqpProgram.[hC]: add callback method reinit_bd 
+	  (provide default that does nothing)
+	- hqp/Hqp_Docp.[hC]: implement reinit_bd, provide new
+	  interface method reinit_bounds(k, ...)
+	- omu/Hqp_Omuses.[hC]: implement reinit_bounds
+	  (for now just call Omu_Program::setup assuming that no dims change)
+	
+04/03/00: rf
+	- add low-level continuous to omu/Omu_Program,
+	  which calculates Jacobians using ADOL-C by default
+	  --> can be overridden to provide analytic Jacobians
+	- let omu/Omu_IntODE call low-level continuous
+	- change default omu/Omu_Integrator::_atol from 1e-12 to 1e-8
+	- omu/Hqp_Omuses.C: use Dopri5 as default integrator
+	
+03/30/00: ea
+	- move _rtol, _atol, prg_int_atol, prg_int_rtol to Omu_Integrator.[hC]
+	- update Omu_IntDopri5.[hC]
+	
+03/29/00: ea
+	- initialize CVS repository with version 1.6a4
+	
+03/29/00: rf
+	- make ADOL-C working with Cygwin
+	  (mv adol-c/SRC/{adallocc,taputilc,tayutilc}.c to 
+ 	        adol-c/SRC/{adalloc,taputil,tayutil}.c and
+	      adol-c/SRC/DRIVERS/{driversc,odedriversc}.c to
+	        adol-c/SRC/DRIVERS/{drivers,odedrivers}.c and
+	      adol-c/SRC/SPARSE/{sparsec}.c to
+	        adol-c/SRC/SPARSE/{sparse}.c)
+	- configure.in: temporarily disabled check for g2c.h and f2c.h
+	  (due to name clash with ADOL-C 1.8.7 SRC/DRIVERS/taylor.h)
+	
+03/27/00: hl, ea
+	- update to ADOL-C 1.8.7
+	
+-------------------------------------------------------------------------------
+11/10/99: ea
+	- Omu_IntRK4.[hC]: prg_int_atol, prg_int_rtol (dummy)
+	
+08/20/99: ea
+	- bugfix in Hqp_IpLQDOCP.C
+	
+05/07/99:  ea
+	- update Omu_IntOdeTS.[Ch] 
+	
+04/27/99: ea
+	- update to ADOL-C 1.8.2
+	- change configure.in for egcs-1.1.2 (g77, libg2c)
+	- add omu/Omu_IntDopri5.[hC]: Dormand-Prince method
+-------------------------------------------------------------------------------	
+03/22/00: rf
+	- include Omuses, Odc, and ADOL-C with distribution
+	- omu/Omu_Init.C: add call to Tcl_PkgRequire/Provide
+	- meschach/{machine, matrix, sparse}.h: replace __*_DECLS with MESCH__*_DECLS
+	- remove
+#ifdef HAVE_IEEEFP_H
+#include <ieeefp.h>
+#endif
+          from hqp/Hqp_{Docp, DocpAdol, IpsFranke, IpsMehrotra, SqpPowell, SqpSchittkowski}.C as finite() is no longer called.
+	- remove check for ieeefp.h from configure.in and makedefs.in
+	- configure.in, omu/Omu_IntRKsuite.C:
+	  add explicit support for g77, g2c.h, and -lg2c (avoid links)
+
+01/06/00: rf
+	- modify configure script (consider TEA, run non-interactive)
+	- define VERSION in configure.in instead of in hqp/Hqp_Init.C
+	- let U_INT_DEF in meschach/machine.h be determined with configure
+
+01/06/00: rf
+	- move defininition of const int Hqp_Docp::Periodical from .h to .C
+	- define own is_finite in Hqp.h (to get rid of BSD finite)
+	- exchange use of finite with is_finite
+	- remove (void) arg form t_mesch.[hC] and default args from t_mesch.C
+	- remove qsort.c from HQP sources (in hqp/Makefile)
+	
+12/25/99: rf
+	- hqp/Hqp_Init.C: add call to Tcl_PkgRequire
+	- hqp/Hqp_Init.C: remove utime implementation
+	
+12/23/99: rf
+	- change sign in Hqp_SqpProgram::test_cmd, so that it can
+	  be used to approximate gradients numerically
+	- extended member access methods for Hqp_SqpSolver
+	- hqp_solve.tcl: print header line only if sqp_iter == 0
+	- hqp/Meschach.[hC]: sp_update_val returns int != 0 if new entry
+	  created
+	- hqp/Prg_CUTE*.C use sp_update_val instead of own sp_set_val2
+	- move sprow_zero from Prg_CUTE*.C to Meschach.[hC]
+	
+12/21/99: rf
+	Resolve name clashes with ASCEND
+	- meschach/matrix.h L480: take away declaration of cube
+	- meschach/norm.c L68ff: take away definition of cube
+	- meschach/bkpfacto.c L45: make sqr static
+
+12/21/99: rf
+	- rename hqp/Hqp_CUTEstubs1.C to hqp/Hqp_CUTE_stubs_.C
+	- rename hqp/Hqp_CUTEstubs2.C to hqp/Hqp_CUTE_dummies.C
+
+12/17/99: rf
+	- add files hqp/Prg_ASCEND.[hC], hqp/Hqp_ASCEND_dummies.C
+	
+12/16/99: rf
+	- rename __P to MESCH__P in meschach/{machine,matrix,sparse}.h
+	  as gcc version egcs-2.91.66 defines __P with throw()
+
+4/13/99: release HQP 1.5p1
+4/13/99: rf
+	- rename hqp/hqp.tcl to hqp/hqp_solve.tcl to avoid name conflict 
+	with hqp/Hqp.C on systems that don't distinguish lower and upper case
+	- update hqp/Hqp_Init.C to evaluate hqp_solve
+	- update hqp/Makefile to build hqp_solve
+	- change eigen_control default to false,
+ 	  (because Meschach's symmeig() may have endless iteration)
+
+	

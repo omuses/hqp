@@ -1,0 +1,53 @@
+# Makefile for omu
+# ("makedepend" may be used for depencies)
+
+include ../makedirs
+include ../makedefs
+
+CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
+          $(HQP_INCDIR) $(ADOL_INCDIR) $(OMU_DEFS)
+
+SRCS =	Omu_Init.C \
+	Hqp_Docp_stub.C \
+	Hqp_Omuses.C \
+	Omu_Vector.C \
+	Omu_Vars.C \
+	Omu_Program.C \
+	Omu_Integrator.C \
+	Omu_IntODE.C \
+	Omu_IntEuler.C \
+	Omu_IntRK4.C \
+	Omu_IntOdeTs.C \
+	Omu_IntDopri5.C \
+	Omu_IntIMP.C \
+	Omu_IntSDIRK.C \
+        $(OMU_INTRKSUITE_C) \
+        $(OMU_INTDASPK_C)
+
+OBJS = $(SRCS:.C=.o) $(RKSUITE_O)
+
+LIBRARY = omu
+
+lib: $(OBJS) $(DASPK) Makefile
+	rm -f $(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX)
+	$(LD)$(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX) $(OBJS) \
+	../adol-c/SRC/*.o ../adol-c/SRC/*/*.o $(DASPK_OBJS)
+	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
+
+daspk:
+	PWD=`pwd`; cd ../daspk/examples/DM; make heat heatilu; cd $(PWD)
+
+$(RKSUITE_O): $(RKSUITE_O:.o=.f)
+	PWD=`pwd`; cd `dirname $(RKSUITE_O)`; \
+	$(FORTRAN_COMP) $(FORTRAN_FLAGS) -c rksuite.f; cd $(PWD)
+
+.C.o:
+	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<
+
+clean:
+	rm -f *.o *.obj $(LIB_PREFIX)omu.* *~
+
+depend:
+	makedepend -- $(CCFLAGS) -- $(SRCS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

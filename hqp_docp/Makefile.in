@@ -1,0 +1,85 @@
+#
+# Makefile for the package Odc
+#
+
+include ../makedirs
+
+O = @OBJ_SUFFIX@
+
+.SUFFIXES: .c .C $O @LIB_SUFFIX@
+
+#
+# machine dependencies
+#
+
+#
+# additional objects to create an executable
+# 
+MACH_OBJS = @TCL_LIBS@
+
+LFLAG = @LFLAG@
+#
+# flag to add a path for the run-time loader
+# (e.g. -R -Wl,-rpath, -Wl,+b,)
+# -- or just use $LFLAG resulting in no run-path
+#    and make libtcl, libhqp, and libomu known through 
+#    the environment variable LD_LIBRARY_PATH --
+RFLAG = @RFLAG@
+
+#
+# paths 
+#
+OMU_PREFIX = @prefix@
+
+OMU_INCDIR = -I../meschach -I../iftcl -I../hqp \
+             -I${OMU_PREFIX}/include/omuses
+
+OMU_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
+             $(LFLAG)${OMU_PREFIX}/lib $(RFLAG)${OMU_PREFIX}/lib
+
+#
+# compiler and flags
+#
+
+CXX = @CXX@
+CC = @CC@
+
+CFLAGS = @GFLAG@ @WFLAG@ -DDEBUG \
+         $(OMU_INCDIR) $(TCL_INCDIR)
+
+LDFLAGS = $(OMU_LIBDIR) $(TCL_LIBDIR)
+
+#
+# machine independent part
+#
+
+GMALLOC_O = @GMALLOC_O@
+
+SRCS = 	Docp_Main.C \
+	Prg_Di.C
+
+OBJS = $(SRCS:.C=$O) $(GMALLOC_O)
+
+RESULT = docp
+
+all: $(OBJS) Makefile
+	$(CXX) -o $(RESULT)  $(OBJS) \
+	@LDFLAGS_START@ $(LDFLAGS) @LDLIB_PREFIX@hqp@LDLIB_SUFFIX@ $(MACH_OBJS)
+
+gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
+	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \
+	make `basename $(GMALLOC_O)`; cd $(PWD)
+
+.C$O:
+	$(CXX) -c @CXXFLAGS@ $(CFLAGS) $<
+
+.c$O:
+	$(CC) -c $(CFLAGS) $<
+
+clean:
+	rm -f $(RESULT)@EXE_SUFFIX@ *.o *.obj *~ *core
+
+depend:
+	makedepend -- $(CFLAGS) -- $(SRCS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

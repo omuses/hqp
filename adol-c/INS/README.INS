@@ -1,0 +1,77 @@
+--------------------------------------------------------------
+README.INS   ADOL-C version 1.8.7            as of MAR/10/2000
+--------------------------------------------------------------
+
+This directory, i.e. $(ADOLC_DIR)/INS, contains the component
+files necessary to generate all makefiles.
+
+--------------------------------------------------------------
+INSTALLATION OF MAKEFILES
+
+Invoking the commmand 
+
+    make <operating_system>install
+
+creates all makefiles necessary to compile 
+
+  - the ADOL-C library libad.a  in directory $(ADOLC_DIR)/SRC), 
+  - the documented examples in directory $(ADOLC_DIR)/DEX, and
+  - the examples in directory $(ADOLC_DIR)/EXA.
+
+--------------------------------------------------------------
+OPERATING SYSTEM
+
+<operating_system> may take one of the following values
+
+  sun    --> Sun Microsystems Inc.,  
+             tested on: SunOS 5.5.1 
+                 using: SC4.0 18 Oct 1995 C 4.0 & C++ 4.1 
+
+  aix    --> IBM
+             tested on: AIX Version 3.2.5e4
+                 using: xlc & xlC
+  
+  gnu    --> Any system using GNU C/C++
+             tested on: LinuX (Kernel 2.0.35)
+                 using: gcc version 2.7.2.3
+             tested on: CRAY Origin 2000 (MIPS RISC R10000)
+	                IRIX Release 6.5 IP27
+	         using: gcc version 2.8.1
+             tested on: SunOS 5.7 (Solaris)
+	         using: gcc version egcs 2.91.66 (19990314) 
+             tested on: DEC Alpha (OSF 1)
+	         using: gcc version 2.95.2 (19991024)
+
+  DEC    --> DEC
+             tested on: DEC Alpha Digital Unix V4.0B (Rev. 564)
+                 using: DEC's cxx & cc
+  
+  sgi    --> Silicon Graphics 
+             tested on: CRAY Origin 2000 (MIPS RISC R10000)
+	                IRIX Release 6.5 IP27
+                 using: MIPSpro Compilers: Version 7.2.1
+
+  xxx    --> for OWN needs
+
+The provided files 
+
+  <operating_system>_comp
+
+contain all compiler configurations. If necessary, edit the file 
+corresponding to the desired operating system and choose/set 
+appropriate compiler options (e.g. optimization flags). Possibly
+change the C/C++ compilers.
+
+--------------------------------------------------------------
+CLEANUP
+
+Invoking the command 
+
+    make uninstall
+
+cleans up all ADOL-C directories.
+
+--------------------------------------------------------------
+
+
+

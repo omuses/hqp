@@ -1,0 +1,21 @@
+%
+% Ocl script for initializing a model prior to Flamola output
+%
+% rf, 1/17/97
+%
+
+begin
+  Crane::Crane model;
+  Simulator sim(model);
+  sim.display(0, 511);
+
+  % initial states
+  model.s := 25.0;
+  model.v := 0.0;
+  model.phi := 0.0;
+  model.omega := 0.0;
+
+  % initialize all model variables
+  sim.step;
+  sim.step;
+end;

@@ -1,0 +1,79 @@
+#!./odc
+#
+# rf, 2/7/97
+#
+
+## say Hello
+
+set version "Omuses [omu_version]"
+if [catch {
+  label .l \
+    -text $version
+  button .b \
+    -text Exit \
+    -command {hqp_exit user}
+  pack .l .b
+  update
+}] {
+  puts $version
+}
+
+## use the first runtime argument as problem name
+## run a problem specific script file if provided
+## else run without configurations
+
+set pname [lindex $argv 0]
+set fname [string tolower $pname].tcl
+if [file exists $fname] {
+  source $fname
+} else {
+
+if [catch {prg_name $pname} result] {
+  puts stderr "Usage: run <program>"
+  puts stderr $result
+  exit
+}
+
+## configure the problem and the solver
+
+## use simple RK4 integration for continuous-time equations
+#prg_integrator RK4
+
+## use RKsuite (default)
+#prg_integrator RKsuite
+#prg_int_rtol 1e-6
+#prg_int_atol 1e-12
+
+## optimization stopping limit
+#sqp_eps 1e-6
+
+## run the solver
+
+# setup the problem
+prg_setup
+
+# perform an initial-value simulation
+# (this is only needed to initialize additional states variables)
+prg_simulate
+
+# initialize the SQP solver
+sqp_init
+
+# evaluate the Tcl procedure hqp_solve and catch errors
+catch hqp_solve result
+
+## print the results and exit
+
+puts "Result   : $result"
+puts "Objective: [prg_f]"
+puts "Obj-evals: [prg_fbd_evals]"
+set x [prg_x]
+set n [llength $x]
+if {$n <= 100} {
+  puts "Variables:"
+  for {set i 0} {$i < $n} {incr i} {
+    puts [lrange $x $i [incr i 7]]
+  }
+  exit
+}
+}

@@ -1,0 +1,40 @@
+--------------------------------------------------------------
+README       ADOL-C version 1.8.7            as of MAR/10/2000
+--------------------------------------------------------------
+
+ADOL-C = Automatic Differentiation by Overloading in C/C++ 
+
+--------------------------------------------------------------
+
+The ADOL-C package is divided into following subdirectories
+
+  SRC  --> ADOL-C source to create the library libad.a
+  INS  --> Installation scripts and makefiles
+  DOC  --> LaTeX source and Postscript version of the manual
+  DEX  --> Documented examples
+  EXA  --> More examples
+    
+--------------------------------------------------------------
+
+Detailed information about design goals, application, 
+implementation details, and installation of ADOL-C 1.8 can be 
+found in the manual 
+
+  DOC/adolc18.ps
+
+and the READMEs placed in each subdirectory. 
+
+--------------------------------------------------------------
+
+Any difficulties and questions should be reported to:
+
+  adol-c@math.tu-dresden.de
+
+--------------------------------------------------------------
+
+Updates and new versions of ADOL-C can be found at
+
+  http://www.math.tu-dresden.de/~adol-c
+  ftp://ftp.math.tu-dresden.de/pub/ADOLC
+
+--------------------------------------------------------------
