@@ -79,7 +79,6 @@ int If_Bool::put(Tcl_Obj *CONST objPtr)
 //--------------------------------------------------------------------------
 int If_Bool::get()
 {
-  int value = (int)*_varPtr;
   Tcl_Obj *objPtr = Tcl_NewBooleanObj(*_varPtr);
 
   Tcl_SetObjResult(theInterp, objPtr);

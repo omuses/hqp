@@ -99,6 +99,8 @@ int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
 	     Tcl_AppendResult(theInterp, "error accessing ",
 			      var->_ifName, NULL);
 	     return TCL_ERROR);
+
+  return TCL_ERROR; // this shall never be reached
 }
 
 
