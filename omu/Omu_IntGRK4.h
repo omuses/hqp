@@ -112,7 +112,7 @@ class Omu_IntGRK4: public Omu_Integrator {
     void sys(double t, const VECP x, VECP xp);
     void sys_jac(double t, const VECP x, VECP xp, MATP fx);
     void sys_jac(double t, const VECP x, VECP xp, MATP fx, MATP fu);
-    int  lufac_jac(double gamma, double gamma, MATP fx);
+    int  lufac_jac(double gamma, double delta, MATP fx);
     void lusolve_jac(MATP A, VECP b, VECP x);
     void update_sens(const MATP fx, const VECP s, double fac, 
 		     const VECP ds, const MATP fu, VECP sp);
