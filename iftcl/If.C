@@ -137,7 +137,7 @@ extern "C" int If_SetString(const char *name, const char *val)
 }
 
 //-----------------------------------------------------------------------
-extern "C" int If_GetString(const char *name, char *&val)
+extern "C" int If_GetString(const char *name, const char *&val)
 {
   if (Tcl_Eval(theInterp, (char *)name) != TCL_OK) {
     val = NULL;

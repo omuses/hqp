@@ -63,7 +63,7 @@ extern "C" {
   IF_API int If_SetString(const char *name, const char *val);
 
   /** Get the string representation of a variables value. */
-  IF_API int If_GetString(const char *name, char *&val);
+  IF_API int If_GetString(const char *name, const char *&val);
 
   /** Evaluate a command. */
   IF_API int If_Eval(const char *command);

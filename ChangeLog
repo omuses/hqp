@@ -7,6 +7,10 @@
 	  clean up source code and add documentation
 	* hxi/*.h: clean up documentation
 
+	* iftcl/If.[hC] (If_GetString),	hqp_docp/Docp_Main.C (main):
+	  add const qualifier to returned reference to char *
+	  as required by Tcl 8.4
+
 2002-05-01    <rfranke>
 
 

@@ -40,7 +40,7 @@ int main(int, char *[])
   // Configure solver
   printf("Configure solver\n");
   double eps = 1e-5;
-  char *mat_solver = "LQDOCP";
+  const char *mat_solver = "LQDOCP";
 
   // write sqp_eps
   if (If_SetReal("sqp_eps", eps) != IF_OK)
