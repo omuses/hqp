@@ -83,10 +83,12 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _K = 1;
   _KK = 1;
   _sps = 1;
+  _multistage = true;
 
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
+  _t_nominal = 1.0;
   _mdl_y_bias = v_get(_mdl_ny);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
@@ -142,6 +144,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 
   _ifList.append(new If_RealMat("mdl_us", &_mdl_us));
   _ifList.append(new If_RealMat("mdl_ys", &_mdl_ys));
+  _ifList.append(new If_Bool("prg_multistage", &_multistage));
 }
 
 //--------------------------------------------------------------------------
@@ -159,8 +162,18 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
 void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 {
   // setup optimization problem
-  _K = _KK/_sps;
-  stages_alloc(ks, ts, _K, _sps);
+  if (_multistage) {
+    _K = _KK/_sps;
+    stages_alloc(ks, ts, _K, _sps);
+  }
+  else {
+    if (_sps > 1) {
+      m_error(E_FORMAT, "Prg_SFunctionOpt::setup_stages: "
+	      "prg_sps>1 requires prg_multistage=true");
+    }
+    _K = 1;
+    stages_alloc(ks, ts, 1, _KK);
+  }
 
   // setup S-function
   setup_sfun();
@@ -193,7 +206,7 @@ void Prg_SFunctionOpt::setup(int k,
 			     Omu_VariableVec &x, Omu_VariableVec &u,
 			     Omu_VariableVec &c)
 {
-  int i, idx, isc, j;
+  int i, idx, isc, j, kk;
 
   // complete general setup
   if (k == 0) {
@@ -230,20 +243,34 @@ void Prg_SFunctionOpt::setup(int k,
 	_ncf++;
       }
     }
+    // initialize nominal time
+    _t_nominal = (ts(_KK) - ts(0)) / _KK;
   }
 
   // allocate states and controls for optimization
-  int spsk;
+  int spsk, upsk;
   if (k < _K) {
-    spsk = _sps;
-    x.alloc(_nx);
-    u.alloc(_nu + spsk*_ns);
-    c.alloc(spsk*(_nc+_nsc));
+    if (_multistage) {
+      spsk = _sps;
+      upsk = 1;
+      x.alloc(_nx);
+      u.alloc(_nu + spsk*_ns);
+      c.alloc(spsk*(_nc+_nsc));
+    }
+    else {
+      spsk = _KK;
+      upsk = _KK;
+      x.alloc(0, _nx);
+      u.alloc(upsk*_nu + spsk*_ns);
+      c.alloc(spsk*(_nc+_nsc) + upsk*_nu);
+    }
   }
   else {
     spsk = 1;
+    upsk = 1;
     // at final time allocate additional final states for slack variables
     // as no control parameters allowed here
+    // (propagate us and xs to final stage as they are accessed in update)
     x.alloc(_nx + spsk*_ns);
     c.alloc(spsk*(_nc+_nsc) + _ncf);
   }
@@ -266,7 +293,8 @@ void Prg_SFunctionOpt::setup(int k,
   // setup control inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
-      if (k > 0) {
+      if (_multistage && k > 0) {
+	// control bounds
 	if (_mdl_u.min[idx] > -Inf) {
 	  x.min[i] = _mdl_u.min[idx] / _mdl_u_nominal[idx];
 	}
@@ -274,21 +302,48 @@ void Prg_SFunctionOpt::setup(int k,
 	  x.max[i] = _mdl_u.max[idx] / _mdl_u_nominal[idx];
 	}
       }
+      else if (!_multistage && k < _K) {
+	// treat control bounds via general constraints
+	if (_mdl_u.min[idx] > -Inf) {
+	  for (j = 0; j < upsk; j++)
+	    c.min[spsk*(_nc+_nsc) + i + j] =
+	      _mdl_u.min[idx] / _mdl_u_nominal[idx];
+	}
+	if (_mdl_u.max[idx] < Inf) {
+	  for (j = 0; j < upsk; j++)
+	    c.max[spsk*(_nc+_nsc) + i + j] =
+	      _mdl_u.max[idx] / _mdl_u_nominal[idx];
+	}
+      }
       if (k < _K) {
 	// rate of change bounds
 	if (_mdl_der_u.min[idx] > -Inf) {
-	  u.min[i] = _mdl_der_u.min[idx] / _mdl_u_nominal[idx];
+	  for (j = 0; j < upsk; j++)
+	    u.min[i+j] =
+	      _mdl_der_u.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
 	}
 	if (_mdl_der_u.max[idx] < Inf) {
-	  u.max[i] = _mdl_der_u.max[idx] / _mdl_u_nominal[idx];
+	  for (j = 0; j < upsk; j++)
+	    u.max[i+j] =
+	      _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
 	}
 	// initial guess
-	u.initial[i] =
-	  (_mdl_us[ks(k+1)][idx] - _mdl_us[ks(k)][idx])
-	  / (ts(ks(k+1)) - ts(ks(k)))
-	  / _mdl_u_nominal[idx];
+	if (_multistage) {
+	  u.initial[i] =
+	    (_mdl_us[ks(k+1)][idx] - _mdl_us[ks(k)][idx])
+	    / (ts(ks(k+1)) - ts(ks(k)))
+	    / _mdl_u_nominal[idx]*_t_nominal;
+	}
+	else {
+	  for (j = 0; j < upsk; j++) {
+	    u.initial[i+j] =
+	      (_mdl_us[j+1][idx] - _mdl_us[j][idx])
+	      / (ts(j+1) - ts(j))
+	      / _mdl_u_nominal[idx]*_t_nominal;
+	  }
+	}
       }
-      i++;
+      i += upsk;
     }
   }
 
@@ -316,7 +371,7 @@ void Prg_SFunctionOpt::setup(int k,
 
   // setup slack variables for soft constraints
   if (k < _K)
-    for (i = _nu; i < _nu + spsk*_ns; i++) {
+    for (i = upsk*_nu; i < upsk*_nu + spsk*_ns; i++) {
       u.min[i] = 0.0;
       u.initial[i] = 0.0;
     }
@@ -360,10 +415,11 @@ void Prg_SFunctionOpt::setup_struct(int k,
   F.set_linear(Omu_Dependent::WRT_xp);
 
   // u goes in linear for building piecewise linear mdl_u
-  if (k < _K) {
+  // (note: F.Ju changes over sample periods if not multistage)
+  if (_multistage && k < _K) {
     m_zero(F.Ju);
     for (i = 0; i < _nu; i++)
-      F.Ju[i][i] = 1.0;
+      F.Ju[i][i] = 1.0/_t_nominal;
     F.set_linear(Omu_Dependent::WRT_u);
   }
 
@@ -373,11 +429,13 @@ void Prg_SFunctionOpt::setup_struct(int k,
   m_ident(f.Jxf);
   f.set_linear();
 
-  // constraints c in update do not depend on u and xf
-  m_zero(c.Ju);
+  // constraints c in update do not depend on xf
   m_zero(c.Jxf);
-  c.set_linear(Omu_Dependent::WRT_u);
   c.set_linear(Omu_Dependent::WRT_xf);
+  if (_multistage && _ns == 0) {
+    m_zero(c.Ju);
+    c.set_linear(Omu_Dependent::WRT_u);
+  }
 
   // objective does not depend on xf
   v_zero(f0.gxf);
@@ -401,7 +459,8 @@ void Prg_SFunctionOpt::update(int kk,
 			      Omu_DependentVec &c)
 {
   int i, idx, is, isc;
-  int spsk = kk < _KK? _sps: 1; // one sample at final time
+  int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
+  int upsk = _multistage? 1: _KK;
 
   // junction conditions for continuous-time equations
   if (kk < _KK) {
@@ -464,12 +523,20 @@ void Prg_SFunctionOpt::update(int kk,
       f0 += _mdl_u.weight2[idx]*help*help;
       // rates of change
       if (kk < _KK) {
-	f0 += _mdl_der_u.weight1[idx] * u[i];
-	help = u[i] - _mdl_der_u.ref[idx] / _mdl_u_nominal[idx];
+	f0 += _mdl_der_u.weight1[idx] * u[i*upsk + kk%upsk]/_t_nominal;
+	help = u[i*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
+	  / _mdl_u_nominal[idx];
 	f0 += _mdl_der_u.weight2[idx]*help*help;
       }
       i++;
     }
+  }
+  // if not multistage, treat control bounds via general constraints
+  // (note: do not access xf to avoid non-linear dependency in update)
+  if (!_multistage && kk < _KK) {
+    for (i = 0; i < _nu; i++)
+      c[spsk*(_nc+_nsc) + i*spsk + kk%spsk] = x[i] +
+	(ts(kk+1)-ts(kk)) * u[i*upsk + kk%upsk]/_t_nominal; // == xf[i]
   }
   // contribution of active outputs
   for (i = 0, is = 0, isc = 0, idx = 0; idx < _mdl_ny; idx++) {
@@ -488,7 +555,7 @@ void Prg_SFunctionOpt::update(int kk,
     // consider soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
       if (kk < _KK)
-	help = u[_nu + is + kk%spsk];
+	help = u[upsk*_nu + is + kk%spsk];
       else
 	help = x[_nx + is + kk%spsk];
 
@@ -550,8 +617,9 @@ void Prg_SFunctionOpt::update_grds(int kk,
 				   Omu_DependentVec &f, Omu_Dependent &f0,
 				   Omu_DependentVec  &c)
 {
-  int i, idx, ii, iidx, is, j, jdx, rdx;
-  int spsk = kk < _KK? _sps: 1; // one sample at final time
+  int i, idx, ii, iidx, isc, iscdx, is, j, jdx, rdx;
+  int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
+  int upsk = _multistage? 1: _KK;
 
   if (ssGetmdlJacobian(_S) == NULL) {
     // call predefined update for numerical differentiation
@@ -562,6 +630,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   }
   else {
     // exploit mdlJacobian to obtain c.Jx
+    int mdl_u_idx, mdl_x_idx, mdl_y_idx;
     real_T *pr = ssGetJacobianPr(_S);
     int_T *ir = ssGetJacobianIr(_S);
     int_T *jc = ssGetJacobianJc(_S);
@@ -569,28 +638,56 @@ void Prg_SFunctionOpt::update_grds(int kk,
     mdlJacobian(_S);
 
     m_zero(c.Jx);
+    m_zero(c.Ju);
     // Jacobian wrt S-function states (dy/dx)
     for (jdx = 0; jdx < _mdl_nx; jdx++) {
-      for (i = 0, idx = _mdl_nx, ii = _nc+_nsc, iidx = _mdl_nx,
+      mdl_x_idx = jdx;
+      for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
+	     ii = _nc+_nsc, iidx = _mdl_nx,
 	     rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	if (ir[rdx] >= _mdl_nx) {
 	  j = _mdl_nu + jdx;
-	  if (_mdl_y.active[ir[rdx] - _mdl_nx]) {
+	  mdl_y_idx = ir[rdx] - _mdl_nx;
+	  if (_mdl_y.active[mdl_y_idx]) {
 	    // need to loop through idx to obtain i considering active outputs
 	    for (; idx < ir[rdx]; idx++) {
 	      if (_mdl_y.active[idx - _mdl_nx])
 		i += spsk;
 	    }
-	    c.Jx[i + kk%spsk][j] = pr[rdx];
+	    c.Jx[i + kk%spsk][j] = pr[rdx] /
+	      _mdl_y_nominal[mdl_y_idx] * _mdl_x_nominal[mdl_x_idx];
+	  }
+	  // soft constraints
+	  if (_mdl_y_soft.active[mdl_y_idx] == 1) {
+	    // need to loop to obtain isc considering active outputs
+	    for (; iscdx < ir[rdx]; iscdx++) {
+	      if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+		isc += spsk;
+	      if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+		isc += spsk;
+	    }
+	    if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
+	      c.Jx[isc + kk%spsk][j] = pr[rdx] /
+		_mdl_y_nominal[mdl_y_idx] * _mdl_x_nominal[mdl_x_idx];
+	      isc += spsk;
+	    }
+	    if (_mdl_y_soft.max[mdl_y_idx] < Inf) {
+	      c.Jx[isc + kk%spsk][j] = pr[rdx] /
+		_mdl_y_nominal[mdl_y_idx] * _mdl_x_nominal[mdl_x_idx];
+	    }
+	    if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
+	      isc -= spsk;
+	    }
 	  }
 	  // constraints at final time
-	  if (kk == _KK && _mdl_yf.active[ir[rdx] - _mdl_nx]) {
+	  if (kk == _KK && _mdl_yf.active[mdl_y_idx]) {
 	    // need to loop to obtain ii considering active outputs
 	    for (; iidx < ir[rdx]; iidx++) {
 	      if (_mdl_yf.active[iidx - _mdl_nx])
 		ii++;
 	    }
-	    c.Jx[ii][j] = pr[rdx];
+	    c.Jx[ii][j] = pr[rdx] /
+	      _mdl_y_nominal[mdl_y_idx] * _mdl_x_nominal[mdl_x_idx];
 	  }
 	}
       }
@@ -598,30 +695,85 @@ void Prg_SFunctionOpt::update_grds(int kk,
     // Jacobian wrt S-function inputs (dy/du)
     // (note: these are states for the optimizer)
     for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
+      mdl_u_idx = jdx - _mdl_nx;
       if (_mdl_u.active[jdx - _mdl_nx]) {
-	for (i = 0, idx = _mdl_nx, ii = _nc+_nsc, iidx = _mdl_nx,
+	for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
+	       ii = _nc+_nsc, iidx = _mdl_nx,
 	       rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	  if (ir[rdx] >= _mdl_nx) {
-	    if (_mdl_y.active[ir[rdx] - _mdl_nx]) {
+	    mdl_y_idx = ir[rdx] - _mdl_nx;
+	    if (_mdl_y.active[mdl_y_idx]) {
 	      // need to loop to obtain i considering active outputs
 	      for (; idx < ir[rdx]; idx++) {
 		if (_mdl_y.active[idx - _mdl_nx])
 		  i += spsk;
 	      }
-	      c.Jx[i + kk%spsk][j] = pr[rdx];
+	      c.Jx[i + kk%spsk][j] = pr[rdx] /
+		_mdl_y_nominal[mdl_y_idx] * _mdl_u_nominal[mdl_u_idx];
+	    }
+	    // soft constraints
+	    if (_mdl_y_soft.active[mdl_y_idx] == 1) {
+	      // need to loop to obtain isc considering active outputs
+	      for (; iscdx < ir[rdx]; iscdx++) {
+		if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+		  isc += spsk;
+		if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+		  isc += spsk;
+	      }
+	      if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
+		c.Jx[isc + kk%spsk][j] = pr[rdx] /
+		  _mdl_y_nominal[mdl_y_idx] * _mdl_u_nominal[mdl_u_idx];
+		isc += spsk;
+	      }
+	      if (_mdl_y_soft.max[mdl_y_idx] < Inf) {
+		c.Jx[isc + kk%spsk][j] = pr[rdx] /
+		  _mdl_y_nominal[mdl_y_idx] * _mdl_u_nominal[mdl_u_idx];
+	      }
+	      if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
+		isc -= spsk;
+	      }
 	    }
 	    // constraints at final time
-	    if (kk == _KK && _mdl_yf.active[ir[rdx] - _mdl_nx]) {
+	    if (kk == _KK && _mdl_yf.active[mdl_y_idx]) {
 	      // need to loop to obtain ii considering active outputs
 	      for (; iidx < ir[rdx]; iidx++) {
 		if (_mdl_yf.active[iidx - _mdl_nx])
 		  ii++;
 	      }
-	      c.Jx[ii][j] = pr[rdx];
+	      c.Jx[ii][j] = pr[rdx] /
+		_mdl_y_nominal[mdl_y_idx] * _mdl_u_nominal[mdl_u_idx];
 	    }
 	  }
 	}
 	j++;
+      }
+    }
+    // contribution of slack variables for soft constraints
+    for (is = 0, isc = spsk*_nc, idx = 0; idx < _mdl_ny; idx++) {
+      if (_mdl_y_soft.active[idx] == 1) {
+	if (_mdl_y_soft.min[idx] > -Inf) {
+	  if (kk < _KK)
+	    c.Ju[isc + kk%spsk][upsk*_nu + is + kk%spsk] += 1.0;
+	  else
+	    c.Jx[isc + kk%spsk][_nx + is + kk%spsk] += 1.0;
+	  isc += spsk;
+	}
+	if (_mdl_y_soft.max[idx] < Inf) {
+	  if (kk < _KK)
+	    c.Ju[isc + kk%spsk][upsk*_nu + is + kk%spsk] -= 1.0;
+	  else
+	    c.Jx[isc + kk%spsk][_nx + is + kk%spsk] -= 1.0;
+	  isc += spsk;
+	}
+	is += spsk;
+      }
+    }
+    // control bounds if not multistage
+    if (!_multistage && kk < _KK) {
+      for (i = 0; i < _nu; i++) {
+	c.Jx[spsk*(_nc+_nsc) + i*spsk + kk%spsk][i] = 1.0;
+	c.Ju[spsk*(_nc+_nsc) + i*spsk + kk%spsk][i*upsk + kk%upsk] =
+	  (ts(kk+1)-ts(kk))/_t_nominal;
       }
     }
   }
@@ -649,9 +801,9 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
       // rates of change
       if (kk < _KK) {
-	f0.gu[i] += dt * _mdl_der_u.weight1[idx];
-	f0.gu[i] += dt * _mdl_der_u.weight2[idx] *
-	  2.0 * (u[i] - _mdl_der_u.ref[idx]/_mdl_u_nominal[idx]);
+	f0.gu[i] += dt * _mdl_der_u.weight1[idx]/_t_nominal;
+	f0.gu[i] += dt * _mdl_der_u.weight2[idx]/_t_nominal *
+	  2.0 * (u[i]/_t_nominal - _mdl_der_u.ref[idx]/_mdl_u_nominal[idx]);
       }
       i++;
     }
@@ -675,9 +827,9 @@ void Prg_SFunctionOpt::update_grds(int kk,
     // contribution of soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
       if (kk < _KK)
-	f0.gu[_nu + is + kk%spsk]
+	f0.gu[upsk*_nu + is + kk%spsk]
 	  += dt*(_mdl_y_soft.weight1[idx]
-		 + 2.0*_mdl_y_soft.weight2[idx]*u[_nu + is + kk%spsk]);
+		 + 2.0*_mdl_y_soft.weight2[idx]*u[upsk*_nu + is + kk%spsk]);
       else
 	f0.gx[_nx + is + kk%spsk]
 	  += dt*(_mdl_y_soft.weight1[idx]
@@ -756,6 +908,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 				  const Omu_StateVec &xp, Omu_DependentVec &F)
 {
   int i, idx;
+  int upsk = _multistage? 1: _KK;
 
   // set simulation time
   ssSetT(_S, t);
@@ -790,7 +943,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 
   // model equations for piecewise linear control inputs
   for (i = 0; i < _nu; i++)
-    F[i] = u[i] - xp[i];
+    F[i] = u[i*upsk + kk%upsk]/_t_nominal - xp[i];
 
   // obtain Jacobians if required
   if (F.is_required_J())
@@ -814,6 +967,7 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
   else {
     // exploit mdlJacobian
     int i, idx, j, jdx, rdx;
+    int mdl_u_idx, mdl_x_idx;
     real_T *pr = ssGetJacobianPr(_S);
     int_T *ir = ssGetJacobianIr(_S);
     int_T *jc = ssGetJacobianJc(_S);
@@ -824,18 +978,21 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
     m_zero(F.Jx);
     // Jacobian wrt S-function states (ddx/dx)
     for (jdx = 0; jdx < _mdl_nx; jdx++) {
+      mdl_x_idx = jdx;
       for (rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	idx = ir[rdx];
 	if (idx >= _mdl_nx)
 	  break;
 	i = _mdl_nu + idx;
 	j = _mdl_nu + jdx;
-	F.Jx[i][j] = pr[rdx];
+	F.Jx[i][j] = pr[rdx] /
+	  _mdl_x_nominal[idx] * _mdl_x_nominal[mdl_x_idx];
       }
     }
     // Jacobian wrt S-function inputs (ddx/du)
     // (note: these are states for the optimizer)
     for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
+      mdl_u_idx = jdx - _mdl_nx;
       if (_mdl_u.active[jdx - _mdl_nx]) {
 	for (i = _mdl_nu, idx = 0, rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	  if (ir[rdx] >= _mdl_nx)
@@ -846,11 +1003,21 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 	      if (_mdl_u.active[idx])
 		i++;
 	    }
-	    F.Jx[i][j] = pr[rdx];
+	    F.Jx[i][j] = pr[rdx] /
+	      _mdl_x_nominal[i-_mdl_nu] * _mdl_u_nominal[mdl_u_idx];
           }
 	}
 	j++;
       }
+    }
+
+    // set F.Ju if not multistage
+    // note: this can't be done in setup_struct as F.Ju changes within stage
+    if (!_multistage) {
+      int upsk = _KK;
+      m_zero(F.Ju);
+      for (i = 0; i < _nu; i++)
+	F.Ju[i][i*upsk + kk%upsk] = 1.0/_t_nominal;
     }
   }
 }

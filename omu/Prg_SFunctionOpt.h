@@ -140,10 +140,12 @@ public:
         &<& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
    \end{array}
    @f]
-   The problem is treated as multi-stage problem with K stages. 
+   The problem is treated as multistage problem with K stages per default. 
    Consequently additional K junction conditions (equality constraints)
    are introduced for the state variables x and the piecewise linear
-   approximated control trajectories u.
+   approximated control trajectories u. Alternatively the problem can
+   be treated without stages applying pure control vector parameterization
+   and hiding model states from the optimizer.
 
    Model inputs and outputs can be accessed through
    @f[
@@ -165,6 +167,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
   VECP 		_mdl_x_nominal;	///< nominal states (for scaling)
   VECP 		_mdl_y_nominal;	///< nominal outputs (for scaling)
+  double 	_t_nominal; 	///< nominal time (used internally)
 
   VECP 		_mdl_y_bias;	///< bias correction (offset) for outputs 
 
@@ -174,6 +177,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_ncf;	///< number of constrained outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
+  bool 		_multistage; 	///< treat as multistage problem
 
   int 		_sps;	///< number of sample periods per stage
 
