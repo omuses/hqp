@@ -140,6 +140,19 @@ static int_T setNumDWork(void *arg, int_T nDWork)
 }
 
 //-------------------------------------------------------------------
+// default S-function methods
+//-------------------------------------------------------------------
+static void defaultSFunctionMethod1(SimStruct *S)
+{
+  ssSetErrorStatus(S, "S-function method not initialized");
+}
+
+static void defaultSFunctionMethod2(SimStruct *S, int_T)
+{
+  ssSetErrorStatus(S, "S-function method not initialized");
+}
+
+//-------------------------------------------------------------------
 SimStruct *Hxi_SimStruct_create()
 {
   // allocate a SimStruct
@@ -173,6 +186,12 @@ SimStruct *Hxi_SimStruct_create()
   ssSetRegInputPortDimensionInfoFcn(S, setInputPortDimensionInfo);
   ssSetRegOutputPortDimensionInfoFcn(S, setOutputPortDimensionInfo);
   ssSetNumDWorkFcn(S, setNumDWork);
+
+  // register default S-function methods
+  // (to avoid NULL pointers if mexFunction fails to initializ them)
+  ssSetmdlInitializeSampleTimes(S, &defaultSFunctionMethod1);
+  ssSetmdlOutputs(S, &defaultSFunctionMethod2);
+  ssSetmdlTerminate(S, &defaultSFunctionMethod1);
 
   return S;
 }
