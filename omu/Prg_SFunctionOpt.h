@@ -240,6 +240,7 @@ public:
 class Prg_SFunctionOpt: public Prg_SFunction {
 
  protected:
+  VECP		_mdl_x0; 	///< initial states for optimization
   IVECP 	_mdl_x0_active;	///< free initial states (default: 0)
   Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs

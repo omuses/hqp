@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -196,6 +196,9 @@ void Prg_SFunction::setup_model()
   // (note: preselect major time steps requiring complete model evaluation --
   //  minor time steps would require support for events and zero crossings)
   ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
+
+  // set simulation time
+  ssSetT(_S, _t0);
 
   // initialize model
   SMETHOD_CALL(mdlInitializeSizes, _S);

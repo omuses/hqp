@@ -305,7 +305,7 @@ void Prg_SFunctionEst::setup_model()
 //--------------------------------------------------------------------------
 void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
 {
-  int i, j;
+  int kk, i, j;
 
   // setup S-function
   if (_mdl_needs_setup)
@@ -339,6 +339,12 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_us, _KK+1, _mdl_nu);
   m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
+
+  // setup _mdl_xs with initial states from model
+  for (kk = 0; kk < _KK; kk++) {
+    for (j = 0; j < _mdl_nx; j++)
+      _mdl_xs[kk][j] = _mdl_x0[j];
+  }
 
   // store parameters in _mdl_p
   read_mx_args(_mdl_p);
@@ -442,7 +448,7 @@ void Prg_SFunctionEst::setup(int k,
 
     // setup initial states
     for (i = _np; i < _nx; i++) {
-      x.initial[i] = _mdl_x0s[0][i-_np] / _mdl_x_nominal[i-_np];
+      x.initial[i] = _mdl_xs[ks(0)][i-_np] / _mdl_x_nominal[i-_np];
       if (!_mdl_x0_active[i-_np])
 	x.min[i] = x.max[i] = x.initial[i];
       else {
@@ -460,7 +466,7 @@ void Prg_SFunctionEst::setup(int k,
   else if (new_experiment) {
     // setup initial states for subsequent experiments
     for (i = 0; i < _mdl_nx; i++) {
-      u.initial[i] = _mdl_x0s[ex][i] / _mdl_x_nominal[i];
+      u.initial[i] = _mdl_xs[ks(k)][i] / _mdl_x_nominal[i];
       if (!_mdl_x0_active[i])
 	u.min[i] = u.max[i] = u.initial[i];
       else {
@@ -875,7 +881,10 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   // call mdlUpdate to get discrete events processed
   // Note: this is done once at the beginning of a sample interval;
   // no event processing takes place during the integration.
-  if (ssGetmdlUpdate(_S) != NULL) {
+  // mdlUpdate is not called at initial times to prevent initialization
+  // of potentially estimated initial states, e.g. from parameters;
+  // it is called once in Prg_SFunction::setup_model() instead.
+  if (!new_experiment && ssGetmdlUpdate(_S) != NULL) {
     // also call mdlOutputs as done by Simulink before each mdlUpdate
     SMETHOD_CALL2(mdlOutputs, _S, 0); 
     SMETHOD_CALL2(mdlUpdate, _S, 0);

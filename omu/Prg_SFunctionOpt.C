@@ -113,6 +113,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _sps = 1;
   _multistage = true;
 
+  _mdl_x0 = v_get(_mdl_nx);
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
   _mdl_u0_nfixed = iv_get(_mdl_nu);
@@ -122,6 +123,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_nominal = v_get(_mdl_ny);
   _t_nominal = 1.0;
   _mdl_y_bias = v_get(_mdl_ny);
+  v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
@@ -216,6 +218,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   iv_free(_mdl_u0_nfixed);
   iv_free(_mdl_u_order);
   iv_free(_mdl_x0_active);
+  v_free(_mdl_x0);
 }
 
 //--------------------------------------------------------------------------
@@ -236,6 +239,7 @@ void Prg_SFunctionOpt::setup_model()
   _mdl_y_soft.resize(_mdl_ny);
   _mdl_yf.resize(_mdl_ny);
 
+  v_resize(_mdl_x0, _mdl_nx);
   iv_resize(_mdl_x0_active, _mdl_nx);
   iv_resize(_mdl_u_order, _mdl_nu);
   iv_resize(_mdl_u0_nfixed, _mdl_nu);
@@ -244,6 +248,7 @@ void Prg_SFunctionOpt::setup_model()
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
+  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
@@ -257,6 +262,8 @@ void Prg_SFunctionOpt::setup_model()
 //--------------------------------------------------------------------------
 void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 {
+  int kk, j;
+
   // setup S-function
   if (_mdl_needs_setup)
     setup_model();
@@ -282,6 +289,12 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_us, _KK+1, _mdl_nu);
   m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
+
+  // setup _mdl_xs with initial states from model
+  for (kk = 0; kk < _KK; kk++) {
+    for (j = 0; j < _mdl_nx; j++)
+      _mdl_xs[kk][j] = _mdl_x0[j];
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -396,7 +409,7 @@ void Prg_SFunctionOpt::setup(int k,
       }
     }
     for (i = _nu; i < _nx; i++) {
-      x.initial[i] = _mdl_x0[i-_nu] / _mdl_x_nominal[i-_nu];
+      x.initial[i] = _mdl_xs[ks(0)][i-_nu] / _mdl_x_nominal[i-_nu];
       if (_mdl_x0_active[i-_nu]) {
 	if (!_multistage)
 	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
@@ -1206,7 +1219,10 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   // call mdlUpdate to get discrete events processed
   // Note: this is done once at the beginning of a sample interval;
   // no event processing takes place during the integration.
-  if (ssGetmdlUpdate(_S) != NULL) {
+  // mdlUpdate is not called at initial time to prevent initialization
+  // of potentially optimized initial states, e.g. from parameters;
+  // it is called once in Prg_SFunction::setup_model() instead.
+  if (kk > 0 && ssGetmdlUpdate(_S) != NULL) {
     // also call mdlOutputs as done by Simulink before each mdlUpdate
     SMETHOD_CALL2(mdlOutputs, _S, 0); 
     SMETHOD_CALL2(mdlUpdate, _S, 0);

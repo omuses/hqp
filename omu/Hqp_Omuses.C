@@ -474,20 +474,9 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
 
     // solve continuous equations over sample period
     if (nxf > 0) {
-
       v_copy(x0k, xfk);
-
-      m_catch(E_CONV,
-	      // try
-	      // use tractcatch to get error message printed to stderr
-	      m_tracecatch(// try
-			   _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-					      xk, uk, _prg, Fk, xfk),
-			   // catch and throw
-			   m_error_description()),
-	      // catch
-	      f0 = Inf;
-	      return);
+      _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+			 xk, uk, _prg, Fk, xfk);
     }
 
     f0k = 0.0;

@@ -1,3 +1,28 @@
+2004-04-06    <rfranke>
+
+	* omu/Prg_SFunction.C (setup_model): initialize simulation time
+
+2004-03-17    <rfranke>
+
+	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C (consistic):
+	  - don't call mdlUpdate in initial stage to avoid initialization
+	    from parameters
+
+	* omu/Hqp_DocpStub.C, omu/Hqp_Omuses.C (update_vals):
+	  - generally catch errors from update_vals in Hqp_DocpStub,
+	    in order to catch errors from any model evaluation, including
+	    consistic, continuous, update
+	    (so far only continuous was caught in Hqp_Omuses)
+
+	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C:
+	  - setup_stages: initialize mdl_xs from mdl_x0
+	  - setup: initialize initial states from mdl_xs, instead of mdl_x0
+	  (in this way mdl_xs is used to initialize states of all stages)
+	
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - introduce additional _mdl_x0 to preserve result of setup_model
+	    in Prg_SFunction::_mdl_x0, similar to Prg_SFunctionEst
+	
 2004-02-28    <rfranke>
 
 	* omu/Hqp_Omuses.C:

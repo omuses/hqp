@@ -69,7 +69,15 @@ static void update_vals(void *clientdata, int k,
 			const VECP x, const VECP u,
 			VECP f, Real &f0, VECP c)
 {
-  ((Hqp_DocpStub *)clientdata)->update_vals(k, x, u, f, f0, c);
+    m_catch(E_CONV,
+	    // try
+	    // use tractcatch to get error message printed to stderr
+	    m_tracecatch(// try
+			 ((Hqp_DocpStub *)clientdata)->update_vals(k, x, u, f, f0, c),
+			 // catch and throw
+			 m_error_description()),
+	    // catch
+	    f0 = Inf);
 }
 
 //-------------------------------------------------------------------------
