@@ -6,6 +6,7 @@
 ## say Hello
 
 set version "Omuses [omu_version]"
+catch {package require Tk}
 if [catch {
   label .l \
     -text $version

@@ -125,7 +125,7 @@ proc omu_plot {w sidx {tscale 1.0}} {
      -loose true \
      -title $ytitle
     $w.g legend configure \
-     -mapped false
+     -hide true
 
     pack $w.g -fill both -expand true
   }

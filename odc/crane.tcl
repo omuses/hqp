@@ -8,11 +8,13 @@
 source omu.tcl
 
 if {[catch {set tk_version}] 
-    || [catch {load libBLT.so.2}]} {
+    || [catch {package require BLT}]} {
   set plots 0
   puts stderr "Crane plots disabled"
 } else {
   set plots 1
+  namespace import blt::*
+  option add *symbol {}
 }
 
 proc plot_vars {} {
