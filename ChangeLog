@@ -1,3 +1,7 @@
+2001-05-06    <rfranke>
+
+	* hxi/Hxi_SimStruct.h, hxi/README: add S-function interface
+
 2001-04-26    <rfranke>
 
 	* Makefile: change INC_DIR for installation of all includes to
