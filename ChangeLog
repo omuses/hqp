@@ -1,3 +1,13 @@
+2005-01-19  <rfranke>
+
+	* hxi/Hxi_SimStruct.[hC], hxi/Hxi_MEX_SFunction.[hC], Makefile:
+	  - introduce templates to avoid conflicts between Hxi::SimStruct
+	    for double and adouble
+	  - reorder macro definitions
+
+	 * omu/Prg_SFunction.C:
+	  - fix error check for failed dynamic loading of S-function
+
 2005-01-17  <rfranke>
 
 	* hxi/Hxi_MEX_SFunction.[hC], hxi/Hxi_SFunction.[hC], hxi/cg_sfun.h, 

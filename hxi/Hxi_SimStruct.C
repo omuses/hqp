@@ -27,6 +27,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <assert.h>
+
 #include <vector>
 #include <string>
 using namespace std;
@@ -47,37 +49,6 @@ using namespace std;
 
 // first include MEX SimStruct, in addition to Hxi::SimStruct defined below
 #include "Hxi_MEX_SFunction.h"
-
-/** Redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers */
-#undef ssSetSFcnParamsCount
-inline int_T ssSetSFcnParamsCount(SimStruct *S, int_T n) {
-  _ssSetSFcnParamsCount(S,n);
-  mxFree(ssGetSFcnParamsPtr(S));
-#if MATLAB_VERSION >= 61
-  ssSetSFcnParamsPtr(S, (mxArray **)mxCalloc(sizeof(mxArray *), n));
-#else
-  ssSetSFcnParamsPtr(S, (const mxArray **)mxCalloc(sizeof(mxArray *), n));
-#endif
-  return n;
-}
-
-/** @name Unsupported macros
-  Disable macros that are critical for memory management and must
-  not be used.
-*/ 
-//@{
-#undef ssSetRWork
-#define ssSetRWork(S, rwork) ssSetRWork_cannot_be_used_with_Hxi_MEX_SFunction
-
-#undef ssSetPWork
-#define ssSetPWork(S, pwork) ssSetPWork_cannot_be_used_with_Hxi_MEX_SFunction
-
-#undef ssSetIWork
-#define ssSetIWork(S, iwork) ssSetIWork_cannot_be_used_with_Hxi_MEX_SFunction
-
-#undef ssSetTPtr
-#define ssSetTPtr(S, tptr) ssSetTPtr_cannot_be_used_with_Hxi_MEX_SFunction
-//@}
 
 // additionally include Hxi types for Hxi::SimStruct below
 namespace Hxi {
@@ -101,6 +72,10 @@ typedef void (SFunctionMethod1_type)(SimStruct *S);
 /** S-function method type with additional task id argument. */
 typedef void (SFunctionMethod2_type)(SimStruct *S, int_T tid);
 
+// forward declaration of default S-function methods (implementation below)
+static void defaultSFunctionMethod1(SimStruct *S);
+static void defaultSFunctionMethod2(SimStruct *S, int_T);
+
 #endif // !defined(Hxi_SimStruct_H)
 
 // check for Hxi::SimStruct
@@ -113,36 +88,37 @@ namespace Hxi {
 /**
  *  Native %SimStruct for Hqp.
  */
+template <class REAL_T>
 class SimStruct {
 protected:
   /** Argument passed to resize of vectors.
       This is done to avoid memory management problems with ADOL-C 1.8.7. */
-  real_T 	 _dummy;
+  REAL_T 	 _dummy;
 				
-  real_T	 _t;		///< current simulation time
+  REAL_T	 _t;		///< current simulation time
 
   int_T 	 _p_sfun_size;///< number of parameters expected in S-function
   vector<int_T>  _dwork_usage;	///< usage of each data work vector
 
-  vector<const mxArray *> _p; 	///< parameters provided by calling program
-  vector<real_T> _xc; 		///< continuous states
-  vector<real_T> _dxc; 		///< derivatives of continuous states
-  vector<real_T> _xd; 		///< discrete states
-  vector< vector<real_T> > _u; 	///< inputs
-  vector< vector<real_T *> > _uPtrs; ///< pointers to inputs
+  vector<const ::mxArray *> _p; 	///< parameters provided by calling program
+  vector<REAL_T> _xc; 		///< continuous states
+  vector<REAL_T> _dxc; 		///< derivatives of continuous states
+  vector<REAL_T> _xd; 		///< discrete states
+  vector< vector<REAL_T> > _u; 	///< inputs
+  vector< vector<REAL_T *> > _uPtrs; ///< pointers to inputs
   vector<int_T>  _u_dft;      ///< mark if input port is accessed in mdlOutputs
-  vector< vector<real_T> > _y; 	///< outputs
-  vector< vector<real_T> > _dwork; ///< data work vectors
+  vector< vector<REAL_T> > _y; 	///< outputs
+  vector< vector<REAL_T> > _dwork; ///< data work vectors
 
-  vector<real_T> _st_period;	///< sample time period 
-  vector<real_T> _st_offset;	///< sample time offset
-  vector<real_T> _zc_signals; 	///< values of zero crossings
+  vector<REAL_T> _st_period;	///< sample time period 
+  vector<REAL_T> _st_offset;	///< sample time offset
+  vector<REAL_T> _zc_signals; 	///< values of zero crossings
 
-  vector<real_T> _jacobianPr; 	///< Jacobian elements
+  vector<REAL_T> _jacobianPr; 	///< Jacobian elements
   vector<int_T>  _jacobianIr; 	///< Jacobian row indices
   vector<int_T>  _jacobianJc; 	///< Jacobian start indices per column
 
-  vector<real_T> _rwork; 	///< real work array
+  vector<REAL_T> _rwork; 	///< real work array
   vector<int_T>  _iwork; 	///< int work array
   vector<void *> _pwork; 	///< pointer work array
   vector<int_T>  _modes;	///< modes array
@@ -199,6 +175,19 @@ public:
     _variableStepSolver = 0;
     _solverMaxOrder = 0;
     _solverName = "unspecified";
+
+    // assign defaults to required S-function methods
+    // as they are not checked for NULL when called
+    _mdlInitializeSizes = &defaultSFunctionMethod1;
+    _mdlCheckParameters = NULL;
+    _mdlInitializeSampleTimes = &defaultSFunctionMethod1;
+    _mdlStart = NULL;
+    _mdlInitializeConditions = NULL;
+    _mdlOutputs = &defaultSFunctionMethod2;
+    _mdlUpdate = NULL;
+    _mdlDerivatives = NULL;
+    _mdlJacobian = NULL;
+    _mdlTerminate = &defaultSFunctionMethod1;
   }
 
   /*
@@ -223,12 +212,12 @@ public:
     return _p_sfun_size;
   }
   /** Set mxArray pointing to a parameter. */
-  /* const */ mxArray *setSFcnParam(int_T idx, const mxArray *val) {
-    return (mxArray *)(_p[idx] = val);
+  /* const */ ::mxArray *setSFcnParam(int_T idx, const ::mxArray *val) {
+    return (::mxArray *)(_p[idx] = val);
   }
   /** Get mxArray pointing to a parameter. */
-  /* const */ mxArray *getSFcnParam(int_T idx) {
-    return (mxArray *)_p[idx];
+  /* const */ ::mxArray *getSFcnParam(int_T idx) {
+    return (::mxArray *)_p[idx];
   }
 
   /** Set number of continuous states. */
@@ -242,11 +231,11 @@ public:
     return _xc.size();
   }
   /** Get continuous states. */
-  real_T *getContStates() {
+  REAL_T *getContStates() {
     return &_xc[0];
   }
   /** Get derivatives of continuous states. */
-  real_T *getdX() {
+  REAL_T *getdX() {
     return &_dxc[0];
   }
 
@@ -260,11 +249,11 @@ public:
     return _xd.size();
   }
   /** Get pointer to discrete states. */
-  real_T *getDiscStates() {
+  REAL_T *getDiscStates() {
     return &_xd[0];
   }
   /** Alternative get pointer to discrete states. */
-  real_T *getRealDiscStates() {
+  REAL_T *getRealDiscStates() {
     return getDiscStates();
   }
 
@@ -298,7 +287,7 @@ public:
     return _u[port].size();
   }
   /** Get pointer to inputs of a port. */
-  real_T *getInputPortRealSignal(int_T port) {
+  REAL_T *getInputPortRealSignal(int_T port) {
     return &_u[port][0];
   }
   /** Get pointer to pointers to inputs of a port. */
@@ -348,7 +337,7 @@ public:
     return _y[port].size();
   }
   /** Get pointer to outputs of a port. */
-  real_T *getOutputPortRealSignal(int_T port) {
+  REAL_T *getOutputPortRealSignal(int_T port) {
     return &_y[port][0];
   }
   /** Alternative get pointer to outputs of a port. */
@@ -399,19 +388,19 @@ public:
     return _st_period.size();
   }
   /** Set sample time period for given st_index. */
-  real_T setSampleTime(int_T st_index, real_T period) {
+  REAL_T setSampleTime(int_T st_index, REAL_T period) {
     return _st_period[st_index] = period;
   }
   /** Get sample time period for given st_index. */
-  real_T getSampleTime(int_T st_index) {
+  REAL_T getSampleTime(int_T st_index) {
     return _st_period[st_index];
   }
   /** Set offset time for given st_index. */
-  real_T setOffsetTime(int_T st_index, real_T offset) {
+  REAL_T setOffsetTime(int_T st_index, REAL_T offset) {
     return _st_offset[st_index] = offset;
   }
   /** Get offset time for given st_index. */
-  real_T getOffsetTime(int_T st_index) {
+  REAL_T getOffsetTime(int_T st_index) {
     return _st_offset[st_index];
   }
   /** Test for continuous task. */
@@ -429,7 +418,7 @@ public:
     return _zc_signals.size();
   }
   /** Get vector of zero crossing signals. */
-  real_T *getNonsampledZCs() {
+  REAL_T *getNonsampledZCs() {
     return &_zc_signals[0];
   }
 
@@ -450,7 +439,7 @@ public:
     return _jacobianPr.size();
   }
   /** Get pointer to first Jacobian element. */
-  real_T *getJacobianPr() {
+  REAL_T *getJacobianPr() {
     return &_jacobianPr[0];
   }
   /** Get pointer to first Jacobian index. */
@@ -472,7 +461,7 @@ public:
     return _rwork.size();
   }
   /** Get pointer to first element of real work vector. */
-  real_T *getRWork() {
+  REAL_T *getRWork() {
     return &_rwork[0];
   }
 
@@ -539,11 +528,11 @@ public:
   }
 
   /** Set current simulation time. */
-  real_T setT(real_T t) {
+  REAL_T setT(REAL_T t) {
     return _t = t;
   }
   /** Get current simulation time. */
-  real_T getT() {
+  REAL_T getT() {
     return _t;
   }
 
@@ -700,10 +689,11 @@ public:
 };
 
 /** Native %mxArray for Hqp. */
+template <class REAL_T>
 class mxArray {
 protected:
-  real_T 	 	_dummy; ///< argument for ADOL-C memory management
-  vector<real_T> 	_realData; 	///< data vector for array of reals
+  REAL_T 	 	_dummy; ///< argument for ADOL-C memory management
+  vector<REAL_T> 	_realData; 	///< data vector for array of reals
   string 		_charData; 	///< data for char array
   int_T 		_m;	///< number of rows (more generally first dim)
   int_T 		_n;	///< number of cols (more generally other dims)
@@ -739,8 +729,8 @@ public:
   }
 
   /** Get address of first element of real data. */
-  real_T *getPr() const {
-    return _realData.size() > 0? (real_T *)&_realData[0]: NULL;
+  REAL_T *getPr() const {
+    return _realData.size() > 0? (REAL_T *)&_realData[0]: NULL;
   }
 
   /** Set number of data elements. */
@@ -820,20 +810,20 @@ public:
 #define HXI_SS_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE ARG) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->set##ITEM(ARG); \
+      return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG); \
     else \
       return ssSet##ITEM(S, ARG); \
   } \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->get##ITEM(); \
+      return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(); \
     else \
       return ssGet##ITEM(S); \
   }
 #define HXI_SS_SET1(ITEM, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE ARG) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->set##ITEM(ARG); \
+      return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG); \
     else \
       return ssSet##ITEM(S, ARG); \
   }
@@ -841,14 +831,14 @@ public:
 #define HXI_SS_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->get##ITEM(); \
+      return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(); \
     else \
       return ssGet##ITEM(S); \
   }
 #define HXI_SS_IS1(ITEM) \
   HXI_EXTERN int_T hssIs##ITEM(SimStruct *S) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->is##ITEM(); \
+      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(); \
     else \
       return ssIs##ITEM(S); \
   }
@@ -856,13 +846,13 @@ public:
 #define HXI_SS_SETGET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->set##ITEM(ARG1, ARG);  \
+      return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG1, ARG);  \
     else \
       return ssSet##ITEM(S, ARG1, ARG); \
   } \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->get##ITEM(ARG1); \
+      return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(ARG1); \
     else \
       return (TYPE)ssGet##ITEM(S, ARG1); \
   }
@@ -870,7 +860,7 @@ public:
 #define HXI_SS_SET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->set##ITEM(ARG1, ARG); \
+      return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG1, ARG); \
     else \
       return ssSet##ITEM(S, ARG1, ARG); \
   }
@@ -878,14 +868,14 @@ public:
 #define HXI_SS_GET2(ITEM, TYPE1, ARG1, TYPE) \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->get##ITEM(ARG1); \
+      return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(ARG1); \
     else \
       return ssGet##ITEM(S, ARG1); \
   }
 #define HXI_SS_IS2(ITEM, TYPE1, ARG1) \
   HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct*)S)->is##ITEM(ARG1); \
+      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1); \
     else \
       return ssIs##ITEM(S, ARG1); \
   }
@@ -934,45 +924,45 @@ public:
 #define HXI_SS_NOSET0(ITEM)
 #define HXI_SS_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE ARG) { \
-    return ((Hxi::SimStruct*)S)->set##ITEM(ARG); \
+    return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG); \
   } \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S) { \
-    return ((Hxi::SimStruct*)S)->get##ITEM(); \
+    return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(); \
   }
 #define HXI_SS_SET1(ITEM, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE ARG) { \
-    return ((Hxi::SimStruct*)S)->set##ITEM(ARG); \
+    return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG); \
   }
 #define HXI_SS_NOSET1(ITEM, TYPE, ARG)
 #define HXI_SS_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S) { \
-    return ((Hxi::SimStruct*)S)->get##ITEM(); \
+    return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(); \
   }
 #define HXI_SS_IS1(ITEM) \
   HXI_EXTERN int_T hssIs##ITEM(SimStruct *S) { \
-    return ((Hxi::SimStruct*)S)->is##ITEM(); \
+    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(); \
   }
 
 #define HXI_SS_SETGET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG) { \
-    return ((Hxi::SimStruct*)S)->set##ITEM(ARG1, ARG); \
+    return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG1, ARG); \
   } \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
-    return ((Hxi::SimStruct*)S)->get##ITEM(ARG1); \
+    return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(ARG1); \
   }
 #define HXI_SS_NOSETGET2(ITEM, TYPE1, ARG1, TYPE, ARG)
 #define HXI_SS_SET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG) { \
-    return ((Hxi::SimStruct*)S)->set##ITEM(ARG1, ARG); \
+    return ((Hxi::SimStruct<real_T>*)S)->set##ITEM(ARG1, ARG); \
   }
 #define HXI_SS_NOSET2(ITEM, TYPE1, ARG1, TYPE, ARG) 
 #define HXI_SS_GET2(ITEM, TYPE1, ARG1, TYPE) \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
-    return ((Hxi::SimStruct*)S)->get##ITEM(ARG1); \
+    return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(ARG1); \
   }
 #define HXI_SS_IS2(ITEM, TYPE1, ARG1) \
   HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
-    return ((Hxi::SimStruct*)S)->is##ITEM(ARG1); \
+    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1); \
   }
 //@}
 
@@ -980,41 +970,51 @@ public:
 //@{
 #define HXI_MX_CREATE1(WHAT, TYPE1, ARG1) \
   HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1) { \
-    return (mxArray*)(new Hxi::mxArray(ARG1)); \
+    return (mxArray*)(new Hxi::mxArray<real_T>(ARG1)); \
   }
 #define HXI_MX_CREATE3(WHAT, TYPE1, ARG1, TYPE2, ARG2, TYPE3, ARG3) \
   HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3) { \
-    return (mxArray*)(new Hxi::mxArray(ARG1, ARG2, ARG3)); \
+    return (mxArray*)(new Hxi::mxArray<real_T>(ARG1, ARG2, ARG3)); \
   }
 #define HXI_MX_DESTROY(WHAT) \
   HXI_EXTERN void hmxDestroy##WHAT(mxArray *a) { \
-    delete (Hxi::mxArray*)a; \
+    delete (Hxi::mxArray<real_T>*)a; \
   }
 #define HXI_MX_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN void hmxSet##ITEM(mxArray *a, TYPE ARG) { \
-    ((Hxi::mxArray*)a)->set##ITEM(ARG); \
+    ((Hxi::mxArray<real_T>*)a)->set##ITEM(ARG); \
   } \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
-    return ((Hxi::mxArray*)a)->get##ITEM(); \
+    return ((Hxi::mxArray<real_T>*)a)->get##ITEM(); \
   }
 #define HXI_MX_NOSET1(ITEM, TYPE, ARG)
 #define HXI_MX_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
-    return ((Hxi::mxArray*)a)->get##ITEM(); \
+    return ((Hxi::mxArray<real_T>*)a)->get##ITEM(); \
   }
 #define HXI_MX_IS1(ITEM) \
   HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
-    return ((Hxi::mxArray*)a)->is##ITEM(); \
+    return ((Hxi::mxArray<real_T>*)a)->is##ITEM(); \
   }
 #define HXI_MX_TO1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxArrayTo##ITEM(const mxArray *a) { \
-    return ((Hxi::mxArray*)a)->to##ITEM(); \
+    return ((Hxi::mxArray<real_T>*)a)->to##ITEM(); \
   }
 //@}
 #endif // defined(HXI_WITH_MEX)
 
 // actually define methods
 #include "Hxi_SimStruct_methods.h"
+
+static void defaultSFunctionMethod1(SimStruct *S)
+{
+  hssSetErrorStatus(S, "S-function method not initialized");
+}
+
+static void defaultSFunctionMethod2(SimStruct *S, int_T)
+{
+  hssSetErrorStatus(S, "S-function method not initialized");
+}
 
 HXI_EXTERN void Hxi_SimStruct_init(SimStruct *S); // see cg_sfun.h
 
@@ -1031,7 +1031,7 @@ extern "C" void Hxi_SFunction_close(SimStruct *S);
 /** Construct a SimStruct. */
 HXI_EXTERN SimStruct *Hxi_SimStruct_create(const char *path) {
   SimStruct *S; // SimStruct to be created
-  Hxi::SimStruct *S0 = new Hxi::SimStruct(); // used during creation
+  Hxi::SimStruct<real_T> *S0 = new Hxi::SimStruct<real_T>(); // used during creation
   S0->setPath(path);
 #if defined(HXI_INLINE_S_FUNCTION)
   // directly initialize SimStruct
@@ -1057,145 +1057,136 @@ HXI_EXTERN void Hxi_SimStruct_destroy(SimStruct *S) {
   // release S-function
   Hxi_SFunction_close(S);
 #endif
-  if (isHxiSimStruct(S))
-    delete (Hxi::SimStruct*)S;
 #if defined(HXI_WITH_MEX)
-  else
+  if (!isHxiSimStruct(S))
     Hxi_MEX_SimStruct_destroy(S);
+  else
 #endif
+    delete (Hxi::SimStruct<real_T>*)S;
 }
 
 /** Initialize SimStruct for specific model. */
 HXI_EXTERN void Hxi_mdlInitializeSizes(SimStruct *S) {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlInitializeSizes())(S);
-  }
 #if defined(HXI_WITH_MEX)
-  else {
+  if (!isHxiSimStruct(S)) {
     Hxi_MEX_SFunction_init(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlInitializeSizes())(S);
 }
 
 /** Optional: Allocate local ressources for simulation. */
 HXI_EXTERN void Hxi_mdlStart(SimStruct *S)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlStart())(S);
-  }
+  assert(hssGetmdlStart(S) != NULL);
 #if defined(HXI_WITH_MEX)
-  else {
-    assert(ssGetmdlStart(S) != NULL);
+  if (!isHxiSimStruct(S)) {
     sfcnStart(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlStart())(S);
 }
 
 /** Initialize sample times. */
 HXI_EXTERN void Hxi_mdlInitializeSampleTimes(SimStruct *S)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlInitializeSampleTimes())(S);
-  }
 #if defined(HXI_WITH_MEX)
-  else {
+  if (!isHxiSimStruct(S)) {
     sfcnInitializeSampleTimes(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlInitializeSampleTimes())(S);
 }
 
 /** Optional: Compute initial conditions. */
 HXI_EXTERN void Hxi_mdlInitializeConditions(SimStruct *S)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlInitializeConditions())(S);
-  }
+  assert(hssGetmdlInitializeConditions(S) != NULL);
 #if defined(HXI_WITH_MEX)
-  else {
-    assert(ssGetmdlInitializeConditions(S) != NULL);
+  if (!isHxiSimStruct(S)) {
     if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
       sfcnInitializeConditionsLevel1(ssGetX(S), S);
     else
       sfcnInitializeConditions(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlInitializeConditions())(S);
 }
 
 /** Compute model outputs. */
 HXI_EXTERN void Hxi_mdlOutputs(SimStruct *S, int_T tid)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlOutputs())(S, tid);
-  }
 #if defined(HXI_WITH_MEX)
-  else {
+  if (!isHxiSimStruct(S)) {
     if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
       sfcnOutputsLevel1(ssGetY(S), ssGetX(S), ssGetU(S), S, tid);
     else
       sfcnOutputs(S, tid);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlOutputs())(S, tid);
 }
 
 /** Optional: Update discrete-time states. */
 HXI_EXTERN void Hxi_mdlUpdate(SimStruct *S, int_T tid)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlUpdate())(S, tid);
-  }
+  assert(hssGetmdlUpdate(S) != NULL);
 #if defined(HXI_WITH_MEX)
-  else {
-    assert(ssGetmdlUpdate(S) != NULL);
+  if (!isHxiSimStruct(S)) {
     if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
       sfcnUpdateLevel1(ssGetX(S), ssGetU(S), S, tid);
     else
       sfcnUpdate(S, tid);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlUpdate())(S, tid);
 }
 
 /** Optional: Compute derivatives for continuous-time states. */
 HXI_EXTERN void Hxi_mdlDerivatives(SimStruct *S)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlDerivatives())(S);
-  }
+  assert(hssGetmdlDerivatives(S) != NULL);
 #if defined(HXI_WITH_MEX)
-  else {
-    assert(ssGetmdlDerivatives(S) != NULL);
+  if (!isHxiSimStruct(S)) {
     if (ssGetVersion(S) == SIMSTRUCT_VERSION_LEVEL1)
       sfcnDerivativesLevel1(ssGetdX(S), ssGetX(S), ssGetU(S), S, 0);
     else
       sfcnDerivatives(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlDerivatives())(S);
 }
 
 /** Optional: Compute Jacobian J = d(dxc,xd,y)/d(xc,xd,u). */
 HXI_EXTERN void Hxi_mdlJacobian(SimStruct *S)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlJacobian())(S);
-  }
+  assert(hssGetmdlJacobian(S) != NULL);
 #if defined(HXI_WITH_MEX)
-  else {
-    assert(ssGetmdlJacobian(S) != NULL);
+  if (!isHxiSimStruct(S)) {
     sfcnJacobian(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlJacobian())(S);
 }
 
 /** Release resources allocated for simulation. */
 HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S)
 {
-  if (isHxiSimStruct(S)) {
-    (*((Hxi::SimStruct*)S)->getmdlTerminate())(S);
-  }
 #if defined(HXI_WITH_MEX)
-  else {
+  if (!isHxiSimStruct(S)) {
     sfcnTerminate(S);
   }
+  else
 #endif
+    (*((Hxi::SimStruct<real_T>*)S)->getmdlTerminate())(S);
 }
 
 

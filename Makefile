@@ -23,7 +23,7 @@ test:
 	  echo "Testing Crane example..."; \
 	  cd odc; ./run Crane; cd ..; \
 	fi
-	@if test -f "lib/$(LIB_PREFIX)omu$(SHLIB_SUFFIX)"; then \
+	@if test -n "yes"; then \
 	  echo "Testing external S-function..."; \
 	  cd odc; ./run dic_mex_sfunction_est; cd ..; \
 	fi

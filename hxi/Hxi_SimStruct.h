@@ -35,7 +35,9 @@
 
 #include "Hxi_sfun_types.h"
 
-/** @name Definitions expected in S-functions (only a subset is supported) */
+#if defined(S_FUNCTION_NAME)
+/** @name Definitions expected in S-functions and not used otherwise
+    (only a subset is supported) */
 /*@{*/
 #define SS_OPTION_EXCEPTION_FREE_CODE 		0x0001
 #define SS_OPTION_RUNTIME_EXCEPTION_FREE_CODE 	0x0002
@@ -44,31 +46,27 @@
 #define SS_NOT_REUSABLE_AND_GLOBAL 		0x0200
 
 #define SS_STDIO_AVAILABLE 			true
-#define CONTINUOUS_SAMPLE_TIME 			0.0
-/*@}*/
-
-/** Print a warning */
-#define ssWarning(S, msg) \
-  printf("Warning: S-function \"%s\": %s\n", ssGetPath(S), msg)
 
 /** Print anything */
 #define ssPrintf 	printf
 
+/** Print a warning */
+#define ssWarning(S, msg) \
+  printf("Warning: S-function \"%s\": %s\n", ssGetPath(S), msg)
+/*@}*/
+#endif /* defined(S_FUNCTION_NAME) */
+
+/** @name Definitions used outside S-functions as well */
+/*@{*/
+#define CONTINUOUS_SAMPLE_TIME 			0.0
+
 /** Free memory allocated though mx methods, e.g. mxArrayToString. */
 #define mxFree(p)	free(p)
+/*@}*/
 
-#if defined(HXI_INLINE_S_FUNCTION)
-/* forward declare SimStruct and mxArray */
-namespace Hxi {
-  class SimStruct;
-  class mxArray;
-}
-using namespace Hxi;
-#else
 /* declare SimStruct and mxArray as anonymous types */
 typedef void SimStruct;
 typedef void mxArray;
-#endif
 
 #if defined(_MSC_VER)
   /** define inline for Microsoft C compiler */
