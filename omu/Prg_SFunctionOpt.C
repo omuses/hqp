@@ -93,10 +93,10 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _KK = 1;
   _sps = 1;
   _multistage = true;
-  _nus_fixed = 0;
 
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
+  _mdl_u_nfixed = iv_get(_mdl_nu);
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
@@ -104,6 +104,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_bias = v_get(_mdl_ny);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
+  iv_set(_mdl_u_nfixed, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
@@ -131,6 +132,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_active)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_nfixed)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_max)));
@@ -145,7 +147,6 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 					   mdl_der_u_weight1)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
 					   mdl_der_u_weight2)));
-  _ifList.append(new If_Int(GET_SET_CB(int, "prg_", nus_fixed)));
 
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_bias)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
@@ -182,6 +183,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   v_free(_mdl_y_nominal);
   v_free(_mdl_x_nominal);
   v_free(_mdl_u_nominal);
+  iv_free(_mdl_u_nfixed);
   iv_free(_mdl_u_order);
   iv_free(_mdl_x0_active);
 }
@@ -219,12 +221,14 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 
   iv_resize(_mdl_x0_active, _mdl_nx);
   iv_resize(_mdl_u_order, _mdl_nu);
+  iv_resize(_mdl_u_nfixed, _mdl_nu);
   v_resize(_mdl_u_nominal, _mdl_nu);
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
+  iv_set(_mdl_u_nfixed, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
@@ -323,10 +327,22 @@ void Prg_SFunctionOpt::setup(int k,
   // setup initial states
   if (k == 0) {
     for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+      if (_mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
+	m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+		"mdl_u_order must be 0 or 1");
       if (_mdl_u.active[idx]) {
 	x.initial[i] = _mdl_us[0][idx] / _mdl_u_nominal[idx];
-	if (_nus_fixed > 0)
+	if (_mdl_u_nfixed[idx] > 1 - _mdl_u_order[idx])
 	  x.min[i] = x.max[i] = x.initial[i];
+	else if (_mdl_u_nfixed[idx] > 0 && _mdl_u_order[idx] == 0) {
+	  // apply rate of change bounds to initial step for zero order hold
+	  if (_mdl_der_u.min[idx] > -Inf)
+	    x.min[i] = x.initial[i]
+	      + _mdl_der_u.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
+	  if (_mdl_der_u.max[idx] < Inf)
+	    x.max[i] = x.initial[i]
+	      + _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
+	}
 	i++;
       }
     }
@@ -345,7 +361,7 @@ void Prg_SFunctionOpt::setup(int k,
   // setup control inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
-      if (_multistage && ks(k) >= _nus_fixed) {
+      if (_multistage && ks(k) >= _mdl_u_nfixed[idx] + _mdl_u_order[idx] - 1) {
 	// control bounds
 	if (_mdl_u.min[idx] > -Inf) {
 	  x.min[i] = _mdl_u.min[idx] / _mdl_u_nominal[idx];
@@ -357,12 +373,12 @@ void Prg_SFunctionOpt::setup(int k,
       else if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
-	  for (j = _nus_fixed - 1; j < upsk; j++)
+	  for (j = _mdl_u_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
 	    c.min[spsk*(_nc+_nsc) + i + j] =
 	      _mdl_u.min[idx] / _mdl_u_nominal[idx];
 	}
 	if (_mdl_u.max[idx] < Inf) {
-	  for (j = _nus_fixed - 1; j < upsk; j++)
+	  for (j = _mdl_u_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
 	    c.max[spsk*(_nc+_nsc) + i + j] =
 	      _mdl_u.max[idx] / _mdl_u_nominal[idx];
 	}
@@ -396,12 +412,13 @@ void Prg_SFunctionOpt::setup(int k,
 	}
 	// override rate of change bounds for fixed controls
 	if (_multistage) {
-	  if (ks(k) < _nus_fixed - 1) {
+	  if (ks(k) < _mdl_u_nfixed[idx] + _mdl_u_order[idx] - 2) {
 	    u.min[i] = u.max[i] = u.initial[i];
 	  }
 	}
 	else {
-	  for (j = 0; j < min(_nus_fixed - 1, upsk); j++)
+	  int jend = min(_mdl_u_nfixed[idx] + _mdl_u_order[idx] - 2, upsk);
+	  for (j = 0; j < jend; j++)
 	    u.min[i+j] = u.max[i+j] = u.initial[i+j];
 	}
       }

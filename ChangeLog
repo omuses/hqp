@@ -1,3 +1,9 @@
+2003-03-13    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]: rename prg_nus_fixed to mdl_u_nfixed
+	* omu/Prg_SFunctionOpt.[hC]: change default value of mdl_u_nfixed
+	  from 0 to 1; adapt semantics depending on mdl_u_order
+
 2003-03-04    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]: add support for free initial states

@@ -60,8 +60,13 @@ public:
    The treated optimization problem reads
    @f[
    \begin{array}{l}
-    \displaystyle{}
-    J\ =\ \sum_{kk=0}^{KK} \sum_{i=1}^{n_u} \Delta t_{u,i}^{kk} \left\{
+    \displaystyle 
+    J\ =\ \sum_{i=1}^{n_y} \left\{
+      y_{0\_weight1}\,y(t_0)
+      \ +\ y_{0\_weight2}\left[y(t_0)-\frac{y_{ref}}{y_{nominal}}\right]^2
+    \right\}_i
+    \\[4ex] \displaystyle \qquad 
+    \ + \ \sum_{kk=0}^{KK} \sum_{i=1}^{n_u} \Delta t_{u,i}^{kk} \left\{
       u_{weight1}\,u(t^{kk})
       \ +\ u_{weight2}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]^2
       \right\}_i
@@ -79,11 +84,6 @@ public:
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
          y_{soft\_weight1}\,s^{kk} + y_{soft\_weight2}\,s^{kk}s^{kk}
-    \right\}_i
-    \\[4ex] \displaystyle \qquad
-    \ + \ \sum_{i=1}^{n_y} \left\{
-      y_{0\_weight1}\,y(t_0)
-      \ +\ y_{0\_weight2}\left[y(t_0)-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{i=1}^{n_y} \left\{
@@ -123,7 +123,7 @@ public:
    using optimized control parameters @f$du^k@f$ or given inputs @f$us@f$ 
    @f[
    \begin{array}{ll}
-    \left\{ u(t) = u(t^{k-1}) + (t^{k}-t^{k-1})du^{k} \right\}_i,
+    \left\{ u(t) = u(t^{k-1}) + (t^{k}-t^{k-1})du^{k-1} \right\}_i,
     & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=0), \\[1ex]
     & t\in[t^{k},t^{k+1}),\ k=1,\ldots,K-1, \\[3ex]
     \left\{ \dot{u}(t) = du^{k} \right\}_i,
@@ -144,18 +144,23 @@ public:
    \begin{array}{rcccll}
     \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
         \quad & i\notin\mbox{find}(x_{0\_active}), \\[3ex]
-    \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{0})
-        &<& \displaystyle \frac{y_{max}}{y_{nominal}}, \\[3ex]
-    \displaystyle && u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}},
-    \quad & nus_{fixed}>0, \\[3ex]
-    \displaystyle \frac{u_{min}}{u_{nominal}} &<& u(t^{k})
-        &<& \displaystyle \frac{u_{max}}{u_{nominal}}, \quad &
-        k=0,\ldots,K \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}, \\[3ex]
-    \displaystyle && du^k &=& \displaystyle du^k_{initial}, \quad &
-        k = 0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k < nus_{fixed}-1, \\[3ex]
-    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
-        &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, &
-        k=0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}-1, \\[3ex]
+    \displaystyle \frac{y_{0,min}}{y_{nominal}} &<& y(t^{0})
+        &<& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
+    \displaystyle && \{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
+        \quad & i \in \mbox{find}(u_{nfixed}>1-u_{order}), \\[3ex]
+    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &<& u(t^0)
+        &<& \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
+        \ & i \in \mbox{find}(u_{nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
+    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &<& u(t^{k})
+        &<& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
+        i \in \mbox{find}(sps\,k \ge u_{nfixed} + u_{order} - 1), \\[1ex]
+	&& && & k=0,\ldots,K, \\[2ex]
+    \displaystyle && \{ du^k &=& \displaystyle du^k_{initial} \}_i, \quad &
+        i \in \mbox{find}(sps\,k < u_{nfixed}+u_{order}-2), \\[2ex]
+    \displaystyle\left\{ \frac{{der\_u}_{min}}{u_{nominal}}\right. &<& du^{k}
+        &<& \displaystyle\left. \frac{{der\_u}_{max}}{u_{nominal}}\right\}_i, &
+        i \notin \mbox{find}(sps\,k < u_{nfixed}+u_{order}-2), \\[1ex]
+	&& && & k=0,\ldots,K-1, \\[2ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
@@ -236,11 +241,11 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   MATP	_mdl_ys;	///< calculated model outputs
 
   /**
-   * Number of fixed control inputs at begin of time horizon (default: 0).
-   * The initial value is fixed for _nus_fixed=1, the initial and the 
-   * second value are fixed for _nus_fixed=2, and so on).
+   * Numbers of fixed control inputs at begin of time horizon (default: 1).
+   * The input is fixed up to the first time point for _mdl_u_nfixed=1,
+   * up to the second time point for _mdl_u_nfixed=2, and so on.
    */
-  int 	_nus_fixed;
+  IVECP 	_mdl_u_nfixed;
 
   /**
    * @name Implementation of predefined methods.
@@ -311,11 +316,6 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @name Access methods for program specific members (If prefix: prg_)
    */
   //@{
-  /// Numbers of fixed control inputs at begin of time horizon (default: 0)
-  int nus_fixed() const {return _nus_fixed;}
-  /// set numbers of fixed constrol inputs
-  void set_nus_fixed(int val) {_nus_fixed = val;}
-
   /// indicate if problem is treated with one stage per time interval
   bool multistage() const {return _multistage;}
   /// set multistage flag
@@ -344,11 +344,14 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// weight for quadratic objective term at initial time (default: 0)
   const VECP mdl_y0_weight2() const {return _mdl_y0.weight2;}
 
-  ///< interpolation order (0 (constant) or 1 (linear), default: 1)
+  /// interpolation order (0 (constant) or 1 (linear), default: 1)
   const IVECP mdl_u_order() const {return _mdl_u_order;}
 
   /// indicate optimized inputs
   const IVECP mdl_u_active() const {return _mdl_u.active;}
+
+  /// numbers of fixed control inputs at begin of time horizon (default: 1)
+  const IVECP mdl_u_nfixed() const {return _mdl_u_nfixed;}
 
   /// nominal input values (for scaling)
   const VECP mdl_u_nominal() const {return _mdl_u_nominal;}
@@ -457,11 +460,14 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set quadratic weight
   void set_mdl_y0_weight2(const VECP v) {v_copy_elements(v, _mdl_y0.weight2);}
 
-  ///< set interpolation order
+  /// set interpolation order
   void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
 
   /// set optimized inputs
   void set_mdl_u_active(const IVECP v) {iv_copy_elements(v, _mdl_u.active);}
+
+  /// set numbers of fixed control inputs
+  void set_mdl_u_nfixed(const IVECP v) {iv_copy_elements(v, _mdl_u_nfixed);}
 
   /// set nominal inputs
   void set_mdl_u_nominal(const VECP v) {v_copy_elements(v, _mdl_u_nominal);}
