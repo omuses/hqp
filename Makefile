@@ -12,7 +12,8 @@ omuses:
 	cd odc; $(MAKE); ./run Crane; cd ..
 
 doc::
-	cd doc; doxygen; cd latex; $(MAKE) pdf; mv refman.pdf ..; cd ../..
+	cd doc; doxygen; cd ..
+	cd doc/latex; $(MAKE) pdf; mv refman.pdf ..; cd ../..
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
