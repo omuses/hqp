@@ -49,7 +49,7 @@ extern VEC *v_part(VEC *v, int offs, int dim, VEC *header);
 extern VEC *v_expand(VEC *v, int nel, int granul);
 extern VEC *bd_mv_mlt(const BAND *, const VEC *, VEC *);
 
-extern MAT *m_mltadd(const MAT *, const MAT *, Real, MAT *);
+extern MAT *m_mltadd(const MAT *, const MAT *, const MAT *, MAT *);
 
 extern Real sp_norm_inf(SPMAT *);
 extern SPMAT *sp_copy3(const SPMAT *, SPMAT *);

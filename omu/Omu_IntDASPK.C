@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1996--2000  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2001  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -118,17 +118,10 @@ Omu_IntDASPK::Omu_IntDASPK()
 {
   theOmu_IntDASPK = this;
 
-  _cx = v_get(1);
-  _cu = v_get(1);
-  _cxp = v_get(1);
-  _cF = v_get(1);
-  _cFx = m_get(1, 1);
-  _cFu = m_get(1, 1);
-  _cFxp = m_get(1, 1);
-  _Xx = m_get(1, 1);
-  _Xu = m_get(1, 1);
-  _Xxp = m_get(1, 1);
-  _Xup = m_get(1, 1);
+  _sys = NULL;
+  _xc_ptr = NULL;
+  _Fc_ptr = NULL;
+
   _Yx = m_get(1, 1);
   _Yu = m_get(1, 1);
 
@@ -146,6 +139,7 @@ Omu_IntDASPK::Omu_IntDASPK()
   _banded = true;
   _krylov = false;
   _krylov_prec = false;
+  _with_jac = true;
 
   _nsteps = 0;
 
@@ -158,6 +152,7 @@ Omu_IntDASPK::Omu_IntDASPK()
   _ifList.append(new If_Bool("prg_int_banded", &_banded));
   _ifList.append(new If_Bool("prg_int_krylov", &_krylov));
   _ifList.append(new If_Bool("prg_int_krylov_prec", &_krylov_prec));
+  _ifList.append(new If_Bool("prg_int_with_jac", &_with_jac));
   _ifList.append(new If_Int("prg_int_nsteps", &_nsteps));
 
 }
@@ -165,17 +160,6 @@ Omu_IntDASPK::Omu_IntDASPK()
 //--------------------------------------------------------------------------
 Omu_IntDASPK::~Omu_IntDASPK()
 {
-  v_free(_cx);
-  v_free(_cu);
-  v_free(_cxp);
-  v_free(_cF);
-  m_free(_cFx);
-  m_free(_cFu);
-  m_free(_cFxp);
-  m_free(_Xx);
-  m_free(_Xu);
-  m_free(_Xxp);
-  m_free(_Xup);
   m_free(_Yx);
   m_free(_Yu);
 
@@ -219,27 +203,18 @@ void Omu_IntDASPK::init_stage(int k,
 //--------------------------------------------------------------------------
 void Omu_IntDASPK::realloc()
 {
-
   int kmp, maxl, maxord, neq, nrmax;
 
-
-  if (_cx->dim == _nd + _n && _cu->dim == _nu)
+  if (_xcp->dim == _nd + _n && _uc->dim == _nu && _senpar->dim == _nd + _nu)
     return;
 
   //
   // realloc variables for low level _sys->continuous callback
   //
-  v_resize(_cx, _nd + _n);
-  v_resize(_cu, _nu);
-  v_resize(_cxp, _nd + _n);
-  v_resize(_cF, _nd + _n);
-  m_resize(_cFx, _nd + _n, _nd + _n);
-  m_resize(_cFu, _nd + _n, _nu);
-  m_resize(_cFxp, _nd + _n, _nd + _n);
-  m_resize(_Xx, _nd + _n, _nx);
-  m_resize(_Xu, _nd + _n, _nu);
-  m_resize(_Xxp, _nd + _n, _nx);
-  m_resize(_Xup, _nd + _n, _nu);
+  v_resize(_uc, _nu);
+  _xcp.realloc(_nd + _n, _nx, _nu);
+  _xc_jac.realloc(_nd + _n, _nx, _nu);
+  _xcp_jac.realloc(_nd + _n, _nx, _nu);
   m_resize(_Yx, _nd + _n, _nx);
   m_resize(_Yu, _nd + _n, _nu);
 
@@ -346,7 +321,7 @@ void Omu_IntDASPK::init_options(const Omu_States &x)
   iv_zero(_info);	// lots of defaults
 
   if (!_krylov) {
-    _info[5-1] = 1;    	// use analytical Jacobian
+    _info[5-1] = _with_jac? 1: 0;    	// use analytical Jacobian
 
     if (_banded_solver) {
       _info[6-1] = 1;
@@ -437,34 +412,23 @@ void Omu_IntDASPK::init_options(const Omu_States &x)
 //--------------------------------------------------------------------------
 void Omu_IntDASPK::solve(int kk, double tstart, double tend,
 			 const Omu_States &x, const Omu_Vector &u,
-			 Omu_Program *sys, VECP xt,
-			 MATP Sx, MATP Su)
+			 Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc)
 {
-
   int i, j;
 
   _sys = sys;	// propagate to res() and jac()
+  _xc_ptr = &xc;
+  _Fc_ptr = &Fc;
 
   // _stepsize overrides _nsteps
   int nsteps = _nsteps;
   if (_stepsize > 0.0)
     nsteps = (int)ceil((tend - tstart) / _stepsize);
 
-  if (!_sys->has_low_level_continuous() && nsteps == 0) {
-    // Don't use analytical Jacobian if not explicitly given
-    // and if variable step size is enabled. DASPK seems to adapt
-    // its behavior assuming a cheap analytical Jacobian evaluation,
-    // which is not true for ADOL-C.
-    _info[5-1] = 0;
+  if (nsteps > 0) {
+    // Fixed step size requires external Jacobian.
+    _info[5-1] = 1;
   }
-
-  //
-  // init Jacobians
-  //
-
-  m_zero(_cFx);
-  m_zero(_cFu);
-  m_zero(_cFxp);
 
   //
   // init DASPK variables
@@ -510,10 +474,10 @@ void Omu_IntDASPK::solve(int kk, double tstart, double tend,
   v_zero(_yprime);
 
   for (i = 0; i < _nd; i++) {
-    _senpar[i] = xt[i];
+    _senpar[i] = xc[i];
   }
   for (i = 0; i < _n; i++) {
-    _y[i] = xt[_nd + i];		// initial states
+    _y[i] = xc[_nd + i];		// initial states
   }
   for (i = 0; i < _nu; i++) {
     _senpar[_nd + i] = u[i];
@@ -522,12 +486,18 @@ void Omu_IntDASPK::solve(int kk, double tstart, double tend,
   if (_sa) {
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	_y[(1 + j) * _n + i] = Sx[_nd + i][j];
+	_y[(1 + j) * _n + i] = xc.Sx[_nd + i][j];
       }
       for (j = 0; j < _nu; j++) {
-	_y[(1 + _nx + j) * _n + i] = Su[_nd + i][j];
+	_y[(1 + _nx + j) * _n + i] = xc.Su[_nd + i][j];
       }
     }
+    m_zero(_xcp.Sx);
+    m_zero(_xcp.Su);
+    m_zero(_xc_jac.Sx);
+    m_zero(_xc_jac.Su);
+    m_zero(_xcp_jac.Sx);
+    m_zero(_xcp_jac.Su);
   }
 
   _info[1-1] = 0;	// restart new problem
@@ -591,16 +561,16 @@ void Omu_IntDASPK::solve(int kk, double tstart, double tend,
   //
 
   for (i = 0; i < _n; i++) {
-    xt[_nd + i] = _y[i];
+    xc[_nd + i] = _y[i];
   }
 
   if (_sa) {
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	Sx[_nd + i][j] = _y[(1 + j) * _n + i];
+	xc.Sx[_nd + i][j] = _y[(1 + j) * _n + i];
       }
       for (j = 0; j < _nu; j++) {
-	Su[_nd + i][j] = _y[(1 + _nx + j) * _n + i];
+	xc.Su[_nd + i][j] = _y[(1 + _nx + j) * _n + i];
       }
     }
   }
@@ -612,62 +582,53 @@ void Omu_IntDASPK::res(freal *t, freal *y, freal *yprime,
 		       freal *senpar)
 {
   int i, j;
+  Omu_SVec &xc = *_xc_ptr;
+  Omu_DepVec &Fc = *_Fc_ptr;
 
-  // form vectors of independent variables
+  // prepare call arguments
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = senpar[i];
-    _cxp[i] = 0.0;
+    xc[i] = senpar[i];
+    _xcp[i] = 0.0;
   }
   for (i = 0; i < _n; i++) {
-    _cx[_nd + i] = y[i];
-    _cxp[_nd + i] = yprime[i];
+    xc[_nd + i] = y[i];
+    _xcp[_nd + i] = yprime[i];
   }
   for (i = 0; i < _nu; i++) {
-    _cu[i] = senpar[_nd + i];
+    _uc[i] = senpar[_nd + i];
   }
-
-  // evaluate residual
-
-  if (*ires == 1)
-    _sys->continuous(_kk, *t, _cx, _cu, _cxp, _cF, _cFx, _cFu, _cFxp);
-  else
-    _sys->continuous(_kk, *t, _cx, _cu, _cxp, _cF);
-
-  // read and return result
-  for (i = 0; i < _n; i++)
-    delta[i] = _cF[_nd+i];
 
   if (*ires == 1) {
     // init seed derivatives
-    m_zero(_Xx);
-    m_zero(_Xu);
-    m_zero(_Xxp);
-    m_zero(_Xup);
-    for (i = 0; i < _nd; i++) {
-      _Xx[i][i] = 1.0;
-    }
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	_Xx[_nd + i][j] = y[(1 + j) * _n + i];
-	_Xxp[_nd + i][j] = yprime[(1 + j) * _n + i];
+	xc.Sx[_nd + i][j] = y[(1 + j) * _n + i];
+	_xcp.Sx[_nd + i][j] = yprime[(1 + j) * _n + i];
       }
       for (j = 0; j < _nu; j++) {
-	_Xu[_nd + i][j] = y[(1 + _nx + j) * _n + i];
-	_Xup[_nd + i][j] = yprime[(1 + _nx + j) * _n + i];
+	xc.Su[_nd + i][j] = y[(1 + _nx + j) * _n + i];
+	_xcp.Su[_nd + i][j] = yprime[(1 + _nx + j) * _n + i];
       }
     }
+  }
 
+  // evaluate residual
+  _sys->continuous(_kk, *t, xc, _uc, _xcp, Fc);
+
+  // read and return result
+  for (i = 0; i < _n; i++)
+    delta[i] = Fc[_nd+i];
+
+  if (*ires == 1) {
     // _Yx = dF/dxk = dF/dx * dx/dxk + dF/dxp * dxp/dxk
-    m_mlt(_cFx, _Xx, _Yx);
-    m_mlt(_cFxp, _Xxp, _Xx);
-    m_add(_Yx, _Xx, _Yx);
+    m_mlt(Fc.Jx, xc.Sx, _Yx);
+    m_mltadd(_Yx, Fc.Jxp, _xcp.Sx, _Yx);
 
     // _Yu = dF/duk = dF/dx * dx/duk + dF/dxp * dxp/duk + dF/duk
-    m_mlt(_cFx, _Xu, _Yu);
-    m_mlt(_cFxp, _Xup, _Xu);
-    m_add(_Yu, _Xu, _Yu);
-    m_add(_cFu, _Yu, _Yu);
+    m_mlt(Fc.Jx, xc.Su, _Yu);
+    m_mltadd(_Yu, Fc.Jxp, _xcp.Su, _Yu);
+    m_add(_Yu, Fc.Ju, _Yu);
 
     // write result
     for (i = 0; i < _n; i++) {
@@ -695,24 +656,34 @@ void Omu_IntDASPK::jac(freal *t, freal *y, freal *yprime,
     error(E_INTERN, "Omu_IntDASPK::jac");
 
   int i, j;
+  Omu_DepVec &Fc = *_Fc_ptr;
 
-  // form vectors of independent variables
+  // prepare call arguments
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = senpar[i];
-    _cxp[i] = 0.0;
+    _xc_jac[i] = senpar[i];
+    _xcp_jac[i] = 0.0;
   }
   for (i = 0; i < _n; i++) {
-    _cx[_nd + i] = y[i];
-    _cxp[_nd + i] = yprime[i];
+    _xc_jac[_nd + i] = y[i];
+    _xcp_jac[_nd + i] = yprime[i];
   }
   for (i = 0; i < _nu; i++) {
-    _cu[i] = senpar[_nd + i];
+    _uc[i] = senpar[_nd + i];
+  }
+
+  for (i = _nd; i < _nxt; i++) {
+    _xc_jac.Sx[i][i] = 1.0;
+    _xcp_jac.Sx[i][i] = *cj;
   }
 
   // evaluate residuals and Jacobians
+  bool is_required_J_bak = Fc.is_required_J();
+  Fc.set_required_J(true);
 
-  _sys->continuous(_kk, *t, _cx, _cu, _cxp, _cF, _cFx, _cFu, _cFxp);
+  _sys->continuous(_kk, *t, _xc_jac, _uc, _xcp_jac, Fc);
+
+  Fc.set_required_J(is_required_J_bak);
 
   // read and return results
 
@@ -720,7 +691,7 @@ void Omu_IntDASPK::jac(freal *t, freal *y, freal *yprime,
     // full Jacobian
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _n; j++) {
-	pd[i + _n * j] = _cFx[_nd+i][_nd+j] + *cj * _cFxp[_nd+i][_nd+j];
+	pd[i + _n * j] = Fc.Jx[_nd+i][_nd+j] + *cj * Fc.Jxp[_nd+i][_nd+j];
       }
     }
   else {
@@ -735,7 +706,7 @@ void Omu_IntDASPK::jac(freal *t, freal *y, freal *yprime,
       j_end = min(j_end, _n);
       for (j = j_start; j < j_end; j++) {
 	irow = i - j + _ml + _mu;
-	pd[irow + nb * j] = _cFx[_nd+i][_nd+j] + *cj * _cFxp[_nd+i][_nd+j];
+	pd[irow + nb * j] = Fc.Jx[_nd+i][_nd+j] + *cj * Fc.Jxp[_nd+i][_nd+j];
       }
     }
   }

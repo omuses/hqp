@@ -35,9 +35,11 @@
 
 class Omu_Program;
 class Omu_Integrator;
-class Omu_Vars;
-class Omu_Vector;
-class Omu_States;
+class Omu_VarVec;
+class Omu_DynVarVec;
+class Omu_SVec;
+class Omu_DepVec;
+class Omu_Dep;
 
 //--------------------------------------------------------------------------
 class Hqp_Omuses: public Hqp_Docp_stub {
@@ -60,9 +62,24 @@ class Hqp_Omuses: public Hqp_Docp_stub {
   VECP _xt;		// initial states of a sample period
   MATP _xtxk;		// dxt/dxk
   MATP _xtuk;		// dxt/duk
-  MATP _Sx;		// sensitivity for x
+  MATP _Sx;		// sensitivity for x after integration
+  MATP _Sxk;		// sensitivity for x before integration
   MATP _IS;		// help matrix
-  MATP _Su;		// sensitivity for u
+  MATP _Su;		// sensitivity for u after integration
+  MATP _Suk;		// sensitivity for u before integration
+
+  VECP _fk;		// call argument for update
+
+  MATP _fkxk;		// Jacobian delivered by update
+  MATP _fkuk;		// Jacobian delivered by update
+  MATP _fkfk;		// Jacobian delivered by update
+  VECP _f0kxk;		// Jacobian delivered by update
+  VECP _f0kuk;		// Jacobian delivered by update
+  VECP _f0kfk;		// Jacobian delivered by update
+  MATP _ckxk;		// Jacobian delivered by update
+  MATP _ckuk;		// Jacobian delivered by update
+  MATP _ckfk;		// Jacobian delivered by update
+
   bool _ad;		// flag about use of automatic differentiation
   double _fscale;	// scaling of the criterion
 
@@ -98,11 +115,20 @@ class Hqp_Omuses: public Hqp_Docp_stub {
 		 VECP x, VECP u);
 
   void obtain_structure(int k,
-			Omu_States &xk, const Omu_Vector &uk);
+			Omu_DynVarVec &xk, const Omu_VarVec &uk);
 
-  Omu_States	*_xs;	// state information from problem setup
-  Omu_Vars	*_us;	// control information from problem setup
-  Omu_Vars	*_cs;	// constraint information from problem setup
+  Omu_DynVarVec	*_xs;	// state information from problem setup
+  Omu_VarVec	*_us;	// control information from problem setup
+  Omu_VarVec	*_css;	// constraint information from problem setup
+
+  Omu_SVec 	*_x0s;	// initial states before integration
+  Omu_SVec 	*_xfs;	// final states after integration
+
+  Omu_DepVec 	*_xts;	// continuous time states from consistic
+  Omu_DepVec 	*_Fs;	// continuous time model equations from continuous
+  Omu_DepVec 	*_fs;	// discrete time states from update
+  Omu_Dep 	*_f0s;  // objective from update
+  Omu_DepVec 	*_cs; 	// constraints from update
 
   // variables for ADOL-C
 

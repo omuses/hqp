@@ -65,13 +65,13 @@ void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
 
   // initialize model sizes
   mdlInitializeSizes(_S);
-
-  // check for initialization errors
   if (ssGetErrorStatus(_S)) {
-    cerr << "S-function initialization error: "
+    cerr << "Error from mdlInitializeSizes: "
 	 << ssGetErrorStatus(_S) << "\n";
     exit(-1);
   }
+
+  // check for number of parameters
   if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
     cerr << "S-function parameter count mismatch: expected "
 	 << ssGetNumSFcnParams(_S) << ", provided "
@@ -89,6 +89,11 @@ void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
 
   // initialize sample times of model
   mdlInitializeSampleTimes(_S);
+  if (ssGetErrorStatus(_S)) {
+    cerr << "Error from mdlInitializeSampleTimes: "
+	 << ssGetErrorStatus(_S) << "\n";
+    exit(-1);
+  }
 
   // check sample times of model
   assert(ssGetNumSampleTimes(_S) == 1);
@@ -110,6 +115,11 @@ void Prg_DID_SFunction::setup(int k,
   if (k == 0) {
     // get initial states from model
     mdlInitializeConditions(_S);
+    if (ssGetErrorStatus(_S)) {
+      cerr << "Error from mdlInitializeConditions: "
+	   << ssGetErrorStatus(_S) << "\n";
+      ssSetErrorStatus(_S, NULL);
+    }
     real_T *mdl_x = ssGetDiscStates(_S);
     x.initial[0] = value(mdl_x[0]);
     x.initial[1] = value(mdl_x[1]);
@@ -163,6 +173,10 @@ void Prg_DID_SFunction::update(int kk,
 
     // obtain model outputs for current states and inputs
     mdlOutputs(_S, 0);
+    if (ssGetErrorStatus(_S)) {
+      cerr << "Error from mdlOutputs: " << ssGetErrorStatus(_S) << "\n";
+      ssSetErrorStatus(_S, NULL);
+    }
 
     // objective
     f0 = u[0] * u[0] * dt;
@@ -174,6 +188,10 @@ void Prg_DID_SFunction::update(int kk,
 
     // evaluate model equations
     mdlUpdate(_S, 0);
+    if (ssGetErrorStatus(_S)) {
+      cerr << "Error from mdlUpdate: " << ssGetErrorStatus(_S) << "\n";
+      ssSetErrorStatus(_S, NULL);
+    }
 
     // get new states
     for (i = 0; i < _nx; ++i)

@@ -1,12 +1,12 @@
 /*
- * Omu_Vector.C
- *   -- class definition
+ * Omu_Variables.C
+ *   -- class definitions
  *
- * rf, 2/3/97
+ * rf, 10/10/01
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,29 +24,28 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Omu_Vector.h"
+#include "Omu_Variables.h"
+#include <Hqp.h>  // include this file to get Inf
 
 //--------------------------------------------------------------------------
-Omu_Vector::Omu_Vector()
+Omu_VariableVec::Omu_VariableVec()
 {
-  _v = v_resize(v_get(1), 0);
   min = v_resize(v_get(1), 0);
   max = v_resize(v_get(1), 0);
   initial = v_resize(v_get(1), 0);
 }
 
 //--------------------------------------------------------------------------
-Omu_Vector::Omu_Vector(const Omu_Vector &cv)
-  : VECP()
+Omu_VariableVec::Omu_VariableVec(const Omu_VariableVec &cv)
+  : Omu_Vec(cv)
 {
-  _v = v_copy(cv._v, VNULL);
   min = v_copy(cv.min, VNULL);
   max = v_copy(cv.max, VNULL);
   initial = v_copy(cv.initial, VNULL);
 }
 
 //--------------------------------------------------------------------------
-Omu_Vector &Omu_Vector::operator=(const Omu_Vector &cv)
+Omu_VariableVec &Omu_VariableVec::operator=(const Omu_VariableVec &cv)
 {
   v_copy(cv._v, _v);
   v_copy(cv.min, min);
@@ -57,16 +56,15 @@ Omu_Vector &Omu_Vector::operator=(const Omu_Vector &cv)
 }
 
 //--------------------------------------------------------------------------
-Omu_Vector::~Omu_Vector()
+Omu_VariableVec::~Omu_VariableVec()
 {
   v_free(initial);
   v_free(max);
   v_free(min);
-  v_free(_v);
 }
 
 //--------------------------------------------------------------------------
-void Omu_Vector::alloc(int n, int n_expand)
+void Omu_VariableVec::alloc(int n, int n_expand)
 {
   if (n_expand < n)
     n_expand = n;

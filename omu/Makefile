@@ -10,8 +10,10 @@ CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
 SRCS =	Omu_Init.C \
 	Hqp_Docp_stub.C \
 	Hqp_Omuses.C \
-	Omu_Vector.C \
+	Omu_Variables.C \
 	Omu_Vars.C \
+	Omu_Dependents.C \
+	Omu_Deps.C \
 	Omu_Program.C \
 	Omu_Integrator.C \
 	Omu_IntODE.C \

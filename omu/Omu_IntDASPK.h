@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1996--2000  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2001  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -60,8 +60,7 @@ class Omu_IntDASPK: public Omu_Integrator {
 		  bool sa);
   void solve(int kk, double tstart, double tend,
 	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys, VECP xt,
-	     MATP Sx, MATP Su);
+	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
 
   // routines called by DASPK
   void res(freal *t, freal *x, freal *xprime,
@@ -77,8 +76,10 @@ class Omu_IntDASPK: public Omu_Integrator {
   void		realloc();
   void		init_options(const Omu_States &x);
 
-  // backing store sys and current stage
+  // backing store sys and vector of dependent variables for callbacks
   Omu_Program	*_sys;
+  Omu_SVec	*_xc_ptr;
+  Omu_DepVec 	*_Fc_ptr;
 
   // variables for DASPK
   int		_mu;	// upper semi-bandwidth
@@ -127,24 +128,23 @@ class Omu_IntDASPK: public Omu_Integrator {
   bool		_krylov_prec;
 
   /**
+   * User specification if externally provided Jacobian should be used
+   * (default: true). Otherwise DASPK approximates it internally,
+   * which is generally more efficient for not analytically given Jacobians.
+   */
+  bool 		_with_jac;
+
+  /**
    * User defined fixed number of steps.
    * (default: 0, i.e. variable step size based on _rtol and _atol)
    */
   int		_nsteps;
 
-  // vectors and matrices for low level _sys->continuous callback
-  VECP		_cx;
-  VECP		_cu;
-  VECP		_cxp;
-  VECP		_cF;
-  MATP		_cFx;
-  MATP		_cFu;
-  MATP		_cFxp;
-  // seed derivatives for calculating sensitivity equations
-  MATP		_Xx;
-  MATP		_Xu;
-  MATP		_Xxp;
-  MATP		_Xup;
+  // arguments for low level _sys->continuous callback
+  Omu_Vec	_uc;
+  Omu_SVec	_xcp;
+  Omu_SVec	_xc_jac;
+  Omu_SVec	_xcp_jac;
   MATP		_Yx;
   MATP		_Yu;
 };  

@@ -30,7 +30,8 @@
 
 #include <adouble.h>
 #include <Meschach.h>
-#include <Omu_Vector.h>
+#include <Omu_Variables.h>
+#include <Omu_Dependents.h>
 
 #include <If_Class.h>
 
@@ -45,29 +46,33 @@ class Omu_Program {
   virtual ~Omu_Program();
 
   //
-  // method interface
+  // High-level methods to be primarily implemented by a derived class.
   //
 
   /**
-   * Setup stages and time sampling.
-   */
-  virtual void setup_stages();
-
-  /**
-   * Routine called by default implementation of
-   * public setup_stages()
+   * Setup stages and time sampling. The default implementation sets up
+   * an optimization problem without stages.
    */
   virtual void setup_stages(IVECP ks, VECP ts);
 
+  /**
+   * Allocate states x, control parameters u, and constraints c for stage k.
+   * Additionally setup bounds and initial values.
+   */
   virtual void setup(int k,
-		     Omu_Vector &x, Omu_Vector &u, Omu_Vector &c) = 0;
+		     Omu_VariableVec &x, Omu_VariableVec &u,
+		     Omu_VariableVec &c) = 0;
 
   virtual void init_simulation(int k,
-			       Omu_Vector &x, Omu_Vector &u);
+			       Omu_VariableVec &x, Omu_VariableVec &u);
 
+  /**
+   * High-level update for the optimization criterion, constraints, and
+   * discrete state equations.
+   */
   virtual void update(int kk, 
 		      const adoublev &x, const adoublev &u,
-		      adoublev &f, adouble &f0, adoublev &c) = 0;
+		      adoublev &f, adouble &f0, adoublev &c);
 
   /**
    * High-level consistic (consistent initial conditions) routine
@@ -82,20 +87,6 @@ class Omu_Program {
 			 adoublev &xt);
 
   /**
-   * Low-level consistic (consistent initial conditions) routine
-   * for the user specification of derivative information.
-   * The default implementation calls the high-level version
-   * and uses ADOL-C for the determination of xtx and xtu.
-   * If a calling routine passes no xtx and xtu (or null pointers),
-   * then no Jacobians are calculated at all.
-   * If a calling routine passes xtx and xtu, then the matrices are
-   * initialized with zeros.
-   */
-  virtual void consistic(int kk, double t,
-			 const Omu_Vector &x, const Omu_Vector &u,
-			 VECP xt, MATP xtx = MNULL, MATP xtu = MNULL);
-
-  /**
    * High-level continuous routine for specifying differential equations
    * of the form F(x,u,\dot{x})=0.
    * The default implementation is empty to indicate that no differential
@@ -105,35 +96,60 @@ class Omu_Program {
 			  const adoublev &x, const adoublev &u,
 			  const adoublev &xp, adoublev &F);
 
-  /**
-   * Low-level continuous routine,
-   * which may be implemented in addition to high-level continuous
-   * by a derived class to provide Jacobians for differential equations.
-   * The default implementation calls the high-level continuous()
-   * and employs ADOL-C for automatic Jacobian calculation.
-   * If a calling routine passes no Fxp (or a null pointer),
-   * then only Fx and Fu are calculated.
-   * If a calling routine passes no Fx, Fu, and Fxp (or null pointers),
-   * then no Jacobians are calculated at all.
-   * If a calling routine passes Fx, Fu, or Fxp, then the matrices are
-   * initialized with zeros.
-   */
-  virtual void continuous(int kk, double t,
-			  const VECP x, const VECP u,
-			  const VECP xp, VECP F,
-			  MATP Fx = MNULL, MATP Fu = MNULL,
-			  MATP Fxp = MNULL);
+  //
+  // Low-level methods primarily called from outside.
+  // Default implementations are provided in Omu_Program.
+  // A derived class should should only overload these methods
+  // in special cases, e.g. to achieve a speedup.
+  //
 
   /**
-   * This routine is intended for a calling module,
-   * which might want to avoid calling the low-level continuous
-   * if it is not overridden (e.g. as it has then a faster sensitivity
-   * calculation).
-   * @return true if low-level continuous is overloaded
-   * (currently low-level continuous must have been called once before 
-   *  false may be returned)
+   * Setup stages and time sampling. The default implementation calls
+   * setup_stages(IVECP ks, VECP ts).
    */
-  bool has_low_level_continuous();
+  virtual void setup_stages();
+
+  /**
+   * Setup sparsity patterns of Jacobians. The default implementation 
+   * employs ADOL-C to get all information.
+   * Note: The sparsity pattern must be the same for all sample periods of
+   * a stage, i.e. this method has to setup a superset of all sparsity
+   * patterns of individual sample periods.
+   */
+  virtual void setup_struct(int k,
+			    const Omu_VariableVec &x, const Omu_VariableVec &u,
+			    Omu_DependentVec &xt, Omu_DependentVec &F,
+			    Omu_DependentVec &f,
+			    Omu_Dependent &f0, Omu_DependentVec &c);
+
+  /**
+   * Low-level consistic (consistent initial conditions) routine
+   * for the user specification of derivative information.
+   * The default implementation calls the high-level version
+   * and uses ADOL-C for the determination of xtx and xtu.
+   */
+  virtual void consistic(int kk, double t,
+			 const Omu_StateVec &x, const Omu_Vec &u,
+			 Omu_DependentVec &xt);
+
+  /**
+   * Low-level continuous routine.
+   * The default implementation calls the high-level continuous()
+   * and employs ADOL-C for automatic Jacobian calculation.
+   */
+  virtual void continuous(int kk, double t,
+			  const Omu_StateVec &x, const Omu_Vec &u,
+			  const Omu_StateVec &xp, Omu_DependentVec &F);
+
+  /**
+   * Low-level update. The default implementation calls the high-level update
+   * and calculates Jacobians by using ADOL-C.
+   */
+  virtual void update(int kk, 
+		      const Omu_StateVec &x, const Omu_Vec &u,
+		      const Omu_StateVec &xf,
+		      Omu_DependentVec &f, Omu_Dependent &f0,
+		      Omu_DependentVec  &c);
 
   //
   // member access routines
@@ -153,6 +169,52 @@ class Omu_Program {
   //
 
   virtual char *name() = 0;
+
+  //
+  // depreciated methods
+  //
+
+  /**
+   * Old low-level consistic (consistent initial conditions) routine
+   * for the user specification of derivative information.
+   * The default implementation calls the high-level version
+   * and uses ADOL-C for the determination of xtx and xtu.
+   * If a calling routine passes no xtx and xtu (or null pointers),
+   * then no Jacobians are calculated at all.
+   * If a calling routine passes xtx and xtu, then the matrices are
+   * initialized with zeros.
+   */
+  virtual void consistic(int kk, double t,
+			 const Omu_Vector &x, const Omu_Vector &u,
+			 VECP xt, MATP xtx = MNULL, MATP xtu = MNULL);
+
+  /**
+   * Old low-level continuous routine,
+   * which may be implemented in addition to high-level continuous
+   * by a derived class to provide Jacobians for differential equations.
+   * The default implementation calls the high-level continuous()
+   * and employs ADOL-C for automatic Jacobian calculation.
+   * If a calling routine passes no Fxp (or a null pointer),
+   * then only Fx and Fu are calculated.
+   * If a calling routine passes no Fx, Fu, and Fxp (or null pointers),
+   * then no Jacobians are calculated at all.
+   */
+  virtual void continuous(int kk, double t,
+			  const VECP x, const VECP u,
+			  const VECP xp, VECP F,
+			  MATP Fx = MNULL, MATP Fu = MNULL,
+			  MATP Fxp = MNULL);
+
+  /**
+   * This routine is intended for a calling module,
+   * which might want to avoid calling the low-level continuous
+   * if it is not overridden (e.g. as it has then a faster sensitivity
+   * calculation).
+   * @return true if low-level continuous is overloaded
+   * (currently low-level continuous must have been called once before 
+   *  false may be returned)
+   */
+  bool has_low_level_continuous();
 
  protected:
 
@@ -176,18 +238,54 @@ class Omu_Program {
   void 	stages_alloc(IVECP ks, VECP ts, int K, int sps,
 		     double t0 = 0.0, double tf = 1.0);
 
+  //
+  // low-level routines employing numerical differentiation
+  // to obtain Jacobians
+  //
+
+  /**
+   * Low-level consistic routine for obtaining gradients.
+   * The default version implements finite forward differences.
+   * It can be called after the values have been calculated.
+   */
+  virtual void consistic_grds(int kk, double t,
+			      const Omu_StateVec &x, const Omu_Vec &u,
+			      Omu_DependentVec &xt);
+
+  /**
+   * Low-level continuous routine for obtaining gradients.
+   * The default version implements finite forward differences.
+   * It can be called after the values have been calculated.
+   */
+  virtual void continuous_grds(int kk, double t,
+			       const Omu_StateVec &x, const Omu_Vec &u,
+			       const Omu_StateVec &xp, Omu_DependentVec &F);
+
+  /**
+   * Low-level update routine for obtaining gradients.
+   * The default version implements finite forward differences.
+   * It can be called after the values have been calculated.
+   */
+  virtual void update_grds(int kk, 
+			   const Omu_StateVec &x, const Omu_Vec &u,
+			   const Omu_StateVec &xf,
+			   Omu_DependentVec &f, Omu_Dependent &f0,
+			   Omu_DependentVec  &c);
+
 private:
   IVECP _ks;	// starting indices of stages
   VECP 	_ts;	// time steps
 
+  // allocation methods and memory for ADOL-C
   void		ad_alloc(int ndep, int nindep);
   void		ad_realloc(int ndep, int nindep);
   void		ad_free();
-
   int		_max_ndep;
   int		_max_nindep;
   MATP 		_U;
-  MATP		_Z;
+  MATP 		_Z;
+  double	***_Z3;
+  short	  	**_nz;
 
   bool 		_has_low_level_continuous;
 };  

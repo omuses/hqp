@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -44,8 +44,7 @@ class Omu_IntODE: public Omu_Integrator {
 		  bool sa = false);
   void solve(int kk, Real tstart, Real tend,
 	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys, VECP xt,
-	     MATP Sx, MATP Su);
+	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
 
   // routines provided by derived classes
   virtual void ode_solve(Real tstart, VECP y, VECP u, Real tend) = 0;
@@ -63,30 +62,25 @@ class Omu_IntODE: public Omu_Integrator {
 
   // backing store sys and current stage
   Omu_Program	*_sys;
+  Omu_SVec 	*_xc_ptr;
+  Omu_DepVec 	*_Fc_ptr;
 
   VECP		_y;
   VECP		_u;
-  VECP		_D;	// -(dF/dy')^(-1)
 
   void		realloc();
+
+  // vectors and matrices for low level _sys->continuous callback
+  Omu_Vec	_uc;
+  Omu_SVec	_xcp;
+  MATP		_Yx;
+  MATP		_Yu;
 
   // variables for ADOL-C
   VECP		_x;
   VECP		_v;
   MATP		_X;
   MATP		_Y;
-
-  // vectors and matrices for low level _sys->continuous callback
-  VECP		_cx;
-  VECP		_cu;
-  VECP		_cxp;
-  VECP		_cF;
-  MATP		_cFx;
-  MATP		_cFu;
-  MATP		_Xx;
-  MATP		_Xu;
-  MATP		_Yx;
-  MATP		_Yu;
 };  
 
 #endif

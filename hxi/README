@@ -2,22 +2,31 @@ This directory contains Hqp eXternal Interfaces (HXI).
 
 Currently provided is:
 
-* Interface to Simulink(R) S-function. 
+* Interface to Simulink(R) S-function in two versions. 
 
-The interface provides the data structures and macros required to
-compile a simple discrete-time or continuous-time S-function for
-Hqp. Even though only a subset of the Simulink(R) S-function interface
-is covered, this approch has the main advantage that problems with not
+** Calling interface to binary MEX S-function
+
+The files Hxi_MEX_SFunction.[hC] implement a calling interface 
+using dynamic load functions dlopen, dlsym, dlerror, dlclose.
+The main problem with this interface is that currently no model
+Jacobians are officially supported for S-functions, i.e. derivatives
+have to be approximated numerically.
+
+** Emulation of S-function interface using ADOL-C
+
+The interface in Hxi_SimStruct.h, Hxi_mxArray.h, Hxi_sfun_types.h 
+provides the data structures and macros required to compile 
+a simple discrete-time or continuous-time S-function for Hqp. 
+Only a subset of the Simulink(R) S-function interface is covered. 
+The whole S-function must be available in source form and 
+must compile with real_T defined as ADOL-C adouble.
+This approch has the main advantage that problems with not
 supported features more likely appear already at compilation time
 (note that hardly all S-function features are sensible for
 optimization). Furthermore exact derivatives can be obtained in this
-way using ADOL-C. The main obstacles of the current interface are that
-the whole S-function must be available in source form and must compile
-with real_T defined as ADOL-C adouble.
+way using ADOL-C.
 
-See also the sfun examples in the demo collection (odc directory).
-
-Ruediger Franke, May 6, 2001
+Ruediger Franke, October 10, 2001
 rfranke@users.sourceforge.net
 
 (Simulink is a registered trademark of The MathWorks, Inc.)

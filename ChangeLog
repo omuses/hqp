@@ -1,3 +1,35 @@
+2001-10-10    <rfranke>
+
+	* configure.in: change to version 1.8.0d
+
+	* omu/Omu_Program.[hC]: introduce new low level calling interface,
+	  which is below the classical high-level interface using ADOL-C
+
+	* omu/Hqp_Omuses.[hC]: use new low-level interface of Omu_Program
+
+	* omu/Omu_Vec.h: add base classes for vectors passed to Omu_Program
+	  with automatic construction/destruction
+
+	* omu/Omu_Variables.[hC]: renamed from former omu/Omu_Vector.[hC]
+
+	* omu/Omu_Vars.[hC]: rename Omu_Vars to Omu_VarVec and
+	  Omu_States to Omu_DVarVec
+
+	* omu/Omu_Dependents.[hC], omu/Omu_Deps.[hC]:
+	  add classes for dependent variables
+
+	* omu/Omu_Integrator.[hC], omu/Omu_IntDASPK.[hC], omu/Omu_IntODE.[hC]: 
+	  adapt to data structures introduced for new low level interface
+	  of Omu_Program
+
+	* hxi/Hxi_MEX_SFunction.[hC]: add calling interface
+	  for binary MEX S-functions
+
+	* odc/Prg_DI[CD]_SFunction.C: extend with error checks
+
+	* hqp/Meschach.[hC]: redefine m_mltadd, which was not used so far,
+	  from scalar mltadd OUT = M1 + M2*R1 to matrix mltadd OUT = M1 + M2*M3
+
 2001-09-30    <rfranke>
 
 	* configure.in: change to version 1.7.10

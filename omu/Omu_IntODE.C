@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -35,23 +35,18 @@
 //--------------------------------------------------------------------------
 Omu_IntODE::Omu_IntODE()
 {
+  _sys = NULL;
+  _xc_ptr = NULL;
+  _Fc_ptr = NULL;
+
   _y = v_get(1);
   _u = v_get(1);
-  _D = VNULL;
 
   _x = v_get(1);
   _v = v_get(1);
   _X = m_get(1, 1);
   _Y = m_get(1, 1);
 
-  _cx = v_get(1);
-  _cu = v_get(1);
-  _cxp = v_get(1);
-  _cF = v_get(1);
-  _cFx = m_get(1, 1);
-  _cFu = m_get(1, 1);
-  _Xx = m_get(1, 1);
-  _Xu = m_get(1, 1);
   _Yx = m_get(1, 1);
   _Yu = m_get(1, 1);
 }
@@ -64,18 +59,9 @@ Omu_IntODE::~Omu_IntODE()
   v_free(_v);
   v_free(_x);
 
-  v_free(_D);
   v_free(_u);
   v_free(_y);
 
-  v_free(_cx);
-  v_free(_cu);
-  v_free(_cxp);
-  v_free(_cF);
-  m_free(_cFx);
-  m_free(_cFu);
-  m_free(_Xx);
-  m_free(_Xu);
   m_free(_Yx);
   m_free(_Yu);
 }
@@ -100,7 +86,7 @@ void Omu_IntODE::init_stage(int k,
 //--------------------------------------------------------------------------
 void Omu_IntODE::realloc()
 {
-  if (_cx->dim == _nxt && _cu->dim == _nu)
+  if (_xcp->dim == _nx + _nd && _uc->dim == _nu && _u->dim == _nd + _nu)
     return;
 
   int neq = _n * (1 + _nx + _nu);
@@ -119,14 +105,8 @@ void Omu_IntODE::realloc()
   //
   // variables for low level _sys->continuous callback
   //
-  v_resize(_cx, _nd + _n);
-  v_resize(_cu, _nu);
-  v_resize(_cxp, _nd + _n);
-  v_resize(_cF, _nd + _n);
-  m_resize(_cFx, _nd + _n, _nd + _n);
-  m_resize(_cFu, _nd + _n, _nu);
-  m_resize(_Xx, _nd + _n, _nx);
-  m_resize(_Xu, _nd + _n, _nu);
+  v_resize(_uc, _nu);
+  _xcp.realloc(_nd + _n, _nx, _nu);
   m_resize(_Yx, _nd + _n, _nx);
   m_resize(_Yu, _nd + _n, _nu);
 }
@@ -134,38 +114,39 @@ void Omu_IntODE::realloc()
 //--------------------------------------------------------------------------
 void Omu_IntODE::solve(int kk, Real tstart, Real tend,
 		       const Omu_States &x, const Omu_Vector &u,
-		       Omu_Program *sys, VECP xt,
-		       MATP Sx, MATP Su)
+		       Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc)
 {
   int i, j;
 
   _sys = sys;	// propagate to syseq()
-
-  _D = v_resize(_D, _nxt - _nd);
-  for (i = _nd; i < _nxt; i++)
-    _D[i - _nd] = -1.0 / x.D[i];
+  _xc_ptr = &xc;
+  _Fc_ptr = &Fc;
 
   v_zero(_y);
     
   for (i = 0; i < _nd; i++) {
-    _u[i] = xt[i];
+    _u[i] = xc[i];
   }
   for (i = 0; i < _n; i++) {
-    _y[i] = xt[_nd + i];		// initial states
+    _y[i] = xc[_nd + i];		// initial states
   }
   for (i = 0; i < _nu; i++) {
     _u[_nd + i] = u[i];
   }
 
+  v_zero(_xcp);	// time derivatives passed to continuous
+
   if (_sa) {
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	_y[(1 + j) * _n + i] = Sx[_nd + i][j];
+	_y[(1 + j) * _n + i] = xc.Sx[_nd + i][j];
       }
       for (j = 0; j < _nu; j++) {
-	_y[(1 + _nx + j) * _n + i] = Su[_nd + i][j];
+	_y[(1 + _nx + j) * _n + i] = xc.Su[_nd + i][j];
       }
     }
+    m_zero(_xcp.Sx);
+    m_zero(_xcp.Su);
   }
 
   _kk = kk;	// propagate to syseq()
@@ -173,16 +154,16 @@ void Omu_IntODE::solve(int kk, Real tstart, Real tend,
   ode_solve(tstart, _y, _u, tend);
 
   for (i = 0; i < _n; i++) {
-    xt[_nd + i] = _y[i];
+    xc[_nd + i] = _y[i];
   }
 
   if (_sa) {
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	Sx[_nd + i][j] = _y[(1 + j) * _n + i];
+	xc.Sx[_nd + i][j] = _y[(1 + j) * _n + i];
       }
       for (j = 0; j < _nu; j++) {
-	Su[_nd + i][j] = _y[(1 + _nx + j) * _n + i];
+	xc.Su[_nd + i][j] = _y[(1 + _nx + j) * _n + i];
       }
     }
   }
@@ -193,70 +174,69 @@ void Omu_IntODE::solve(int kk, Real tstart, Real tend,
 void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
 		       VECP f)
 {
+#if 0
   if (!_sys->has_low_level_continuous()) {
     // call faster version if no user defined low-level continuous
     syseq_forward(t, y, u, f);
     return;
   }
-
+#endif
   int i, j;
+  Omu_SVec &xc = *_xc_ptr;
+  Omu_DepVec &Fc = *_Fc_ptr;
 
   //
-  // form a vector of independent variables
+  // prepare call arguments
   //
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = u[i];
+    xc[i] = u[i];
   }
   for (i = 0; i < _n; i++) {
-    _cx[_nd + i] = y[i];
+    xc[_nd + i] = y[i];
   }
   for (i = 0; i < _nu; i++) {
-    _cu[i] = u[_nd + i];
+    _uc[i] = u[_nd + i];
   }
-  v_zero(_cxp);
       
+  if (_sa) {
+    for (i = _nd; i < _nxt; i++) {
+      for (j = 0; j < _nx; j++) {
+	xc.Sx[i][j] = y[(1 + j) * _n + i - _nd];
+      }
+      for (j = 0; j < _nu; j++) {
+	xc.Su[i][j] = y[(1 + _nx + j) * _n + i - _nd];
+      }
+    }
+  }
+
   //
   // evaluate residual
   //
 
-  if (_sa) {
-    m_zero(_cFx);
-    m_zero(_cFu);
-    _sys->continuous(_kk, t, _cx, _cu, _cxp, _cF, _cFx, _cFu);
-    // don't pass _cFxp so that it is not calculated for ODEs
-  }
-  else
-    _sys->continuous(_kk, t, _cx, _cu, _cxp, _cF);
+  bool is_required_J_bak = Fc.is_required_J();
+  Fc.set_required_J(_sa); // an integrator may request the Jacobian
+
+  _sys->continuous(_kk, t, xc, _uc, _xcp, Fc);
+
+  Fc.set_required_J(is_required_J_bak);
     
-  for (i = 0; i < _n; i++) {
-    f[i] = _cF[_nd + i] * _D[i];
+  for (i = _nd; i < _nxt; i++) {
+    // f = F * -(dF/dxp)^(-1)
+    f[i - _nd] = Fc[i] / -Fc.Jxp[i][i];
   }
       
   if (_sa) {
-    m_zero(_Xx);
-    m_zero(_Xu);
-    for (i = 0; i < _nd; i++) {
-      _Xx[i][i] = 1.0;
-    }
-    for (i = 0; i < _n; i++) {
-      for (j = 0; j < _nx; j++) {
-	_Xx[_nd + i][j] = y[(1 + j) * _n + i];
-      }
-      for (j = 0; j < _nu; j++) {
-	_Xu[_nd + i][j] = y[(1 + _nx + j) * _n + i];
-      }
-    }
-    m_mlt(_cFx, _Xx, _Yx);
-    m_mlt(_cFx, _Xu, _Yu);
-    m_add(_cFu, _Yu, _Yu);
+    m_mlt(Fc.Jx, xc.Sx, _Yx);
+    m_mlt(Fc.Jx, xc.Su, _Yu);
+    m_add(_Yu, Fc.Ju, _Yu);
 
-    for (i = 0; i < _n; i++) {
+    for (i = _nd; i < _nxt; i++) {
       for (j = 0; j < _nx; j++) {
-	f[(1 + j) * _n + i] = _Yx[_nd + i][j] * _D[i];
+	f[(1 + j) * _n + i - _nd] = _Yx[i][j] / -Fc.Jxp[i][i];
       }
       for (j = 0; j < _nu; j++) {
-	f[(1 + _nx + j) * _n + i] = _Yu[_nd + i][j] * _D[i];
+	f[(1 + _nx + j) * _n + i - _nd] = _Yu[i][j] / -Fc.Jxp[i][i];
       }
     }
   }
@@ -272,6 +252,7 @@ void Omu_IntODE::syseq_forward(Real t, const VECP y, const VECP u,
 			       VECP f)
 {
   int i, j;
+  Omu_DepVec &Fc = *_Fc_ptr;
 
   //
   // form a vector of independent variables
@@ -311,9 +292,9 @@ void Omu_IntODE::syseq_forward(Real t, const VECP y, const VECP u,
 
   _sys->continuous(_kk, t, ax, au, axp, aF);
 
-  for (i = 0; i < _n; i++) {
-    aF[_nd + i] >>= f[i];
-    f[i] *= _D[i];
+  for (i = _nd; i < _nxt; i++) {
+    aF[i] >>= f[i - _nd];
+    f[i - _nd] /= -Fc.Jxp[i][i];
   }
       
   if (_sa) {
@@ -338,10 +319,10 @@ void Omu_IntODE::syseq_forward(Real t, const VECP y, const VECP u,
       
     forward(3, _n, nindep, npar, _x->ve, _X->me, f->ve, _Y->me);
 
-    for (i = 0; i < _n; i++) {
-      f[i] *= _D[i];
+    for (i = _nd; i < _nxt; i++) {
+      f[i - _nd] /= -Fc.Jxp[i][i];
       for (j = 0; j < npar; j++) {
-	f[(1 + j) * _n + i] = _Y[i][j] * _D[i];
+	f[(1 + j) * _n + i - _nd] = _Y[i - _nd][j] / -Fc.Jxp[i][i];
       }
     }
   }

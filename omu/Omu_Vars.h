@@ -1,12 +1,12 @@
 /*
  * Omu_Vars.h --
- *   -- Omu_Vector with capabilities
+ *   -- extensions for managing independent variables
  *
  * rf, 2/3/97
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,24 +27,25 @@
 #ifndef Omu_Vars_H
 #define Omu_Vars_H
 
-#include "Omu_Vector.h"
+#include "Omu_Variables.h"
 
-//--------------------------------------------------------------------------
-class Omu_Vars: public Omu_Vector {
+/** Internally used vector of optimization variables. */
+class Omu_VarVec: public Omu_VariableVec {
  public:
   bool c_alloc;
   bool c_expand;
 
-  Omu_Vars();
+  Omu_VarVec();
 
   void alloc(int n, int n_expand = -1);
 };
 
-//--------------------------------------------------------------------------
-class Omu_States: public Omu_Vars {
+/** Internally used vector of dynamic variables with additional structural
+    information. */
+class Omu_DynVarVec: public Omu_VarVec {
  public:
-  int 	nd;		// number of discrete-time states
-  int	na;		// number of algebraic states
+  int 	nd;		// number of discrete-time state variables
+  int	na;		// number of algebraic state variables
   int	nv;		// number of expansion variables
   VECP	D;		// diagonal of dF/dxp
   bool	D_is_const;	// F can be treated as explicit ODE
@@ -69,10 +70,20 @@ class Omu_States: public Omu_Vars {
    */
   static const int Algebraic;
 
-  Omu_States();
-  ~Omu_States();
+  Omu_DynVarVec();
+  ~Omu_DynVarVec();
 
   void alloc(int n, int n_expand = -1);
+};
+
+/** Depreciated name for Omu_DynVarVec. */
+typedef Omu_DynVarVec Omu_States;
+
+/** Internally used vector of state variables. */
+class Omu_SVec: public Omu_StateVec {
+public:
+  void alloc(int dim, int nx, int nu);
+  void realloc(int dim, int nx, int nu) {alloc(dim, nx, nu);}
 };
 
 #endif

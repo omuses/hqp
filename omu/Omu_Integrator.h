@@ -34,6 +34,7 @@
 
 #include "Omu_Program.h"
 #include "Omu_Vars.h"
+#include "Omu_Deps.h"
 
 IF_BASE_DECLARE(Omu_Integrator);
 
@@ -47,14 +48,30 @@ class Omu_Integrator {
 
   virtual void init_stage(int k,
 			  const Omu_States &x, const Omu_Vector &u,
-			  bool sa = false);
+			  const Omu_DepVec &xt, const Omu_DepVec &F);
+
   virtual void init_sample(int kk, double tstart, double tend);
+
+  /** Solve differential equations over sample period.
+      The default implementation calls the depreciated version of solve. */
+  virtual void solve(int kk, double tstart, double tend,
+		     const Omu_States &x, const Omu_Vector &u,
+		     Omu_Program *sys, Omu_DepVec &cF, Omu_SVec &cx);
+
+  virtual char *name() = 0;
+
+  //
+  // depreciated methods
+  //
+
+  virtual void init_stage(int k,
+			  const Omu_States &x, const Omu_Vector &u,
+			  bool sa = false);
+
   virtual void solve(int kk, double tstart, double tend,
 		     const Omu_States &x, const Omu_Vector &u,
 		     Omu_Program *sys, VECP xt,
-		     MATP Sx = MNULL, MATP Su = MNULL) = 0;
-
-  virtual char *name() = 0;
+		     MATP Sx = MNULL, MATP Su = MNULL) {}
 
  protected:
 

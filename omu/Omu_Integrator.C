@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -68,6 +68,14 @@ Omu_Integrator::~Omu_Integrator()
 //--------------------------------------------------------------------------
 void Omu_Integrator::init_stage(int k,
 				const Omu_States &x, const Omu_Vector &u,
+				const Omu_DepVec &xt, const Omu_DepVec &F)
+{
+  init_stage(k, x, u, xt.is_required_J());
+}
+
+//--------------------------------------------------------------------------
+void Omu_Integrator::init_stage(int k,
+				const Omu_States &x, const Omu_Vector &u,
 				bool sa)
 {
   _nxt = x->dim;
@@ -85,6 +93,17 @@ void Omu_Integrator::init_stage(int k,
 void Omu_Integrator::init_sample(int kk, double tstart, double tend)
 {
   _kk = kk;
+}
+
+//--------------------------------------------------------------------------
+void Omu_Integrator::solve(int kk, double tstart, double tend,
+			   const Omu_States &x, const Omu_Vector &u,
+			   Omu_Program *sys, Omu_DepVec &cF, Omu_SVec &cx)
+{
+  if (cF.is_required_J())
+    solve(kk, tstart, tend, x, u, sys, cx, cx.Sx, cx.Su);
+  else
+    solve(kk, tstart, tend, x, u, sys, cx, MNULL, MNULL);
 }
 
 

@@ -372,29 +372,36 @@ VEC *bd_mv_mlt(const BAND *A, const VEC *x, VEC *out)
 }
 
 //-------------------------------------------------------------------------
-// m_mltadd	-- out = m1 + alpha*m2 
+// m_mltadd	-- out = in + a*b 
 //
-MAT *m_mltadd(const MAT *m1, const MAT *m2, Real alpha, MAT *out)
+MAT *m_mltadd(const MAT *IN, const MAT *A, const MAT *B, MAT *OUT)
 {
-  int i, n, m;
+  u_int	i, k, m, n, p;
+  Real	**A_v, **B_v;
 
-  if (!m1 || !m2)
+  if (A == (MAT *)NULL || B == (MAT *)NULL || IN == (MAT *)NULL)
     error(E_NULL,"m_mltadd");
-  if (m2 == out)
-    error(E_INSITU,"m_mltadd");
-  if (m1->m != m2->m || m1->n != m2->n)
+  if (A->n != B->m || IN->m != A->m || IN->n != B->n)
     error(E_SIZES,"m_mltadd");
+  if (A == OUT || B == OUT)
+    error(E_INSITU,"m_mltadd");
 
-  if (out != m1)
-    out = m_copy((MAT *)m1, out);
+  if (IN != OUT)
+    OUT = m_copy(IN, OUT);
 
-  m = out->m;
-  n = out->n;
-  for (i=0; i<m; i++) {
-    __mltadd__(out->me[i], m2->me[i], alpha, n);
-  }
+  m = A->m;
+  n = A->n;
+  p = B->n;
+  A_v = A->me;
+  B_v = B->me;
 
-  return out;
+  for (i = 0; i < m; i++)
+    for (k = 0; k < n; k++) {
+      if (A_v[i][k] != 0.0)
+	__mltadd__(OUT->me[i], B_v[k], A_v[i][k], (int)p);
+    }
+
+  return OUT;
 }
 
 //-------------------------------------------------------------------------
