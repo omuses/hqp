@@ -1,3 +1,8 @@
+2002-12-09    <e_arnold>
+
+	* Meschach library: ANSI_C
+	* hqp/meschext_ea.[hC] moved to meschach/*addon_hqp.[hc]
+	
 2002-12-06    <rfranke>
 
 	* configure.in: change version to 1.8.2, add tag release-1-8-2
