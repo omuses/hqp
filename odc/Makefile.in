@@ -65,8 +65,8 @@ SRCS = 	Odc_Init.C \
 	Prg_HS99.C \
 	Prg_TP383omu.C \
 	Prg_TP383.C \
-	Prg_DI.C \
-	Prg_DI_SFunction.C \
+	Prg_DID.C \
+	Prg_DID_SFunction.C \
 	Prg_DIC_SFunction.C
 
 OBJS = $(SRCS:.C=.o) Odc_Main.o $(GMALLOC_O)

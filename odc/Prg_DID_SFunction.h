@@ -1,7 +1,7 @@
 /*
  * Prg_DID_SFunction.h -- 
  *   - double integrator example accessing discrete-time Simulink S-function
- *     (derived from Di example accessing Docp interface)
+ *     (derived from double integrator example accessing Docp interface)
  *
  * rf, 05/05/01
  */

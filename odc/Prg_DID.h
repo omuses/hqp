@@ -1,7 +1,7 @@
 /*
  * Prg_DID.h -- 
  *   - double integrator example, discrete-time
- *     (derived from Di example accessing Docp interface)
+ *     (derived from double integrator example accessing Docp interface)
  *
  * rf, 05/05/01
  */

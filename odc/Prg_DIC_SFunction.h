@@ -1,7 +1,7 @@
 /*
  * Prg_DIC_SFunction.h -- 
  *   - double integrator example accessing continuous-time Simulink S-function
- *     (derived from Di example accessing Docp interface)
+ *     (derived from double integrator example accessing Docp interface)
  *
  * rf, 05/06/01
  */
