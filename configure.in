@@ -404,6 +404,9 @@ fi
 # compile using stubs mechanism
 AC_DEFINE(USE_TCL_STUBS)
 
+# only use new const's by Tcl 8.4 that are backwards compatible to Tcl 8.1
+IF_DEFS="-DUSE_COMPAT_CONST=1 $IF_DEFS"
+
 # -----------------------------------------------------------------------
 # 	Configure ADOL-C
 # -----------------------------------------------------------------------

@@ -1,3 +1,8 @@
+2002-11-01    <rfranke>
+
+	* configure.in: define USE_COMPAT_CONST for iftcl, in order to
+	  compile with Tcl 8.4 and with older versions down to 8.1 as well
+
 2002-10-30    <rfranke>
 
 	* hqp/sprcm.C (pxinv_sprows, pxinv_vec): bug fix
