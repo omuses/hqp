@@ -114,7 +114,7 @@ void Omu_IntODE::realloc()
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntODE::solve(int kk, Real tstart, Real tend,
+void Omu_IntODE::solve(int kk, double tstart, double tend,
 		       const Omu_States &x, const Omu_Vector &u,
 		       Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc)
 {
@@ -173,7 +173,7 @@ void Omu_IntODE::solve(int kk, Real tstart, Real tend,
 
 // default implementation calling low-level _sys->continuous()
 //--------------------------------------------------------------------------
-void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
+void Omu_IntODE::syseq(double t, const VECP y, const VECP u,
 		       VECP f)
 {
 #ifdef OMU_WITH_ADOLC
@@ -248,7 +248,7 @@ void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
 
 // alternative implementation calling high-level _sys->continuous
 //--------------------------------------------------------------------------
-void Omu_IntODE::syseq_forward(Real t, const VECP y, const VECP u,
+void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
 			       VECP f)
 {
 #ifdef OMU_WITH_ADOLC

@@ -1,3 +1,20 @@
+2002-10-22    <rfranke>
+
+	* omu/Omu_Integrator.h, omu/Hqp_Omuses.[hC], omu/Omu_Program.h:
+	  introduce Omu_Integrator::setup_stages
+	* omu/Omu_IntEuler.h, omu/Omu_IntRK4.h, omu/Omu_IntRKsuite.h,
+	  omu/Omu_IntDASPK.h: add documentation
+
+	* hxi/Hxi_mx_parse.h: add functions for parsing S-function
+	  argument strings
+	* omu/Prg_SFunction.[hC], omu/Prg_SFunctionEst.C:
+	  use new parser
+	* configure.in: take out -lmatlb and -lmex as own parser is used
+	* doc/Doxyfile.in: enable EXTRACT_STATIC to document parser functions
+
+	* hxi/Hxi_MEX_SFunction.C (mdlInitializeSizes): introduce check for
+	  at least one sample time
+
 2002-10-10    <rfranke>
 
 	* configure.in: change version to 1.8.2d

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1996--2001  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2002  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -44,25 +44,42 @@
 #endif
 #define freal double
 
-//--------------------------------------------------------------------------
+/**
+ * Solve differential-algebraic equation system using DASPK.
+ * Currently DASPK version 3.0 is supported (distribution file
+ * http://www.engineering.ucsb.edu/~cse/Software/ddaspk30.tar.gz).
+ */
 class Omu_IntDASPK: public Omu_Integrator {
 
  public:
 
-  Omu_IntDASPK();
-  ~Omu_IntDASPK();
+  Omu_IntDASPK(); 	///< constructor
+  ~Omu_IntDASPK(); 	///< destructor
+
+  /**
+   * @name Implementation of predefined methods.
+   * @see Omu_Integrator
+   */
+
+  //@{
 
   char *name() {return "DASPK";}
 
-  // override interface routine of Omu_Integrator
   void init_stage(int k,
 		  const Omu_States &x, const Omu_Vector &u,
 		  bool sa);
+
   void solve(int kk, double tstart, double tend,
 	     const Omu_States &x, const Omu_Vector &u,
 	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
 
-  // routines called by DASPK
+  //@}
+
+  /**
+   * @name Callback routines for DASPK.
+   */
+  //@{
+
   void res(freal *t, freal *x, freal *xprime,
 	   freal *delta, fint *ires, freal *rpar, fint *ipar,
 	   freal *senpar);
@@ -71,31 +88,9 @@ class Omu_IntDASPK: public Omu_Integrator {
 	   freal *pd, freal *cj, freal *rpar, fint *ipar,
 	   freal *senpar, fint *ijac);
 
- private:
+  //@}
 
-  void		realloc();
-  void		init_options(const Omu_States &x);
-
-  // backing store sys and vector of dependent variables for callbacks
-  Omu_Program	*_sys;
-  Omu_SVec	*_xc_ptr;
-  Omu_DepVec 	*_Fc_ptr;
-
-  // variables for DASPK
-  int		_mu;	// upper semi-bandwidth
-  int		_ml;	// lower semi-bandwidth
-  int    	_lwp;
-  int     	_liwp;
-  int    	_lwp_basic;
-
-  VECP		_y;
-  VECP		_yprime;
-  IVECP		_info;
-  VECP		_rwork;
-  IVECP		_iwork;
-  VECP		_rpar;
-  IVECP		_ipar;
-  VECP		_senpar;
+ protected:
 
   /**
    * User given semi-bandwidth of Jacobian (default: -1).
@@ -111,7 +106,7 @@ class Omu_IntDASPK: public Omu_Integrator {
    * can be solved more efficiently in this way.
    */
   bool		_banded;
-  bool		_banded_solver;	// use banded solver or preconditioner
+  bool		_banded_solver;	///< internal flag for using banded solver
 
   /**
    * User specification if Krylov iterative solver should be used
@@ -140,6 +135,32 @@ class Omu_IntDASPK: public Omu_Integrator {
    */
   int		_nsteps;
 
+ private:
+
+  void		realloc();
+  void		init_options(const Omu_States &x);
+
+  // backing store sys and vector of dependent variables for callbacks
+  Omu_Program	*_sys;
+  Omu_SVec	*_xc_ptr;
+  Omu_DepVec 	*_Fc_ptr;
+
+  // variables for DASPK
+  int		_mu;	// upper semi-bandwidth
+  int		_ml;	// lower semi-bandwidth
+  int    	_lwp;
+  int     	_liwp;
+  int    	_lwp_basic;
+
+  VECP		_y;
+  VECP		_yprime;
+  IVECP		_info;
+  VECP		_rwork;
+  IVECP		_iwork;
+  VECP		_rpar;
+  IVECP		_ipar;
+  VECP		_senpar;
+
   // arguments for low level _sys->continuous callback
   Omu_Vec	_uc;
   Omu_SVec	_xcp;
@@ -150,4 +171,3 @@ class Omu_IntDASPK: public Omu_Integrator {
 };  
 
 #endif
-

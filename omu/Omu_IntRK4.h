@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1997--1998  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,18 +32,31 @@
 
 #include "Omu_IntODE.h"
 
-//--------------------------------------------------------------------------
+/**
+ * Explicit, fixed step size integrator implementing a Runge Kutta
+ * algorithm of 4th order.
+ * If _stepsize is not specified, then the integrator takes one step
+ * per sample period.
+ */
 class Omu_IntRK4: public Omu_IntODE {
 
  public:
 
-  Omu_IntRK4();
-  ~Omu_IntRK4();
+  Omu_IntRK4(); 	///< constructor
+  ~Omu_IntRK4(); 	///< destructor
+
+  /**
+   * @name Implementation of predefined methods.
+   * @see Omu_IntODE
+   */
+
+  //@{
 
   char *name() {return "RK4";}
 
-  // interface routine
-  void ode_solve(Real tstart, VECP y, const VECP u, Real tend);
+  void ode_solve(double tstart, VECP y, const VECP u, double tend);
+
+  //@}
 
  private:
 

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--1998  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,31 +29,50 @@
 
 #include "Omu_IntODE.h"
 
-//--------------------------------------------------------------------------
+/**
+ * Solve ordinary differential equations using RKsuite.
+ * @see http://www.netlib.org
+ */
 class Omu_IntRKsuite: public Omu_IntODE {
 
  public:
 
-  Omu_IntRKsuite();
-  ~Omu_IntRKsuite();
+  Omu_IntRKsuite(); 	///< constructor
+  ~Omu_IntRKsuite(); 	///< destructor
+
+  /**
+   * @name Implementation of predefined methods.
+   * @see Omu_IntODE
+   */
+
+  //@{
 
   char *name() {return "RKsuite";}
 
-  // interface routine
-  void ode_solve(Real tstart, VECP y, const VECP u, Real tend);
+  void ode_solve(double tstart, VECP y, const VECP u, double tend);
 
-  // callback for calculation of system equations
-  void F(Real *T, Real *Y, Real *YP);
+  //@}
+
+  /** Callback routine for RKsuite for the calculation of system equations. */
+  void F(double *T, double *Y, double *YP);
+
+ protected:
+
+  /**
+   * Specifies which Runge-Kutta method is to be used (default: 2).
+   * Possible choices are:
+   *  - 1: use the (2,3) Runge-Kutta pair
+   *  - 2: use the (4,5) Runge-Kutta pair
+   *  - 3: use the (7,8) Runge-Kutta pair
+   */
+  int  _method;
 
  private:
 
   int  _neq;
   int  _npar;
-/*    Real _rtol; */
-/*    Real _atol; */
-  Real _hnext;
-  Real _tlast;
-  int  _method;
+  double _hnext;
+  double _tlast;
   VECP _thres;
   VECP _work;
   VECP _u;
@@ -63,4 +82,3 @@ class Omu_IntRKsuite: public Omu_IntODE {
 };  
 
 #endif
-

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,27 +30,49 @@
 
 #include "Omu_Integrator.h"
 
-//--------------------------------------------------------------------------
+/**
+ * Interface for standard solvers for Ordinary Differential Equations (ODE)
+ * hiding details of sensitivity analysis and discrete-time states.
+ * Sensitivity equations are appended to the model equations.
+ * Discrete-time states and control parameters are treated in one vector
+ * of model parameters.
+ */
 class Omu_IntODE: public Omu_Integrator {
 
  public:
 
-  Omu_IntODE();
-  ~Omu_IntODE();
+  Omu_IntODE(); 	///< constructor
+  ~Omu_IntODE(); 	///< destructor
 
-  // interface routine from Omu_Integrator
+  /**
+   * @name Implementation of predefined methods.
+   * @see Omu_Integrator
+   */
+
+  //@{
+
   void init_stage(int k,
 		  const Omu_States &x, const Omu_Vector &u,
 		  bool sa = false);
-  void solve(int kk, Real tstart, Real tend,
+
+  void solve(int kk, double tstart, double tend,
 	     const Omu_States &x, const Omu_Vector &u,
 	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
 
-  // routines provided by derived classes
-  virtual void ode_solve(Real tstart, VECP y, const VECP u, Real tend) = 0;
+  //@}
 
-  // routines to be called by derived classes
-  void syseq(Real t, const VECP y, const VECP u, VECP f);
+  /**
+   * Interface to be implemented by derived ODE solvers.
+   * y contains the initial solution and the result for values and
+   * sensitivities (dim(y)=_n=_nxt-_nd without sensitivities,
+   * dim(y)=_n*(1+_nxt-_nv+_nu) with sensitivities). u contains
+   * discrete-time states and control parameters (dim(u)=_m=_nd+_nu).
+   * @see Omu_Integrator for more details about the dimensions.
+   */
+  virtual void ode_solve(double tstart, VECP y, const VECP u, double tend) = 0;
+
+  /** Callback routine for evaluating the model by derived ODE solvers. */
+  void syseq(double t, const VECP y, const VECP u, VECP f);
 
  private:
 
@@ -58,7 +80,7 @@ class Omu_IntODE: public Omu_Integrator {
    * alternative syseq implementation calling high-level
    * continuous and using forward for derivatives
    */
-  void syseq_forward(Real t, const VECP y, const VECP u, VECP f);
+  void syseq_forward(double t, const VECP y, const VECP u, VECP f);
 
   // backing store sys and current stage
   Omu_Program	*_sys;

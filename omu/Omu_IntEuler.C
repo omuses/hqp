@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -45,9 +45,9 @@ Omu_IntEuler::~Omu_IntEuler()
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntEuler::ode_solve(Real tstart, VECP y, const VECP u, Real tend)
+void Omu_IntEuler::ode_solve(double tstart, VECP y, const VECP u, double tend)
 {
-  Real dt;
+  double dt;
   int i, nsteps;
   int neq = y->dim;
 

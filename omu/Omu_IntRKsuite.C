@@ -102,7 +102,8 @@ Omu_IntRKsuite::~Omu_IntRKsuite()
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntRKsuite::ode_solve(Real tstart, VECP y, const VECP u, Real tend)
+void Omu_IntRKsuite::ode_solve(double tstart, VECP y, const VECP u,
+			       double tend)
 {
   if (_sa)
     _neq = y->dim;
@@ -164,7 +165,7 @@ void Omu_IntRKsuite::ode_solve(Real tstart, VECP y, const VECP u, Real tend)
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntRKsuite::F(Real *T, Real *Y, Real *YP)
+void Omu_IntRKsuite::F(double *T, double *Y, double *YP)
 {
   _y_head.ve = Y;
   _yp_head.ve = YP;
