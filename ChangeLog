@@ -1,3 +1,7 @@
+2002-12-21    <e_arnold>
+
+	* odc/crane.tcl: enable plots if Tk and BLT are available
+	
 2002-12-09    <e_arnold>
 
 	* Meschach library: ANSI_C
