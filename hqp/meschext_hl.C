@@ -1266,8 +1266,8 @@ MAT  *spm_m_spmtr_mlt(SPMAT *A, MAT *B, MAT *OUT)
   n = B->n;
 
   B_me = B->me;
-  mtmp_me = mtmp_me;
-  vtmp_ve = vtmp_ve;
+  mtmp_me = mtmp->me;
+  vtmp_ve = vtmp->ve;
 
   for (i = 0; i < m; i++) {
 
