@@ -33,6 +33,7 @@
 #include <If_Real.h>
 #include <If_RealVec.h>
 #include <If_RealMat.h>
+#include <If_IntVec.h>
 #include <If_Int.h>
 #include <If_IntVec.h>
 
@@ -90,10 +91,12 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_nominal = v_get(_mdl_ny);
   _t_nominal = 1.0;
   _mdl_y_bias = v_get(_mdl_ny);
+  _nus_fixed = iv_get(_mdl_nu);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
   v_set(_mdl_y_bias, 0.0);
+  iv_set(_nus_fixed, 0);
 
   // numbers of optimization variables
   _nu = 0;
@@ -121,6 +124,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec("mdl_der_u_ref", &_mdl_der_u.ref));
   _ifList.append(new If_RealVec("mdl_der_u_weight1", &_mdl_der_u.weight1));
   _ifList.append(new If_RealVec("mdl_der_u_weight2", &_mdl_der_u.weight2));
+  _ifList.append(new If_IntVec("prg_nus_fixed", &_nus_fixed));
 
   _ifList.append(new If_RealVec("mdl_y_nominal", &_mdl_y_nominal));
   _ifList.append(new If_RealVec("mdl_y_bias", &_mdl_y_bias));
@@ -156,6 +160,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   v_free(_mdl_y_nominal);
   v_free(_mdl_x_nominal);
   v_free(_mdl_u_nominal);
+  iv_free(_nus_fixed);
 }
 
 //--------------------------------------------------------------------------
@@ -192,10 +197,12 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
+  iv_resize(_nus_fixed, _mdl_nu);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
   v_set(_mdl_y_bias, 0.0);
+  iv_set(_nus_fixed, 0);
 
   m_resize(_mdl_us, _KK+1, _mdl_nu);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
@@ -260,7 +267,7 @@ void Prg_SFunctionOpt::setup(int k,
     else {
       spsk = _KK;
       upsk = _KK;
-      x.alloc(0, _nx);
+      x.alloc(_nu, _nx);
       u.alloc(upsk*_nu + spsk*_ns);
       c.alloc(spsk*(_nc+_nsc) + upsk*_nu);
     }
@@ -280,7 +287,8 @@ void Prg_SFunctionOpt::setup(int k,
     for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx]) {
 	x.initial[i] = _mdl_us[0][idx] / _mdl_u_nominal[idx];
-	x.min[i] = x.max[i] = x.initial[i];
+	if (_nus_fixed[idx] > 0)
+	  x.min[i] = x.max[i] = x.initial[i];
 	i++;
       }
     }
@@ -293,7 +301,7 @@ void Prg_SFunctionOpt::setup(int k,
   // setup control inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
-      if (_multistage && k > 0) {
+      if (_multistage && ks(k) >= _nus_fixed[idx]) {
 	// control bounds
 	if (_mdl_u.min[idx] > -Inf) {
 	  x.min[i] = _mdl_u.min[idx] / _mdl_u_nominal[idx];
@@ -305,12 +313,12 @@ void Prg_SFunctionOpt::setup(int k,
       else if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
-	  for (j = 0; j < upsk; j++)
+	  for (j = _nus_fixed[idx] - 1; j < upsk; j++)
 	    c.min[spsk*(_nc+_nsc) + i + j] =
 	      _mdl_u.min[idx] / _mdl_u_nominal[idx];
 	}
 	if (_mdl_u.max[idx] < Inf) {
-	  for (j = 0; j < upsk; j++)
+	  for (j = _nus_fixed[idx] - 1; j < upsk; j++)
 	    c.max[spsk*(_nc+_nsc) + i + j] =
 	      _mdl_u.max[idx] / _mdl_u_nominal[idx];
 	}
@@ -341,6 +349,16 @@ void Prg_SFunctionOpt::setup(int k,
 	      / (ts(j+1) - ts(j))
 	      / _mdl_u_nominal[idx]*_t_nominal;
 	  }
+	}
+	// override rate of change bounds for fixed controls
+	if (_multistage) {
+	  if (ks(k) < _nus_fixed[idx] - 1) {
+	    u.min[i] = u.max[i] = u.initial[i];
+	  }
+	}
+	else {
+	  for (j = 0; j < min(_nus_fixed[idx] - 1, upsk); j++)
+	    u.min[i+j] = u.max[i+j] = u.initial[i+j];
 	}
       }
       i += upsk;

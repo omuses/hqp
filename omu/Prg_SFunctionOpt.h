@@ -48,7 +48,7 @@ public:
    Optimal control problem for a model given as MEX S-function.
    The optimization time horizon @f$[t_0,t_f]@f$ is split into @f$k=0,...,K@f$ 
    stages with time points @f$t_0=t^0<t^1<\ldots<t^K=t_f@f$. Each stage may 
-   be further subdivided. This leads to @f$KK=sps\ K@f$ sample periods, 
+   be further subdivided. This leads to @f$KK=sps\,K@f$ sample periods, 
    where sps is the number of samples periods per stage, and with the sample
    time points @f$t^{kk}, kk=0,...,KK@f$. Additional sample time points within
    a stage are for instance useful for better treating path constraints.
@@ -105,11 +105,11 @@ public:
    \end{array}
    @f]
    with piecewise linear approximation of @f$u(t)@f$ 
-   either using optimized control parameters @f$u^k@f$ or given inputs 
+   either using optimized control parameters @f$du^k@f$ or given inputs 
    @f$us@f$ 
    @f[
    \begin{array}{ll}
-    \left\{ \dot{u}(t) = u^{k}
+    \left\{ \dot{u}(t) = du^{k}
     \right\}_i, & i \in \mbox{find}(u_{active}), \\[1ex]
     & t\in[t^{k},t^{k+1}),\ k=0,\ldots,K-1, \\[3ex]
     \left\{ u(t) = \displaystyle 
@@ -123,23 +123,39 @@ public:
    @f[
    \begin{array}{rcccll}
     \displaystyle &&x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}}, \\[3ex]
-    \displaystyle &&u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}}, \\[3ex]
+    \displaystyle &&u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}}, \quad &
+        \mbox{if}\ \ nus_{fixed}>0, \\[3ex]
     \displaystyle \frac{u_{min}}{u_{nominal}} &<& u(t^{k})
         &<& \displaystyle \frac{u_{max}}{u_{nominal}}, \quad &
-        k=1,\ldots,K, \\[3ex]
-    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& u^{k}
+        k=0,\ldots,K \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}, \\[3ex]
+    \displaystyle &&du^k &=& \displaystyle du^k_{initial}, \quad &
+        k = 0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k < nus_{fixed}-1, \\[3ex]
+    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
         &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
-        k=0,\ldots,K-1, \\[3ex]
+        k=0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}-1, \\[3ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
     \displaystyle \frac{y_{soft\_min}}{y_{nominal}} - s^{kk} &<& y(t^{kk})
-        &<& \displaystyle \frac{y_{soft\_max}}{y_{nominal}} + s^{kk}, 
-        \ \ s^{kk} > 0, \quad & kk=0,\ldots,KK, \\[3ex]
+        &<& \displaystyle \frac{y_{soft\_max}}{y_{nominal}} + s^{kk}, \\[3ex]
+    \displaystyle && s^{kk} &>& 0, \quad & kk=0,\ldots,KK, \\[3ex]
     \displaystyle \frac{y_{f\_min}}{y_{nominal}} &<& y(t_f)
         &<& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
    \end{array}
    @f]
+   The initial guess is taken from given initial states and model inputs
+   @f[
+   \begin{array}{rcll}
+    x_{initial}(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}}, \\[3ex]
+    u_{initial}(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}}, \\[3ex]
+    du^k_{initial} &=& \displaystyle 
+     \left\{\frac{us^{sps\,(k+1)} - us^{sps\,k}}
+                 {(t^{sps\,(k+1)}-t^{sps\,k})\,u_{nominal}}
+     \right\}_i, & i \in \mbox{find}(u_{active}), \\[1ex]
+               &&& k=0,\ldots,K-1.
+   \end{array}
+   @f]
+
    The problem is treated as multistage problem with K stages per default. 
    Consequently additional K junction conditions (equality constraints)
    are introduced for the state variables x and the piecewise linear
@@ -164,10 +180,10 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Omu_OptVarVec _mdl_y_soft; 	///< attributes for relaxed output constraints
   Omu_OptVarVec _mdl_yf; 	///< model outputs at final time
 
+  double 	_t_nominal; 	///< nominal time (used internally for scaling)
   VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
   VECP 		_mdl_x_nominal;	///< nominal states (for scaling)
   VECP 		_mdl_y_nominal;	///< nominal outputs (for scaling)
-  double 	_t_nominal; 	///< nominal time (used internally)
 
   VECP 		_mdl_y_bias;	///< bias correction (offset) for outputs 
 
@@ -179,11 +195,24 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_nsc;	///< number of soft constraints
   bool 		_multistage; 	///< treat as multistage problem
 
-  int 		_sps;	///< number of sample periods per stage
+  /**
+   * Number of sample periods per stage (default: 1).
+   * The value can be increased to devide each control interval into
+   * multiple sample periods, e.g. for evaluating constraints and
+   * the objective within control intervals. Currently _sps>1 is only
+   * supported for multistage problems.
+   */
+  int 		_sps;
 
-  // vectors for inputs, states, and outputs
-  MATP	_mdl_us;	///< given model inputs
+  MATP	_mdl_us;	///< given model inputs (controls and disturbances)
   MATP	_mdl_ys;	///< calculated model outputs
+
+  /**
+   * Number of fixed control inputs at begin of time horizon (default: 0).
+   * The initial value is fixed for _nus_fixed=1, the initial and the 
+   * second value are fixed for _nus_fixed=2, and so on).
+   */
+  IVECP 	_nus_fixed;
 
   /**
    * @name Implementation of predefined methods.

@@ -1,3 +1,11 @@
+2002-10-24    <rfranke>
+
+	* omu/Omu_IntDASPK.C (realloc): bug fix in allocation of
+	  seed derivative matrices for Jacobian evaluation if nv>0
+
+	* omu/Prg_SFunctionOpt.[hC]: introduce _nus_fixed to specify
+	  number of fixed control inputs at begin of time horizon
+
 2002-10-22    <rfranke>
 
 	* omu/Omu_Integrator.h, omu/Hqp_Omuses.[hC], omu/Omu_Program.h:
