@@ -477,8 +477,12 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
 
       m_catch(E_CONV,
 	      // try
-	      _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				 xk, uk, _prg, Fk, xfk),
+	      // use tractcatch to get error message printed to stderr
+	      m_tracecatch(// try
+			   _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+					      xk, uk, _prg, Fk, xfk),
+			   // catch and throw
+			   m_error_description()),
 	      // catch
 	      f0 = Inf;
 	      return);
@@ -615,8 +619,12 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
       m_catch(E_CONV,
 	      // try
-	      _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-				 xk, uk, _prg, Fk, xfk),
+	      // use tractcatch to get error message printed to stderr
+	      m_tracecatch(// try
+			   _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+					      xk, uk, _prg, Fk, xfk),
+			   // catch and throw
+			   m_error_description()),
 	      // catch
 	      f0 = Inf;
 	      return);

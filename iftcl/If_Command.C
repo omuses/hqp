@@ -55,10 +55,11 @@ int If_Command::tclCmd(ClientData cld, Tcl_Interp *interp,
 	     m_tracecatch(// try
 			  return cmd->invoke(argc, argv, &interp->result),
 			  // catch and throw
-			  "If_Command::tclCmd"),
+			  m_error_description()),
 	     // catch
 	     Tcl_AppendResult(theInterp, "error evaluating ",
-			      cmd->_ifName, NULL);
+			      cmd->_ifName, ": ", m_error_description(),
+			      NULL);
 	     return TCL_ERROR);
 
   return TCL_ERROR; // this shall never be reached

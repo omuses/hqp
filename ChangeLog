@@ -1,3 +1,19 @@
+2003-09-10    <rfranke>
+
+	* meschach/err.[hc], meschach/version.c:
+	  introduce m_error_message and m_error_description returning
+	  information about last error
+
+	* iftcl/If_Element.C, iftcl/If_Command.C:
+	  pass error description to Tcl
+
+	* omu/Prg_SFunction.C (setup_model): adapt error messages
+
+	* omu/Hqp_Omuses.C (update_vals/stage): use tracecatch to
+	  report on caught integrator errors to stderr
+
+	* omu/Omu_Integrator.C (setup_stages): bug fix for K=0
+
 2003-09-09    <rfranke>
 
 	* omu/Omu_Integrator.h, omu/Hqp_Omuses.C,

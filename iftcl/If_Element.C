@@ -69,10 +69,11 @@ int If_Element::tclCmd(ClientData cld, Tcl_Interp *interp,
 	     m_tracecatch(// try
 			  return element->invoke(interp, objc, objv),
 			  // catch and throw
-			  "If_Element::tclCmd"),
+			  m_error_description()),
 	     // catch
 	     Tcl_AppendResult(interp, "error invoking ",
-			      element->ifName(), NULL);
+			      element->ifName(), ": ", m_error_description(),
+			      NULL);
 	     return TCL_ERROR);
 
   return TCL_ERROR; // this shall never be reached

@@ -26,7 +26,7 @@
 
 /* err.h  28/09/1993 */
 
-/*  RCS id: $Id: err.h,v 1.3 2002/12/09 10:57:47 e_arnold Exp $  */
+/*  RCS id: $Id: err.h,v 1.4 2003/09/10 06:02:25 rfranke Exp $  */
 
 
 #ifndef M_ERRHEADER
@@ -46,7 +46,7 @@ extern	jmp_buf	restart;
 #define ERR_LIST_MAX_LEN   10
 
 /* main error functions */
-MESCH_API int ev_err(char *,int,int,char *,int);  /* main error handler */
+MESCH_API int ev_err(const char *,int,int,const char *,int);  /* main error handler */
 MESCH_API int set_err_flag(int flag);         /* for different ways of handling
                                                 errors, returns old value */
 MESCH_API int count_errs(int true_false);     /* to avoid "too many errors" */
@@ -55,6 +55,9 @@ MESCH_API int err_list_attach(int list_num, int list_len,
 MESCH_API int err_is_list_attached(int list_num);  /* checking if a list 
 						    is attached */
 MESCH_API int err_list_free(int list_num);   /* freeing a list of errors */
+
+MESCH_API const char *m_error_message(); /* err_mesg[err_num] of last error */
+MESCH_API const char *m_error_description(); /* return fn_name of last error */
 
 /* m_error(E_TYPE,"myfunc") raises error type E_TYPE for function my_func() */
 #define	m_error(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name,0)

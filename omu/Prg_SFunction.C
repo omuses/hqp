@@ -184,7 +184,7 @@ void Prg_SFunction::setup_model()
   if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
     fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
 	    ssGetNumSFcnParams(_S), ssGetSFcnParamsCount(_S));
-    m_error(E_FORMAT, "mdlInitializeSizes");
+    m_error(E_FORMAT, "Prg_SFunction::setup_model: parameter count mismatch");
   }
 
   // obtain model sizes

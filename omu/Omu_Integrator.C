@@ -86,6 +86,8 @@ void Omu_Integrator::setup_stages(const Omu_Program *sys)
   _K = sys->K();
   if (_K > 0)
     _Fcs = new Omu_DepVec [_K];
+  else
+    _Fcs = NULL;
 }
 
 //--------------------------------------------------------------------------

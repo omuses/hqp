@@ -31,7 +31,7 @@
   Ported to Pyramid 9810 late 1987
   */
 
-static	char	rcsid[] = "$Id: err.c,v 1.2 2002/05/01 17:50:39 rfranke Exp $";
+static	char	rcsid[] = "$Id: err.c,v 1.3 2003/09/10 06:02:25 rfranke Exp $";
 
 #include	<stdio.h>
 #include	<setjmp.h>
@@ -59,6 +59,17 @@ static	char	rcsid[] = "$Id: err.c,v 1.2 2002/05/01 17:50:39 rfranke Exp $";
 
 /* The only error caught in this file! */
 #define	E_SIGNAL	16
+
+static const char *error_message = "";
+static const char *error_description = "";
+
+const char *m_error_message() {
+  return error_message;
+}
+
+const char *m_error_description() {
+  return error_description;
+}
 
 static	char	*err_mesg[] =
 {	  "unknown error",			/* 0 */
@@ -223,11 +234,11 @@ int	flag;
    pointed by err_mesg, 1 is the basic list of warnings)
  */
 int	ev_err(file,err_num,line_num,fn_name,list_num)
-char	*file, *fn_name;
+const char	*file, *fn_name;
 int	err_num, line_num,list_num;
 {
    int	num;
-   
+
    if ( err_num < 0 ) err_num = 0;
    
    if (list_num < 0 || list_num >= err_list_end ||
@@ -248,6 +259,10 @@ int	err_num, line_num,list_num;
    
    num = err_num;
    if ( num >= err_list[list_num].len ) num = 0;
+   
+   /* store message and description (fn_name) */
+   error_message = err_list[list_num].listp[num];
+   error_description = fn_name;
    
    if ( cnt_errs && ++num_errs >= MAX_ERRS )	/* too many errors */
    {
