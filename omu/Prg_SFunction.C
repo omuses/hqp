@@ -179,10 +179,32 @@ void Prg_SFunction::setup_sfun()
 
   // obtain model sizes
   _mdl_nx = ssGetNumContStates(_S);
-  //assert(ssGetNumInputPorts(_S) == 1);
-  _mdl_nu = ssGetNumInputPorts(_S);
-  //assert(ssGetNumOutputPorts(_S) == 1);
-  _mdl_ny = ssGetNumOutputPorts(_S);
+  // count inputs of ports as long as they are contiguous in memory
+  // (this limitation is because later on we will only access port 0)
+  _mdl_nu = 0;
+  for (i = 0; i < ssGetNumInputPorts(_S); i++) {
+    if (*ssGetInputPortRealSignalPtrs(_S, i)
+	== *ssGetInputPortRealSignalPtrs(_S, 0) + _mdl_nu)
+      _mdl_nu += ssGetInputPortWidth(_S, i);
+    else {
+      m_warning(WARN_UNKNOWN,
+		"Prg_SFunction::setup_sfun: ignoring non-contiguous inputs");
+      break;
+    }
+  }
+  // count outputs of ports as long as they are contiguous in memory
+  // (this limitation is because later on we will only access port 0)
+  _mdl_ny = 0;
+  for (i = 0; i < ssGetNumOutputPorts(_S); i++) {
+    if (ssGetOutputPortRealSignal(_S, i)
+	== ssGetOutputPortRealSignal(_S, 0) + _mdl_ny)
+      _mdl_ny += ssGetOutputPortWidth(_S, i);
+    else {
+      m_warning(WARN_UNKNOWN,
+		"Prg_SFunction::setup_sfun: ignoring non-contiguous outputs");
+      break;
+    }
+  }
 
   // initialize and check sample times of model
   mdlInitializeSampleTimes(_S);
