@@ -1,3 +1,10 @@
+2001-07-12    <rfranke>
+
+	* hxi/Hxi_SimStruct.h: remove ssGetOutputPortRealSignalPtrs and 
+	  Hxi_SimStruct::_yPtrs as such pointers do not exist for S-functions
+
+	* odc/runall: correct names for double integrator examples
+
 2001-07-02    <rfranke>
 
 	* odc/Prg_TP383.C (update): initialize objective and constraint prior
