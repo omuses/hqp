@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/int_for.mc
- Revision: $Id: int_for.c,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: int_for.c,v 1.2 2004/10/14 13:29:48 e_arnold Exp $
  Contents: int_forward_tight,
                (first-order-vector forward mode for bit patterns, 
                 tight version = basepoint check,  more precize)

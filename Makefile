@@ -14,8 +14,7 @@ omuses:
 	$(MAKE) test
 
 adolc:
-	-patch -p0 -N -s < hqp_adolc.patch
-	cd adol-c/adolc; \
+	cd adol-c; \
 	$(MAKE) CC=$(ADOL_MCC) CXX=$(ADOL_CC) CFLAGS="$(ADOL_CFLAGS)"; \
 	cd ../..
 
@@ -48,6 +47,7 @@ clean:
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
 	cd adol-c/adolc; $(MAKE) distclean; cd ../..
+	-patch -R -p0 < hqp_adolc.patch
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib

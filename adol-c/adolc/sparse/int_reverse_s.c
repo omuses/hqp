@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     int_reverse_s.c
- Revision: $Id: int_reverse_s.c,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: int_reverse_s.c,v 1.2 2004/10/14 13:29:48 e_arnold Exp $
  Contents: int_reverse_safe
               ( first-order-vector reverse mode for bit patterns,
                 returns always 3,

@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac,v 1.1 2004/10/13 15:05:26 e_arnold Exp $
+# Revision: $Id: configure.ac,v 1.2 2004/10/14 13:29:47 e_arnold Exp $
 #
 # Copyright (C) 2003
 #               Technical University Dresden
@@ -15,7 +15,7 @@ AC_PREREQ(2.57)
 AC_INIT(adolc,
         1.9.0,
         [adol-c@math.tu-dresden.de])
-AC_REVISION($Revision: 1.1 $)
+AC_REVISION($Revision: 1.2 $)
 AC_CONFIG_SRCDIR([adolc/adolc.h])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_HEADERS([adolc/config.h])

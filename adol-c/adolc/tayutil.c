@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/drivers.h
- Revision: $Id: tayutil.c,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: tayutil.c,v 1.2 2004/10/14 13:29:47 e_arnold Exp $
  Contents: Taylor series utilities - primarily called from the module
            hos_forward.c (--- a forward pass generates taylor 
            coefficients which need to be saved when a variable dies, or 

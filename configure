@@ -4506,6 +4506,7 @@ echo "${ECHO_T}yes" >&6
 fi
 
 if test "$omu_adolc" = yes; then
+  patch -p0 -N -s < hqp_adolc.patch
   ASRCS="\$(ASRCS)"
   OMU_DEFS="$OMU_DEFS -DOMU_WITH_ADOLC=1"
   OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adolc/*\$O ../adol-c/adolc/*/*\$O"

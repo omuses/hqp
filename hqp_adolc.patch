@@ -39,3 +39,167 @@ diff -cr adolc-1.9.0/adolc/common.h adol-c/adolc/common.h
   
   /*--------------------------------------------------------------------------*/
   #endif
+diff -cr adolc-1.9.0/adolc/Makefile.in adol-c/adolc/Makefile.in
+*** adolc-1.9.0/adolc/Makefile.in	2004-09-13 11:55:15.000000000 +0200
+--- adol-c/adolc/Makefile.in	2004-10-14 13:44:31.000000000 +0200
+***************
+*** 258,288 ****
+  	@for dep in $?; do \
+  	  case '$(am__configure_deps)' in \
+  	    *$$dep*) \
+! 	      cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh \
+  		&& exit 0; \
+  	      exit 1;; \
+  	  esac; \
+  	done; \
+! 	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  adolc/Makefile'; \
+! 	cd $(top_srcdir) && \
+  	  $(AUTOMAKE) --gnu  adolc/Makefile
+  .PRECIOUS: Makefile
+  Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+  	@case '$?' in \
+  	  *config.status*) \
+! 	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
+  	  *) \
+! 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
+! 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
+  	esac;
+  
+  $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+! 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+  
+  $(top_srcdir)/configure:  $(am__configure_deps)
+! 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+  $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+! 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+  
+  config.h: stamp-h1
+  	@if test ! -f $@; then \
+--- 258,288 ----
+  	@for dep in $?; do \
+  	  case '$(am__configure_deps)' in \
+  	    *$$dep*) \
+! 	      cd "$(top_builddir)" && $(MAKE) $(AM_MAKEFLAGS) am--refresh \
+  		&& exit 0; \
+  	      exit 1;; \
+  	  esac; \
+  	done; \
+! 	echo ' cd "$(top_srcdir)" && $(AUTOMAKE) --gnu  adolc/Makefile'; \
+! 	cd "$(top_srcdir)" && \
+  	  $(AUTOMAKE) --gnu  adolc/Makefile
+  .PRECIOUS: Makefile
+  Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+  	@case '$?' in \
+  	  *config.status*) \
+! 	    cd "$(top_builddir)" && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
+  	  *) \
+! 	    echo ' cd "$(top_builddir)" && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
+! 	    cd "$(top_builddir)" && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
+  	esac;
+  
+  $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+! 	cd "$(top_builddir)" && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+  
+  $(top_srcdir)/configure:  $(am__configure_deps)
+! 	cd "$(top_builddir)" && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+  $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+! 	cd "$(top_builddir)" && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+  
+  config.h: stamp-h1
+  	@if test ! -f $@; then \
+***************
+*** 292,300 ****
+  
+  stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
+  	@rm -f stamp-h1
+! 	cd $(top_builddir) && $(SHELL) ./config.status adolc/config.h
+  $(srcdir)/config.h.in:  $(am__configure_deps) 
+! 	cd $(top_srcdir) && $(AUTOHEADER)
+  	rm -f stamp-h1
+  	touch $@
+  
+--- 292,300 ----
+  
+  stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
+  	@rm -f stamp-h1
+! 	cd "$(top_builddir)" && $(SHELL) ./config.status adolc/config.h
+  $(srcdir)/config.h.in:  $(am__configure_deps) 
+! 	cd "$(top_srcdir)" && $(AUTOHEADER)
+  	rm -f stamp-h1
+  	touch $@
+  
+***************
+*** 549,555 ****
+  
+  GTAGS:
+  	here=`$(am__cd) $(top_builddir) && pwd` \
+! 	  && cd $(top_srcdir) \
+  	  && gtags -i $(GTAGS_ARGS) $$here
+  
+  distclean-tags:
+--- 549,555 ----
+  
+  GTAGS:
+  	here=`$(am__cd) $(top_builddir) && pwd` \
+! 	  && cd "$(top_srcdir)" \
+  	  && gtags -i $(GTAGS_ARGS) $$here
+  
+  distclean-tags:
+diff -cr adolc-1.9.0/Makefile.in adol-c/Makefile.in
+*** adolc-1.9.0/Makefile.in	2004-09-13 11:55:14.000000000 +0200
+--- adol-c/Makefile.in	2004-10-14 13:44:33.000000000 +0200
+***************
+*** 204,211 ****
+  	      exit 1;; \
+  	  esac; \
+  	done; \
+! 	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  Makefile'; \
+! 	cd $(top_srcdir) && \
+  	  $(AUTOMAKE) --gnu  Makefile
+  .PRECIOUS: Makefile
+  Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+--- 204,211 ----
+  	      exit 1;; \
+  	  esac; \
+  	done; \
+! 	echo ' cd "$(top_srcdir)" && $(AUTOMAKE) --gnu  Makefile'; \
+! 	cd "$(top_srcdir)" && \
+  	  $(AUTOMAKE) --gnu  Makefile
+  .PRECIOUS: Makefile
+  Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
+***************
+*** 214,221 ****
+  	    echo ' $(SHELL) ./config.status'; \
+  	    $(SHELL) ./config.status;; \
+  	  *) \
+! 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)'; \
+! 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe);; \
+  	esac;
+  
+  $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+--- 214,221 ----
+  	    echo ' $(SHELL) ./config.status'; \
+  	    $(SHELL) ./config.status;; \
+  	  *) \
+! 	    echo ' cd "$(top_builddir)" && $(SHELL) ./config.status $@ $(am__depfiles_maybe)'; \
+! 	    cd "$(top_builddir)" && $(SHELL) ./config.status $@ $(am__depfiles_maybe);; \
+  	esac;
+  
+  $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+***************
+*** 350,356 ****
+  
+  GTAGS:
+  	here=`$(am__cd) $(top_builddir) && pwd` \
+! 	  && cd $(top_srcdir) \
+  	  && gtags -i $(GTAGS_ARGS) $$here
+  
+  distclean-tags:
+--- 350,356 ----
+  
+  GTAGS:
+  	here=`$(am__cd) $(top_builddir) && pwd` \
+! 	  && cd "$(top_srcdir)" \
+  	  && gtags -i $(GTAGS_ARGS) $$here
+  
+  distclean-tags:

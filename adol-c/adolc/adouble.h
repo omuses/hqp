@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.h
- Revision: $Id: adouble.h,v 1.1 2004/10/13 14:18:11 e_arnold Exp $
+ Revision: $Id: adouble.h,v 1.2 2004/10/14 13:29:47 e_arnold Exp $
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -42,9 +42,6 @@
   and destruction.
 */
 /****************************************************************************/
-
-#if !defined(ADOLC_ADOUBLE_H)
-#define ADOLC_ADOUBLE_H 1
 
 /****************************************************************************/
 /*                                                         THIS FILE IS C++ */
@@ -559,7 +556,5 @@ locint keep_stock (void);
 
 /****************************************************************************/
 /*                                                                THAT'S ALL*/
-
-#endif
 
 #endif

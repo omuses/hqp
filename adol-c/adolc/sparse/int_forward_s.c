@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     int_forward_s.c
- Revision: $Id: int_forward_s.c,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: int_forward_s.c,v 1.2 2004/10/14 13:29:48 e_arnold Exp $
  Contents: int_forward_safe
            ( first-order-vector forward mode for bit patterns,
              safe version, no basepoint check, returns always 3 )

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     common.h
- Revision: $Id: common.h,v 1.1 2004/10/13 14:18:11 e_arnold Exp $
+ Revision: $Id: common.h,v 1.2 2004/10/14 13:29:47 e_arnold Exp $
  Contents: Common (global) ADOL-C header  
 
  Copyright (c) 2004
@@ -47,12 +47,8 @@
 #define maxinc(a,b) if ((a) < (b)) (a) = (b)
 #define mindec(a,b) if ((a) > (b)) (a) = (b)
 
-#if !defined(max)
 #define max(a,b) ( (a)<(b)? (b):(a) )
-#endif
-#if !defined(min)
 #define min(a,b) ( (a)>(b)? (b):(a) )
-#endif
 
 /*--------------------------------------------------------------------------*/
 #endif

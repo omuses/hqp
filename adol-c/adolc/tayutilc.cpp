@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tayutilc.cpp
- Revision: $Id: tayutilc.cpp,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: tayutilc.cpp,v 1.2 2004/10/14 13:29:48 e_arnold Exp $
  Contents: The provided class clean_up makes sure the once the
            program leaves, any temporary taylor file is deleted.
 

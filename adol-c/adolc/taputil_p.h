@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taputil_p.h
- Revision: $Id: taputil_p.h,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: taputil_p.h,v 1.2 2004/10/14 13:29:47 e_arnold Exp $
  Contents: Preparation & gets & puts & closing of the taping process
            (ADOL-C internal routines)
 

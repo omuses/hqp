@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     avector.cpp
- Revision: $Id: avector.cpp,v 1.1 2004/10/13 14:18:11 e_arnold Exp $
+ Revision: $Id: avector.cpp,v 1.2 2004/10/14 13:29:47 e_arnold Exp $
  Contents: Avector.C contains the necessary routines for vector operations       
            that are defined in avector.h.  Note: avector.h is included 
            automatically by adouble.h, and hence does not need to be 

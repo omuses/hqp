@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/int_rev.mc
- Revision: $Id: int_rev.c,v 1.1 2004/10/13 14:18:12 e_arnold Exp $
+ Revision: $Id: int_rev.c,v 1.2 2004/10/14 13:29:48 e_arnold Exp $
  Contents: int_reverse_tight,
                 ( first-order-vector reverse mode for bit patterns,
                   checks all dependences on taylors and real values,
