@@ -1,3 +1,10 @@
+2001-09-30    <rfranke>
+
+	* configure.in: change to version 1.7.10
+
+	* odc/Prg_DI[CD]_SFunction.C: use ssGetInputPortSignalPtrs
+	  (as required by binary MEX S-functions)
+
 2001-08-28    <e_arnold@users.sourceforge.net>
 
 	* hqp/Hqp_HL.[hC]: hela_init_scale, hela_init_multipliers 
