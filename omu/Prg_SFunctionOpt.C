@@ -113,8 +113,9 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _sps = 1;
   _multistage = true;
 
-  _mdl_x0 = v_get(_mdl_nx);
   _mdl_x0_active = iv_get(_mdl_nx);
+  _mdl_der_x0_min = v_get(_mdl_nx);
+  _mdl_der_x0_max = v_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
   _mdl_u0_nfixed = iv_get(_mdl_nu);
   _mdl_u_decimation = iv_get(_mdl_nu);
@@ -125,6 +126,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_bias = v_get(_mdl_ny);
   v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
+  v_set(_mdl_der_x0_min, -Inf);
+  v_set(_mdl_der_x0_max, Inf);
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
@@ -151,6 +154,10 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   // redefine mdl_x0 in order to also consider mdl_xs
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x0_active)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y0_weight1)));
@@ -218,7 +225,8 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   iv_free(_mdl_u0_nfixed);
   iv_free(_mdl_u_order);
   iv_free(_mdl_x0_active);
-  v_free(_mdl_x0);
+  v_free(_mdl_der_x0_max);
+  v_free(_mdl_der_x0_min);
 }
 
 //--------------------------------------------------------------------------
@@ -231,6 +239,7 @@ void Prg_SFunctionOpt::setup_model()
   assert(ssGetmdlDerivatives(_S) != NULL);
 
   // adapt sizes of model vectors
+  _mdl_x0.alloc(_mdl_nx);
   _mdl_y0.resize(_mdl_ny);
   _mdl_u.resize(_mdl_nu);
   _mdl_der_u.resize(_mdl_nu);
@@ -239,8 +248,9 @@ void Prg_SFunctionOpt::setup_model()
   _mdl_y_soft.resize(_mdl_ny);
   _mdl_yf.resize(_mdl_ny);
 
-  v_resize(_mdl_x0, _mdl_nx);
   iv_resize(_mdl_x0_active, _mdl_nx);
+  v_resize(_mdl_der_x0_min, _mdl_nx);
+  v_resize(_mdl_der_x0_max, _mdl_nx);
   iv_resize(_mdl_u_order, _mdl_nu);
   iv_resize(_mdl_u0_nfixed, _mdl_nu);
   iv_resize(_mdl_u_decimation, _mdl_nu);
@@ -248,8 +258,9 @@ void Prg_SFunctionOpt::setup_model()
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
-  v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
+  v_set(_mdl_der_x0_min, -Inf);
+  v_set(_mdl_der_x0_max, Inf);
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
@@ -319,6 +330,12 @@ void Prg_SFunctionOpt::setup(int k,
     _nsc = 0;
     _nc0 = 0;
     _ncf = 0;
+    for (idx = 0; idx < _mdl_nx; idx++) {
+      if (_mdl_x0_active[idx]
+          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
+	_nc0++;
+      }
+    }
     for (idx = 0; idx < _mdl_ny; idx++) {
       if (_mdl_y.min[idx] > -Inf || _mdl_y.max[idx] < Inf
 	  || _mdl_y.weight1[idx] != 0.0 || _mdl_y.weight2[idx] != 0.0) {
@@ -415,8 +432,15 @@ void Prg_SFunctionOpt::setup(int k,
 	if (!_multistage)
 	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
 		  "mdl_x0_active=1 requires prg_multistage=true");
-	x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
-	x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
+        // use the more restrictive bound of x0_min/max and x_min/max
+        if (_mdl_x0.min[i-_nu] > _mdl_x.min[i-_nu])
+          x.min[i] = _mdl_x0.min[i-_nu] / _mdl_x_nominal[i-_nu];
+        else
+          x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
+        if (_mdl_x0.max[i-_nu] < _mdl_x.max[i-_nu])
+          x.max[i] = _mdl_x0.max[i-_nu] / _mdl_x_nominal[i-_nu];
+        else
+          x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
       }
       else
 	x.min[i] = x.max[i] = x.initial[i];
@@ -559,27 +583,39 @@ void Prg_SFunctionOpt::setup(int k,
       x.initial[i] = 0.0;
     }
 
-  // setup output constraints at initial time
+  // setup state and output constraints at initial time
   if (k == 0) {
-    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
-      if (_mdl_y0.min[idx] > -Inf)
-	c.min[i] = _mdl_y0.min[idx] / _mdl_y_nominal[idx];
-      if (_mdl_y0.max[idx] < Inf)
-	c.max[i] = _mdl_y0.max[idx] / _mdl_y_nominal[idx];
-      if (_mdl_y0.active[idx])
+    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_nx; idx++) {
+      if (_mdl_x0_active[idx]
+          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
+        if (_mdl_der_x0_min[idx] > -Inf)
+          c.min[i] = _mdl_der_x0_min[idx] / _mdl_x_nominal[idx];
+        if (_mdl_der_x0_max[idx] < Inf)
+          c.max[i] = _mdl_der_x0_max[idx] / _mdl_x_nominal[idx];
 	i++;
+      }
+    }
+    for (idx = 0; idx < _mdl_ny; idx++) {
+      if (_mdl_y0.active[idx]) {
+        if (_mdl_y0.min[idx] > -Inf)
+          c.min[i] = _mdl_y0.min[idx] / _mdl_y_nominal[idx];
+        if (_mdl_y0.max[idx] < Inf)
+          c.max[i] = _mdl_y0.max[idx] / _mdl_y_nominal[idx];
+	i++;
+      }
     }
   }
 
   // setup output constraints at final time
   if (k == _K) {
     for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
-      if (_mdl_yf.min[idx] > -Inf)
-	c.min[i] = _mdl_yf.min[idx] / _mdl_y_nominal[idx];
-      if (_mdl_yf.max[idx] < Inf)
-	c.max[i] = _mdl_yf.max[idx] / _mdl_y_nominal[idx];
-      if (_mdl_yf.active[idx])
-	i++;
+      if (_mdl_yf.active[idx]) {
+        if (_mdl_yf.min[idx] > -Inf)
+          c.min[i] = _mdl_yf.min[idx] / _mdl_y_nominal[idx];
+        if (_mdl_yf.max[idx] < Inf)
+          c.max[i] = _mdl_yf.max[idx] / _mdl_y_nominal[idx];
+        i++;
+      }
     }
   }
 }
@@ -817,7 +853,18 @@ void Prg_SFunctionOpt::update(int kk,
 
   // additional terms at initial time
   if (kk == 0) {
-    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
+    i = spsk*(_nc+_nsc);
+    // constraints on derivatives of initial states
+    SMETHOD_CALL(mdlDerivatives, _S);
+    real_T *mdl_dx = ssGetdX(_S);
+    for (idx = 0; idx < _mdl_nx; idx++) {
+      if (_mdl_x0_active[idx]
+          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
+        c[i] = mdl_dx[idx] / _mdl_x_nominal[idx];
+        i++;
+      }
+    }
+    for (idx = 0; idx < _mdl_ny; idx++) {
       // assign used outputs to constraints
       if (_mdl_y0.active[idx]) {
 	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
@@ -874,7 +921,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
 				   Omu_DependentVec &f, Omu_Dependent &f0,
 				   Omu_DependentVec  &c)
 {
-  int i, idx, ii, iidx, isc, iscdx, is, j, jdx, rdx;
+  int i, idx, ii, iidx0, iidx, isc, iscdx, is, j, jdx, rdx;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
 
@@ -887,7 +934,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   }
   else {
     // exploit mdlJacobian to obtain c.Jx
-    int mdl_u_idx, mdl_x_idx, mdl_y_idx;
+    int mdl_u_idx, mdl_x_idx, mdl_dx_idx, mdl_y_idx;
     real_T *pr = ssGetJacobianPr(_S);
     int_T *ir = ssGetJacobianIr(_S);
     int_T *jc = ssGetJacobianJc(_S);
@@ -896,14 +943,30 @@ void Prg_SFunctionOpt::update_grds(int kk,
 
     m_zero(c.Jx);
     m_zero(c.Ju);
-    // Jacobian wrt S-function states (dy/dx)
-    for (jdx = 0; jdx < _mdl_nx; jdx++) {
+    // Jacobian wrt S-function states (ddxdy/dx)
+    for (j = _nu, jdx = 0; jdx < _mdl_nx; jdx++, j++) {
       mdl_x_idx = jdx;
       for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
-	     ii = _nc+_nsc, iidx = _mdl_nx,
+	     ii = _nc+_nsc, iidx0 = 0, iidx = _mdl_nx,
 	     rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
-	if (ir[rdx] >= _mdl_nx) {
-	  j = _nu + jdx;
+        if (ir[rdx] < _mdl_nx) {
+          mdl_dx_idx = ir[rdx];
+	  // constraints on derivatives for initial states
+	  if (kk == 0 && _mdl_x0_active[mdl_dx_idx]
+              && (_mdl_der_x0_min[mdl_dx_idx] > -Inf
+                  || _mdl_der_x0_max[mdl_dx_idx] < Inf)) {
+	    // need to loop to obtain ii considering active initial states
+	    for (; iidx0 < mdl_dx_idx; iidx0++) {
+	      if (_mdl_x0_active[iidx0]
+                  && (_mdl_der_x0_min[iidx0] > -Inf
+                      || _mdl_der_x0_max[iidx0] < Inf))
+		ii++;
+	    }
+	    c.Jx[ii][j] = pr[rdx] /
+	      _mdl_x_nominal[mdl_dx_idx] * _mdl_x_nominal[mdl_x_idx];
+	  }
+        }
+        else {
 	  mdl_y_idx = ir[rdx] - _mdl_nx;
 	  if (_mdl_y.active[mdl_y_idx]) {
 	    // need to loop through idx to obtain i considering active outputs
@@ -959,15 +1022,32 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	}
       }
     }
-    // Jacobian wrt S-function inputs (dy/du)
+    // Jacobian wrt S-function inputs (ddxdy/du)
     // (note: these are states for the optimizer)
     for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
       mdl_u_idx = jdx - _mdl_nx;
       if (_mdl_u.active[mdl_u_idx]) {
 	for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
-	       ii = _nc+_nsc, iidx = _mdl_nx,
+	       ii = _nc+_nsc, iidx0 = 0, iidx = _mdl_nx,
 	       rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
-	  if (ir[rdx] >= _mdl_nx) {
+          if (ir[rdx] < _mdl_nx) {
+            mdl_dx_idx = ir[rdx];
+            // constraints on derivatives for initial states
+            if (kk == 0 && _mdl_x0_active[mdl_dx_idx]
+                && (_mdl_der_x0_min[mdl_dx_idx] > -Inf
+                    || _mdl_der_x0_max[mdl_dx_idx] < Inf)) {
+              // need to loop to obtain ii considering active initial states
+              for (; iidx0 < mdl_dx_idx; iidx0++) {
+                if (_mdl_x0_active[iidx0]
+                    && (_mdl_der_x0_min[iidx0] > -Inf
+                        || _mdl_der_x0_max[iidx0] < Inf))
+                  ii++;
+              }
+              c.Jx[ii][j] = pr[rdx] /
+                _mdl_x_nominal[mdl_dx_idx] * _mdl_u_nominal[mdl_u_idx];
+            }
+          }
+	  else {
 	    mdl_y_idx = ir[rdx] - _mdl_nx;
 	    if (_mdl_y.active[mdl_y_idx]) {
 	      // need to loop to obtain i considering active outputs
@@ -999,6 +1079,16 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	      if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
 		isc -= spsk;
 	      }
+	    }
+	    // constraints at initial time
+	    if (kk == 0 && _mdl_y0.active[mdl_y_idx]) {
+	      // need to loop to obtain ii considering active outputs
+	      for (; iidx < ir[rdx]; iidx++) {
+		if (_mdl_y0.active[iidx - _mdl_nx])
+		  ii++;
+	      }
+	      c.Jx[ii][j] = pr[rdx] /
+		_mdl_y_nominal[mdl_y_idx] * _mdl_u_nominal[mdl_u_idx];
 	    }
 	    // constraints at final time
 	    if (kk == _KK && _mdl_yf.active[mdl_y_idx]) {

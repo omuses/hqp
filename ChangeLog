@@ -1,3 +1,17 @@
+2004-06-28    <rfranke>
+
+	* configure.in, configure: DEVELOPMENT_VERSION=yes
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - add constraints on initial states
+	    (mdl_x0_min/max and mdl_der_x0_min/max)
+	  - bug fix for analytical Jacobian of output constraints
+	    at initial time
+
+	* omu/Prg_SFunctionEst.[hC]:
+	  - constraints on derivatives of initial states only apply to
+	    active initial states (as for Prg_SFunctionOpt)
+
 2004-05-24    <rfranke>
 
 	* README.html, INSTALL.html:

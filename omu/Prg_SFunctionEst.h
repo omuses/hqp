@@ -94,13 +94,14 @@
         &\le& \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i, 
         \quad & i \in \mbox{find}(x^0_{active}),
         \quad l=1,\ldots,N_{ex},  \\[3ex]
+    \displaystyle \left\{ \frac{der\_x^0_{min}}{x_{nominal}} \right.
+        &\le& \dot{x}(t^{0,l}) &\le& 
+        \displaystyle \left. \frac{der\_x^0_{max}}{x_{nominal}} \right\}_i,
+	\quad & i \in \mbox{find}(x^0_{active}),
+        \quad l=1,\ldots,N_{ex},  \\[3ex]
     && \{ x(t^{0,l}) &=& \displaystyle \frac{x0s^l}{x_{nominal}}
        \}_i, \quad & i \notin \mbox{find}(x^0_{active}),
         \quad l=1,\ldots,N_{ex},  \\[3ex]
-    \displaystyle \frac{der\_x^0_{min}}{x_{nominal}} 
-        &\le& \dot{x}(t^{0,l}) 
-        &\le& \displaystyle \frac{der\_x^0_{max}}{x_{nominal}},
-	\quad & l=1,\ldots,N_{ex},  \\[3ex]
     \displaystyle \frac{x_{min}}{x_{nominal}} &\le& x(t^{k_l}) 
         &\le& \displaystyle \frac{x_{max}}{x_{nominal}}, 
         \quad & k_l=k_{l,0},\ldots,K_l,
@@ -357,10 +358,10 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// (read only, note: write initial states of experiments via mdl_x0s)
   const VECP mdl_x0() const {return _mdl_x0;}
 
-  /// lower bounds for model parameters (note: default is 0)
+  /// lower bounds for initial states
   const VECP mdl_x0_min() const {return _mdl_x0.min;}
 
-  /// upper bounds for model parameters
+  /// upper bounds for initial states
   const VECP mdl_x0_max() const {return _mdl_x0.max;}
 
   /// indicate estimated initial states

@@ -144,15 +144,25 @@ public:
    \begin{array}{rcccll}
     \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
         \quad & i\notin\mbox{find}(x_{0\_active}), \\[3ex]
+    \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right.
+        &\le& x(t^{0}) &\le& 
+        \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i,
+	\quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
+    \displaystyle \left\{ \frac{der\_x^0_{min}}{x_{nominal}} \right.
+        &\le& \dot{x}(t^{0}) &\le& 
+        \displaystyle \left. \frac{der\_x^0_{max}}{x_{nominal}} \right\}_i,
+	\quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
     \displaystyle \frac{y_{0,min}}{y_{nominal}} &\le& y(t^{0})
         &\le& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
     \displaystyle && \{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
         \quad & i \in \mbox{find}(u_{0,nfixed}>1-u_{order}), \\[3ex]
-    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &\le& u(t^0)
-        &\le& \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
+    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right.
+        &\le& u(t^0) &\le& 
+        \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
         \ & i \in \mbox{find}(u_{0,nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
-    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &\le& u(t^{k})
-        &\le& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
+    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right.
+        &\le& u(t^{k}) &\le& 
+        \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
         i \in \mbox{find}(k \ge u_{0,nfixed} + u_{order} - 1), \\[1ex]
 	&& && & k=0,\ldots,K, \\[2ex]
     \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &\le& du^{k}
@@ -240,8 +250,10 @@ public:
 class Prg_SFunctionOpt: public Prg_SFunction {
 
  protected:
-  VECP		_mdl_x0; 	///< initial states for optimization
+  Omu_VariableVec _mdl_x0;	///< initial states for optimization
   IVECP 	_mdl_x0_active;	///< free initial states (default: 0)
+  VECP		_mdl_der_x0_min;///< minimum for time derivative of x0
+  VECP		_mdl_der_x0_max;///< maximum for time derivative of x0
   Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs
   Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
@@ -386,6 +398,18 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// free initial states (default: 0)
   const IVECP mdl_x0_active() const {return _mdl_x0_active;}
 
+  /// lower bounds for initial states
+  const VECP mdl_x0_min() const {return _mdl_x0.min;}
+
+  /// upper bounds for initial states
+  const VECP mdl_x0_max() const {return _mdl_x0.max;}
+
+  /// minimum for time derivative of x0  
+  const VECP mdl_der_x0_min() const {return _mdl_der_x0_min;}
+
+  /// maximum for time derivative of x0  
+  const VECP mdl_der_x0_max() const {return _mdl_der_x0_max;}
+
   /// lower bounds for model outputs at initial time
   const VECP mdl_y0_min() const {return _mdl_y0.min;}
 
@@ -523,6 +547,18 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set free initial states
   void set_mdl_x0_active(const IVECP v) {iv_copy_elements(v, _mdl_x0_active);}
+
+  /// set lower bounds for initial states
+  void set_mdl_x0_min(const VECP v) {v_copy_elements(v, _mdl_x0.min);}
+
+  /// set upper bounds for initial states
+  void set_mdl_x0_max(const VECP v) {v_copy_elements(v, _mdl_x0.max);}
+
+  /// set minimum for dx0dt
+  void set_mdl_der_x0_min(const VECP v) {v_copy_elements(v, _mdl_der_x0_min);}
+
+  /// set maximum for dx0dt
+  void set_mdl_der_x0_max(const VECP v) {v_copy_elements(v, _mdl_der_x0_max);}
 
   /// set lower bounds for final model outputs
   void set_mdl_y0_min(const VECP v) {v_copy_elements(v, _mdl_y0.min);}

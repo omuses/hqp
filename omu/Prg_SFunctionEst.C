@@ -499,20 +499,23 @@ void Prg_SFunctionEst::setup(int k,
   // and on time derivatives of initial states
   int nc = _ny;
   if (new_experiment) {
-    for (i = 0; i < _mdl_nx; i++) {
-      if (_mdl_der_x0_min[i] > -Inf || _mdl_der_x0_max[i] < Inf)
+    for (idx = 0; idx < _mdl_nx; idx++) {
+      if (_mdl_x0_active[idx]
+          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
 	++nc;
     }
   }
   c.alloc(nc);
   if (new_experiment) {
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
-      if (_mdl_der_x0_min[idx] > -Inf)
-	c.min[i] = _mdl_der_x0_min[idx] / _mdl_x_nominal[idx];
-      if (_mdl_der_x0_max[idx] < Inf)
-	c.max[i] = _mdl_der_x0_max[idx] / _mdl_x_nominal[idx];
-      if (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)
-	++i;
+      if (_mdl_x0_active[idx]
+          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
+        if (_mdl_der_x0_min[idx] > -Inf)
+          c.min[i] = _mdl_der_x0_min[idx] / _mdl_x_nominal[idx];
+        if (_mdl_der_x0_max[idx] < Inf)
+          c.max[i] = _mdl_der_x0_max[idx] / _mdl_x_nominal[idx];
+        ++i;
+      }
     }
   }
 }
@@ -670,7 +673,8 @@ void Prg_SFunctionEst::update(int kk,
     real_T *mdl_dx = ssGetdX(_S);
     SMETHOD_CALL(mdlDerivatives, _S);
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
-      if (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)
+      if (_mdl_x0_active[idx]
+          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
 	c[i++] = mdl_dx[idx] / _mdl_x_nominal[idx];
     }
   }
