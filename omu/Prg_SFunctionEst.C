@@ -289,8 +289,8 @@ void Prg_SFunctionEst::setup_struct(int k,
   m_zero(xt.Ju);
   xt.set_linear();
 
-  // explicit ODE for continuous-time equations
   if (k < _K) {
+    // explicit ODE for continuous-time equations
     for (i = 0; i < _np; i++) {
       for (j = 0; j < _nx; j++)
 	F.Jx[i][j] = 0.0;
@@ -299,6 +299,22 @@ void Prg_SFunctionEst::setup_struct(int k,
     for (i = _np; i < _nx; i++)
       F.Jxp[i][i] = -1.0;
     F.set_linear(Omu_Dependent::WRT_xp);
+
+    // f in update depends linearly on x
+    m_zero(f.Jx);
+    for (i = 0; i < _np; i++)
+      f.Jx[i][i] = 1.0;
+    f.set_linear(Omu_Dependent::WRT_x);
+
+    // all results of update depend linearly (or not) on xf
+    m_zero(f.Jxf);
+    for (i = _np; i < _nx; i++)
+      f.Jxf[i][i] = 1.0;
+    f.set_linear(Omu_Dependent::WRT_xf);
+    v_zero(f0.gxf);
+    f0.set_linear(Omu_Dependent::WRT_xf);
+    m_zero(c.Jxf);
+    c.set_linear(Omu_Dependent::WRT_xf);
   }
 }
 
