@@ -990,7 +990,13 @@ badouble& badouble::operator /= (const badouble& y)
 /*   The Not Equal Operator (!=) */
 int operator != ( const badouble& v, double coval )
 { if (coval)
-    return (-coval+v != 0);
+  /* rf, 07/18/01: introduce additional local variable to circumvent
+     bug of gcc 2.9?? with code optimization. Original:
+     return (-coval+v != 0); */
+  {
+    adouble a = -coval+v;
+    return (a != 0);
+  }
   else
   { if (trace_flag)
     { put_op(store[v.location] ? neq_zero : eq_zero);
@@ -1004,7 +1010,13 @@ int operator != ( const badouble& v, double coval )
 /*   The Equal Operator (==) */
 int operator == ( const badouble& v, double coval)
 { if (coval)
-    return (-coval+v == 0);
+  /* rf, 07/18/01: introduce additional local variable to circumvent
+     bug of gcc 2.9?? with code optimization. Original:
+     return (-coval+v == 0); */
+  {
+    adouble a = -coval+v;
+    return (a == 0);
+  }
   else
   { if (trace_flag)
     { put_op(store[v.location] ? neq_zero : eq_zero);
@@ -1018,7 +1030,13 @@ int operator == ( const badouble& v, double coval)
 /*   The Less than or Equal Operator (<=)      */
 int operator <= ( const badouble& v, double coval )
 { if (coval)
-    return (-coval+v <= 0);
+  /* rf, 07/18/01: introduce additional local variable to circumvent
+     bug of gcc 2.9?? with code optimization. Original:
+     return (-coval+v <= 0); */
+  {
+    adouble a = -coval+v;
+    return (a <= 0);
+  }
   else
   { int b = (store[v.location] <= 0);
     if (trace_flag)
@@ -1033,7 +1051,13 @@ int operator <= ( const badouble& v, double coval )
 /*   The Greater than or Equal Operator (>=)      */
 int operator >= ( const badouble& v, double coval )
 { if (coval)
-    return (-coval+v >= 0);
+  /* rf, 07/18/01: introduce additional local variable to circumvent
+     bug of gcc 2.9?? with code optimization. Original:
+     return (-coval+v >= 0); */
+  {
+    adouble a = -coval+v;
+    return (a >= 0);
+  }
   else
   { int b = (store[v.location] >= 0);
     if (trace_flag)
@@ -1048,7 +1072,13 @@ int operator >= ( const badouble& v, double coval )
 /*   The Greater than Operator (>)      */
 int operator > ( const badouble& v, double coval )
 { if (coval)
-    return (-coval+v > 0);
+  /* rf, 07/18/01: introduce additional local variable to circumvent
+     bug of gcc 2.9?? with code optimization. Original:
+     return (-coval+v > 0); */
+  {
+    adouble a = -coval+v;
+    return (a > 0);
+  }
   else
   { int b = (store[v.location] > 0);
     if (trace_flag)
@@ -1063,7 +1093,13 @@ int operator > ( const badouble& v, double coval )
 /*   The Less than Operator (<)      */
 int operator < ( const badouble& v, double coval )
 { if (coval)
-    return (-coval+v < 0);
+  /* rf, 07/18/01: introduce additional local variable to circumvent
+     bug of gcc 2.9?? with code optimization. Original:
+     return (-coval+v < 0); */
+  {
+    adouble a = -coval+v;
+    return (a < 0);
+  }
   else
   { int b = (store[v.location] < 0);
     if (trace_flag)
