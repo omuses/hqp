@@ -41,6 +41,27 @@
   IF_GET_CB(vartype, Prg_SFunction, name), \
   IF_SET_CB(vartype, Prg_SFunction, set_##name)
 
+// Call an S-function method and check for errors.
+// Throw E_FORMAT as errors occuring during initialization done here
+// are generally due to wrong configuration data (e.g. bad mdl_args).
+#define SMETHOD_CALL(method, S) \
+  ssSetErrorStatus(S, NULL); \
+  method(S); \
+  if (ssGetErrorStatus(S)) { \
+    fprintf(stderr, "Error from " #method ": %s\n", \
+	    ssGetErrorStatus(S)); \
+    m_error(E_FORMAT, ssGetErrorStatus(S)); \
+  }
+
+#define SMETHOD_CALL2(method, S, tid) \
+  ssSetErrorStatus(S, NULL); \
+  method(S, tid); \
+  if (ssGetErrorStatus(S)) { \
+    fprintf(stderr, "Error from " #method ": %s\n", \
+	    ssGetErrorStatus(S)); \
+    m_error(E_FORMAT, ssGetErrorStatus(S)); \
+  }
+
 //--------------------------------------------------------------------------
 Prg_SFunction::Prg_SFunction()
 {
@@ -177,13 +198,7 @@ void Prg_SFunction::setup_model()
   ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
   // initialize model
-  mdlInitializeSizes(_S);
-  if (ssGetErrorStatus(_S)) {
-    fprintf(stderr, "Error from mdlInitializeSizes: %s\n",
-	    ssGetErrorStatus(_S));
-    ssSetErrorStatus(_S, NULL);
-    m_error(E_FORMAT, "mdlInitializeSizes");
-  }
+  SMETHOD_CALL(mdlInitializeSizes, _S);
   if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
     fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
 	    ssGetNumSFcnParams(_S), ssGetSFcnParamsCount(_S));
@@ -232,15 +247,12 @@ void Prg_SFunction::setup_model()
     mdlStart(_S);
 
   // get initial states
+  // (states shall be initialized with mdlInitializeConditions;
+  //  mdlOutputs is called according to the docu afterwards)
   if (ssGetmdlInitializeConditions(_S) != NULL) {
-    mdlInitializeConditions(_S);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
-	      ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlInitializeConditions");
-    }
+    SMETHOD_CALL(mdlInitializeConditions, _S);
   }
+  SMETHOD_CALL2(mdlOutputs, _S, 0);
   real_T *mdl_x = ssGetContStates(_S);
   v_resize(_mdl_x0, _mdl_nx);
   for (i = 0; i < _mdl_nx; i++)

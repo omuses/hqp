@@ -1,3 +1,11 @@
+2004-02-19    <rfranke>
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  - call mdlUpdate to get simple discrete events processed
+
+	* omu/Prg_SFunction*.C:
+	  - improved reporting of S-funtion errors through exception message
+
 2004-01-18    <rfranke>
 
 	* hqp/Meschach.C (sp_transp):

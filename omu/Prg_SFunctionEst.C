@@ -50,6 +50,27 @@
   prefix#name, \
   IF_GET_CB(vartype, Prg_SFunctionEst, name)
 
+// Call an S-function method and check for errors.
+// Throw E_CONV as errors occuring during solution are generally
+// due to bad values and need to be treated (esp. during stepsize check).
+#define SMETHOD_CALL(method, S) \
+  ssSetErrorStatus(S, NULL); \
+  method(S); \
+  if (ssGetErrorStatus(S)) { \
+    fprintf(stderr, "Error from " #method ": %s\n", \
+	    ssGetErrorStatus(S)); \
+    m_error(E_CONV, ssGetErrorStatus(S)); \
+  }
+
+#define SMETHOD_CALL2(method, S, tid) \
+  ssSetErrorStatus(S, NULL); \
+  method(S, tid); \
+  if (ssGetErrorStatus(S)) { \
+    fprintf(stderr, "Error from " #method ": %s\n", \
+	    ssGetErrorStatus(S)); \
+    m_error(E_CONV, ssGetErrorStatus(S)); \
+  }
+
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -581,7 +602,7 @@ void Prg_SFunctionEst::update(int kk,
   int ex = _exs[kk];
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
 
-  // set simulation time and mode
+  // set simulation time
   ssSetT(_S, ts(kk));
 
   // pass estimated parameters to model
@@ -598,13 +619,7 @@ void Prg_SFunctionEst::update(int kk,
 
   // initialize model (this is required here as parameters change)
   if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-    mdlInitializeConditions(_S);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
-	      ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_CONV, "mdlInitializeConditions");
-    }
+    SMETHOD_CALL(mdlInitializeConditions, _S);
   }
 
   // pass current states to model
@@ -620,11 +635,18 @@ void Prg_SFunctionEst::update(int kk,
   }
 
   // obtain model outputs
-  mdlOutputs(_S, 0);
-  if (ssGetErrorStatus(_S)) {
-    fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
-    ssSetErrorStatus(_S, NULL);
-    m_error(E_CONV, "mdlOutputs");
+  SMETHOD_CALL2(mdlOutputs, _S, 0);
+
+  // call mdlUpdate to get discrete events processed at final time
+  // (this is done from consistic at regular sample intervals)
+  if (kk == _KK && ssGetmdlUpdate(_S) != NULL) {
+    if (_KK == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
+      // initialize model as no consistic called for _KK==0
+      SMETHOD_CALL(mdlInitializeConditions, _S);
+    }
+    SMETHOD_CALL2(mdlUpdate, _S, 0);
+    // and re-calculate model outputs after update
+    SMETHOD_CALL2(mdlOutputs, _S, 0);
   }
 
   // store outputs in constraints
@@ -650,13 +672,7 @@ void Prg_SFunctionEst::update(int kk,
   // constraints on time derivatives of initial states
   if (new_experiment) {
     real_T *mdl_dx = ssGetdX(_S);
-    mdlDerivatives(_S);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlDerivatives: %s\n",
-	      ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_CONV, "mdlDerivatives");
-    }
+    SMETHOD_CALL(mdlDerivatives, _S);
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)
 	c[i++] = mdl_dx[idx] / _mdl_x_nominal[idx];
@@ -836,12 +852,11 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   int ex = _exs[kk];
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
 
+  // set simulation time
+  ssSetT(_S, t);
+
   // initialize model in first stage
   if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-
-    // set simulation time and mode
-    ssSetT(_S, t);
-
     // pass estimated parameters to model
     write_active_mx_args(x);
 
@@ -855,13 +870,16 @@ void Prg_SFunctionEst::consistic(int kk, double t,
       mdl_u[i] = _mdl_us[kk][i];
 
     // initialize model
-    mdlInitializeConditions(_S);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
-	      ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_CONV, "mdlInitializeConditions");
-    }
+    SMETHOD_CALL(mdlInitializeConditions, _S);
+  }
+
+  // call mdlUpdate to get discrete events processed
+  // Note: this is done once at the beginning of a sample interval;
+  // no event processing takes place during the integration.
+  if (ssGetmdlUpdate(_S) != NULL) {
+    // also call mdlOutputs as done by Simulink before each mdlUpdate
+    SMETHOD_CALL2(mdlOutputs, _S, 0); 
+    SMETHOD_CALL2(mdlUpdate, _S, 0);
   }
 
   // take over states from optimizer
@@ -882,7 +900,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 {
   int i;
 
-  // set simulation time and mode
+  // set simulation time
   ssSetT(_S, t);
 
   // pass estimated parameters to model
@@ -904,13 +922,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
     // initialize model (this is required as parameters change)
-    mdlInitializeConditions(_S);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
-	      ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_CONV, "mdlInitializeConditions");
-    }
+    SMETHOD_CALL(mdlInitializeConditions, _S);
   }
 
   // pass current states to model
@@ -920,20 +932,10 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
-  mdlOutputs(_S, 0); 
-  if (ssGetErrorStatus(_S)) {
-    fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
-    ssSetErrorStatus(_S, NULL);
-    m_error(E_CONV, "mdlOutputs");
-  }
+  SMETHOD_CALL2(mdlOutputs, _S, 0); 
 
   // evaluate continuous model equations
-  mdlDerivatives(_S);
-  if (ssGetErrorStatus(_S)) {
-    fprintf(stderr, "Error from mdlDerivatives: %s\n", ssGetErrorStatus(_S));
-    ssSetErrorStatus(_S, NULL);
-    m_error(E_CONV, "mdlDerivatives");
-  }
+  SMETHOD_CALL(mdlDerivatives, _S);
 
   // get model derivatives and change to residual form
   real_T *mdl_dx = ssGetdX(_S);
