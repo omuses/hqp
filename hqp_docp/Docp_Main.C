@@ -40,17 +40,26 @@ int main(int, char *[])
   // Configure solver
   printf("Configure solver\n");
   double eps = 1e-5;
+  char *mat_solver = "LQDOCP";
 
   // write sqp_eps
   if (If_SetReal("sqp_eps", eps) != IF_OK)
     printf("Can't write sqp_eps: %s\n", If_ResultString());
 
-  // test read sqp_eps back
+  // select matrix solver
+  if (If_SetString("qp_mat_solver", mat_solver) != IF_OK)
+    printf("Can't select qp_mat_solver: %s\n", If_ResultString());
+
+  // test reading back modified options
   // (from now on error tests are omitted for If-calls
   //  in order to improve readability)
   eps = 0.0;
   If_GetReal("sqp_eps", eps);
   printf(" set sqp_eps to: %g\n", eps);
+
+  mat_solver = NULL;
+  If_GetString("qp_mat_solver", mat_solver);
+  printf(" set qp_mat_solver to: %s\n", mat_solver);
 
   printf("\nSolve problem\n");
 

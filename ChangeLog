@@ -1,3 +1,10 @@
+03/18/01: rf: change version to 1.7b2
+
+03/18/01: rf
+	- If.[hC] introduce If_SetString and If_GetString;
+	  remove If_EvalStringArg as If_SetString serves same purpose
+	- hqp_docp/Docp_Main.C: demonstrate new If-functions
+
 03/17/01: rf
 	- adol-c/SRC/adouble.[hC]: add new constructor
 	  adouble(const badouble&) for use with avector::operator[]

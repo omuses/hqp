@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -59,11 +59,14 @@ extern "C" {
   /** Get a Real value. */
   IF_API int If_GetReal(const char *name, Real &val);
 
+  /** Set a variables value from a string representation. */
+  IF_API int If_SetString(const char *name, const char *val);
+
+  /** Get the string representation of a variables value. */
+  IF_API int If_GetString(const char *name, char *&val);
+
   /** Evaluate a command. */
   IF_API int If_Eval(const char *command);
-
-  /** Evaluate a command with string argument */
-  IF_API int If_EvalStringArg(const char *command, const char *arg);
 
   /** Return the result string produced by the last If function call.
       After a failed calculation, the corresponding error message

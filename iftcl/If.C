@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -127,20 +127,32 @@ extern "C" int If_GetReal(const char *name, Real &val)
 }
 
 //-----------------------------------------------------------------------
+extern "C" int If_SetString(const char *name, const char *val)
+{
+  if (Tcl_VarEval(theInterp, (char *)name, " {", (char *)val, "}", 
+		  NULL) != TCL_OK)
+    return IF_ERROR;
+  
+  return IF_OK;
+}
+
+//-----------------------------------------------------------------------
+extern "C" int If_GetString(const char *name, char *&val)
+{
+  if (Tcl_Eval(theInterp, (char *)name) != TCL_OK) {
+    val = NULL;
+    return IF_ERROR;
+  }
+  val = Tcl_GetStringResult(theInterp);
+  return IF_OK;
+}
+
+//-----------------------------------------------------------------------
 extern "C" int If_Eval(const char *command)
 {
   if (Tcl_Eval(theInterp, (char *)command) != TCL_OK)
     return IF_ERROR;
 
-  return IF_OK;
-}
-
-//-----------------------------------------------------------------------
-extern "C" int If_EvalStringArg(const char *command, const char *arg)
-{
-  if (Tcl_VarEval(theInterp, (char *)command, " ", arg, NULL) != TCL_OK)
-    return IF_ERROR;
-  
   return IF_OK;
 }
 
