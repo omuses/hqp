@@ -173,10 +173,29 @@
      \ I_{x^0} = \mbox{find}(x^0_{active}).
    \end{array}
    @f]
-   The measurement matrix can be used to obtain confidences for estimation
-   results. Note that the sub-matrices for estimated initial states
+   Note that the sub-matrices for estimated initial states
    of all experiments are stored in compressed form in one column, even
-   though individual initial states are estimated for each experiment.
+   though individual initial states are being estimated for each experiment.
+
+   Some simple quality measures are directly calculated in order to support
+   a first interpretation of estimation results. These are the precision matrix
+   @f[
+   P = (M^TM)^{-1},
+   @f]
+   and the covariance matrix
+   @f[
+   COV = s_R^2 P, \qquad s_R^2=\frac{J}{n}, \qquad
+     n=\mbox{dim}(I_y)(K+1) - \mbox{dim}(I_p) - N_{ex}\mbox{dim}(I_{x^0}) - 1,
+   @f]
+   assuming that the residual variance @f$s_R^2@f$ is equal to the
+   measurement variance. Last but not least confidence intervals for
+   estimated parameters and initial states @f$px^0@f$ are obtained
+   applying the t-Test:
+   @f[
+     px^0_{confidence}\ =\ |px^0_{estimated} - px^0_{actual}|\ = \
+       px_{nomainal} t_{\alpha/2,n}\sqrt{\mbox{diag(COV)}}, \qquad
+       \alpha=0.05.
+   @f]
  */
 class Prg_SFunctionEst: public Prg_SFunction {
 
@@ -188,7 +207,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
   Omu_VariableVec _mdl_x;	///< state bounds
 
   IVECP		_mdl_p_active;	///< indicate estimated parameters
+  VECP		_mdl_p_confidence;///< confidence intervals for est parameters
   IVECP		_mdl_x0_active; ///< indicate estimated states
+  VECP		_mdl_x0_confidence;///< confidence intervals for est x0
   VECP		_mdl_der_x0_min;///< minimum for time derivative of x0
   VECP		_mdl_der_x0_max;///< maximum for time derivative of x0
   IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
@@ -214,7 +235,10 @@ class Prg_SFunctionEst: public Prg_SFunction {
   MATP	_ys_ref;	///< reference values for active outputs
 
   // confidence things
+  double _ssr;		///< sum of squared output residuals
   MATP 	_M;		///< measurement matrix M=dy/d(p,x0)
+  MATP 	_P;		///< precision matrix P=(M^TM)^(-1)
+  MATP 	_COV;		///< covariance matrix COV=
   MATP 	_dydx;		///< help variable dy/dx
   MATP 	_dxdpx0;	///< help variable dx/d(p,x0)
   MATP 	_dydpx0;	///< help variable dy/d(p,x0)
@@ -297,6 +321,12 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// measurement matrix M=dy/d(p,x0) (size: (KK+1)*ny . np+nx0)
   const MATP M() const {return _M;}
 
+  /// precision matrix P=(M^TM)^(-1) (size: np+nx0 . np+nx0)
+  const MATP P() const {return _P;}
+
+  /// covariance matrix (size: np+nx0 . np+nx0)
+  const MATP COV() const {return _COV;}
+
   //@}
 
   /**
@@ -317,6 +347,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// indicate estimated parameters
   const IVECP mdl_p_active() const {return _mdl_p_active;}
 
+  /// confidence intervals of estimated parameters
+  const VECP mdl_p_confidence() const {return _mdl_p_confidence;}
+
   /// nominal parameter values (for scaling)
   const VECP mdl_p_nominal() const {return _mdl_p_nominal;}
 
@@ -332,6 +365,10 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   /// indicate estimated initial states
   const IVECP mdl_x0_active() const {return _mdl_x0_active;}
+
+  /// confidence intervals of estimated initial states,
+  /// averaged over multiple experiments
+  const VECP mdl_x0_confidence() const {return _mdl_x0_confidence;}
 
   /// minimum for time derivative of x0  
   const VECP mdl_der_x0_min() const {return _mdl_der_x0_min;}
@@ -387,6 +424,8 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// set estimated parameters
   void set_mdl_p_active(const IVECP v) {iv_copy_elements(v, _mdl_p_active);}
 
+  // confidence intervals are read only
+
   /// set nominal parameters
   void set_mdl_p_nominal(const VECP v) {v_copy_elements(v, _mdl_p_nominal);}
 
@@ -400,6 +439,8 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   /// set estimated initial states
   void set_mdl_x0_active(const IVECP v) {iv_copy_elements(v, _mdl_x0_active);}
+
+  // confidence intervals are read only
 
   /// set minimum for dx0dt
   void set_mdl_der_x0_min(const VECP v) {v_copy_elements(v, _mdl_der_x0_min);}

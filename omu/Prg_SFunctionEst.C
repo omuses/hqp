@@ -36,6 +36,8 @@
 #include <If_Int.h>
 #include <If_IntVec.h>
 
+#include <meschach/matrix2.h> // for confidence intervals
+
 // redefine assert to throw an error instead of aborting
 #undef assert
 #define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
@@ -60,7 +62,9 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_np = 0;
 
   _mdl_p_active = iv_get(_mdl_np);
+  _mdl_p_confidence = v_get(_mdl_np);
   _mdl_x0_active = iv_get(_mdl_nx);
+  _mdl_x0_confidence = v_get(_mdl_nx);
   _mdl_der_x0_min = v_get(_mdl_nx);
   _mdl_der_x0_max = v_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
@@ -69,7 +73,9 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
   iv_zero(_mdl_p_active);
+  v_zero(_mdl_p_confidence);
   iv_zero(_mdl_x0_active);
+  v_zero(_mdl_x0_confidence);
   v_set(_mdl_der_x0_min, -Inf);
   v_set(_mdl_der_x0_max, Inf);
   iv_set(_mdl_u_order, 1);
@@ -93,7 +99,10 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_ys = m_get(_KK+1, _mdl_ny);
   _ys_ref = m_get(_KK+1, 1);
 
+  _ssr = 0.0;
   _M = m_resize(m_get(1, 1), (_KK+1)*_ny, _np+_nx0);
+  _P = m_resize(m_get(1, 1), _np+_nx0, _np+_nx0);
+  _COV = m_resize(m_get(1, 1), _np+_nx0, _np+_nx0);
   _dydx = m_resize(m_get(1, 1), _ny, _nx);
   _dxdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
   _dydpx0 = m_resize(m_get(1, 1), _ny, _np+_nx0);
@@ -104,6 +113,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_max)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_p_active)));
+  _ifList.append(new If_RealVec(GET_CB(const VECP, "", mdl_p_confidence)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_nominal)));
 
   // make mdl_x0 read only as mdl_x0s should be used
@@ -112,6 +122,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_max)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x0_active)));
+  _ifList.append(new If_RealVec(GET_CB(const VECP, "", mdl_x0_confidence)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_max)));
 
@@ -133,6 +144,8 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "prg_", ys_ref)));
   _ifList.append(new If_RealMat(GET_CB(const MATP, "prg_", M)));
+  _ifList.append(new If_RealMat(GET_CB(const MATP, "prg_", P)));
+  _ifList.append(new If_RealMat(GET_CB(const MATP, "prg_", COV)));
 }
 
 //--------------------------------------------------------------------------
@@ -143,6 +156,8 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   m_free(_dydpx0);
   m_free(_dxdpx0);
   m_free(_dydx);
+  m_free(_COV);
+  m_free(_P);
   m_free(_M);
   m_free(_ys_ref);
   m_free(_mdl_ys);
@@ -150,9 +165,11 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   m_free(_mdl_us);
   m_free(_mdl_x0s);
   iv_free(_exs);
+  v_free(_mdl_p_confidence);
   iv_free(_mdl_p_active);
   v_free(_mdl_der_x0_max);
   v_free(_mdl_der_x0_min);
+  v_free(_mdl_x0_confidence);
   iv_free(_mdl_x0_active);
   iv_free(_mdl_u_order);
   iv_free(_mdl_y_active);
@@ -243,7 +260,9 @@ void Prg_SFunctionEst::setup_model()
   _mdl_x.alloc(_mdl_nx);
 
   iv_resize(_mdl_p_active, _mdl_np);
+  v_resize(_mdl_p_confidence, _mdl_np);
   iv_resize(_mdl_x0_active, _mdl_nx);
+  v_resize(_mdl_x0_confidence, _mdl_nx);
   v_resize(_mdl_der_x0_min, _mdl_nx);
   v_resize(_mdl_der_x0_max, _mdl_nx);
   iv_resize(_mdl_u_order, _mdl_nu);
@@ -252,7 +271,9 @@ void Prg_SFunctionEst::setup_model()
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   iv_zero(_mdl_p_active);
+  v_zero(_mdl_p_confidence);
   iv_zero(_mdl_x0_active);
+  v_zero(_mdl_x0_confidence);
   v_set(_mdl_der_x0_min, -Inf);
   v_set(_mdl_der_x0_max, Inf);
   iv_set(_mdl_u_order, 1);
@@ -356,11 +377,17 @@ void Prg_SFunctionEst::setup(int k,
     m_resize(_ys_ref, _KK+1, _ny);
 
     m_resize(_M, (_KK+1)*_ny, _np+_nx0);
+    m_resize(_P, _np+_nx0, _np+_nx0);
+    m_resize(_COV, _np+_nx0, _np+_nx0);
     m_resize(_dydx, _ny, _nx);
     m_resize(_dxdpx0, _nx, _np+_nx0);
     m_resize(_dydpx0, _ny, _np+_nx0);
     m_resize(_dxfdx, _nx, _nx);
     m_resize(_dxfdpx0, _nx, _np+_nx0);
+    m_zero(_M);
+    m_zero(_P);
+    m_zero(_COV);
+    _ssr = 0.0;
   }
 
   if (!_multistage && _nx0 > 0)
@@ -690,7 +717,7 @@ void Prg_SFunctionEst::update(int kk,
     }
 
     //
-    // compute Measurement matrix
+    // compute Measurement, Precision and Covariance matrix
     //
 
     // build dx/d(p,x0)
@@ -754,6 +781,50 @@ void Prg_SFunctionEst::update(int kk,
       else
 	// if not multistage, then dxf/dx == dxf/d(p,x0) as x == (p,x0)
 	m_copy(_dxfdx, _dxfdpx0);
+    }
+
+    // store sum of residuals
+    if (kk == 0)
+      _ssr = 0.0;
+    _ssr += f0;
+
+    // obtain precision matrix, covariance matrix, and confidence intervals
+    if (kk == _KK) {
+      static double tn[] = {1, 5, 10, 15, 20, 30, 40,
+			    50, 60, 80, 100, 200, 500, 100000};
+      static double tv[] = {12.706, 2.571, 2.228, 2.131, 2.086, 2.042, 2.021,
+			    2.009, 2.000, 1.990,  1.984, 1.972, 1.965, 1.960};
+      double n = _ny*(_KK+1) - _np - _nex*_nx0 - 1;
+      double t_f2_95;
+      if (n < 1)
+	t_f2_95 = Inf;
+      else if (n >= tn[sizeof(tn)/sizeof(double)-1])
+	t_f2_95 = tv[sizeof(tv)/sizeof(double)-1];
+      else {
+	for (i = 0; i < sizeof(tn)/sizeof(double)-1; i++) {
+	  if (tn[i] <= n && n <= tn[i+1])
+	    break;
+	}
+	double rn = (n - tn[i]) / (tn[i+1] - tn[i]);
+	t_f2_95 = tv[i] * (1.0 - rn) + tv[i+1] * rn;
+      }
+      mtrm_mlt(_M, _M, _COV);
+      m_inverse(_COV, _P);
+      sm_mlt(_ssr/n, _P, _COV);
+      for (i = 0, idx = 0; idx < _mdl_np; idx++) {
+	if (_mdl_p_active[idx]) {
+	  _mdl_p_confidence[idx]
+	    = t_f2_95 * sqrt(_COV[i][i]) * _mdl_p_nominal[idx];
+	  i++;
+	}
+      }
+      for (idx = 0; idx < _mdl_nx; idx++) {
+	if (_mdl_x0_active[idx]) {
+	  _mdl_x0_confidence[idx]
+	    = t_f2_95 * sqrt(_COV[i][i]) * _mdl_x_nominal[idx];
+	  i++;
+	}
+      }
     }
   }
 }

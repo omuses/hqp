@@ -118,8 +118,8 @@ puts "Objective: [prg_f]"
 puts "Obj-evals: [prg_fbd_evals]"
 
 puts "\nEstimated"
-puts "Parameters    : [mdl_p]"
-puts "Initial states: [mdl_x0s]"
+puts "Parameters    : [mdl_p] +- [mdl_p_confidence]"
+puts "Initial states: [mdl_x0s] +- [mdl_x0_confidence]"
 puts "Residuum      : [prg_f]"
 puts ""
 

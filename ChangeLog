@@ -1,3 +1,8 @@
+2003-07-25    <rfranke>
+
+	* omu/Prg_SFunctionEst.[hC], odc/dic_mex_sfunction_est.tcl:
+	  introduce calculation of confidences together with measurement matrix
+
 2003-07-22    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]:
