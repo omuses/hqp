@@ -1,5 +1,7 @@
 2002-05-11    <rfranke>
 
+	* odc/dic_mex_sfunction.tcl: add example for Prg_SFunctionOpt
+
 	* omu/Prg_SFunctionEst.C:
 	  use Omu_VariableVec instead of individual VECP's
 	  for min, max, and values
