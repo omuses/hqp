@@ -46,7 +46,7 @@ HQP_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
 CXX = @CXX@
 CC = @CC@
 
-CFLAGS = @GFLAG@ @WFLAG@ -DDEBUG \
+CFLAGS = @WFLAG@ -DDEBUG \
          $(HQP_INCDIR) $(TCL_INCDIR) 
 
 LDFLAGS = $(HQP_LIBDIR) $(TCL_LIBDIR) 

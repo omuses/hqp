@@ -56,7 +56,7 @@ class TVECP {
     {
 #ifdef DEBUG
       if ( ( k < 0 ) || ( k > _kmax ) )
-	error(E_BOUNDS,"TVECP::operator[]");
+	m_error(E_BOUNDS,"TVECP::operator[]");
 #endif
       return _x[k];
     }
@@ -81,7 +81,7 @@ class TIVECP {
     {
 #ifdef DEBUG
       if ( ( k < 0 ) || ( k > _kmax ) )
-	error(E_BOUNDS,"TIVECP::operator[]");
+	m_error(E_BOUNDS,"TIVECP::operator[]");
 #endif
       return _x[k];
     }
@@ -106,7 +106,7 @@ class TPERMP {
     {
 #ifdef DEBUG
       if ( ( k < 0 ) || ( k > _kmax ) )
-	error(E_BOUNDS,"TPERMP::operator[]");
+	m_error(E_BOUNDS,"TPERMP::operator[]");
 #endif
       return _x[k];
     }
@@ -131,7 +131,7 @@ class TMATP {
     {
 #ifdef DEBUG
       if ( ( k < 0 ) || ( k > _kmax ) )
-	error(E_BOUNDS,"TMATP::operator[]");
+	m_error(E_BOUNDS,"TMATP::operator[]");
 #endif
       return _x[k];
     }

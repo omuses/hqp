@@ -1,3 +1,27 @@
+2002-10-10    <rfranke>
+
+	* configure.in: change version to 1.8.2d
+
+	* configure.in: introduce --enable-symbols for compiling with
+	  debug flags and -DDEBUG
+	* hqp_docp/Makefile.in, odc/Makefile.in (CFLAGS), configure.in:
+	  take out @GFLAG@ as this is configured new with --enable-symbols
+
+	* hqp/meschext_ea.h, hqp/t_mesch.h: rename error to m_error
+
+	* omu/Prg_SFunctionEst.[hC]: remove _mdl_args_p_idx and _mx_p;
+	  instead all double valued model parameters in _mx_args are
+	  concatenated to one vector for estimation
+	* odc/dic_mex_sfunction_est.tcl: adapt accordingly
+
+	* omu/Prg_SFunctionEst.C: for non-multistage: take out states from
+	  estimation problem formulation to avoid sensitivity calculation
+
+	* omu/Prg_SFunctionOpt.[hC]: introduce _t_nominal for time scaling
+
+	* omu/Prg_SFunction.C (setup_sfun): add call to
+	  mdlInitializeConditions to get default initial states
+	
 2002-06-18    <rfranke>
 
 	* configure.in: change version to 1.8.1, add tag release-1-8-1

@@ -5,7 +5,7 @@ AC_INIT(hqp/Hqp.h)
 
 MAJOR_VERSION=1
 MINOR_VERSION=8
-PATCHLEVEL=1
+PATCHLEVEL=2d
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL}
 
@@ -86,22 +86,35 @@ fi
 # 	Compiler and flags
 # -----------------------------------------------------------------------
 
+AC_MSG_CHECKING([--enable-symbols])
+AC_ARG_ENABLE(symbols,
+    [  --enable-symbols      enable symbols for debugging],
+    [hqp_symbols=$enableval], [hqp_symbols=no])
+AC_MSG_RESULT($hqp_symbols)
+
 AC_PROG_CC
-CFLAGS=-O2
-CXXFLAGS=-O2
+AC_PROG_CXX
 WFLAG="-W"
-GFLAG="-g"
+CFLAGS="-O2"
+CXXFLAGS="-O2"
+if test "$hqp_symbols" = yes; then
+  CFLAGS="-g -DDEBUG"
+  CXXFLAGS="-g -DDEBUG"
+fi
 if test "$CC" = cl; then
   CC="cl -nologo"
+fi
+if test "$CC" = "cl -nologo"; then
+  WFLAG="-W3"
+  if test "$hqp_symbols" = yes; then
+    CFLAGS="-ZI -DDEBUG"
+    CXXFLAGS="-ZI -DDEBUG"
+  fi
   CXX=$CC
   CXXFLAGS="-TP $CXXFLAGS"
-  WFLAG="-W3"
-  GFLAG=""
 fi
-AC_PROG_CXX
 
 AC_SUBST(WFLAG)
-AC_SUBST(GFLAG)
 
 AC_MSG_CHECKING([for u_int used by Meschach])
 AC_LANG_C
@@ -256,13 +269,17 @@ if test $uname_found = "yes" ; then
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         MKLIB_SUFFIX=".dll"
-        LD="link -dll -nologo -nodefaultlib:msvcrt -out:"
+        LD="link -dll -nologo -nodefaultlib:msvcrt"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
 	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
 	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
       else
-        LD="link -lib -nologo -nodefaultlib:msvcrt -out:"
+        LD="link -lib -nologo -nodefaultlib:msvcrt"
       fi
+      if test "$hqp_symbols" = "yes"; then
+	LD="$LD -debug"
+      fi
+      LD="$LD -out:"
       AC_DEFINE(IF_CLASS_STATIC)
       LDFLAGS_START="-link -nodefaultlib:msvcrt"
       OBJ_SUFFIX=".obj"

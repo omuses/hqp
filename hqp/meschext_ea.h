@@ -41,31 +41,31 @@ extern "C" {
 /* returns x[i] */
 #undef  v_entry
 #define	v_entry(x,i)	(((int) (i) < 0 || (int) (i) >= (int) (x)->dim) ? \
-			 error(E_BOUNDS,"v_entry"), 0.0 : (x)->ve[i] )
+			 m_error(E_BOUNDS,"v_entry"), 0.0 : (x)->ve[i] )
 
 /* x[i] <- val */
 #undef	v_set_val
 #define	v_set_val(x,i,val) ((x)->ve[i] = ((int) (i) < 0 || \
 					  (int) (i) >= (int) (x)->dim) ? \
-			    error(E_BOUNDS,"v_set_val"), 0.0 : (val))
+			    m_error(E_BOUNDS,"v_set_val"), 0.0 : (val))
 
 /* x[i] <- x[i] + val */
 #undef	v_add_val
 #define	v_add_val(x,i,val) ((x)->ve[i] += ((int) (i) < 0 || \
 					   (int) (i) >= (int) (x)->dim) ? \
-			    error(E_BOUNDS,"v_add_val"), 0.0 : (val))
+			    m_error(E_BOUNDS,"v_add_val"), 0.0 : (val))
 
 /* x[i] <- x[i] - val */
 #undef  v_sub_val
 #define	v_sub_val(x,i,val) ((x)->ve[i] -= ((int) (i) < 0 || \
 					   (int) (i) >= (int) (x)->dim) ? \
-			    error(E_BOUNDS,"v_sub_val"), 0.0 : (val))
+			    m_error(E_BOUNDS,"v_sub_val"), 0.0 : (val))
 
 /* returns A[i][j] */
 #undef  m_entry
 #define	m_entry(A,i,j)	(((int) (i) < 0 || (int) (i) >= (int) (A)->m || \
 			  (int) (j) < 0 || (int) (j) >= (int) (A)->n) ? \
-			 error(E_BOUNDS,"m_entry"), 0.0 : (A)->me[i][j] )
+			 m_error(E_BOUNDS,"m_entry"), 0.0 : (A)->me[i][j] )
 
 /* A[i][j] <- val */
 #undef  m_set_val
@@ -73,7 +73,7 @@ extern "C" {
 					       (int) (i) >= (int) (A)->m || \
 					       (int) (j) < 0 || \
 					       (int) (j) >= (int) (A)->n) ? \
-			      error(E_BOUNDS,"m_set_val"), 0.0 : (val) )
+			      m_error(E_BOUNDS,"m_set_val"), 0.0 : (val) )
 
 /* A[i][j] <- A[i][j] + val */
 #undef  m_add_val
@@ -81,7 +81,7 @@ extern "C" {
 						(int) (i) >= (int) (A)->m || \
 						(int) (j) < 0 || \
 						(int) (j) >= (int) (A)->n) ? \
-			      error(E_BOUNDS,"m_add_val"), 0.0 : (val) )
+			      m_error(E_BOUNDS,"m_add_val"), 0.0 : (val) )
 
 /* A[i][j] <- A[i][j] - val */
 #undef  m_sub_val
@@ -89,26 +89,26 @@ extern "C" {
 						(int) (i) >= (int) (A)->m || \
 						(int) (j) < 0 || \
 						(int) (j) >= (int) (A)->n) ? \
-			      error(E_BOUNDS,"m_sub_val"), 0.0 : (val) )
+			      m_error(E_BOUNDS,"m_sub_val"), 0.0 : (val) )
 
 /* returns x[i] */
 #define	iv_entry(x,i)	(((int) (i) < 0 || (int) (i) >= (int) (x)->dim) ? \
-			 error(E_BOUNDS,"iv_entry"), 0 : (x)->ive[i] )
+			 m_error(E_BOUNDS,"iv_entry"), 0 : (x)->ive[i] )
 
 /* x[i] <- val */
 #define	iv_set_val(x,i,val) ((x)->ive[i] = ((int) (i) < 0 || \
 					    (int) (i) >= (int) (x)->dim) ? \
-			    error(E_BOUNDS,"iv_set_val"), 0 : (val))
+			    m_error(E_BOUNDS,"iv_set_val"), 0 : (val))
 
 /* x[i] <- x[i] + val */
 #define	iv_add_val(x,i,val) ((x)->ive[i] += ((int) (i) < 0 || \
 					     (int) (i) >= (int) (x)->dim) ? \
-			    error(E_BOUNDS,"iv_add_val"), 0 : (val))
+			    m_error(E_BOUNDS,"iv_add_val"), 0 : (val))
 
 /* x[i] <- x[i] - val */
 #define	iv_sub_val(x,i,val) ((x)->ive[i] -= ((int) (i) < 0 || \
 					     (int) (i) >= (int) (x)->dim) ? \
-			    error(E_BOUNDS,"iv_sub_val"), 0 : (val))
+			    m_error(E_BOUNDS,"iv_sub_val"), 0 : (val))
 
 #else
 
