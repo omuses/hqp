@@ -25,7 +25,7 @@ distclean: clean
 
 LIB_DIR = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include
-INC_DIR = $(INC_DIR_ROOT)/omuses
+INC_DIR = $(INC_DIR_ROOT)/hqp
 install:
 	@if test ! -d $(LIB_DIR); then mkdirhier $(LIB_DIR); fi
 	$(INSTALL) lib/libhqp$(LIB_SUFFIX) lib/libomu$(LIB_SUFFIX) $(LIB_DIR)

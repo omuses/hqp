@@ -29,13 +29,13 @@ RFLAG = @RFLAG@
 #
 # paths 
 #
-OMU_PREFIX = @prefix@
+HQP_PREFIX = @prefix@
 
-OMU_INCDIR = -I../meschach -I../iftcl -I../hqp \
-             -I${OMU_PREFIX}/include/omuses
+HQP_INCDIR = -I../meschach -I../iftcl -I../hqp \
+             -I${HQP_PREFIX}/include/hqp
 
-OMU_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
-             $(LFLAG)${OMU_PREFIX}/lib $(RFLAG)${OMU_PREFIX}/lib
+HQP_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
+             $(LFLAG)${HQP_PREFIX}/lib $(RFLAG)${HQP_PREFIX}/lib
 
 #
 # compiler and flags
@@ -45,9 +45,9 @@ CXX = @CXX@
 CC = @CC@
 
 CFLAGS = @GFLAG@ @WFLAG@ -DDEBUG \
-         $(OMU_INCDIR) $(TCL_INCDIR)
+         $(HQP_INCDIR) $(TCL_INCDIR)
 
-LDFLAGS = $(OMU_LIBDIR) $(TCL_LIBDIR)
+LDFLAGS = $(HQP_LIBDIR) $(TCL_LIBDIR)
 
 #
 # machine independent part
