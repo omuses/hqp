@@ -37,6 +37,8 @@
 
 // definitions expected in S-functions (only a subset is supported)
 #define SS_OPTION_EXCEPTION_FREE_CODE 	0x0001
+#define SS_STDIO_AVAILABLE 		true
+
 #define CONTINUOUS_SAMPLE_TIME 		0.0
 
 // Macros to access SimStruct (only a subset is supported)
@@ -102,10 +104,15 @@
 #define ssGetT(S)			(S)->getT()
 #define ssSetModelName(S, name) 	(S)->setModelName(name)
 #define ssGetModelName(S) 		(S)->getModelName()
+#define ssSetPath(S, name) 		(S)->setPath(name)
+#define ssGetPath(S) 			(S)->getPath()
 #define ssSetVersion(S, ver) 		(S)->setVersion(ver)
 #define ssGetVersion(S) 		(S)->getVersion()
 #define ssSetErrorStatus(S, msg)	(S)->setErrorStatus(msg)
 #define ssGetErrorStatus(S)		(S)->getErrorStatus()
+#define ssWarning(S, msg) \
+  printf("Warning: S-function \"%s\": %s\n", ssGetPath(S), msg)
+#define ssPrintf 			printf
 
 /**
  * SimStruct for HQP.
@@ -156,7 +163,8 @@ protected:
   real_T	*_y_ext;	// externally provided memory for outputs
   real_T	*_rwork_ext;	// externally provided memory for work array
 
-  const char_T 	*_model_name; 	// name of this model
+  const char_T 	*_model_name; 	// relative name of this model
+  const char_T 	*_path; 	// absolute name of this model
   int_T 	_version; 	// version of this model
   const char_T 	*_error_msg;	// used to report errors from S-function
 
@@ -185,7 +193,8 @@ public:
     _y_ext = NULL;
     _rwork_ext = NULL;
 
-    _model_name = "Hix_SimStruct";
+    _model_name = "Hxi_SimStruct";
+    _path = "Hxi_SimStruct";
     _version = 1;
     _error_msg = NULL;
   }
@@ -539,13 +548,21 @@ public:
     return _t;
   }
 
-  /** Set model name. */
+  /** Set relative model name. */
   const char_T *setModelName(const char_T *name) {
     return _model_name = name;
   }
-  /** Get model name. */
+  /** Get relative model name. */
   const char_T *getModelName() const {
     return _model_name;
+  }
+  /** Set absolute model name. */
+  const char_T *setPath(const char_T *path) {
+    return _path = path;
+  }
+  /** Get absolute model name. */
+  const char_T *getPath() const {
+    return _path;
   }
   /** Set model version. */
   int_T setVersion(int_T version) {

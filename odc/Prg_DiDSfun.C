@@ -62,9 +62,9 @@ void Prg_DiDSfun::setup_stages(IVECP ks, VECP ts)
   mdlInitializeSizes(_S);
 
   // check for initialization errors
-  const char *error_msg = ssGetErrorStatus(_S);
-  if (error_msg) {
-    cerr << "S-function initialization error: " << error_msg << "\n";
+  if (ssGetErrorStatus(_S)) {
+    cerr << "S-function initialization error: "
+	 << ssGetErrorStatus(_S) << "\n";
     exit(-1);
   }
   if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
