@@ -13,7 +13,7 @@ if {[catch {set tk_version}]
   puts stderr "Crane plots disabled"
 } else {
   set plots 1
-  namespace import blt::*
+  namespace import blt::graph
   option add *symbol {}
 }
 

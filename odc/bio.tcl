@@ -12,7 +12,7 @@ if { [catch {set tk_version}] || [catch {package require BLT}] } {
     puts stderr "plots disabled"
 } else {
     set plots 1
-    namespace import blt::*
+    namespace import blt::graph
     option add *symbol {}
 }
 

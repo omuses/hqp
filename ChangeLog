@@ -1,3 +1,9 @@
+2003-11-26    <e_arnold>
+
+	* configure.in: DEVELOPMENT_VERSION=yes
+	
+	* odc/crane.tcl, odc/bio.tcl: changes for BLT 3.0
+	
 2003-11-22    <rfranke>
 
 	* configure.in: change version to 1.9.0, add tag release-1-9-0
