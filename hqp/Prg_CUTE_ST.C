@@ -40,6 +40,35 @@
 #include <If_Method.h>
 #include <If_Class.h>
 
+typedef void
+(csize_t)(fint *N, fint *M, fint *NNZJ, fint *NNZH);
+typedef void
+(cinit_t)(fint *N, fint *M, freal *X0, freal *BL, freal *BU, freal *INF,
+	  fbool *EQUATN, fbool *LINEAR, freal *V0, freal *CL, freal *CU,
+	  fbool *EFIRST, fbool *LFIRST, fbool *NVFRST);
+typedef void
+(cfn_t)(const fint *N, const fint *M, const freal *X,
+	freal *F, const fint *LC, freal *C);
+typedef void 
+(csgr_t)(const fint *N, const fint *M, const fbool *GRLAGF,
+	 const fint *LV, const freal *V, const freal *X,
+	 fint *NNZSCJ, const fint *LSCJAC, freal *SCJAC,
+	 fint *INDVAR, fint *INDFUN);
+typedef void 
+(cscifg_t)(const fint *N, const fint *I, const freal *X,
+	   freal *CI, fint *NNZSGC, const fint *LSGCI, freal *SGCI,
+	   fint *IVSGCI, fbool *GRAD);
+typedef void 
+(csgreh_t)(const fint *N, const fint *M, const freal *X, const fbool *GRLAGF,
+	   const fint *LV, const freal *V,
+	   fint *NNZSCJ, const fint *LSCJAC, freal *SCJAC,
+	   fint *INDVAR, fint *INDFUN, fint *NE, fint *IRNHI,
+	   const fint *LIRNHI, const fint *LE, fint *IPRNHI,
+	   freal *HI, const fint *LHI, fint *IPRHI, const fbool *BYROWS);
+typedef void
+(cwrtsn_t)(const fint *N, const fint *M, const char *header,
+	   const freal *F, const freal *X, const freal *V);
+
 extern "C" {
   csize_t csize_;
   cinit_t cinit_;
@@ -49,6 +78,15 @@ extern "C" {
   csgreh_t csgreh_;
   cwrtsn_t cwrtsn_;
 }
+
+// pointers to external provided functions
+static csize_t	*_csize_p;
+static cinit_t	*_cinit_p;
+static cfn_t	*_cfn_p;
+static csgr_t	*_csgr_p;
+static cscifg_t	*_cscifg_p;
+static csgreh_t	*_csgreh_p;
+static cwrtsn_t	*_cwrtsn_p;
 
 typedef If_Method<Prg_CUTE_ST> If_Cmd;
 

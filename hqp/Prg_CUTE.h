@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -46,54 +46,13 @@
 #define fbool int
 #endif
 
-typedef void
-(csize_t)(fint *N, fint *M, fint *NNZJ, fint *NNZH);
-typedef void
-(cinit_t)(fint *N, fint *M, freal *X0, freal *BL, freal *BU, freal *INF,
-	  fbool *EQUATN, fbool *LINEAR, freal *V0, freal *CL, freal *CU,
-	  fbool *EFIRST, fbool *LFIRST, fbool *NVFRST);
-typedef void
-(cfn_t)(const fint *N, const fint *M, const freal *X,
-	freal *F, const fint *LC, freal *C);
-typedef void 
-(csgr_t)(const fint *N, const fint *M, const fbool *GRLAGF,
-	 const fint *LV, const freal *V, const freal *X,
-	 fint *NNZSCJ, const fint *LSCJAC, freal *SCJAC,
-	 fint *INDVAR, fint *INDFUN);
-typedef void 
-(csgrsh_t)(const fint *N, const fint *M, const freal *X, const fbool *GRLAGF,
-	   const fint *LV, const freal *V,
-	   fint *NNZSCJ, const fint *LSCJAC, freal *SCJAC,
-	   fint *INDVAR, fint *INDFUN,
-	   fint *NNZSH, const fint *LSH, freal *SH,
-	   fint *IRNSH, fint *ICNSH);
-typedef void 
-(csgreh_t)(const fint *N, const fint *M, const freal *X, const fbool *GRLAGF,
-	   const fint *LV, const freal *V,
-	   fint *NNZSCJ, const fint *LSCJAC, freal *SCJAC,
-	   fint *INDVAR, fint *INDFUN, fint *NE, fint *IRNHI,
-	   const fint *LIRNHI, const fint *LE, fint *IPRNHI,
-	   freal *HI, const fint *LHI, fint *IPRHI, const fbool *BYROWS);
-typedef void
-(cwrtsn_t)(const fint *N, const fint *M, const char *header,
-	   const freal *F, const freal *X, const freal *V);
 
 /*
  * class declaration
  */
-
 class Prg_CUTE: public Hqp_SqpProgram {
 
  protected:
-  // pointers to external provided functions
-  csize_t	*_csize_p;
-  cinit_t	*_cinit_p;
-  cfn_t		*_cfn_p;
-  csgr_t	*_csgr_p;
-  csgrsh_t	*_csgrsh_p;
-  csgreh_t	*_csgreh_p;
-  cwrtsn_t	*_cwrtsn_p;
-
   // variables for the CUTE interface
   fint _N;
   fint _M;

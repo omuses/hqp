@@ -1,3 +1,9 @@
+2001-08-14    <rfranke>
+
+	* hqp/Prg_CUTE.[hC], hqp/Prg_CUTE_ST.[hC]:
+	  move declarations of pointers to CUTE functions from h to C files,
+	  in order to avoid repeated typedefs for CUTE and CUTE_ST
+
 2001-07-31    <rfranke>
 
 	* configure.in: change to version 1.7.9d
