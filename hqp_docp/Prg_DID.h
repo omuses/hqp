@@ -17,7 +17,7 @@
 #include <Hqp.h>
 
 /** Function that returns problem specification */
-Hqp_Docp_spec Prg_DID_spec();
+Hqp_DocpSpec Prg_DID_Spec();
 
 
 #endif

@@ -8,7 +8,7 @@ CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
           $(HQP_INCDIR) $(ADOL_INCDIR) $(OMU_DEFS)
 
 SRCS =	Omu_Init.C \
-	Hqp_Docp_stub.C \
+	Hqp_DocpStub.C \
 	Hqp_Omuses.C \
 	Omu_Variables.C \
 	Omu_Vars.C \

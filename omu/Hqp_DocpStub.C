@@ -1,11 +1,11 @@
 /*
- * Hqp_Docp_stub.C -- class definition
+ * Hqp_DocpStub.C -- class definition
  *
  * rf, 1/11/00
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -23,12 +23,12 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Hqp_Docp_stub.h"
+#include "Hqp_DocpStub.h"
 
 //-------------------------------------------------------------------------
 static void setup_horizon(void *clientdata, int &k0, int &kf)
 {
-  ((Hqp_Docp_stub *)clientdata)->setup_horizon(k0, kf);
+  ((Hqp_DocpStub *)clientdata)->setup_horizon(k0, kf);
 }
 
 //-------------------------------------------------------------------------
@@ -37,30 +37,31 @@ static void setup_vars(void *clientdata, int k,
 		       VECP u, VECP umin, VECP umax,
 		       VECP c, VECP cmin, VECP cmax)
 {
-  ((Hqp_Docp_stub *)clientdata)->setup_vars(k, x, xmin, xmax,
-					    u, umin, umax,
-					    c, cmin, cmax);
+  ((Hqp_DocpStub *)clientdata)->setup_vars(k, x, xmin, xmax,
+					   u, umin, umax,
+					   c, cmin, cmax);
 }
 
 //-------------------------------------------------------------------------
 static void setup_struct(void *clientdata, int k,
-			 VECP f0x, VECP f0u, int &f0_lin,
+			 const VECP x, const VECP u,
 			 MATP fx, MATP fu, IVECP f_lin,
+			 VECP f0x, VECP f0u, int &f0_lin,
 			 MATP cx, MATP cu, IVECP c_lin,
 			 MATP Lxx, MATP Luu, MATP Lxu)
 {
-  ((Hqp_Docp_stub *)clientdata)->setup_struct(k,
-					      f0x, f0u, f0_lin,
-					      fx, fu, f_lin,
-					      cx, cu, c_lin,
-					      Lxx, Luu, Lxu);
+  ((Hqp_DocpStub *)clientdata)->setup_struct(k, x, u,
+					     fx, fu, f_lin,
+					     f0x, f0u, f0_lin,
+					     cx, cu, c_lin,
+					     Lxx, Luu, Lxu);
 }
 
 //-------------------------------------------------------------------------
 static void init_simulation(void *clientdata, int k,
 			    VECP x, VECP u)
 {
-  ((Hqp_Docp_stub *)clientdata)->init_simulation(k, x, u);
+  ((Hqp_DocpStub *)clientdata)->init_simulation(k, x, u);
 }
 
 //-------------------------------------------------------------------------
@@ -68,7 +69,7 @@ static void update_vals(void *clientdata, int k,
 			const VECP x, const VECP u,
 			VECP f, Real &f0, VECP c)
 {
-  ((Hqp_Docp_stub *)clientdata)->update_vals(k, x, u, f, f0, c);
+  ((Hqp_DocpStub *)clientdata)->update_vals(k, x, u, f, f0, c);
 }
 
 //-------------------------------------------------------------------------
@@ -81,18 +82,18 @@ static void update_stage(void *clientdata, int k,
 			 const VECP rf, const VECP rc,
 			 MATP Lxx, MATP Luu, MATP Lxu)
 {
-  ((Hqp_Docp_stub *)clientdata)->update_stage(k, x, u, f, f0, c,
-					      fx, fu, f0x, f0u, cx, cu,
-					      rf, rc, Lxx, Luu, Lxu);
+  ((Hqp_DocpStub *)clientdata)->update_stage(k, x, u, f, f0, c,
+					     fx, fu, f0x, f0u, cx, cu,
+					     rf, rc, Lxx, Luu, Lxu);
 }
 
 //-------------------------------------------------------------------------
-Hqp_Docp_stub::Hqp_Docp_stub()
+Hqp_DocpStub::Hqp_DocpStub()
 {
   _k0 = 0;
   _kf = 0;
 
-  Hqp_Docp_spec spec;
+  Hqp_DocpSpec spec;
   spec.setup_horizon = ::setup_horizon;
   spec.setup_vars = ::setup_vars;
   spec.setup_struct = ::setup_struct;
@@ -104,27 +105,27 @@ Hqp_Docp_stub::Hqp_Docp_stub()
 }
 
 //-------------------------------------------------------------------------
-Hqp_Docp_stub::~Hqp_Docp_stub()
+Hqp_DocpStub::~Hqp_DocpStub()
 {
   Hqp_Docp_destroy(_handle);
 }
 
 //-------------------------------------------------------------------------
-void Hqp_Docp_stub::horizon(int k0, int kf)
+void Hqp_DocpStub::horizon(int k0, int kf)
 {
   _k0 = k0;
   _kf = kf;
 }
 
 //-------------------------------------------------------------------------
-void Hqp_Docp_stub::setup_horizon(int &k0, int &kf)
+void Hqp_DocpStub::setup_horizon(int &k0, int &kf)
 {
   k0 = _k0;
   kf = _kf;
 }
 
 //-------------------------------------------------------------------------
-void Hqp_Docp_stub::alloc_vars(VECP v, VECP vmin, VECP vmax, int n)
+void Hqp_DocpStub::alloc_vars(VECP v, VECP vmin, VECP vmax, int n)
 {
   Hqp_Docp_alloc_vars(_handle, v, vmin, vmax, n);
 }

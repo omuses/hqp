@@ -17,7 +17,7 @@
 #include "Prg_DID.h"
 
 /** Handle used for calls to Hqp Docp instance */
-Hqp_Docp_handle theHqp_Docp_handle;
+Hqp_DocpHandle theHqp_DocpHandle;
 
 /**
  * Simple main function.
@@ -32,10 +32,10 @@ int main(int, char *[])
   assert(If_SizeOfReal() == sizeof(Real));
 
   // Create Docp specification from problem as declared in file Prg_DID.h
-  Hqp_Docp_spec spec = Prg_DID_spec();
+  Hqp_DocpSpec spec = Prg_DID_Spec();
 
   // Create Hqp_Docp and register callback functions
-  theHqp_Docp_handle = Hqp_Docp_create(spec, NULL);
+  theHqp_DocpHandle = Hqp_Docp_create(spec, NULL);
 
   // Configure solver
   printf("Configure solver\n");
@@ -87,7 +87,7 @@ int main(int, char *[])
   printf("Line steps: %d\n", steps);
 
   // Destroy Hqp_Docp
-  Hqp_Docp_destroy(theHqp_Docp_handle);
+  Hqp_Docp_destroy(theHqp_DocpHandle);
 
   return 0;
 }

@@ -1,13 +1,13 @@
 /*
- * Hqp_Docp_wrapper.h --
- * Implement an Hqp_Docp and connect it to Hqp_Docp_spec.
+ * Hqp_DocpWrapper.h --
+ * Implement an Hqp_Docp and connect it to Hqp_DocpSpec.
  *
  * rf, 10/31/00
  *
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,8 +25,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Hqp_Docp_wrapper_H
-#define Hqp_Docp_wrapper_H
+#ifndef Hqp_DocpWrapper_H
+#define Hqp_DocpWrapper_H
 
 #include <assert.h>
 
@@ -34,10 +34,10 @@
 #include "Hqp.h"
 
 //---------------------------------------
-class Hqp_Docp_wrapper: public Hqp_Docp {
+class Hqp_DocpWrapper: public Hqp_Docp {
 public:
   //----------------------------------------------------------
-  Hqp_Docp_wrapper(Hqp_Docp_spec &spec, void *clientdata)
+  Hqp_DocpWrapper(Hqp_DocpSpec &spec, void *clientdata)
   {
     // check for mandatory functions
     assert(spec.setup_horizon);
@@ -54,7 +54,7 @@ public:
   }
 
   //----------------------------------------------------------
-  ~Hqp_Docp_wrapper()
+  ~Hqp_DocpWrapper()
   {
     // clear reference to this object
     extern Hqp_SqpProgram *theSqpProgram;
@@ -62,7 +62,7 @@ public:
       theSqpProgram = NULL;
   }
 
-  // implement interface of Hqp_Docp by calling Hqp_Docp_spec
+  // implement interface of Hqp_Docp by calling Hqp_DocpSpec
   //----------------------------------------------------------
   void setup_horizon(int &k0, int &kf)
   {
@@ -82,23 +82,23 @@ public:
   }
 
   //----------------------------------------------------------
-  void setup_struct(int k,
-		    VECP f0x, VECP f0u, int &f0_lin,
+  void setup_struct(int k, const VECP x, const VECP u,
 		    MATP fx, MATP fu, IVECP f_lin,
+		    VECP f0x, VECP f0u, int &f0_lin,
 		    MATP cx, MATP cu, IVECP c_lin,
 		    MATP Lxx, MATP Luu, MATP Lxu)
   {
     if (_spec.setup_struct) {
-      (*_spec.setup_struct)(_clientdata, k,
-			    f0x, f0u, f0_lin,
+      (*_spec.setup_struct)(_clientdata, k, x, u,
 			    fx, fu, f_lin,
+			    f0x, f0u, f0_lin,
 			    cx, cu, c_lin,
 			    Lxx, Luu, Lxu);
     }
     else {
-      Hqp_Docp::setup_struct(k,
-			     f0x, f0u, f0_lin,
+      Hqp_Docp::setup_struct(k, x, u,
 			     fx, fu, f_lin,
+			     f0x, f0u, f0_lin,
 			     cx, cu, c_lin,
 			     Lxx, Luu, Lxu);
     }
@@ -143,10 +143,10 @@ public:
   }
 
   //----------------------------------------------------------
-  char *name() {return "Docp_wrapper";}
+  char *name() {return "DocpWrapper";}
 
 protected:
-  Hqp_Docp_spec		_spec;
+  Hqp_DocpSpec		_spec;
   void			*_clientdata;
 };  
 

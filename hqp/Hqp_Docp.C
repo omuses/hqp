@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -261,8 +261,9 @@ void Hqp_Docp::setup_horizon(int &, int &)
 }
 
 //-------------------------------------------------------------------------
-void Hqp_Docp::setup_struct(int, VECP, VECP, int &,
+void Hqp_Docp::setup_struct(int, const VECP, const VECP,
 			    MATP, MATP, IVECP,
+			    VECP, VECP, int &,
 			    MATP, MATP, IVECP,
 			    MATP, MATP, MATP)
 {
@@ -569,6 +570,8 @@ void Hqp_Docp::setup_qp()
     nu = _nus[k];
     nf = _f_start[k+1] - _f_start[k];
     nc = _cns_start[k+1] - _cns_start[k];
+    v_part(_x, kxu, nx, _xk);
+    v_part(_x, kxu+nx, nu, _uk);
     m_resize(fx, nf, nx);
     m_resize(fu, nf, nu);
     iv_part(_f_lin, _f_start[k], nf, &f_lin);
@@ -597,8 +600,10 @@ void Hqp_Docp::setup_qp()
     m_ones(Luu);
     m_ones(Lxu);
   
-    setup_struct(_k0+k, _s1, _s2, _f0_lin[k],
-		 fx, fu, &f_lin, cx, cu, &c_lin,
+    setup_struct(_k0+k, _xk, _uk,
+		 fx, fu, &f_lin,
+		 _s1, _s2, _f0_lin[k],
+		 cx, cu, &c_lin,
 		 Lxx, Luu, Lxu);
 
     sp_insert_mat(_qp->A, kf, kxu, fx);

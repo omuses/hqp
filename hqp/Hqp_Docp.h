@@ -16,10 +16,13 @@
  *   -- delete method init_vars
  *      (introduce additional arguments to setup_vars instead)
  *   -- provide default implementation for method init_simulation
+ *
+ * rf, 21/04/02
+ *   -- change signature of Hqp_Docp::setup_struct to common conventions
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -74,9 +77,9 @@ class Hqp_Docp: public Hqp_SqpProgram {
 			  VECP u, VECP umin, VECP umax,
 			  VECP c, VECP cmin, VECP cmax) = 0;
 
-  virtual void setup_struct(int k,
-			    VECP f0x, VECP f0u, int &f0_lin,
+  virtual void setup_struct(int k, const VECP x, const VECP u,
 			    MATP fx, MATP fu, IVECP f_lin,
+			    VECP f0x, VECP f0u, int &f0_lin,
 			    MATP cx, MATP cu, IVECP c_lin,
 			    MATP Lxx, MATP Luu, MATP Lxu);
 

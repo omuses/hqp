@@ -1,5 +1,14 @@
 2002-04-21    <rfranke>
 
+	* hqp/Hqp.h, hqp/Hqp_Docp.[hC]:	change signature of setup_struct to
+	  additionally pass independent variables xk and uk
+	* hqp/Hqp.h: rename Hqp_Docp_spec to Hqp_DocpSpec and
+	  Hqp_Docp_handle to Hqp_DocpHandle
+	* hqp/Hqp_DocpWrapper.h: rename from hqp/Hqp_Docp_wrapper.h
+	* hqp_dopc/Docp_Main.C, hqp_docp/Prg_DID.[hC]: adapt to changes
+	* omu/Hqp_DocpStub.[hC]: rename from Hqp_Docp_stub.[hC] and adapt
+	* omu/Makefile: adapt to changes
+
 	* omu/Omu_Dependents.h, omu/Omu_Deps.h:
 	let operator= return an object reference
 

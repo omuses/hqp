@@ -1,5 +1,5 @@
 /*
- * Hqp_Docp_stub.h --
+ * Hqp_DocpStub.h --
  * Client stub for Hqp_Docp interface
  *
  * rf, 10/31/00
@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,22 +25,22 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Hqp_Docp_stub_H
-#define Hqp_Docp_stub_H
+#ifndef Hqp_DocpStub_H
+#define Hqp_DocpStub_H
 
 #include <Hqp.h>
 
 //-------------------
-class Hqp_Docp_stub {
+class Hqp_DocpStub {
 
 private:
-  Hqp_Docp_handle _handle;
+  Hqp_DocpHandle _handle;
   int _k0, _kf;		// store back arguments of horizon(int, int)
 
 public:
 
-  Hqp_Docp_stub();
-  virtual ~Hqp_Docp_stub();
+  Hqp_DocpStub();
+  virtual ~Hqp_DocpStub();
 
   // methods that may be called by implementation
   //---------------------------------------------
@@ -55,9 +55,9 @@ public:
 			  VECP u, VECP umin, VECP umax,
 			  VECP c, VECP cmin, VECP cmax) = 0;
 
-  virtual void setup_struct(int k,
-			    VECP f0x, VECP f0u, int &f0_lin,
+  virtual void setup_struct(int k, const VECP x, const VECP u,
 			    MATP fx, MATP fu, IVECP f_lin,
+			    VECP f0x, VECP f0u, int &f0_lin,
 			    MATP cx, MATP cu, IVECP c_lin,
 			    MATP Lxx, MATP Luu, MATP Lxu) {}
 

@@ -45,7 +45,7 @@
 /**
  * Hold pointers to functions provided by an application using HQP.
  */
-class Hqp_Docp_spec {
+class Hqp_DocpSpec {
 public:
   /** Obligatory: setup discrete control horizon. */
   void (*setup_horizon)(void *clientdata, int &k0, int &kf);
@@ -59,8 +59,9 @@ public:
   /** Optional: setup sparse structure and mark linear constraints
       per control interval. */
   void (*setup_struct)(void *clientdata, int k,
-		       VECP f0x, VECP f0u, int &f0_lin,
+		       const VECP x, const VECP u,
 		       MATP fx, MATP fu, IVECP f_lin,
+		       VECP f0x, VECP f0u, int &f0_lin,
 		       MATP cx, MATP cu, IVECP c_lin,
 		       MATP Lxx, MATP Luu, MATP Lxu);
 
@@ -84,7 +85,7 @@ public:
 		       MATP Lxx, MATP Luu, MATP Lxu);
 
   /** Constructor initializes all pointers with NULL. */
-  Hqp_Docp_spec() {
+  Hqp_DocpSpec() {
     setup_horizon = NULL;
     setup_vars = NULL;
     setup_struct = NULL;
@@ -98,26 +99,26 @@ public:
 class Hqp_Docp;
 
 /** Handle to address Hqp_Docp implemenation */
-typedef Hqp_Docp *Hqp_Docp_handle;
+typedef Hqp_Docp *Hqp_DocpHandle;
 
 extern "C" {
   /** Create an instance of Hqp_Docp and return handle. */
-  HQP_API Hqp_Docp_handle
-  Hqp_Docp_create(Hqp_Docp_spec &spec, void *clientdata);
+  HQP_API Hqp_DocpHandle
+  Hqp_Docp_create(Hqp_DocpSpec &spec, void *clientdata);
 
   /** Destroy an instance of Hqp_Docp */
   HQP_API void
-  Hqp_Docp_destroy(Hqp_Docp_handle handle);
+  Hqp_Docp_destroy(Hqp_DocpHandle handle);
 
   /** Service routine for allocating vectors. */
   HQP_API void
-  Hqp_Docp_alloc_vars(Hqp_Docp_handle handle,
+  Hqp_Docp_alloc_vars(Hqp_DocpHandle handle,
 		      VECP v, VECP vmin, VECP vmax, int n);
 
   /** Default implementation for updating gradients.
    *  It can be used e.g. to check against own derivatives. */
   HQP_API void
-  Hqp_Docp_update_stage(Hqp_Docp_handle handle, int k,
+  Hqp_Docp_update_stage(Hqp_DocpHandle handle, int k,
 			const VECP x, const VECP u,
 			VECP f, Real &f0, VECP c,
 			MATP fx, MATP fu,

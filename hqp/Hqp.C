@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,15 +24,15 @@
  */
 
 #include "Hqp.h"
-#include "Hqp_Docp_wrapper.h"
+#include "Hqp_DocpWrapper.h"
 
 /* declare things necessary for automatic initialization of Hqp */
 #include <If_Element.h>
 extern "C" int Hqp_Init(Tcl_Interp *);
 
 //-------------------------------------------------------------------------
-extern "C" Hqp_Docp_handle 
-Hqp_Docp_create(Hqp_Docp_spec &spec, void *clientdata)
+extern "C" Hqp_DocpHandle 
+Hqp_Docp_create(Hqp_DocpSpec &spec, void *clientdata)
 {
   // assert that mandatory functions are provided
   assert(spec.setup_horizon != NULL);
@@ -46,19 +46,19 @@ Hqp_Docp_create(Hqp_Docp_spec &spec, void *clientdata)
   }
 
   // create a Hqp_Docp
-  return new Hqp_Docp_wrapper(spec, clientdata);
+  return new Hqp_DocpWrapper(spec, clientdata);
 }
 
 //-------------------------------------------------------------------------
 extern "C" void
-Hqp_Docp_destroy(Hqp_Docp_handle handle)
+Hqp_Docp_destroy(Hqp_DocpHandle handle)
 {
   delete handle;
 }
 
 //-------------------------------------------------------------------------
 extern "C" void
-Hqp_Docp_alloc_vars(Hqp_Docp_handle handle,
+Hqp_Docp_alloc_vars(Hqp_DocpHandle handle,
 		    VECP v, VECP vmin, VECP vmax, int n)
 {
   handle->alloc_vars(v, vmin, vmax, n);
@@ -66,7 +66,7 @@ Hqp_Docp_alloc_vars(Hqp_Docp_handle handle,
 
 //-------------------------------------------------------------------------
 extern "C" void
-Hqp_Docp_update_stage(Hqp_Docp_handle handle, int k,
+Hqp_Docp_update_stage(Hqp_DocpHandle handle, int k,
 		      const VECP x, const VECP u,
 		      VECP f, Real &f0, VECP c,
 		      MATP fx, MATP fu,

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,7 @@
 #ifndef Hqp_Omuses_H
 #define Hqp_Omuses_H
 
-#include "Hqp_Docp_stub.h"
+#include "Hqp_DocpStub.h"
 
 #include <adouble.h>
 #include <If_List.h>
@@ -42,7 +42,7 @@ class Omu_DepVec;
 class Omu_Dep;
 
 //--------------------------------------------------------------------------
-class Hqp_Omuses: public Hqp_Docp_stub {
+class Hqp_Omuses: public Hqp_DocpStub {
 
  public:
 
@@ -91,9 +91,9 @@ class Hqp_Omuses: public Hqp_Docp_stub {
 		  VECP u, VECP umin, VECP umax,
 		  VECP c, VECP cmin, VECP cmax);
 
-  void setup_struct(int k,
-		    VECP f0x, VECP f0u, int &f0_lin,
+  void setup_struct(int k, const VECP x, const VECP u,
 		    MATP fx, MATP fu, IVECP f_lin,
+		    VECP f0x, VECP f0u, int &f0_lin,
 		    MATP cx, MATP cu, IVECP c_lin,
 		    MATP Lxx, MATP Luu, MATP Lxu);
 

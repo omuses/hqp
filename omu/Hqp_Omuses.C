@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -330,9 +330,9 @@ void Hqp_Omuses::init_vars(int k, VECP x, VECP u)
 
 #if 1 // new implementation calling low-level setup_struct
 //--------------------------------------------------------------------------
-void Hqp_Omuses::setup_struct(int k,
-			      VECP f0x, VECP f0u, int &f0_lin,
+void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 			      MATP fx, MATP fu, IVECP f_lin,
+			      VECP f0x, VECP f0u, int &f0_lin,
 			      MATP cx, MATP cu, IVECP c_lin,
 			      MATP Lxx, MATP Luu, MATP Lxu)
 {
@@ -477,9 +477,9 @@ void Hqp_Omuses::setup_struct(int k,
 }
 #else // old implementation
 //--------------------------------------------------------------------------
-void Hqp_Omuses::setup_struct(int k,
-			      VECP f0x, VECP f0u, int &f0_lin,
+void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 			      MATP fx, MATP fu, IVECP f_lin,
+			      VECP f0x, VECP f0u, int &f0_lin,
 			      MATP cx, MATP cu, IVECP c_lin,
 			      MATP Lxx, MATP Luu, MATP Lxu)
 {
@@ -750,9 +750,9 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 			      MATP Lxx, MATP Luu, MATP Lxu)
 {
   if (!_ad) {
-    Hqp_Docp_stub::update_stage(k, x, u, f, f0, c,
-				fx, fu, f0x, f0u, cx, cu,
-				rf, rc, Lxx, Luu, Lxu);
+    Hqp_DocpStub::update_stage(k, x, u, f, f0, c,
+			       fx, fu, f0x, f0u, cx, cu,
+			       rf, rc, Lxx, Luu, Lxu);
     return;
   }
 
