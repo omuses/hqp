@@ -30,7 +30,8 @@
 // use SS_SL_INTERNAL. This enables macros for setting up the SimStruct 
 // passed to model methods (introduced with Matlab 6.5).
 #undef MATLAB_MEX_FILE
-#define MathWorks_h
+#define MathWorks_h // Matlab 6.5
+#define SL_INTERNAL // Matlab 7.0
 #include <simulink/include/simstruc.h>
 #undef MathWorks_h
 #define MATLAB_MEX_FILE
