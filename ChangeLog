@@ -1,3 +1,9 @@
+2002-10-30    <rfranke>
+
+	* hqp/sprcm.C (pxinv_sprows, pxinv_vec): bug fix
+	  (the bug was occacionally causing a crash of matrix solvers, esp.
+	   Hqp_IpLQCOCP calling the functions)
+
 2002-10-24    <rfranke>
 
 	* omu/Omu_IntDASPK.C (realloc): bug fix in allocation of

@@ -632,7 +632,7 @@ SPMAT *pxinv_sprows(const PERM *px, const SPMAT *src, SPMAT *dst)
       }
       px->pe[i] += size;
     } while (i_new != start);
-    for (start = 0; (int)px->pe[start] >= size && start < size; start++);
+    for (start = 0; start < size && (int)px->pe[start] >= size; start++);
   } while (start < size);
 
   for (i = 0; i < size; i++)
@@ -691,7 +691,7 @@ VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst)
       }
       px->pe[i] += size;
     } while (i_new != start);
-    for (start = 0; (int)px->pe[start] >= size && start < size; start++);
+    for (start = 0; start < size && (int)px->pe[start] >= size; start++);
   } while (start < size);
 
   for (i = 0; i < size; i++)
