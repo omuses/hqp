@@ -56,18 +56,39 @@ class Omu_IntSDIRK: public Omu_Integrator {
   void init_method();
   void init_yprime_pred(MATP );
   void solve_stage(int , VECP , VECP );
+  void solve_stage_lsqr(int , VECP , VECP );
   void solve_final(VECP , VECP );
   void sensitivity();
+  void sensitivity_lsqr();
+  void mat2bandf(const MATP , int  , int , MATP );
 
   private:
 
   bool          _recalc_jac;
   bool          _stiffly_accurate;
   bool          _sens_at_once;
+  bool          _lsqr_sol;
 
   int           _output;
   int           _n_splitt_tape_eval;
   short         _tag;
+
+  /**
+   * User given semi-bandwidth of Jacobian (default: -1).
+   * If a value >= 0 is specified, then it is used instead
+   * of the automatic detection.
+   */
+  int		_jac_sbw;
+
+  /**
+   * User specification to allow banded solver (default: true).
+   * Banded solvers are used if _banded is true, _jac_sbw < 0,
+   * and if the automatic detection indicates that the problem
+   * can be solved more efficiently in this way.
+   */
+  bool		_banded;
+  bool		_banded_solver;	              // use banded solver
+  bool		_sparse_solver;	              // use sparse solver
 
   // backing store sys and current stage
   Omu_Program	*_sys;
@@ -86,6 +107,9 @@ class Omu_IntSDIRK: public Omu_Integrator {
   int           _nsteps;
 
   MATP          _irk_jac;
+  BAND          *_irk_jac_bd;
+  SPMATP        _irk_jac_sp;
+
   MATP          _irk_jacf;
 
   PERM          *_ppivot;
@@ -121,8 +145,6 @@ class Omu_IntSDIRK: public Omu_Integrator {
   double        _h;
   VECP          _err;
 
-
-
   // vectors and matrices for low level _sys->continuous callback
   VECP		_cx;
   VECP		_cu;
@@ -145,11 +167,12 @@ class Omu_IntSDIRK: public Omu_Integrator {
   MATP          _Sh;
   PERM          *_Spivot;
 
-  short         **_nz;         // sparsity pattern
-
-
   MATP          _U;
   MATP          _Z;
+
+  VECP          _vh;
+  SPMATP        _smh;
+  SPMATP        _smh1;
 
 };
 
