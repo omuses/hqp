@@ -1,5 +1,7 @@
 2002-05-10    <rfranke>
 
+	* omu/Prg_SFunction.C: initialize mdl_args with empty default
+
 	* hxi/simstruc.h, hxi/Hxi_SimStruct.h, hxi/Hxi_mxArray.h,
 	  hxi/Hxi_sfun_types.h, hxi/cg_sfun.h, hxi/Hxi_MEX_SFunction.h:
 	  introduce namespace Hxi for native implementations

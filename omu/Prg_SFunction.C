@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #define MLF_ENABLE_TRYCATCH 1
-#include <extern/include/matlab.h>
+#include <matlab.h>
 
 #include <Hxi_MEX_SFunction.h>
 
@@ -44,8 +44,14 @@ typedef If_Method<Prg_SFunction> If_Cmd;
 Prg_SFunction::Prg_SFunction()
 {
   _mdl_name = strdup("SFunction");
+
+  // initialize _mdl_args and _mx_args
   _mdl_args = strdup("");
   _mx_args = NULL;
+  char *result;
+  char *argv[] = {"mdl_args", ""};
+  mdl_args(2, argv, &result);
+
   _S = NULL;
 
   _mdl_nx = 0;

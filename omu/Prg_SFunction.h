@@ -32,6 +32,7 @@
 
 #include <If_Command.h>
 
+/** Select MEX interface to S-function */
 #define MATLAB_MEX_FILE 1
 #include <simstruc.h>
 
