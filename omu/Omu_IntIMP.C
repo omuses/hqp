@@ -4,11 +4,12 @@
  *
  * E. Arnold   1999-04-12
  *             2000-05-30 step size control
+ *             2001-08-16 prg_int_nsteps --> _stepsize
  *
  */
 
 /*
-    Copyright (C) 1999--2000  Eckhard Arnold
+    Copyright (C) 1999--2001  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -58,14 +59,12 @@ Omu_IntIMP::Omu_IntIMP()
   _y1    = v_get(1);
   _y2    = v_get(1);
 
-  _nsteps = 0;
   _modnewtonsteps = 5;
   _maxiters = 20;
   _hinit = 0.0;
   _dt = 0.0;
   _IMP = 1;
 
-  _ifList.append(new If_Int("prg_int_nsteps", &_nsteps));
   _ifList.append(new If_Int("prg_int_modnewtonsteps", &_modnewtonsteps));
   _ifList.append(new If_Int("prg_int_maxiters", &_maxiters));
   _ifList.append(new If_Real("prg_int_hinit", &_hinit));
@@ -271,22 +270,22 @@ void Omu_IntIMP::ode_solve(double tstart, VECP y, const VECP u, double tend)
 {
 
   double t, dt, err, tol, ynorm, dtnew;
-  int i, istep;
+  int i;
 
   _npar = u->dim;
   realloc();
   v_copy(u, _u);
 
-  // _stepsize overrides _nsteps
-  int nsteps = _nsteps;
-  if (_stepsize > 0.0)
-    nsteps = (int)ceil((tend - tstart) / _stepsize);
-
-  if ( nsteps > 0 ) {
-    // with fixed step size 
-    dt = (tend - tstart)/nsteps;
-    for ( istep = 0; istep < nsteps; istep++) 
-      step(tstart+istep*dt, dt, y);
+  if ( _stepsize > 0.0 ) {
+      // with fixed step size 
+      t = tstart;
+      while ( t < tend ) {
+	  dt = _stepsize;
+	  if ( t+dt > tend ) 
+	      dt = tend-t;
+	  step(t, dt, y);
+	  t += _stepsize;
+      }
   } else {
     // with step size control
     if ( _hinit > 0.0 )

@@ -1,3 +1,10 @@
+2001-08-27    <e_arnold@users.sourceforge.net>
+
+	* hqp/Hqp_HL.[hC]: different variants of initial scaling
+	* hqp/meschext_ea.[hC]: sprow_norm1() added
+	* omu/Omu_IntIMP.[hC]: remove prg_int_nsteps
+	* adol-c/SRC/avector.h: remove unused variables
+
 2001-08-14    <rfranke>
 
 	* hqp/Prg_CUTE.[hC], hqp/Prg_CUTE_ST.[hC]:

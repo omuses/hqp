@@ -12,6 +12,10 @@
  *
  * rf, 2/18/98
  *   - update_Q() gets sqp_alpha as additional argument
+ *
+ * E. Arnold, 2001-08-16 
+ *   - different variants of initial scaling (_varscale)
+ *
  */
 
 /*
@@ -51,6 +55,7 @@ class Hqp_HL {
  protected:
   If_List	_ifList;
   bool		_scale;
+  int 		_varscale;      // initial scaling (0,1,2,3)
   Real		_eps;		// ensure positive definiteness
   bool          _logging;	// print status messages
   VEC		*_rowsum;				     
@@ -67,6 +72,7 @@ class Hqp_HL {
   virtual void	update(const VEC *s, const VEC *u, Real alpha,
 		       Hqp_SqpProgram *) = 0;
 
+  void est_y(Hqp_SqpProgram *, VEC *);
   virtual void	posdef(Hqp_SqpProgram *);
 
   virtual char *name() = 0;

@@ -2,9 +2,10 @@
  * Omu_IntIMP.h --
  *   -- integrate an ODE over a stage using the implicit midpoint rule
  *
- * E. Arnold 1999-04-12
- *           2000-05-12 _rtol, _atol -> Omu_Integrator 
- *           2000-05-30 step size control
+ * E. Arnold   1999-04-12
+ *             2000-05-12 _rtol, _atol -> Omu_Integrator 
+ *             2000-05-30 step size control
+ *             2001-08-16 prg_int_nsteps --> _stepsize
  *
  */
 
@@ -66,7 +67,6 @@ class Omu_IntIMP: public Omu_IntODE {
   VECP		_y2;
 
   int           _npar;
-  int           _nsteps;
   int           _modnewtonsteps;
   int           _maxiters;
   double        _hinit;

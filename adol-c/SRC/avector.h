@@ -145,14 +145,25 @@ class badoublev
   friend adubv operator*(const badoublev &op1, const badouble &n);
   friend adubv operator*(const badouble &n, const badoublev &op1);
   /* excluded operations */
-  err_retu operator>>=(double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator >>=\n"); };
-  err_retu operator<<=(double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator <<=\n"); };
-  err_retu operator+= (double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator +=\n"); };
-  err_retu operator-= (double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator -=\n"); };
-  inline friend err_retu operator+(const badoublev &op1,double op2) {badoublev y=op1; double x=op2; return("ADOL-C error: illegal argument combination for operator +\n"); };
-  inline friend err_retu operator-(const badoublev &op1,double op2) {badoublev y=op1; double x=op2; return("ADOL-C error: illegal argument combination for operator -\n"); };
-  inline friend err_retu operator+(double op1,const badoublev &op2) {badoublev y=op2; double x=op1; return("ADOL-C error: illegal argument combination for operator +\n"); };
-  inline friend err_retu operator-(double op1,const badoublev &op2) {badoublev y=op2; double x=op1; return("ADOL-C error: illegal argument combination for operator -\n"); };
+/*----------   E. Arnold 2001-08-11   ----------
+ *  err_retu operator>>=(double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator >>=\n"); };
+ *  err_retu operator<<=(double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator <<=\n"); };
+ *  err_retu operator+= (double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator +=\n"); };
+ *  err_retu operator-= (double op1) {double x=op1; return("ADOL-C error: illegal argument combination for operator -=\n"); };
+ *  inline friend err_retu operator+(const badoublev &op1,double op2) {badoublev y=op1; double x=op2; return("ADOL-C error: illegal argument combination for operator +\n"); };
+ *  inline friend err_retu operator-(const badoublev &op1,double op2) {badoublev y=op1; double x=op2; return("ADOL-C error: illegal argument combination for operator -\n"); };
+ *  inline friend err_retu operator+(double op1,const badoublev &op2) {badoublev y=op2; double x=op1; return("ADOL-C error: illegal argument combination for operator +\n"); };
+ *  inline friend err_retu operator-(double op1,const badoublev &op2) {badoublev y=op2; double x=op1; return("ADOL-C error: illegal argument combination for operator -\n"); };
+ *};
+ *----------   E. Arnold 2001-08-11   ----------*/
+  err_retu operator>>=(double op1) {return("ADOL-C error: illegal argument combination for operator >>=\n"); };
+  err_retu operator<<=(double op1) {return("ADOL-C error: illegal argument combination for operator <<=\n"); };
+  err_retu operator+= (double op1) {return("ADOL-C error: illegal argument combination for operator +=\n"); };
+  err_retu operator-= (double op1) {return("ADOL-C error: illegal argument combination for operator -=\n"); };
+  inline friend err_retu operator+(const badoublev &op1,double op2) {return("ADOL-C error: illegal argument combination for operator +\n"); };
+  inline friend err_retu operator-(const badoublev &op1,double op2) {return("ADOL-C error: illegal argument combination for operator -\n"); };
+  inline friend err_retu operator+(double op1,const badoublev &op2) {return("ADOL-C error: illegal argument combination for operator +\n"); };
+  inline friend err_retu operator-(double op1,const badoublev &op2) {return("ADOL-C error: illegal argument combination for operator -\n"); };
 };
 
 

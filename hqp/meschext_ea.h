@@ -3,11 +3,12 @@
  *   - some Meschach add-ons and extensions
  *
  * E. Arnold  03/07/97
+ *            2001-08-16 sprow_norm1
  *
  */
 
 /*
-    Copyright (C) 1997--1998  Eckhard Arnold
+    Copyright (C) 1997--2001  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -189,6 +190,9 @@ extern VEC *v_set_iv(VEC *A, IVEC *iv, VEC *C);
 
 //   Euclidean norm of a SPROW.
 extern Real sprow_norm2(const SPROW *r);
+
+//   L1 norm of a SPROW.
+extern Real sprow_norm1(const SPROW *r);
 
 //   Copy a block from sparse matrix src to dense matrix dst
 extern void sp_extract_mat_iv(const SPMAT *src, const IVEC *iv, int j_offs, 

@@ -3,11 +3,12 @@
  *   - some Meschach add-ons and extensions
  *
  * E. Arnold  03/07/97
+ *            2001-08-16 sprow_norm1
  *
  */
 
 /*
-    Copyright (C) 1997--1998  Eckhard Arnold
+    Copyright (C) 1997--2001  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -579,6 +580,24 @@ Real sprow_norm2(const SPROW *r)
     sum += r->elt[i].val*r->elt[i].val;
 
   return sqrt(sum);
+}
+
+//--------------------------------------------------------------------------
+//   L1 norm of a SPROW.
+//   E. Arnold   2001-08-07
+//--------------------------------------------------------------------------
+Real sprow_norm1(const SPROW *r)
+{
+  Real sum = 0.0;
+  int i;
+
+  if ( r == (SPROW *) NULL )
+    error(E_NULL, "sprow_norm1");
+
+  for ( i = 0; i < r->len; i++ )
+      sum += fabs(r->elt[i].val);
+
+  return sum;
 }
 
 //--------------------------------------------------------------------------
