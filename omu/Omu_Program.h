@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,8 +30,8 @@
 
 #include <adouble.h>
 #include <Meschach.h>
-#include <Omu_Variables.h>
-#include <Omu_Dependents.h>
+#include "Omu_Variables.h"
+#include "Omu_Dependents.h"
 
 #include <If_Class.h>
 

@@ -1,5 +1,11 @@
 2002-04-21    <rfranke>
 
+	* omu/Omu_Dependents.h, omu/Omu_Deps.h:
+	let operator= return an object reference
+
+	* omu/Omu_Dependents.h, omu/Omu_Program.h, omu/Omu_Variables.h:
+	include local Omu files via "..." instead of <...>
+
 	* omu/Omu_IntSDIRK.C, omu/Omu_IntIMP.C, hqp/Hqp_HL_BFGS.C, 
 	hqp/Hqp_HL.C, hqp/Hqp_IpSpSC.C, hqp/meschext_ea.C, 
 	hqp/Hqp_IpLQDOCP.C, hqp/Hqp_IpRedSpBKP.C, hqp/Meschach.h,
@@ -7,7 +13,6 @@
 	  include Meschach files relative to meschach subdirectory, e.g.:
 	  #include <meschach/matrix.h> instead of #include <matrix.h>
 	This should avoid conflicts with very common names used by Meschach.
-
 	* makedirs.in, hqp_docp/Makefile.in, odc/Makefile.in,
 	Makefile.hqp, Makefile: 
   	  hide Meschach includes in meschach subdirectory

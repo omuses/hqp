@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,7 +28,7 @@
 #define Omu_Dependents_H
 
 #include <Meschach.h>
-#include <Omu_Vec.h>
+#include "Omu_Vec.h"
 
 /** Vector extended with structural information for a gradient. */
 class Omu_Gradient: public VECP {
@@ -98,7 +98,7 @@ protected:
   bool _required_g;
   // dismiss copy constructor and assignment operator
   Omu_Dependent(const Omu_Dependent &) {}
-  Omu_Dependent &operator=(const Omu_Dependent &) {}
+  Omu_Dependent &operator=(const Omu_Dependent &) {return *this;}
 };
 
 
@@ -169,7 +169,7 @@ protected:
 
   // dismiss copy constructor and assignment operator
   Omu_DependentVec(const Omu_DependentVec &): Omu_Vec() {}
-  Omu_DependentVec &operator=(const Omu_DependentVec &) {}
+  Omu_DependentVec &operator=(const Omu_DependentVec &) {return *this;}
 };
 
 

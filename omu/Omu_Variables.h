@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,7 @@
 #ifndef Omu_Variables_H
 #define Omu_Variables_H
 
-#include <Omu_Vec.h>
+#include "Omu_Vec.h"
 
 /** Vector of optimization variables, including min, max and initial
     attributes. */

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -63,7 +63,7 @@ protected:
 
   // dismiss copy constructor and assignment operator
   Omu_Dep(const Omu_Dep &cv): Omu_Dependent(cv) {}
-  Omu_Dep &operator=(const Omu_Dep &) {}
+  Omu_Dep &operator=(const Omu_Dep &) {return *this;}
 };
 
 
@@ -118,7 +118,7 @@ protected:
 
   // dismiss copy constructor and assignment operator
   Omu_DepVec(const Omu_DepVec &cv): Omu_DependentVec(cv) {}
-  Omu_DepVec &operator=(const Omu_DepVec &) {}
+  Omu_DepVec &operator=(const Omu_DepVec &) {return *this;}
 };
 
 
