@@ -346,7 +346,10 @@ void Prg_SFunctionOpt::setup(int k,
     // as no control parameters allowed here
     // (propagate us and xs to final stage as they are accessed in update)
     x.alloc(_nx + spsk*_ns);
-    c.alloc(spsk*(_nc+_nsc) + _ncf);
+    if (_K > 0)
+      c.alloc(spsk*(_nc+_nsc) + _ncf);
+    else
+      c.alloc(spsk*(_nc+_nsc) + _nc0 + _ncf);
   }
 
   // setup initial states
