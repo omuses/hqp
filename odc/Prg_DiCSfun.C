@@ -13,6 +13,10 @@
 // include model definition
 #include "sfun_dic.c"
 
+/** Define if local memory should be used for adoubles.
+    (required to avoid overflow of max number of live active variables) */
+#define PRG_WITH_LOCAL_MEMORY 1
+
 IF_CLASS_DEFINE("DiCSfun", Prg_DiCSfun, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -75,10 +79,19 @@ void Prg_DiCSfun::setup(int k,
   // initial values
   if (k == 0) {
     // get initial states from model
+#if defined(PRG_WITH_LOCAL_MEMORY)
+    // allocate local memory
+    adouble work[_nx];
+    _S->set_xc_ext(work);
+#endif
     mdlInitializeConditions(_S);
     real_T *mdl_x = ssGetContStates(_S);
     x.initial[0] = value(mdl_x[0]);
     x.initial[1] = value(mdl_x[1]);
+#if defined(PRG_WITH_LOCAL_MEMORY)
+    // reset as local memory is freed
+    _S->set_xc_ext(NULL);
+#endif
   }
   if (k < _K)
     u.initial[0] = -2.0;
@@ -112,6 +125,14 @@ void Prg_DiCSfun::update(int kk,
 			 const adoublev &x, const adoublev &u,
 			 adoublev &f, adouble &f0, adoublev &c)
 {
+#if defined(PRG_WITH_LOCAL_MEMORY)
+  // allocate local memory
+  adouble work[_nx + _nu + _mdl_ny];
+  _S->set_xc_ext(work);
+  _S->set_u_ext(work + _nx);
+  _S->set_y_ext(work + _nx + _nu);
+#endif
+
   int i;
 
   // update constraints and objective for given x and u
@@ -140,6 +161,13 @@ void Prg_DiCSfun::update(int kk,
   }
   else
     f0 = 0.0;
+
+#if defined(PRG_WITH_LOCAL_MEMORY)
+  // reset as local memory is freed
+  _S->set_xc_ext(NULL);
+  _S->set_u_ext(NULL);
+  _S->set_y_ext(NULL);
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -147,6 +175,14 @@ void Prg_DiCSfun::continuous(int kk, double t,
 			     const adoublev &x, const adoublev &u,  
 			     const adoublev &dx, adoublev &F)
 {
+#if defined(PRG_WITH_LOCAL_MEMORY)
+  // allocate local memory
+  adouble work[_nx + _nu + _nx];
+  _S->set_xc_ext(work);
+  _S->set_u_ext(work + _nx);
+  _S->set_dxc_ext(work + _nx + _nu);
+#endif
+
   int i;
 
   // get pointers to model variables
@@ -169,6 +205,13 @@ void Prg_DiCSfun::continuous(int kk, double t,
   // change to residual form
   for (i = 0; i < _nx; ++i)
     F[i] = mdl_dx[i] - dx[i];
+
+#if defined(PRG_WITH_LOCAL_MEMORY)
+  // reset as local memory is freed
+  _S->set_xd_ext(NULL);
+  _S->set_u_ext(NULL);
+  _S->set_y_ext(NULL);
+#endif
 }
 
 //==========================================================================

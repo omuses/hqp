@@ -1,5 +1,13 @@
 2001-05-06    <rfranke>
 
+	* hxi/Hxi_SimStruct.h:
+	   extend SimStruct to work on externally provided storage
+	* odc/Prg_Di[DC]Sfun.C:
+	   allocate vectors of adoubles used in S-functions locally
+	   to avoid problems with overflow of number of active doubles
+
+2001-05-06    <rfranke>
+
 	* hxi/Hxi_SimStruct.h, hxi/README: add S-function interface
 
 	* odc/Prg_Di.[hC]:

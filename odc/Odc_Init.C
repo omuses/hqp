@@ -8,7 +8,7 @@
 #include <If_Proc.h>
 
 //--------------------------------------------------------------------------
-const char *Odc_Version = "1.2";
+const char *Odc_Version = "1.3";
 
 static int Odc_VersionCmd(int, char *[], char **result)
 {
