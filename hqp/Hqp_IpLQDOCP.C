@@ -691,16 +691,18 @@ void Hqp_IpLQDOCP::dump(char *fname)
 //--------------------------------------------------------------------------
 void Hqp_IpLQDOCP::init(const Hqp_Program *qp)
 {
-  int _kmax_old;
+  int _kmax_old, ret;
 
   pr_("\nLQDOCP::init ");
 
   _kmax_old = _kmax;
-  assert(Get_Dim(qp));
+  ret = Get_Dim(qp);
+  assert(ret);
   if ( _kmax != _kmax_old )
     resize(); 
   Get_Constr_Dim(qp);
-  assert(Check_Structure(qp));  
+  ret = Check_Structure(qp);  
+  assert(ret);  
 
   pr("\nLQDOCP::init   _kmax = %d\n", _kmax);
 
@@ -718,12 +720,13 @@ void Hqp_IpLQDOCP::init(const Hqp_Program *qp)
 //--------------------------------------------------------------------------
 void Hqp_IpLQDOCP::update(const Hqp_Program *qp)
 {
-  int i, j, k, knm, kn;
+  int i, j, k, knm, kn, ret;
   double sum;
 
   pr_("LQDOCP::update\n");
 
-  assert(Check_Structure(qp));
+  ret = Check_Structure(qp);
+  assert(ret);
 
   if ( _fixed_x0 ) 
     pr_("fixed initial state\n");

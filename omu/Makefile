@@ -43,11 +43,11 @@ lib: $(OBJS) $(DASPK) Makefile
 	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
 
 daspk:
-	PWD=`pwd`; cd ../daspk; $(MAKE); cd $(PWD)
+	PWD=`pwd`; cd ../daspk; $(MAKE); cd "$(PWD)"
 
 $(RKSUITE_O): $(RKSUITE_O:$O=.f)
-	PWD=`pwd`; cd `dirname $(RKSUITE_O)`; \
-	$(FORTRAN_COMP) $(FORTRAN_FLAGS) -c rksuite.f; cd $(PWD)
+	PWD=`pwd`; cd "`dirname $(RKSUITE_O)`"; \
+	$(FORTRAN_COMP) $(FORTRAN_FLAGS) -c rksuite.f; cd "$(PWD)"
 
 Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_MEX_SFunction.C
@@ -57,8 +57,8 @@ Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 
 clean:
 	rm -f *.o *.obj *.[pi]db $(LIB_PREFIX)omu.* *~
-	PWD=`pwd`; cd ../daspk; $(MAKE) clean; cd $(PWD)
-	PWD=`pwd`; cd ../rksuite; rm -f *.o *.obj *~; cd $(PWD)
+	PWD=`pwd`; cd ../daspk; $(MAKE) clean; cd "$(PWD)"
+	PWD=`pwd`; cd ../rksuite; rm -f *.o *.obj *~; cd "$(PWD)"
 
 depend:
 	makedepend -- $(CCFLAGS) -- $(SRCS)

@@ -59,10 +59,10 @@ install::
 	$(INSTALL) lib/$(LIB_PREFIX)omu$(LIB_SUFFIX) \
 	  $(LIB_DIR_ROOT)/$(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX)
 	rm -f $(LIB_DIR_ROOT)/$(LIB_PREFIX)omu$(LIB_SUFFIX)
-	cd $(LIB_DIR_ROOT); \
+	cd "$(LIB_DIR_ROOT)"; \
 	ln -s $(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX) \
 	  $(LIB_PREFIX)omu$(LIB_SUFFIX); \
-	cd $(PWD)
+	cd "$(PWD)"
 # make directory structure for includes
 	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
 	@if test ! -d $(INC_DIR)-$(VERSION); then \
@@ -84,6 +84,6 @@ install::
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/TAPEDOC/; done
 # complete directory structure for includes
 	rm -rf $(INC_DIR_ROOT)/hqp
-	cd $(INC_DIR_ROOT); \
+	cd "$(INC_DIR_ROOT)"; \
 	ln -s hqp-$(VERSION) hqp; \
-	cd $(PWD)
+	cd "$(PWD)"

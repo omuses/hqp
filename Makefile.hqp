@@ -32,10 +32,10 @@ install::
 	$(INSTALL) lib/$(LIB_PREFIX)hqp$(LIB_SUFFIX) \
 	  $(LIB_DIR_ROOT)/$(LIB_PREFIX)hqp-$(VERSION)$(LIB_SUFFIX)
 	rm -f $(LIB_DIR_ROOT)/$(LIB_PREFIX)hqp$(LIB_SUFFIX)
-	cd $(LIB_DIR_ROOT); \
+	cd "$(LIB_DIR_ROOT)"; \
 	ln -s $(LIB_PREFIX)hqp-$(VERSION)$(LIB_SUFFIX) \
 	  $(LIB_PREFIX)hqp$(LIB_SUFFIX); \
-	cd $(PWD)
+	cd "$(PWD)"
 # install pkgIndex.tcl
 	rm -rf $(LIB_DIR_ROOT)/Hqp$(VERSION)
 	mkdir $(LIB_DIR_ROOT)/Hqp$(VERSION)
@@ -47,9 +47,9 @@ install::
 	mkdir $(INC_DIR)-$(VERSION)
 	mkdir $(INC_DIR)-$(VERSION)/meschach
 	rm -rf $(INC_DIR_ROOT)/hqp
-	cd $(INC_DIR_ROOT); \
+	cd "$(INC_DIR_ROOT)"; \
 	ln -s hqp-$(VERSION) hqp; \
-	cd $(PWD)
+	cd "$(PWD)"
 # install include files
 	for f in iftcl/*.h hqp/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done

@@ -1,0 +1,41 @@
+diff -cr adolc-1.9.0/adolc/adouble.h adol-c/adolc/adouble.h
+*** adolc-1.9.0/adolc/adouble.h	2004-05-24 12:50:28.000000000 +0200
+--- adol-c/adolc/adouble.h	2004-10-04 23:52:22.000000000 +0200
+***************
+*** 43,48 ****
+--- 43,51 ----
+  */
+  /****************************************************************************/
+  
++ #if !defined(ADOLC_ADOUBLE_H)
++ #define ADOLC_ADOUBLE_H 1
++ 
+  /****************************************************************************/
+  /*                                                         THIS FILE IS C++ */
+  #ifdef __cplusplus
+***************
+*** 558,560 ****
+--- 561,565 ----
+  /*                                                                THAT'S ALL*/
+  
+  #endif
++ 
++ #endif
+diff -cr adolc-1.9.0/adolc/common.h adol-c/adolc/common.h
+*** adolc-1.9.0/adolc/common.h	2004-05-24 12:50:31.000000000 +0200
+--- adol-c/adolc/common.h	2004-10-04 23:52:39.000000000 +0200
+***************
+*** 47,54 ****
+--- 47,58 ----
+  #define maxinc(a,b) if ((a) < (b)) (a) = (b)
+  #define mindec(a,b) if ((a) > (b)) (a) = (b)
+  
++ #if !defined(max)
+  #define max(a,b) ( (a)<(b)? (b):(a) )
++ #endif
++ #if !defined(min)
+  #define min(a,b) ( (a)>(b)? (b):(a) )
++ #endif
+  
+  /*--------------------------------------------------------------------------*/
+  #endif

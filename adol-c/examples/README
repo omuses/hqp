@@ -1,0 +1,16 @@
+--------------------------------------------------------------
+README         ADOL-C version 1.9.0          as of Apr/30/2004
+--------------------------------------------------------------
+
+The directory contains the examples described in the manual
+
+--------------------------------------------------------------
+CONTENTS OF THE DIRECTORY
+
+  detexam.cpp        ---> Computation of determinants    
+  speelpenning.cpp   ---> Speelpenning's product
+  powexam.cpp        ---> Computation of n-th power
+  odexam.cpp         ---> Nonlinear ordinary differential 
+                          equation based on the Robertson test 
+                          problem
+  gaussexam.cpp      ---> Gaussian Elimination
