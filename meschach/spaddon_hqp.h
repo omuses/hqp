@@ -74,11 +74,6 @@ MESCH_API VEC *bspv_mlt(const SPMAT *A, int i0, int j0, int m0, const VEC *B,
  */
 MESCH_API void check_sparse(SPMAT *C);
 
-/*
- * sp_transp_ea -- Transpose of a sparse matrix
- */
-MESCH_API SPMAT *sp_transp_ea(const SPMAT *A, SPMAT *T);
-
 MESCH__END_DECLS
 
 #endif

@@ -735,7 +735,7 @@ void Hqp_IpLQDOCP::update(const Hqp_Program *qp)
     _A_ori = sp_copy3(qp->A, _A_ori);
     sp_compact(_A_ori, 0.0);
     //   transpose _A_ori
-    _AT = sp_transp_ea(_A_ori, _AT);
+    _AT = sp_transp(_A_ori, _AT);
   } else {
     _A_ori = qp->A;
     SP_FREE(_AT);
@@ -757,7 +757,7 @@ void Hqp_IpLQDOCP::update(const Hqp_Program *qp)
   //   sparsity structure of matrix _CTC (only elements (i,j), j>=i)
   if ( ! _CTC )
     _CTC = sp_get(qp->Q->m, qp->Q->n, 10);
-  _CT = sp_transp_ea(_C_ori, _CT);
+  _CT = sp_transp(_C_ori, _CT);
 
   //   check DOCP structure of matrix _CT
   pr_("check _C_ori");
@@ -778,7 +778,7 @@ void Hqp_IpLQDOCP::update(const Hqp_Program *qp)
 	  sp_set_val(_CTC, knm+i, knm+j, sum);   // _CTC is symsp!
       }
   }
-  _CT = sp_transp_ea(_C_ori, _CT);
+  _CT = sp_transp(_C_ori, _CT);
   pr_("update finished\n"); 
 }
 

@@ -801,18 +801,13 @@ SPMAT *sp_transp(const SPMAT *A, SPMAT *T)
     for (j_idx = 0; j_idx < slen; j_idx++, selt++) {
       drow = T->row + selt->col;
       dlen = drow->len;
-#if 1
       if (dlen == drow->maxlen) {
-	drow = sprow_xpd(drow, (3*dlen)/2, TYPE_SPMAT);
+	if (dlen < 20)
+	  drow = sprow_xpd(drow, dlen+10, TYPE_SPMAT);
+	else
+	  drow = sprow_xpd(drow, (3*dlen)/2, TYPE_SPMAT);
 	drow->len = dlen;
       }
-#else
-      if (dlen == drow->maxlen) {
-	//	drow = sprow_xpd(drow, (3*dlen)/2, TYPE_SPMAT);
-	drow = sprow_xpd(drow, dlen+10, TYPE_SPMAT);
-	drow->len = dlen;
-      }
-#endif
       delt = drow->elt + dlen;
       delt->val = selt->val;
       delt->col = i;
