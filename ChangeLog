@@ -1,3 +1,19 @@
+2004-01-17    <rfranke>
+
+	* meschach/sparse.c (sp_free): 
+	  - bug fix for freeing sparse matrices with max_m > m
+	  - fix truncation of rows if size decreases
+
+	* meschach/machine.h: 
+	  call memmove and memset only for blocks of size>0 to avoid potential
+	  error messages in mpatrol about access to bad memory locations
+
+	* meschach/matrix.h (RENEW):
+	  reallocate blocks of at least size 1 to avoid potential error
+	  with a malloc library returning NULL for a block of size 0
+
+	* meschach/version.c (m_version): report changes
+
 2003-11-26    <e_arnold>
 
 	* configure.in: DEVELOPMENT_VERSION=yes

@@ -34,7 +34,7 @@
 #include	"sparse.h"
 
 
-static char	rcsid[] = "$Id: sparse.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
+static char	rcsid[] = "$Id: sparse.c,v 1.3 2004/01/17 17:50:13 rfranke Exp $";
 
 #define	MINROWLEN	10
 
@@ -289,7 +289,7 @@ SPMAT	*A;
       free((char *)A);
       return 0;
    }
-   for ( i = 0; i < A->m; i++ )
+   for ( i = 0; i < A->max_m; i++ )
    {
       r = &(A->row[i]);
       if ( r->elt != (row_elt *)NULL ) {
@@ -749,9 +749,10 @@ int	m, n;
    if (m == A->m && n == A->n)
      return A;
 
+   /* update number of rows */
    if ( m <= A->max_m )
    {
-      for ( i = A->m; i < m; i++ )
+      for ( i = m; i < A->m; i++ )
 	A->row[i].len = 0;
       A->m = m;
    }
@@ -777,7 +778,7 @@ int	m, n;
       A->m = A->max_m = m;
    }
 
-   /* update number of rows */
+   /* update number of cols */
    A->n = n;
 
    /* do we need to increase the size of start_idx[] and start_row[] ? */
@@ -794,11 +795,9 @@ int	m, n;
       if ( ! A->start_row || ! A->start_idx )
 	m_error(E_MEM,"sp_resize");
       A->max_n = n;	/* ...and update max_n */
-
-      return A;
    }
-
-   if ( n <= A->n )
+   else
+   {
        /* make sure that all rows are truncated just before column n */
        for ( i = 0; i < A->m; i++ )
        {
@@ -810,7 +809,7 @@ int	m, n;
 	       m_error(E_MEM,"sp_resize");
 	   r->len = len;
        }
-   
+   }   
    return A;
 }
 

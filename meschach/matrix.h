@@ -30,7 +30,7 @@
 
 #ifndef	MATRIXH
 
-/* RCS id: $Id: matrix.h,v 1.4 2002/12/09 10:57:47 e_arnold Exp $ */
+/* RCS id: $Id: matrix.h,v 1.5 2004/01/17 17:50:13 rfranke Exp $ */
 
 #define	MATRIXH	
 
@@ -89,8 +89,8 @@ MESCH_API void	m_version MESCH__P((void));
 /* re-allocate arry to have num objects of the given type */
 #define	RENEW(var,num,type) \
     ((var)=(type *)((var) ? \
-		    realloc((char *)(var),(size_t)((num)*sizeof(type))) : \
-		    calloc((size_t)(num),(size_t)sizeof(type))))
+		    realloc((char *)(var),(size_t)(((num)>1?(num):1)*sizeof(type))) : \
+		    calloc((size_t)((num)>1?(num):1),(size_t)sizeof(type))))
 
 #define	MEMCOPY(from,to,n_items,type) \
  MEM_COPY((char *)(from),(char *)(to),(unsigned)(n_items)*sizeof(type))

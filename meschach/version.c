@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.10 2003/09/12 07:26:16 e_arnold Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.11 2004/01/17 17:50:13 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -94,10 +94,17 @@ void	m_version()
 	printf("\tmatop.c: fixed in-situ bug in ms_mltadd()\n");
 	/* rf, 09/09/03 */
 	printf("\terr.h, err.c: introduce m_error_message and m_error_description\n");
+	/* rf, 01/17/04 */
+	printf("\tmachine.h: call memmove and memset only for block sizes > 0\n");
+	printf("\tmatrix.h: re-allocate blocks to at least size 1\n");
+	printf("\tsparse.c: fix memory leak in sp_free and truncation in sp_resize\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.11  2004/01/17 17:50:13  rfranke
+/* fix memory leak when freeing sparse matrices
+/*
 /* Revision 1.10  2003/09/12 07:26:16  e_arnold
 /* derive Omu_IntIMP, OmuIntGRK4 from Omu_Integrator
 /*

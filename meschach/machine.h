@@ -2,7 +2,7 @@
 /* Any machine specific stuff goes here */
 /* Add details necessary for your own installation here! */
 
-/* RCS id: $Id: machine.h,v 1.3 2002/12/09 10:57:47 e_arnold Exp $ */
+/* RCS id: $Id: machine.h,v 1.4 2004/01/17 17:50:13 rfranke Exp $ */
 
 /* This is for use with "configure" -- if you are not using configure
 	then use machine.van for the "vanilla" version of machine.h */
@@ -88,8 +88,8 @@
 #ifdef STDC_HEADERS
 
 /* standard copy & zero functions */
-#define	MEM_COPY(from,to,size)	memmove((to),(from),(size))
-#define	MEM_ZERO(where,size)	memset((where),'\0',(size))
+#define	MEM_COPY(from,to,size)	if ((size) > 0) memmove((to),(from),(size))
+#define	MEM_ZERO(where,size)	if ((size) > 0) memset((where),'\0',(size))
 
 #endif
 
