@@ -64,8 +64,6 @@ class If_IntVecWriteCB: public If_IntVecWriteIf {
     }
 };
 
-// foreward declaration for a IVECP
-class IVECP;
 
 // class declaration
 //------------------

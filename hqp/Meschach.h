@@ -24,22 +24,14 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Meschach_H
+/** Avoid multiple inclusion */
+#if !defined(Meschach_H)
 #define Meschach_H
 
 #include <assert.h>
 
-#if defined(_MSC_VER)
-// Include math.h prior to matrix.h
-// as matrix.h would include it otherwise
-// and as extern "C" specification does not work for MSC's math.h.
-#include <math.h>
-#endif
-
-extern "C" {
 #include <meschach/matrix.h>
 #include <meschach/sparse.h>
-}
 
 #undef Inf
 /** Infinity for non existing constraints and numerical overflow */
@@ -134,17 +126,22 @@ extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
 			const PERM *px, int i_offs, int j_offs);
 //@}
 
-// overload operators for Meschach data structures (esp. operator [])
-// idea: 
-//   - define for any STRUCT a class STRUCTP
-//   - data representation of STRUCTP is compatible to STRUCT*
-//   - overload operators as needed
-// a C synonym can be thought as: 
-//   typedef STRUCT* STRUCTP
-// bugs:
-//   - Meschach prototypes have no const's --> bad const handling
-//     (VEC *v_add(VEC *a, VEC *b, VEC *out) instead of
-//      VEC *v_add(const VEC *a, const VEC *b, VEC *out)
+/**
+   Wrappers for Meschach data structures allowing use of C++ operators.
+
+   Idea: 
+     - define for any STRUCT a class STRUCTP
+     - data representation of STRUCTP is compatible to STRUCT*
+     - overload operators as needed, esp. operator []
+
+   C synonym: typedef STRUCT* STRUCTP
+
+   Known Problem:
+     - Meschach prototypes have no const's --> bad const handling
+       (VEC *v_add(VEC *a, VEC *b, VEC *out) instead of
+        VEC *v_add(const VEC *a, const VEC *b, VEC *out)
+*/
+namespace Mesch {
 
 /** Bounds check for wrappers of Meschach types if compiled with DEBUG flag */
 #ifdef DEBUG
@@ -162,7 +159,7 @@ extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
 #define MESCH_NULL_CHECK(ptr)
 #endif
 
-/** Wrapper for VEC* */
+/** Wrapper for Meschach VEC* */
 class VECP {
 
  protected:
@@ -204,7 +201,7 @@ class VECP {
   //@}
 };
 
-/** Wrapper for IVEC* */
+/** Wrapper for Meschach IVEC* */
 class IVECP {
 
  protected:
@@ -246,7 +243,7 @@ class IVECP {
   //@}
 };
 
-/** Wrapper for PERM* */
+/** Wrapper for Meschach PERM* */
 class PERMP {
 
  protected:
@@ -288,7 +285,8 @@ class PERMP {
   //@}
 };
 
-/** Wrapper for row in MAT* that is used if compiled with DEBUG flag */
+/** Wrapper for a row in Meschach MAT.
+    It is used if compiled with DEBUG flag. */
 class MATROWP {
 
  protected:
@@ -322,7 +320,7 @@ class MATROWP {
   //@}
 };
 
-/** Wrapper for MAT* */
+/** Wrapper for Meschach MAT* */
 class MATP {
 
  protected:
@@ -378,11 +376,14 @@ class MATP {
   //@}
 };
 
-/** Place holder for wrapper of SPMAT* */
+/** Place holder for wrapper of Meschach SPMAT* */
 typedef SPMAT* SPMATP;
 
-/** Place holder for wrapper of BAND* */
+/** Place holder for wrapper of Meschach BAND* */
 typedef BAND* BANDP;
 
+}; // namespace Mesch
+
+using namespace Mesch;
 
 #endif

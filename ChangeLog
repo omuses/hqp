@@ -1,5 +1,16 @@
 2002-05-13    <rfranke>
 
+	* omu/Omu_IntODE.h: fix prototype for method ode_solve
+	* omu/Omu_IntDopri5.h: cast u_int to int before using operator[]
+
+	* hqp/Meschach.h, omu/Omu_Vec.h, iftcl/If_RealVec.h,
+	  iftcl/If_RealMat.h, iftcl/If_IntVec.h: introduce namespace Mesch
+	* meschach/machine.h: take away definition of __STDC__
+	* meschach/*.h: use MESCH__BEGIN/END_DECLS so that Meschach
+	  includes can be used from C++ without extern "C"
+
+	
+
 	* configure.in, configure, makedefs.in, hqp_docp/Makefile.in,
 	  odc/Makefile.in, omu/Omu_Init.C: add preliminary support for
 	  generating DLLs with Cygwin/MinGW (need to explicitly

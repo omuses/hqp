@@ -64,8 +64,6 @@ class If_RealVecWriteCB: public If_RealVecWriteIf {
     }
 };
 
-// foreward declaration for a VECP
-class VECP;
 
 // class declaration
 //------------------

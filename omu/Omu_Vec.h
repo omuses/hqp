@@ -1,6 +1,6 @@
-/*
- * Omu_Vec.h --
- *   -- Vector with automatic construction and destruction
+/**
+ * @file Omu_Vec.h
+ *    Vector with automatic construction and destruction
  *
  * rf, 7/31/01
  */
@@ -24,13 +24,14 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Omu_Vec_H
+/** Avoid multiple inclusion */
+#if !defined(Omu_Vec_H)
 #define Omu_Vec_H
 
 #include <Meschach.h>
 
 /** Vector class with automatic construction / destruction */
-class Omu_Vec: public VECP {
+class Omu_Vec: public Mesch::VECP {
 public:
   Omu_Vec() {_v = v_resize(v_get(1), 0);} ///< allocate empty vector
   virtual ~Omu_Vec() {v_free(_v);} 	  ///< destroy vector

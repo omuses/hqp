@@ -64,8 +64,6 @@ class If_RealMatWriteCB: public If_RealMatWriteIf {
     }
 };
 
-// foreward declaration for a MATP
-class MATP;
 
 // class declaration
 //------------------
