@@ -8,6 +8,7 @@
  *             2002-05-31 _atol+_rtol*fabs(_k1[i])
  *                        sensitivity calculation corrected
  *                        _max_modnewtonsteps=10
+ *             2002-06-06 _nv==0
  *
  */
 
@@ -281,6 +282,10 @@ void Omu_IntIMP::ode_solve(double tstart, VECP y, const VECP u, double tend)
 
     double t, dt, err, tol, ynorm, dtnew;
     int i;
+
+    if ( _nv ) {
+	m_error(E_SIZES, "Omu_IntIMP::ode_solve");
+    }
 
     _npar = u->dim;
     realloc();
