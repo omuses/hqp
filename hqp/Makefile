@@ -14,6 +14,8 @@ SRCS = 	Hqp_Init.C \
 	sprcm.C \
 	Meschach.C \
         spBKP.C \
+        matBKP.C \
+        bdBKP.C \
 	Hqp_impl.C \
 	Hqp_Program.C \
 	Hqp_Solver.C \

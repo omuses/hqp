@@ -212,6 +212,8 @@ VEC	*b, *x;
 	return x;
 }
 
+#ifdef SPARSE_COL_ACCESS
+
 /* spLUTsolve -- solve A.x = b using factored matrix A from spLUfactor()
 	-- returns x
 	-- may not be in-situ */
@@ -408,3 +410,5 @@ double	alpha;
     /* printf("spILUfactor: exiting\n"); */
     return A;
 }
+
+#endif

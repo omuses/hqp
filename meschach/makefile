@@ -4,7 +4,7 @@
 #
 # Copyright (C) David Stewart & Zbigniew Leyk 1993
 #
-# $Id: makefile,v 1.1 2001/03/01 17:18:44 rfranke Exp $
+# $Id: makefile,v 1.2 2002/04/23 14:17:35 rfranke Exp $
 #
 
 include ../makedefs
@@ -43,9 +43,9 @@ LIST2 = lufactor$O bkpfacto$O chfactor$O qrfactor$O solve$O hsehldr$O \
 	givens$O update$O norm$O hessen$O symmeig$O schur$O svd$O fft$O \
 	mfunc$O bdfactor$O
 LIST3 = sparse$O sprow$O sparseio$O \
-	iter0$O 
+	iter0$O splufctr$O 
 #       itersym$O iternsym$O
-#	spchfctr$O splufctr$O spbkp$O spswap$O 
+#	spchfctr$O spbkp$O spswap$O 
 ZLIST1 = zmachine$O zcopy$O zmatio$O zmemory$O zvecop$O zmatop$O znorm$O \
 	 zfunc$O 
 ZLIST2 = zlufctr$O zsolve$O zmatlab$O zhsehldr$O zqrfctr$O \

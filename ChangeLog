@@ -1,3 +1,13 @@
+
+2002-04-23    <rfranke>
+
+	* meschach/makefile: add splufctr to list of compiled objects
+	* meschach/splufctr.c: disable spLUTsolve and spILUfactor via
+	  SPARSE_COL_ACCESS
+	* meschach/version.c: document change to Meschach library
+
+	* hqp/Makefile, hqp/matBKP.C: add matBKP.C and bdBKP.C to SRCS
+
 2002-04-22    <e_arnold>
 
 	* hqp/t_mesch.[hC]: rename free(); replace delete by delete[]
@@ -6,7 +16,7 @@
 2002-04-21    <rfranke>
 
 	* omu/Prg_SFunction*.[hC]: add predefined optimization and
-	  estimation problems for S-functions 
+	  estimation problems for MEX S-functions 
 	* configure.in, makedefs.in, makedirs.in, omu/Omu_Init.C,
 	omu/Makefile, odc/Makefile.in: adapt accordingly
 	* hxi/Hxi_MEX_SFunction.C: extend dynamic loading for cl

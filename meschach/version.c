@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.2 2001/04/02 08:18:27 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.3 2002/04/23 14:17:35 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -76,10 +76,16 @@ void	m_version()
 	printf("\tm_err.h: rename macro \"catch\" to \"m_catch\" (conflict with C++ keyword)\n");
 	/* rf, 04/02/01 */
 	printf("\tmatrix.h, matdef.h: allocate at least 1 element in NEW_A (as some c/malloc's return NULL for 0 elements)\n");
+	/* rf, 04/23/02 */
+	printf("\tmakefile: add add splufctr to list of compiled objects\n");
+	printf("\tsplufctr.c: disable spLUTsolve and spILUfactor via SPARSE_COL_ACCESS\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.3  2002/04/23 14:17:35  rfranke
+/* include additional factorization routines
+/*
 /* Revision 1.2  2001/04/02 08:18:27  rfranke
 /* 	- meschach/{matrix, matdef}.h: allocate at least 1 element in NEW_A,
 /* 	  as some malloc implementations return NULL pointer for 0 elements

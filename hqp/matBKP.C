@@ -33,9 +33,7 @@
 #include <stdio.h>
 #include <math.h>
 
-extern "C" {
-#include <matrix.h>
-}
+#include "Meschach.h"
 
 #define alpha	0.6403882032022076 /* = (1+sqrt(17))/8 */
 
