@@ -1,3 +1,10 @@
+2002-06-10    <rfranke>
+
+	* omu/Prg_SFunctionEst.[hC]: add support for multiple experiments
+
+	* odc/dic_mex_sfunction_est.tcl: add estimation example
+	* odc/sfun_dic.c: extend with optional parameter
+
 2002-06-03    <rfranke>
 
 	* omu/Prg_SFunction.[hC], odc/dic_mex_sfunction.tcl: add mdl_path

@@ -33,22 +33,34 @@
 #include "Omu_Variables.h"
 
 /**
-   Estimation of initial states and parameters for a model given
+   Estimation of parameters and initial states for a model given
    as MEX S-function. The estimation problem is formulated 
-   at the discrete time points @f$t^0<t^1<\ldots<t^K@f$.
+   at the discrete time points @f$t^{0,l}<t^{1,l}<\ldots<t^{K_l}@f$ with
+   @f$l=1,\ldots,N_{ex}@f$ a number of experiments. The data of all
+   experiments is concatenated into combined vectors of time points,
+   model inputs, and reference outputs, i.e. @f$K_l+1=k_{0,l+1}@f$.
+   In order to distinguish multiple experiments, it is assumed that
+   @f$t^{K_l}>t^{0,l+1}@f$; for instance each experiment could start
+   with @f$t^{0,l}=0@f$. Parameter values are constrained to be the
+   same for all experiments, whereas initial states are individual for
+   each experiment. Note that this is not a restriction as generally
+   states can be initialized with parameters and as parameters can be
+   modeled as constant states.
+
    In the following all vector operations are defined element wise.
    The treated estimation problem reads
    @f[
    \begin{array}{l}
     \displaystyle{}
-    J\ =\ \sum_{k=0}^{K} \sum_{i=1}^{dim(I)} \left\{
-      \left[\frac{ys^k(I)-ys^k_{ref}}{y_{nominal}(I)}\right]^2
+    J\ =\ \sum_{l=1}^{N_{ex}} \sum_{k_l=k_{l,0}}^{K_l} \sum_{i=1}^{dim(I)} 
+      \left\{
+      \left[\frac{ys^{k_l}(I)-ys^{k_l}_{ref}}{y_{nominal}(I)}\right]^2
       \right\}_i
       \quad\to\quad \min, \quad I = \mbox{find}(y_{active}),
    \end{array}
    @f]
    subject to the model given with the S-function methods
-   mdlDerivatives @f$f@f$ and mdlOutputs  @f$g,\ t\in[t_0,t_f]@f$
+   mdlDerivatives @f$f@f$ and mdlOutputs  @f$g@f$
    @f[
    \begin{array}{l}
     \displaystyle \dot{x}(t) = 
@@ -57,15 +69,17 @@
     \displaystyle y(t) = 
      \frac{g[p,\ x_{nominal}\,x(t),\ u(t)]}
           {y_{nominal}}, \\[3ex]
-    ys^{k} = y_{nominal}y(t^{k}), \quad k=0,\ldots,K,
+    ys^{k_l} = y_{nominal}y(t^{k_l}),
+        \quad k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}
    \end{array}
    @f]
    with piecewise linear interpolation of the inputs
    @f[
    \begin{array}{l}
-      u(t) = \displaystyle \frac{t^{k+1}-t}{t^{k+1}-t^k}\ us^{k} 
-             + \frac{t-t^k}{t^{k+1}-t^k}\ us^{k+1},
-       \quad t\in[t^{k},t^{k+1}), \quad k=0,\ldots,K-1,
+      u(t) = \displaystyle \frac{t^{k_l+1}-t}{t^{k_l+1}-t^{k_l}}\ us^{k_l} 
+             + \frac{t-t^{k_l}}{t^{k_l+1}-t^{k_l}}\ us^{k_l+1},
+       \quad t\in[t^{k_l},t^{k_l+1}), \quad k_l=k_{l,0},\ldots,K_l-1,
+       \quad l=1,\ldots,N_{ex},
    \end{array}
    @f]
    and subject to the constraints
@@ -75,49 +89,55 @@
         &<& \displaystyle \frac{p}{p_{nominal}}
         &<& \left. \displaystyle \frac{p_{max}}{p_{nominal}} \right\}_i,
         \quad & i \in \mbox{find}(p_{active}), \\[3ex]
-    \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right. &<& x(t^0) 
+    \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right. &<& x(t^{0,l}) 
         &<& \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i, 
-        \quad & i \in \mbox{find}(x^0_{active}), \\[3ex]
-    && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}}
-       \}_i, \quad & i \notin \mbox{find}(x^0_{active}), \\[3ex]
-    && \left\{ \dot{x}(t^0) \right. &=& \left. 0 \right\}_i, 
-        \quad & i \in \mbox{find}(x^0_{steady}).
+        \quad & i \in \mbox{find}(x^0_{active}),
+        \quad l=1,\ldots,N_{ex},  \\[3ex]
+    && \{ x(t^{0,l}) &=& \displaystyle \frac{x0s^l}{x_{nominal}}
+       \}_i, \quad & i \notin \mbox{find}(x^0_{active}),
+        \quad l=1,\ldots,N_{ex},  \\[3ex]
+    \displaystyle \frac{der\_x^0_{min}}{x_{nominal}} 
+        &<& \dot{x}(t^{0,l}) 
+        &<& \displaystyle \frac{der\_x^0_{max}}{x_{nominal}},
+	\quad & l=1,\ldots,N_{ex}.
    \end{array}
    @f]
-   The problem is either treated with one stage and K sample periods or 
-   with K stages one sample period per stage. In the latter case, i.e.
-   treatment as multistage problem, additional K junction conditions
-   (equality constraints) are introduced for the state variables x and
-   the estimated parameters p. Discrete-time state variables with unknown
-   initial value are introduced for the estimated parameters, in order to
-   preserve a sparse structure.
-   The treatment as multistage problem often leads to a faster convergence
-   of the optimization solver.
+   The problem is treated with @f$K_{N_{ex}}@f$ stages and one
+   sample period per stage. 
+   Discrete-time state variables with unknown initial value are introduced
+   for the estimated parameters p, in order to preserve a sparse structure.
+   Additional @f$K_{N_{ex}}@f$ junction conditions (equality constraints)
+   are introduced for the estimated parameters and @f$K_{N_{ex}}-N_{ex}+1@f$
+   junction conditions are introduced for the state variables x.
 
    In addition to the estimated parameters and initial states, the 
-   measurement matrix is calculated, which is defined as
+   measurement matrix M is calculated in each optimization iteration.
+   It is defined as
    @f[
    M = \left[\begin{array}{cc}
        M_p^0, & M_{x^0}^0 \\[2ex]
        M_p^1, & M_{x^0}^1 \\[2ex]
        \vdots, & \vdots \\[2ex]
-       M_p^K, & M_{x^0}^K
+       M_p^{K_{N_{ex}}}, & M_{x^0}^{K_{N_{ex}}}
        \end{array}\right]
    @f]
-   with
+   with the sub-matrices
    @f[
    \begin{array}{r}
-     \displaystyle M_p^k = \frac{d\,\displaystyle\frac{ys^k}{y_{nominal}}(I_y)}
+     \displaystyle M_p^{k,l} = \frac{d\,\displaystyle\frac{ys^{k,l}}
+                                    {y_{nominal}}(I_y)}
                  {d\,\displaystyle\frac{p}{p_{nominal}}(I_p)}, \quad
-     M_{x^0}^k = \frac{d\,\displaystyle\frac{ys^k}{y_{nominal}}(I_y)}
-                 {d\,\displaystyle\frac{x^0}{x_{nominal}}(I_{x^0})}, \quad
-     k=0,\ldots,K, \\[7ex]
+     M_{x^0}^{k,l} = \frac{d\,\displaystyle\frac{ys^{k,l}}{y_{nominal}}(I_y)}
+                   {d\,\displaystyle\frac{x0s^l}{x_{nominal}}(I_{x^0})}, \quad
+     k_l=k_{l,0},\ldots,K_l, \quad l=1,\ldots,N_{ex}, \\[7ex]
      I_y = \mbox{find}(y_{active}),\ I_p = \mbox{find}(p_{active}),
      \ I_{x^0} = \mbox{find}(x^0_{active}).
    \end{array}
    @f]
    The measurement matrix can be used to obtain confidences for estimation
-   results.
+   results. Note that the sub-matrices for estimated initial states
+   of all experiments are stored in compressed form in one column, even
+   though individual initial states are estimated for each experiment.
  */
 class Prg_SFunctionEst: public Prg_SFunction {
 
@@ -132,7 +152,8 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   IVECP		_mdl_p_active;	///< indicate estimated parameters
   IVECP		_mdl_x0_active; ///< indicate estimated states
-  IVECP		_mdl_x0_steady; ///< initial state should be in steady-state
+  VECP		_mdl_der_x0_min;///< minimum for time derivative of x0
+  VECP		_mdl_der_x0_max;///< maximum for time derivative of x0
   IVECP		_mdl_y_active; 	///< indicate measured outputs
   VECP 		_mdl_p_nominal;	///< nominal parameter values (for scaling)
   VECP 		_mdl_x_nominal; ///< nominal state values (for scaling)
@@ -144,14 +165,21 @@ class Prg_SFunctionEst: public Prg_SFunction {
   int		_ny;	///< number of reference outputs for estimation
   bool 		_multistage; 	///< treat as multistage problem
 
+  int		_nex;	///< number of experiments used for estimation
+  MATP 		_mdl_x0s;///< initial states for each experiment
+  IVECP		_exs; 	///< index identifying experiment in estimation data
+
   // vectors for inputs, states, and outputs
   MATP	_mdl_us;	///< given model inputs
   MATP	_mdl_ys;	///< calculated model outputs
-  MATP	_prg_ys_ref;	///< reference values for active outputs
+  MATP	_ys_ref;	///< reference values for active outputs
 
   // confidence things
   MATP 	_M;		///< measurement matrix M=dy/d(p,x0)
+  MATP 	_dydx;		///< help variable dy/dx
   MATP 	_dxdpx0;	///< help variable dx/d(p,x0)
+  MATP 	_dydpx0;	///< help variable dy/d(p,x0)
+  MATP 	_dxfdx;		///< help variable dxf/dx
   MATP 	_dxfdpx0;	///< help variable dxf/d(p,x0)
 
   /**

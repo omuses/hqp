@@ -21,10 +21,32 @@
 #include "simstruc.h"
 
 #define U(element) (*uPtrs[element])  /* Pointer to Input Port0 */
+#define PARAM(S) ssGetSFcnParam(S, 0) /* Parameter of S-function */
 
 /*====================*
  * S-function methods *
  *====================*/
+
+#define MDL_CHECK_PARAMETERS
+/* Function: mdlCheckParameters =============================================
+ * Abstract:
+ *    Validate parameters to verify they are okay.
+ */
+static void mdlCheckParameters(SimStruct *S)
+{
+    /* Check optional parameter */
+    {
+        if (ssGetSFcnParamsCount(S) > 0 &&
+            (mxGetNumberOfElements(PARAM(S)) != 1 || 
+             !mxIsNumeric(PARAM(S)))) {
+            ssSetErrorStatus(S, "Optional parameter to S-function "
+                             "must be a numeric value");
+            return;
+        }
+    }
+}
+
+
 
 /* Function: mdlInitializeSizes ===============================================
  * Abstract:
@@ -33,7 +55,14 @@
  */
 static void mdlInitializeSizes(SimStruct *S)
 {
-    ssSetNumSFcnParams(S, 0);  /* Number of expected parameters */
+    if (ssGetSFcnParamsCount(S) == 1) {
+        ssSetNumSFcnParams(S, 1);  /* One optional parameter is okay */
+        mdlCheckParameters(S);
+        if (ssGetErrorStatus(S) != NULL) {
+            return;
+        }
+    } else
+        ssSetNumSFcnParams(S, 0);  /* Number of expected parameters */
     if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
         return; /* Parameter mismatch will be reported by Simulink */
     }
@@ -122,9 +151,14 @@ static void mdlDerivatives(SimStruct *S)
     real_T            *dx   = ssGetdX(S);
     real_T            *x    = ssGetContStates(S);
     InputRealPtrsType uPtrs = ssGetInputPortRealSignalPtrs(S,0);
+    real_T            p     = 1.0;
+
+    /* use externally provided optional parameter */
+    if (ssGetSFcnParamsCount(S) > 0)
+        p = *mxGetPr(PARAM(S));
 
     /* dx = f(x,u) */
-    dx[0] = U(0);
+    dx[0] = p * U(0);
     dx[1] = x[0];
 }
 
