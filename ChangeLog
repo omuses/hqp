@@ -1,3 +1,10 @@
+2002-12-06    <rfranke>
+
+	* configure.in: change version to 1.8.2, add tag release-1-8-2
+	* Makefile (distclean): remove doc/refman.pdf from distribution
+
+	* omu/Prg_SFunctionOpt.[hC]: add member access methods
+
 2002-12-02    <rfranke>
 
 	* iftcl/If_IntVec.[hC], iftcl/If_RealVec.[hC], iftcl/If_RealVec.[hC]:
