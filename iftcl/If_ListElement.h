@@ -1,7 +1,6 @@
-/*
- *  If_ListElement.h --
- *     - stores a pointer of a If_List
- *     - stores two pointer for If_List for concatting elements
+/**
+ *  @file If_ListElement.h
+ *     Element of an If_List
  *
  *  rf, 6/22/94
  */
@@ -30,25 +29,25 @@
 
 #include <string.h>
 
-// fast string comparison
-//-----------------------
+/** fast string comparison */
 inline int if_strcmp(const char *str1, const char *str2, int pos=0)
 {
   return !(str1[pos] == str2[pos] && strcmp( str1, str2) == 0);
 }
 
-//--------------------
+/**
+ *  Element of a twice concatenated If_List.
+ */
 class If_ListElement {
-   friend class If_List;
+  friend class If_List;
 
- protected:
-   If_List		*_list;		// optional list of that element
-   If_ListElement	*_prev;		// previous element
-   If_ListElement	*_next;		// next element
+ private:
+  If_ListElement	*_prev;	///< previous element
+  If_ListElement	*_next;	///< next element
 
  public:    
-   If_ListElement();
-   virtual ~If_ListElement();
+  If_ListElement(); 		///< constructor
+  virtual ~If_ListElement(); 	///< destructor
 };
 
 

@@ -29,15 +29,16 @@
 //-----------------------------------------------------------------------------
 If_ListElement::If_ListElement()
 {
-  _list = NULL;
   _prev = _next = NULL;
 }
 
 //-----------------------------------------------------------------------------
 If_ListElement::~If_ListElement()
 {
-  if (_list)
-    _list->release(this);
+  if (_prev)
+    _prev->_next = _next;
+  if (_next)
+    _next->_prev = _prev;
 }
 
 

@@ -31,51 +31,48 @@
 //-----------------------------------------------------------------------------
 If_List::If_List()
 {
-  _top= NULL;
+  _anchor = new If_ListElement();
 }
 
 //-----------------------------------------------------------------------------
 If_List::~If_List()
 {
-  while (_top)
-    delete _top;
+  while (_anchor->_prev)
+    delete _anchor->_prev;
+  delete _anchor;
 }
 
 //-----------------------------------------------------------------------------
 void If_List::append(If_ListElement *element)
 {
-  assert(element->_list == NULL);  // may be appended to one list at once
+  // element must not be appended to a list (can at most be appended to one)
+  assert(element && !element->_prev && !element->_next);
 
-  element->_prev= _top;
-  element->_next= NULL;
-
-  if (_top)
-    _top->_next= element;
-  _top= element;
-
-  element->_list= this;
+  // NULL <n--anchor--p> <n--element--p> <n--el_old--p> ... 
+  element->_next = _anchor;
+  element->_prev = _anchor->_prev;
+  _anchor->_prev = element;
+  if (element->_prev)
+    element->_prev->_next = element;
 }
 
 //-----------------------------------------------------------------------------
 void If_List::release(If_ListElement *element)
 {
-//printf("list: %d, this: %d, element: %d\n", element->_list, this, element);
-  if (!element->_list)
-    return;
+  // search element in this list
+  If_ListElement *el = top();
+  while (el && el != element)
+    el = prev(el);
+  element = el;
+  assert(element);  // element must be appended to this list
 
-  assert(element->_list == this);  // is appended to this list
-  
-  if(element == _top)
-    _top= element->_prev;
-  
   if(element->_prev)
-    element->_prev->_next= element->_next;
+    element->_prev->_next = element->_next;
 
   if(element->_next)
-    element->_next->_prev= element->_prev;
+    element->_next->_prev = element->_prev;
 
-  element->_prev= element->_next= NULL;
-  element->_list= NULL;
+  element->_prev = element->_next = NULL;
 }
 
 
