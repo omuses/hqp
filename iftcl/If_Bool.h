@@ -1,15 +1,12 @@
-/*
- * If_Bool.h --
- *     - an If_Variable for type Bool
+/**
+ *  @file If_Bool.h
+ *     Interface variable for booleans.
  *
  *  rf, 1/19/97
- *
- *  rf, 8/13/98
- *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,58 +29,27 @@
 
 #include "If_Variable.h"
 
+/** Interface boolean type */
 typedef bool If_Bool_t;
 
-// callback for write-access
-//--------------------------
-class If_BoolWriteIf {
-
- public:
-  virtual ~If_BoolWriteIf() {}
-  virtual int write(If_Bool_t newVal)=0;
-};
-
-template <class X>
-class If_BoolWriteCB: public If_BoolWriteIf {
+/** Interface variable of boolean type. */
+class IF_API If_Bool: public If_Variable<If_Bool_t> {
 
  protected:
-  X	*_object;
-  int	(X::*_write)(If_Bool_t);
+  // conversion of internal data from and to a Tcl object
+  int getTclObj(Tcl_Interp *);
+  int setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr);
 
  public:
-  If_BoolWriteCB(int (X::*n_write)(If_Bool_t), X *n_object)
-    {
-      assert(n_write != NULL && n_object != NULL);
-      _write = n_write;
-      _object = n_object;
-    }
-  int write(If_Bool_t newVal)
-    {
-      return (_object->*_write)(newVal);
-    }
+  /** Constructor taking callback methods as arguments. */
+  If_Bool(const char *ifName, If_GetIf<If_Bool_t> *getCb,
+	  If_SetIf<If_Bool_t> *setCb = NULL)
+    :If_Variable<If_Bool_t>(ifName, getCb, setCb) {}
+
+  /** Alternative constructor for direct access to a variable pointer. */
+  If_Bool(const char *ifName, If_Bool_t *varPtr)
+    :If_Variable<If_Bool_t>(ifName, new If_GetPt<If_Bool_t>(varPtr),
+			   new If_SetPt<If_Bool_t>(varPtr)) {}
 };
-
-
-// class declaration
-//------------------
-class If_Bool: public If_Variable {
-
- protected:
-
-  If_Bool_t          *_varPtr;
-  If_BoolWriteIf     *_callback;
-
-  // define abstract methods of If_Variable
-  //---------------------------------------
-  int                put(Tcl_Obj *CONST objPtr);
-  int                get();
-
- public:
-
-  If_Bool(const char *ifName, If_Bool_t *varPtr, const char *mode = "rw");
-  If_Bool(const char *ifName, If_Bool_t *varPtr, If_BoolWriteIf *callback);
-  ~If_Bool();
-};
-
 
 #endif

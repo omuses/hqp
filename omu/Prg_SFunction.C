@@ -30,13 +30,16 @@
 #include <Hxi_mx_parse.h>
 
 #include <If_RealVec.h>
-#include <If_Method.h>
+#include <If_String.h>
 
 // redefine assert to throw an error instead of aborting
 #undef assert
 #define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
 
-typedef If_Method<Prg_SFunction> If_Cmd;
+#define GET_SET_CB(vartype, name) \
+  #name, \
+  IF_GET_CB(vartype, name, Prg_SFunction), \
+  IF_SET_CB(vartype, set_##name, Prg_SFunction)
 
 //--------------------------------------------------------------------------
 Prg_SFunction::Prg_SFunction()
@@ -57,10 +60,10 @@ Prg_SFunction::Prg_SFunction()
 
   _mdl_x0 = v_get(_mdl_nx);
 
-  _ifList.append(new If_RealVec("mdl_x0", &_mdl_x0));
-  _ifList.append(new If_Cmd("mdl_name", &Prg_SFunction::mdl_name, this));
-  _ifList.append(new If_Cmd("mdl_path", &Prg_SFunction::mdl_path, this));
-  _ifList.append(new If_Cmd("mdl_args", &Prg_SFunction::mdl_args, this));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x0)));
+  _ifList.append(new If_String(GET_SET_CB(const char *, mdl_name)));
+  _ifList.append(new If_String(GET_SET_CB(const char *, mdl_path)));
+  _ifList.append(new If_String(GET_SET_CB(const char *, mdl_args)));
 }
 
 //--------------------------------------------------------------------------
@@ -82,80 +85,56 @@ Prg_SFunction::~Prg_SFunction()
 }
 
 //--------------------------------------------------------------------------
-int Prg_SFunction::mdl_name(int argc, char *argv[], char **result)
+void Prg_SFunction::set_mdl_name(const char *str)
 {
-  if (argc == 1) {
-    *result = _mdl_name;
-  }
-  else if (argc == 2) {
-    free(_mdl_name);
-    _mdl_name = strdup(argv[1]);
-  }
-  else {
-    *result = "wrong # args, should be: mdl_name [new value]";
-    return IF_ERROR;
-  }
-  return IF_OK;
+  free(_mdl_name);
+  _mdl_name = strdup(str);
 }
 
 //--------------------------------------------------------------------------
-int Prg_SFunction::mdl_path(int argc, char *argv[], char **result)
+void Prg_SFunction::set_mdl_path(const char *str)
 {
-  if (argc == 1) {
-    *result = _mdl_path;
-  }
-  else if (argc == 2) {
-    free(_mdl_path);
-    _mdl_path = strdup(argv[1]);
-  }
-  else {
-    *result = "wrong # args, should be: mdl_path [new value]";
-    return IF_ERROR;
-  }
-  return IF_OK;
+  free(_mdl_path);
+  _mdl_path = strdup(str);
 }
 
 //--------------------------------------------------------------------------
-int Prg_SFunction::mdl_args(int argc, char *argv[], char **result)
+void Prg_SFunction::set_mdl_args(const char *arg_str)
 {
-  if (argc == 1) {
-    *result = _mdl_args;
-  }
-  else if (argc == 2) {
-    const char *str, *str1;
-    mxArray **args;
-    int i, nargs;
+  const char *str, *str1;
+  mxArray **args;
+  int i, nargs = 0;
 
-    // parse args
-    str = argv[1];
-    str1 = Hxi::mx_count_columns(str, nargs);
-    if (*str1 != '\0') {
-      // we did not arrive at the end of the string
-      *result = "failed to parse S-function args";
-      return IF_ERROR;
-    }
-    args = new mxArray* [nargs];
-    for (i = 0; i < nargs; i++) {
-      args[i] = Hxi::mx_parse_argument(str);
-      str = Hxi::mx_forward_argument(str);
-      if (*str == ',')
-	str = Hxi::mx_forward_whitespaces(++str);  // skip arg delimiter
-    }
+  // parse args
+  str = arg_str;
+  str1 = Hxi::mx_count_columns(str, nargs);
+  if (*str1 != '\0') {
+    // did not arrive at the end of the string
+    m_error(E_INPUT, "Prg_SFunction::set_mdl_args that "
+	    "failed to parse S-function args");
+  }
+  args = new mxArray* [nargs];
+  for (i = 0; i < nargs; i++) {
+    args[i] = Hxi::mx_parse_argument(str);
+    str = Hxi::mx_forward_argument(str);
+    if (*str == ',')
+      str = Hxi::mx_forward_whitespaces(++str);  // skip arg delimiter
+  }
 
-    // take over successfully parsed args
-    free(_mdl_args);
-    for (i = 0; i < _mdl_nargs; i++)
-      mxDestroyArray(_mx_args[i]);
-    delete [] _mx_args;
-    _mx_args = args;
-    _mdl_nargs = nargs;
-    _mdl_args = strdup(argv[1]);
-  }
-  else {
-    *result = "wrong # args, should be: mdl_args [new value]";
-    return IF_ERROR;
-  }
-  return IF_OK;
+  // take over successfully parsed args
+  free(_mdl_args);
+  for (i = 0; i < _mdl_nargs; i++)
+    mxDestroyArray(_mx_args[i]);
+  delete [] _mx_args;
+  _mx_args = args;
+  _mdl_nargs = nargs;
+  _mdl_args = strdup(arg_str);
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunction::set_mdl_x0(const VECP value)
+{
+  v_copy(value, _mdl_x0);
 }
 
 //--------------------------------------------------------------------------

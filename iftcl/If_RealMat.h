@@ -1,15 +1,12 @@
-/*
- *  If_RealMat.h
- *   - matrices of reals (currently supported: Meschach MAT* and MATP)
+/**
+ *  @file If_RealMat.h
+ *     Interface variables for matrices of reals (currently Mesch::MATP)
  *
  *  rf, 2/7/97
- *
- *  rf, 8/13/98
- *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -35,57 +32,47 @@
 
 #include "If_Variable.h"
 
-// callback for write-access
-//--------------------------
-class If_RealMatWriteIf {
+/** Interface real matrix type */
+typedef const Mesch::MATP If_RealMat_t;
 
- public:
-  virtual ~If_RealMatWriteIf() {}
-  virtual int write(MAT *newMAT)=0;
-};
-
-template <class X>
-class If_RealMatWriteCB: public If_RealMatWriteIf {
+/** Interface variable of real matrix type. */
+class IF_API If_RealMat: public If_Variable<If_RealMat_t> {
 
  protected:
-  X	*_object;
-  int	(X::*_write)(MAT *);
+  // conversion of internal data from and to a Tcl object
+  int getTclObj(Tcl_Interp *);
+  int setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr);
 
  public:
-  If_RealMatWriteCB(int (X::*n_write)(MAT *), X *n_object)
-    {
-      assert(n_write != NULL && n_object != NULL);
-      _write = n_write;
-      _object = n_object;
-    }
-  int write(MAT *newMAT)
-    {
-      return (_object->*_write)(newMAT);
-    }
-};
+  /** Constructor taking callback methods as arguments. */
+  If_RealMat(const char *ifName, If_GetIf<If_RealMat_t> *getCb,
+	 If_SetIf<If_RealMat_t> *setCb = NULL)
+    :If_Variable<If_RealMat_t>(ifName, getCb, setCb) {}
 
+  /** Alternative constructor for direct read/write access to a MATP. */
+  If_RealMat(const char *ifName, MATP *varPtr)
+    :If_Variable<If_RealMat_t>(ifName,
+			      new If_GetPt<If_RealMat_t>(varPtr),
+			      new SetMAT((MAT **)varPtr)) {}
 
-// class declaration
-//------------------
-class If_RealMat: public If_Variable {
+  /** Alternative constructor for direct read/write access to a MAT*. */
+  If_RealMat(const char *ifName, MAT **varPtr)
+    :If_Variable<If_RealMat_t>(ifName,
+			      new If_GetPt2<If_RealMat_t, MAT*>(varPtr),
+			      new SetMAT(varPtr)) {}
 
- protected:
+ private:
+  /** Write callback for direct access to a real matrix */
+  class SetMAT: public If_SetIf<If_RealMat_t> {
+   protected:
+    MAT **_varPtr; 	///< pointer to accessed variable
 
-  MAT		**_varPtr;
-  If_RealMatWriteIf *_callback;
-
-  // define abstract methods of If_Variable
-  //---------------------------------------
-  int           put(Tcl_Obj *CONST objPtr);
-  int           get();
-
- public:
-
-  If_RealMat(const char *ifName, MAT **varPtr, const char *mode = "rw");
-  If_RealMat(const char *ifName, MATP *varPtr, const char *mode = "rw");
-  If_RealMat(const char *ifName, MAT **varPtr, If_RealMatWriteIf *callback);
-  If_RealMat(const char *ifName, MATP *varPtr, If_RealMatWriteIf *callback);
-  ~If_RealMat();
+   public:
+    /** constructor */
+    SetMAT(MAT **varPtr): _varPtr(varPtr) {}
+    /** set method */
+    void set(If_RealMat_t value) {*_varPtr = m_copy(value, *_varPtr);}
+  };
 };
 
 #endif

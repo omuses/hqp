@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -23,65 +23,31 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "If_Bool.h"
 
-
 //--------------------------------------------------------------------------
-If_Bool::If_Bool(const char *ifName, If_Bool_t *varPtr, const char *mode)
-  :If_Variable(ifName, mode)
-{
-  _varPtr = varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_Bool::If_Bool(const char *ifName, If_Bool_t *varPtr,
-		 If_BoolWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_Bool::~If_Bool()
-{
-  delete _callback;
-}
-
-//--------------------------------------------------------------------------
-int If_Bool::put(Tcl_Obj *CONST objPtr)
+int If_Bool::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {
   int value;
 
   // parse the new value
   //--------------------
-  if (Tcl_GetBooleanFromObj(theInterp, objPtr, &value) != TCL_OK)
+  if (Tcl_GetBooleanFromObj(interp, objPtr, &value) != TCL_OK)
     return TCL_ERROR;
 
   // use the new value
   //------------------
-  if (_callback) {
-    if (_callback->write((If_Bool_t)value) != IF_OK) {
-      Tcl_AppendResult(theInterp, "writing of ", _ifName, " rejected", NULL);
-      return TCL_ERROR;
-    }
-  }
-  else
-    *_varPtr = (If_Bool_t)value;
+  set(value);
 
   return TCL_OK;
 }
 
 //--------------------------------------------------------------------------
-int If_Bool::get()
+int If_Bool::getTclObj(Tcl_Interp *interp)
 {
-  Tcl_Obj *objPtr = Tcl_NewBooleanObj(*_varPtr);
+  Tcl_Obj *objPtr = Tcl_NewBooleanObj(get());
 
-  Tcl_SetObjResult(theInterp, objPtr);
+  Tcl_SetObjResult(interp, objPtr);
 
   return TCL_OK;
 }

@@ -210,9 +210,12 @@ Hqp_Docp::Hqp_Docp()
 
   _ifList.append(new If_Cmd("prg_simulate",
 			    &Hqp_Docp::simulate, this));
-  _ifList.append(new If_IntVec("prg_nxs", &_nxs, "r"));
-  _ifList.append(new If_IntVec("prg_nus", &_nus, "r"));
-  _ifList.append(new If_Int("prg_fbd_evals", &_fbd_evals));
+  _ifList.append(new If_IntVec("prg_nxs",
+			       IF_GET_CB(const IVECP, nxs, Hqp_Docp)));
+  _ifList.append(new If_IntVec("prg_nus",
+			       IF_GET_CB(const IVECP, nus, Hqp_Docp)));
+  _ifList.append(new If_Int("prg_fbd_evals", 
+			    IF_GET_CB(int, fbd_evals, Hqp_Docp)));
 }  
 
 //-------------------------------------------------------------------------

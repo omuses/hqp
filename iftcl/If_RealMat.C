@@ -26,55 +26,12 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <malloc.h>
-
 #include "If_RealMat.h"
 
 //--------------------------------------------------------------------------
-If_RealMat::If_RealMat(const char *ifName, MAT **varPtr, const char *mode)
-  :If_Variable(ifName, mode)
+int If_RealMat::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {
-  _varPtr = varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_RealMat::If_RealMat(const char *ifName, MATP *varPtr, const char *mode)
-  :If_Variable(ifName, mode)
-{
-  _varPtr = (MAT **)varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_RealMat::If_RealMat(const char *ifName, MAT **varPtr,
-		       If_RealMatWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_RealMat::If_RealMat(const char *ifName, MATP *varPtr,
-		       If_RealMatWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = (MAT **)varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_RealMat::~If_RealMat()
-{
-  delete _callback;
-}
-
-//--------------------------------------------------------------------------
-int If_RealMat::put(Tcl_Obj *CONST objPtr)
-{
+  const MAT *curMat = get();
   int  i, j;
   int  nrows = 0, ncols = 0;
   int  dummy;
@@ -83,21 +40,21 @@ int If_RealMat::put(Tcl_Obj *CONST objPtr)
 
   // split up the matrix into it's rows
   //-----------------------------------
-  if (Tcl_ListObjGetElements(theInterp, objPtr, &nrows, &rows) != TCL_OK)
+  if (Tcl_ListObjGetElements(interp, objPtr, &nrows, &rows) != TCL_OK)
     return TCL_ERROR;
 
   // split up the first row -- to get the number of cols
   //----------------------------------------------------
   if (nrows > 0)
-    if (Tcl_ListObjGetElements(theInterp, rows[0], &ncols, &cols) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, rows[0], &ncols, &cols) != TCL_OK) {
       return TCL_ERROR;
     }
 
   // check dimension
   //----------------
-  if (*_varPtr == MNULL
-      || nrows != (int)(*_varPtr)->m || ncols != (int)(*_varPtr)->n) {
-    Tcl_AppendResult(theInterp, "wrong dimension", NULL);
+  if (curMat == MNULL
+      || nrows != (int)(curMat)->m || ncols != (int)(curMat)->n) {
+    Tcl_AppendResult(interp, "wrong dimension for ", _ifName, NULL);
     return TCL_ERROR;
   }
 
@@ -107,12 +64,13 @@ int If_RealMat::put(Tcl_Obj *CONST objPtr)
 
   for (i = 0; i < nrows; i++) {
     if (i > 0) {
-      if (Tcl_ListObjGetElements(theInterp, rows[i], &dummy, &cols) != TCL_OK) {
+      if (Tcl_ListObjGetElements(interp, rows[i], &dummy, &cols) != TCL_OK) {
 	m_free(newMat);
 	return TCL_ERROR;
       }
       if (dummy != ncols) {
-	Tcl_AppendResult(theInterp, "Different sizes of rows!", NULL);
+	Tcl_AppendResult(interp, "different sizes of rows in ",
+			 _ifName, "!", NULL);
 	m_free(newMat);
 	return TCL_ERROR;
       }
@@ -121,7 +79,7 @@ int If_RealMat::put(Tcl_Obj *CONST objPtr)
       
       // parse the new value
       //--------------------
-      if (Tcl_GetDoubleFromObj(theInterp, cols[j], &element) != TCL_OK) {
+      if (Tcl_GetDoubleFromObj(interp, cols[j], &element) != TCL_OK) {
 	// in case of error check for Inf, +Inf, -Inf
 	int len;
 	const char *str = Tcl_GetStringFromObj(cols[j], &len);
@@ -135,7 +93,7 @@ int If_RealMat::put(Tcl_Obj *CONST objPtr)
 	  str++;
 	}
 	if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
-	  Tcl_ResetResult(theInterp);
+	  Tcl_ResetResult(interp);
 	  element *= Inf;
 	}
 	else {
@@ -149,40 +107,31 @@ int If_RealMat::put(Tcl_Obj *CONST objPtr)
 
   // use the new matrix
   //-------------------
-  if (_callback) {
-    if (_callback->write(newMat) != IF_OK) {
-      Tcl_AppendResult(theInterp, "writing of ", _ifName, " rejected", NULL);
-      m_free(newMat);
-      return TCL_ERROR;
-    }
-  }
-  else
-    *_varPtr = m_copy(newMat, *_varPtr);
-
+  set(newMat);
   m_free(newMat);
 
   return TCL_OK;
 }
 
 //--------------------------------------------------------------------------
-int If_RealMat::get()
+int If_RealMat::getTclObj(Tcl_Interp *interp)
 {
-  MAT *mat = *_varPtr;
-  int i, iend = mat? mat->m: 0;
-  int j, jend = mat? mat->n: 0;
+  const MAT *curMat = get();
+  int i, iend = curMat? curMat->m: 0;
+  int j, jend = curMat? curMat->n: 0;
   Tcl_Obj *listPtr = Tcl_NewListObj(0, NULL);
   Tcl_Obj *rowPtr, *objPtr;
 
   for (i = 0; i < iend; i++) {
     rowPtr = Tcl_NewListObj(0, NULL);
     for (j = 0; j < jend; j++) {
-      objPtr = Tcl_NewDoubleObj(mat->me[i][j]);
-      Tcl_ListObjAppendElement(theInterp, rowPtr, objPtr);
+      objPtr = Tcl_NewDoubleObj(curMat->me[i][j]);
+      Tcl_ListObjAppendElement(interp, rowPtr, objPtr);
     }
-    Tcl_ListObjAppendElement(theInterp, listPtr, rowPtr);
+    Tcl_ListObjAppendElement(interp, listPtr, rowPtr);
   }
 
-  Tcl_SetObjResult(theInterp, listPtr);
+  Tcl_SetObjResult(interp, listPtr);
 
   return TCL_OK;
 }

@@ -1,15 +1,12 @@
-/*
- *  If_RealVec.h
- *   - vectors of reals (currently supported: Meschach VEC* and VECP)
+/**
+ *  @file If_RealVec.h
+ *     Interface variables for vectors of reals (currently Mesch::VECP)
  *
  *  rf, 2/7/97
- *
- *  rf, 8/13/98
- *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -35,57 +32,47 @@
 
 #include "If_Variable.h"
 
-// typedef for a callback for write-access
-//----------------------------------------
-class If_RealVecWriteIf {
+/** Interface real vector type */
+typedef const Mesch::VECP If_RealVec_t;
 
- public:
-  virtual ~If_RealVecWriteIf() {}
-  virtual int write(VEC *newVEC)=0;
-};
-
-template <class X>
-class If_RealVecWriteCB: public If_RealVecWriteIf {
+/** Interface variable of real vector type. */
+class IF_API If_RealVec: public If_Variable<If_RealVec_t> {
 
  protected:
-  X	*_object;
-  int	(X::*_write)(VEC *);
+  // conversion of internal data from and to a Tcl object
+  int getTclObj(Tcl_Interp *);
+  int setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr);
 
  public:
-  If_RealVecWriteCB(int (X::*n_write)(VEC *), X *n_object)
-    {
-      assert(n_write != NULL && n_object != NULL);
-      _write = n_write;
-      _object = n_object;
-    }
-  int write(VEC *newVEC)
-    {
-      return (_object->*_write)(newVEC);
-    }
-};
+  /** Constructor taking callback methods as arguments. */
+  If_RealVec(const char *ifName, If_GetIf<If_RealVec_t> *getCb,
+	 If_SetIf<If_RealVec_t> *setCb = NULL)
+    :If_Variable<If_RealVec_t>(ifName, getCb, setCb) {}
 
+  /** Alternative constructor for direct read/write access to a VECP. */
+  If_RealVec(const char *ifName, VECP *varPtr)
+    :If_Variable<If_RealVec_t>(ifName,
+			      new If_GetPt<If_RealVec_t>(varPtr),
+			      new SetVEC((VEC **)varPtr)) {}
 
-// class declaration
-//------------------
-class If_RealVec: public If_Variable {
+  /** Alternative constructor for direct read/write access to a VEC*. */
+  If_RealVec(const char *ifName, VEC **varPtr)
+    :If_Variable<If_RealVec_t>(ifName,
+			      new If_GetPt2<If_RealVec_t, VEC*>(varPtr),
+			      new SetVEC(varPtr)) {}
 
- protected:
+ private:
+  /** Write callback for direct access to a real vector */
+  class SetVEC: public If_SetIf<If_RealVec_t> {
+   protected:
+    VEC **_varPtr; 	///< pointer to accessed variable
 
-  VEC			**_varPtr;
-  If_RealVecWriteIf  	*_callback;
-
-  // define abstract methods of If_Variable
-  //---------------------------------------
-  int                  put(Tcl_Obj *CONST objPtr);
-  int                  get();
-
- public:
-
-  If_RealVec(const char *ifName, VEC **varPtr, const char *mode = "rw");
-  If_RealVec(const char *ifName, VECP *varPtr, const char *mode = "rw");
-  If_RealVec(const char *ifName, VEC **varPtr, If_RealVecWriteIf *callback);
-  If_RealVec(const char *ifName, VECP *varPtr, If_RealVecWriteIf *callback);
-  ~If_RealVec();
+   public:
+    /** constructor */
+    SetVEC(VEC **varPtr): _varPtr(varPtr) {}
+    /** set method */
+    void set(If_RealVec_t value) {*_varPtr = v_copy(value, *_varPtr);}
+  };
 };
 
 #endif

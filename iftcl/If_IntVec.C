@@ -33,48 +33,9 @@
 #include "If_IntVec.h"
 
 //--------------------------------------------------------------------------
-If_IntVec::If_IntVec(const char *ifName, IVEC **varPtr, const char *mode)
-  :If_Variable(ifName, mode)
+int If_IntVec::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {
-  _varPtr = varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_IntVec::If_IntVec(const char *ifName, IVECP *varPtr, const char *mode)
-  :If_Variable(ifName, mode)
-{
-  _varPtr = (IVEC **)varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_IntVec::If_IntVec(const char *ifName, IVEC **varPtr,
-		     If_IntVecWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_IntVec::If_IntVec(const char *ifName, IVECP *varPtr,
-		     If_IntVecWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = (IVEC **)varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_IntVec::~If_IntVec()
-{
-  delete _callback;
-}
-
-//--------------------------------------------------------------------------
-int If_IntVec::put(Tcl_Obj *CONST objPtr)
-{
+  const IVEC *curIVec = get();
   int  j;
   int  ncols = 0;
   Tcl_Obj **cols;
@@ -82,63 +43,54 @@ int If_IntVec::put(Tcl_Obj *CONST objPtr)
 
   // split up objPtr into list elements
   //-----------------------------------
-  if (Tcl_ListObjGetElements(theInterp, objPtr, &ncols, &cols) != TCL_OK) {
+  if (Tcl_ListObjGetElements(interp, objPtr, &ncols, &cols) != TCL_OK) {
     return TCL_ERROR;
   }
 
   // check dimension
   //----------------
-  if (*_varPtr == IVNULL || ncols != (int)(*_varPtr)->dim) {
-    Tcl_AppendResult(theInterp, "wrong dimension", NULL);
+  if (curIVec == IVNULL || ncols != (int)(curIVec)->dim) {
+    Tcl_AppendResult(interp, "wrong dimension for ", _ifName, NULL);
     return TCL_ERROR;
   }
 
   // create and fill a new vector
   //-----------------------------
-  IVEC *newIVEC = iv_get(ncols);
+  IVEC *newIVec = iv_get(ncols);
 
   for (j = 0; j < ncols; j++) {
       
     // parse new value
     //----------------
-    if(Tcl_GetIntFromObj(theInterp, cols[j], &element) != TCL_OK) {
-      iv_free(newIVEC);
+    if(Tcl_GetIntFromObj(interp, cols[j], &element) != TCL_OK) {
+      iv_free(newIVec);
       return TCL_ERROR;
     }
-    newIVEC->ive[j] = element;
+    newIVec->ive[j] = element;
   }
 
   // use the new vector
   //-------------------
-  if (_callback) {
-    if (_callback->write(newIVEC) != IF_OK) {
-      Tcl_AppendResult(theInterp, "writing to ", _ifName, " rejected", NULL);
-      iv_free(newIVEC);
-      return TCL_ERROR;
-    }
-  }
-  else
-    *_varPtr = iv_copy(newIVEC, *_varPtr);
-
-  iv_free(newIVEC);
+  set(newIVec);
+  iv_free(newIVec);
 
   return TCL_OK;
 }
 
 //--------------------------------------------------------------------------
-int If_IntVec::get()
+int If_IntVec::getTclObj(Tcl_Interp *interp)
 {
-  IVEC *ivec = *_varPtr;
-  int j, jend = ivec? ivec->dim: 0;
+  const IVEC *curIVec = get();
+  int j, jend = curIVec? curIVec->dim: 0;
   Tcl_Obj *listPtr = Tcl_NewListObj(0, NULL);
   Tcl_Obj *objPtr;
 
   for (j = 0; j < jend; j++) {
-    objPtr = Tcl_NewIntObj(ivec->ive[j]);
-    Tcl_ListObjAppendElement(theInterp, listPtr, objPtr);
+    objPtr = Tcl_NewIntObj(curIVec->ive[j]);
+    Tcl_ListObjAppendElement(interp, listPtr, objPtr);
   }
 
-  Tcl_SetObjResult(theInterp, listPtr);
+  Tcl_SetObjResult(interp, listPtr);
 
   return TCL_OK;
 }

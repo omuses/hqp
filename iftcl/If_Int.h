@@ -1,15 +1,12 @@
-/*
- *  If_Int.h
- *     - an If_Variable for type Int
+/**
+ *  @file If_Int.h
+ *     Interface variable for integers.
  *
  *  rf, 6/22/94
- *
- *  rf, 8/13/98
- *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,55 +29,27 @@
 
 #include "If_Variable.h"
 
+/** Interface integer type */
 typedef int If_Int_t;
 
-// callback for write-access
-//--------------------------
-class If_IntWriteIf {
-
- public:
-  virtual ~If_IntWriteIf() {}
-  virtual int write(If_Int_t newVal)=0;
-};
-
-template <class X>
-class If_IntWriteCB: public If_IntWriteIf {
+/** Interface variable of integer type. */
+class IF_API If_Int: public If_Variable<If_Int_t> {
 
  protected:
-  X	*_object;
-  int	(X::*_write)(If_Int_t);
+  // conversion of internal data from and to a Tcl object
+  int getTclObj(Tcl_Interp *);
+  int setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr);
 
  public:
-  If_IntWriteCB(int (X::*n_write)(If_Int_t), X *n_object)
-    {
-      assert(n_write != NULL && n_object != NULL);
-      _write = n_write;
-      _object = n_object;
-    }
-  int write(If_Int_t newVal)
-    {
-      return (_object->*_write)(newVal);
-    }
+  /** Constructor taking callback methods as arguments. */
+  If_Int(const char *ifName, If_GetIf<If_Int_t> *getCb,
+	 If_SetIf<If_Int_t> *setCb = NULL)
+    :If_Variable<If_Int_t>(ifName, getCb, setCb) {}
+
+  /** Alternative constructor for direct access to a variable pointer. */
+  If_Int(const char *ifName, If_Int_t *varPtr)
+    :If_Variable<If_Int_t>(ifName, new If_GetPt<If_Int_t>(varPtr),
+			   new If_SetPt<If_Int_t>(varPtr)) {}
 };
-
-// class declaration
-//------------------
-class If_Int: public If_Variable {
-
- protected:
-  If_Int_t	*_varPtr;
-  If_IntWriteIf	*_callback;
-
-  // define abstract methods of If_Variable
-  //---------------------------------------
-  int                  put(Tcl_Obj *CONST objPtr);
-  int                  get();
-
- public:
-  If_Int(const char *ifName, If_Int_t *varPtr, const char *mode = "rw");
-  If_Int(const char *ifName, If_Int_t *varPtr, If_IntWriteIf *callback);
-  ~If_Int();
-};
-
 
 #endif

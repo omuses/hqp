@@ -40,6 +40,10 @@
 #undef assert
 #define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
 
+#define GET_CB(vartype, name) \
+  #name, \
+  IF_GET_CB(vartype, name, Prg_SFunctionEst)
+
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -103,7 +107,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealVec("mdl_p_max", &_mdl_p.max));
   // make mdl_x0 read only as mdl_x0s should be used
   // (mdl_x0s is needed to cover multiple experiments)
-  _ifList.append(new If_RealVec("mdl_x0", &_mdl_x0, "r"));
+  _ifList.append(new If_RealVec(GET_CB(const VECP, mdl_x0)));
   _ifList.append(new If_RealVec("mdl_x0_min", &_mdl_x0.min));
   _ifList.append(new If_RealVec("mdl_x0_max", &_mdl_x0.max));
 

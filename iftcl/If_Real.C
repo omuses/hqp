@@ -23,41 +23,16 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <math.h>
-
 #include "If_Real.h"
 
 //--------------------------------------------------------------------------
-If_Real::If_Real(const char *ifName, If_Real_t *varPtr, const char *mode)
-  :If_Variable(ifName, mode)
-{
-  _varPtr = varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_Real::If_Real(const char *ifName, If_Real_t *varPtr,
-		 If_RealWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_Real::~If_Real()
-{
-  delete _callback;
-}
-
-//--------------------------------------------------------------------------
-int If_Real::put(Tcl_Obj *CONST objPtr)
+int If_Real::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {
   If_Real_t value;
 
   // parse the new value
   //--------------------
-  if (Tcl_GetDoubleFromObj(theInterp, objPtr, &value) != TCL_OK) {
+  if (Tcl_GetDoubleFromObj(interp, objPtr, &value) != TCL_OK) {
     // in case of error check for Inf, +Inf, -Inf
     int len;
     const char *str = Tcl_GetStringFromObj(objPtr, &len);
@@ -71,7 +46,7 @@ int If_Real::put(Tcl_Obj *CONST objPtr)
       str++;
     }
     if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
-      Tcl_ResetResult(theInterp);
+      Tcl_ResetResult(interp);
       value *= Inf;
     }
     else
@@ -80,24 +55,17 @@ int If_Real::put(Tcl_Obj *CONST objPtr)
 
   // use the new value
   //------------------
-  if (_callback) {
-    if (_callback->write(value) != IF_OK) {
-      Tcl_AppendResult(theInterp, "writing of ", _ifName, " rejected", NULL);
-      return TCL_ERROR;
-    }
-  }
-  else
-    *_varPtr = value;
+  set(value);
 
   return TCL_OK;
 }
 
 //--------------------------------------------------------------------------
-int If_Real::get()
+int If_Real::getTclObj(Tcl_Interp *interp)
 {
-  Tcl_Obj *objPtr = Tcl_NewDoubleObj(*_varPtr);
+  Tcl_Obj *objPtr = Tcl_NewDoubleObj(get());
 
-  Tcl_SetObjResult(theInterp, objPtr);
+  Tcl_SetObjResult(interp, objPtr);
 
   return TCL_OK;
 }

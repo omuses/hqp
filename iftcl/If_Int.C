@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,58 +26,28 @@
 #include "If_Int.h"
 
 //--------------------------------------------------------------------------
-If_Int::If_Int(const char *ifName, If_Int_t *varPtr, const char *mode)
-  :If_Variable(ifName, mode)
-{
-  _varPtr = varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_Int::If_Int(const char *ifName, If_Int_t *varPtr,
-	       If_IntWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_Int::~If_Int()
-{
-  delete _callback;
-}
-
-//--------------------------------------------------------------------------
-int If_Int::put(Tcl_Obj *CONST objPtr)
+int If_Int::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {
   If_Int_t value;
 
   // parse the new value
   //--------------------
-  if (Tcl_GetIntFromObj(theInterp, objPtr, &value) != TCL_OK)
+  if (Tcl_GetIntFromObj(interp, objPtr, &value) != TCL_OK)
     return TCL_ERROR;
 
   // use the new value
   //------------------
-  if (_callback) {
-    if (_callback->write(value) != IF_OK) {
-      Tcl_AppendResult(theInterp, "writing of ", _ifName, " rejected", NULL);
-      return TCL_ERROR;
-    }
-  }
-  else
-    *_varPtr = value;
+  set(value);
 
   return TCL_OK;
 }
 
 //--------------------------------------------------------------------------
-int If_Int::get()
+int If_Int::getTclObj(Tcl_Interp *interp)
 {
-  Tcl_Obj *objPtr = Tcl_NewIntObj(*_varPtr);
+  Tcl_Obj *objPtr = Tcl_NewIntObj(get());
 
-  Tcl_SetObjResult(theInterp, objPtr);
+  Tcl_SetObjResult(interp, objPtr);
 
   return TCL_OK;
 }

@@ -108,6 +108,22 @@ class Hqp_Docp: public Hqp_SqpProgram {
   //----------------------------------------------------------------------
   void	alloc_vars(VECP v, VECP vmin, VECP vmax, int n);
 
+  /**
+   * @name Member access methods.
+   */
+  //@{
+
+  /** number of states per stage k */
+  const IVECP nxs() const {return _nxs;}
+
+  /** number of control parameters per stage k */
+  const IVECP nus() const {return _nus;}
+
+  /** number of function evaluations */
+  int fbd_evals() const {return _fbd_evals;}
+
+  //@}
+
  private:
 
   int	_k0;

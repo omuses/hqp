@@ -33,8 +33,8 @@
 #define IF_WRITE 2
 
 //--------------------------------------------------------------------------
-If_Variable::If_Variable(const char *ifName, const char *mode)
-:If_Element(ifName)
+If_VariableCmd::If_VariableCmd(const char *ifName, const char *mode)
+  :If_Element(ifName)
 {
   Tcl_CreateObjCommand(theInterp, _ifName,
 		       tclCmd, (ClientData)this, NULL);
@@ -50,16 +50,16 @@ If_Variable::If_Variable(const char *ifName, const char *mode)
 }
 
 //--------------------------------------------------------------------------
-If_Variable::~If_Variable()
+If_VariableCmd::~If_VariableCmd()
 {
   Tcl_DeleteCommand(theInterp, _ifName);
 }
 
 //--------------------------------------------------------------------------
-int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
-			int objc, Tcl_Obj *CONST objv[])
+int If_VariableCmd::tclCmd(ClientData cld, Tcl_Interp *interp,
+			   int objc, Tcl_Obj *CONST objv[])
 {
-  If_Variable *var = (If_Variable *)cld;
+  If_VariableCmd *var = (If_VariableCmd *)cld;
 
   m_catchall(// try
 	     // use tractcatch to get error message printed to stderr
@@ -68,9 +68,9 @@ int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
 
 			  case 1:
 			    if (var->_mode & IF_READ)
-			      return var->get();
+			      return var->getTclObj(interp);
 			    else {
-			      Tcl_AppendResult(theInterp,
+			      Tcl_AppendResult(interp,
 					       "read permission denied for ",
 					       var->_ifName, NULL);
 			      return TCL_ERROR;
@@ -78,16 +78,16 @@ int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
 
 			  case 2:
 			    if (var->_mode & IF_WRITE)
-			      return var->put(objv[1]);
+			      return var->setTclObj(interp, objv[1]);
 			    else {
-			      Tcl_AppendResult(theInterp,
+			      Tcl_AppendResult(interp,
 					       "write permission denied for ",
 					       var->_ifName, NULL);
 			      return TCL_ERROR;
 			    }
 
 			  default:
-			    Tcl_AppendResult(theInterp,
+			    Tcl_AppendResult(interp,
 					     "wrong # args, should be: ",
 					     var->_ifName, " [new value]",
 					     NULL);
@@ -96,7 +96,7 @@ int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
 			  // catch and throw
 			  "If_Variable::tclCmd"),
 	     // catch
-	     Tcl_AppendResult(theInterp, "error accessing ",
+	     Tcl_AppendResult(interp, "error accessing ",
 			      var->_ifName, NULL);
 	     return TCL_ERROR);
 

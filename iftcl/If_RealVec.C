@@ -26,55 +26,12 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <malloc.h>
-
 #include "If_RealVec.h"
 
 //--------------------------------------------------------------------------
-If_RealVec::If_RealVec(const char *ifName, VEC **varPtr, const char *mode)
-  :If_Variable(ifName, mode)
+int If_RealVec::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {
-  _varPtr = varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_RealVec::If_RealVec(const char *ifName, VECP *varPtr, const char *mode)
-  :If_Variable(ifName, mode)
-{
-  _varPtr = (VEC **)varPtr;
-  _callback = NULL;
-}
-
-//--------------------------------------------------------------------------
-If_RealVec::If_RealVec(const char *ifName, VEC **varPtr,
-		       If_RealVecWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_RealVec::If_RealVec(const char *ifName, VECP *varPtr,
-		       If_RealVecWriteIf *callback)
-  :If_Variable(ifName)
-{
-  _varPtr = (VEC **)varPtr;
-  _callback = callback;
-}
-
-//--------------------------------------------------------------------------
-If_RealVec::~If_RealVec()
-{
-  delete _callback;
-}
-
-//--------------------------------------------------------------------------
-int If_RealVec::put(Tcl_Obj *CONST objPtr)
-{
+  const VEC *curVec = get();
   int  j;
   int  ncols=0;
   Tcl_Obj **cols;
@@ -82,14 +39,14 @@ int If_RealVec::put(Tcl_Obj *CONST objPtr)
 
   // split up objPtr into list elements
   //-----------------------------------
-  if (Tcl_ListObjGetElements(theInterp, objPtr, &ncols, &cols) != TCL_OK) {
+  if (Tcl_ListObjGetElements(interp, objPtr, &ncols, &cols) != TCL_OK) {
     return TCL_ERROR;
   }
 
   // check dimension
   //----------------
-  if (*_varPtr == VNULL || ncols != (int)(*_varPtr)->dim) {
-    Tcl_AppendResult(theInterp, "wrong dimension", NULL);
+  if (curVec == VNULL || ncols != (int)(curVec)->dim) {
+    Tcl_AppendResult(interp, "wrong dimension for ", _ifName, NULL);
     return TCL_ERROR;
   }
 
@@ -101,7 +58,7 @@ int If_RealVec::put(Tcl_Obj *CONST objPtr)
       
     // parse new value
     //----------------
-    if(Tcl_GetDoubleFromObj(theInterp, cols[j], &element) != TCL_OK) {
+    if(Tcl_GetDoubleFromObj(interp, cols[j], &element) != TCL_OK) {
       // in case of error check for Inf, +Inf, -Inf
       int len;
       const char *str = Tcl_GetStringFromObj(cols[j], &len);
@@ -115,7 +72,7 @@ int If_RealVec::put(Tcl_Obj *CONST objPtr)
 	str++;
       }
       if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
-	Tcl_ResetResult(theInterp);
+	Tcl_ResetResult(interp);
 	element *= Inf;
       }
       else {
@@ -128,35 +85,26 @@ int If_RealVec::put(Tcl_Obj *CONST objPtr)
 
   // use the new vector
   //-------------------
-  if (_callback) {
-    if (_callback->write(newVec) != IF_OK) {
-      Tcl_AppendResult(theInterp, "writing of ", _ifName, " rejected", NULL);
-      v_free(newVec);
-      return TCL_ERROR;
-    }
-  }
-  else
-    *_varPtr = v_copy(newVec, *_varPtr);
-
+  set(newVec);
   v_free(newVec);
 
   return TCL_OK;
 }
 
 //--------------------------------------------------------------------------
-int If_RealVec::get()
+int If_RealVec::getTclObj(Tcl_Interp *interp)
 {
-  VEC	*vec = *_varPtr;
-  int   j, jend = vec? vec->dim: 0;
+  const VEC *curVec = get();
+  int   j, jend = curVec? curVec->dim: 0;
   Tcl_Obj *listPtr = Tcl_NewListObj(0, NULL);
   Tcl_Obj *objPtr;
 
   for (j = 0; j < jend; j++) {
-    objPtr = Tcl_NewDoubleObj(vec->ve[j]);
-    Tcl_ListObjAppendElement(theInterp, listPtr, objPtr);
+    objPtr = Tcl_NewDoubleObj(curVec->ve[j]);
+    Tcl_ListObjAppendElement(interp, listPtr, objPtr);
   }
 
-  Tcl_SetObjResult(theInterp, listPtr);
+  Tcl_SetObjResult(interp, listPtr);
 
   return TCL_OK;
 }

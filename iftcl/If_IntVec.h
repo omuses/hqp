@@ -1,15 +1,12 @@
-/*
- *  If_IntVec.h
- *   - integer vectors of the Meschach library
+/**
+ *  @file If_IntVec.h
+ *    Interface variables for integer vectors of the Meschach library.
  *
  *  rf, 1/31/97
- *
- *  rf, 8/13/98
- *   - use typed Tcl 8 objects instead of strings
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -35,57 +32,47 @@
 
 #include "If_Variable.h"
 
-// typedef for a callback for write-access
-//----------------------------------------
-class If_IntVecWriteIf {
+/** Interface integer vector type */
+typedef const Mesch::IVECP If_IntVec_t;
 
- public:
-  virtual ~If_IntVecWriteIf() {}
-  virtual int write(IVEC *newIVEC)=0;
-};
-
-template <class X>
-class If_IntVecWriteCB: public If_IntVecWriteIf {
+/** Interface variable of integer vector type. */
+class IF_API If_IntVec: public If_Variable<If_IntVec_t> {
 
  protected:
-  X	*_object;
-  int	(X::*_write)(IVEC *);
+  // conversion of internal data from and to a Tcl object
+  int getTclObj(Tcl_Interp *);
+  int setTclObj(Tcl_Interp *, Tcl_Obj *CONST objPtr);
 
  public:
-  If_IntVecWriteCB(int (X::*n_write)(IVEC *), X *n_object)
-    {
-      assert(n_write != NULL && n_object != NULL);
-      _write = n_write;
-      _object = n_object;
-    }
-  int write(IVEC *newIVEC)
-    {
-      return (_object->*_write)(newIVEC);
-    }
-};
+  /** Constructor taking callback methods as arguments. */
+  If_IntVec(const char *ifName, If_GetIf<If_IntVec_t> *getCb,
+	 If_SetIf<If_IntVec_t> *setCb = NULL)
+    :If_Variable<If_IntVec_t>(ifName, getCb, setCb) {}
 
+  /** Alternative constructor for direct read/write access to an IVECP. */
+  If_IntVec(const char *ifName, IVECP *varPtr)
+    :If_Variable<If_IntVec_t>(ifName,
+			      new If_GetPt<If_IntVec_t>(varPtr),
+			      new SetIVEC((IVEC **)varPtr)) {}
 
-// class declaration
-//------------------
-class If_IntVec: public If_Variable {
+  /** Alternative constructor for direct read/write access to an IVEC*. */
+  If_IntVec(const char *ifName, IVEC **varPtr)
+    :If_Variable<If_IntVec_t>(ifName,
+			      new If_GetPt2<If_IntVec_t, IVEC*>(varPtr),
+			      new SetIVEC(varPtr)) {}
 
- protected:
+ private:
+  /** Write callback for direct access to an integer vector */
+  class SetIVEC: public If_SetIf<If_IntVec_t> {
+   protected:
+    IVEC **_varPtr; 	///< pointer to accessed variable
 
-  IVEC			**_varPtr;
-  If_IntVecWriteIf  	*_callback;
-
-  // define abstract methods of If_Variable
-  //---------------------------------------
-  int                  put(Tcl_Obj *CONST objPtr);
-  int                  get();
-
- public:
-
-  If_IntVec(const char *ifName, IVEC **varPtr, const char *mode = "rw");
-  If_IntVec(const char *ifName, IVECP *varPtr, const char *mode = "rw");
-  If_IntVec(const char *ifName, IVEC **varPtr, If_IntVecWriteIf *callback);
-  If_IntVec(const char *ifName, IVECP *varPtr, If_IntVecWriteIf *callback);
-  ~If_IntVec();
+   public:
+    /** constructor */
+    SetIVEC(IVEC **varPtr): _varPtr(varPtr) {}
+    /** set method */
+    void set(If_IntVec_t value) {*_varPtr = iv_copy(value, *_varPtr);}
+  };
 };
 
 #endif

@@ -64,9 +64,28 @@ class Prg_SFunction: public Omu_Program {
   Prg_SFunction();		///< constructor
   ~Prg_SFunction();		///< destructor
 
-  int	mdl_name(IF_DEF_ARGS);	///< access S-function name
-  int	mdl_path(IF_DEF_ARGS);	///< access S-function path
-  int	mdl_args(IF_DEF_ARGS);	///< access S-function parameters as string
+  /**
+   * @name Member access methods.
+   */
+  //@{
+
+  /** S-function name */
+  const char *mdl_name() const {return _mdl_name;}
+  void set_mdl_name(const char *str);	///< set S-function name
+
+  /** S-function path, including name, used for dynamic loading. */
+  const char *mdl_path() const {return _mdl_path;}
+  void set_mdl_path(const char *str);	///< set S-function path
+
+  /** String representation of S-function arguments */
+  const char *mdl_args() const {return _mdl_args;}
+  void set_mdl_args(const char *str);	///< set S-function arguments
+
+  /** initial states */
+  const VECP mdl_x0() const {return _mdl_x0;}
+  void set_mdl_x0(const VECP value);	///< set initial states
+
+  //@}
 };  
 
 #endif
