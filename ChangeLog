@@ -1,3 +1,8 @@
+2002-06-12    <h_linke>
+	* Omu_IntSDIRK.[hC]: fix bug in error control
+	* add support of expansion variables
+	* add methods with two and four stages
+
 2002-06-10    <rfranke>
 
 	* omu/Prg_SFunctionEst.[hC]: add support for multiple experiments
