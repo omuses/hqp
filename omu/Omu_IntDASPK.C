@@ -213,8 +213,8 @@ void Omu_IntDASPK::realloc()
   //
   v_resize(_uc, _nu);
   _xcp.realloc(_nd + _n, _nx, _nu);
-  _xc_jac.realloc(_nd + _n, _nx, _nu);
-  _xcp_jac.realloc(_nd + _n, _nx, _nu);
+  _xc_jac.realloc(_nd + _n, _nxt, 0);
+  _xcp_jac.realloc(_nd + _n, _nxt, 0);
   m_resize(_Yx, _nd + _n, _nx);
   m_resize(_Yu, _nd + _n, _nu);
 
