@@ -12,10 +12,9 @@ VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL}
 AC_SUBST(VERSION)
 AC_DEFINE_UNQUOTED(VERSION, "${VERSION}")
 
-# collect HQP defines
+# collect defines for compiling
 HQP_DEFS=""
-
-# collect IF defines
+OMU_DEFS=""
 IF_DEFS=""
 
 # collect machine objects required for linking
@@ -34,7 +33,7 @@ AC_MSG_CHECKING([--with-tcl])
 AC_ARG_WITH(tcl,
     [  --with-tcl    directory containing tcl configuration (tclConfig.sh)],
     [with_tcl=$withval])
-AC_MSG_RESULT("$with_tcl")
+AC_MSG_RESULT([$with_tcl])
 
 if test ! -z "${with_tcl}"; then
   AC_MSG_CHECKING([for existence of ${with_tcl}/tclConfig.sh])
@@ -64,7 +63,7 @@ else
   fi
   AC_MSG_CHECKING([for tclsh version])
   TCL_VERSION=`echo 'puts -nonewline $tcl_version' | $TCLSH`
-  AC_MSG_RESULT("$TCL_VERSION")
+  AC_MSG_RESULT([$TCL_VERSION])
   if test -z "$TCL_VERSION"; then
     AC_MSG_ERROR([Require Tcl 8.0 or greater. Specify --with-tcl.])
   fi
@@ -230,7 +229,7 @@ if test $uname_found = "yes" ; then
       RFLAG="-Wl,+b,"
       AC_PROG_RANLIB
       ;;
-    CYGWIN*|MSYS*)
+    CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
       EXE_SUFFIX=".exe"
       # check for explicit --enable-shared as DLL does not fully work yet
@@ -257,6 +256,7 @@ if test $uname_found = "yes" ; then
         MKLIB_SUFFIX=".dll"
         LD="link -dll -nologo -out:"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
+	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
 	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
         AC_DEFINE(IF_CLASS_STATIC)
       else
@@ -338,7 +338,7 @@ AC_MSG_CHECKING([--with-tclinclude])
 AC_ARG_WITH(tclinclude,
     [  --with-tclinclude   directory containing include file tcl.h],
     [with_tclinclude=${withval}])
-AC_MSG_RESULT("$with_tclinclude")
+AC_MSG_RESULT([$with_tclinclude])
 
 AC_MSG_CHECKING([for tcl.h])
 
@@ -377,11 +377,23 @@ else
 fi
 
 # -----------------------------------------------------------------------
+# 	Configure ADOL-C
+# -----------------------------------------------------------------------
+
+if test "$target" = CL; then
+  ASRCS=""
+else
+  OMU_DEFS="$OMU_DEFS -DOMU_WITH_ADOLC=1"
+  ASRCS="\$(ASRCS)"
+fi
+
+AC_SUBST(ASRCS)
+
+# -----------------------------------------------------------------------
 # 	Configure DASPK and RKsuite if enabled
 # -----------------------------------------------------------------------
 
 # defaults to disable Fortran
-OMU_DEFS=""
 FORTRAN_COMP=""
 FORTRAN_FLAGS=""
 FORTRAN_LIBS=""
@@ -417,7 +429,7 @@ if test "$omu_fortran" != no; then
 
   # default settings to enable Fortran
   # (MES_CFLAGS are assumed to be valid for machine Fortran)
-  OMU_DEFS="-DOMU_WITH_FORTRAN=1"
+  OMU_DEFS="$OMU_DEFS -DOMU_WITH_FORTRAN=1"
   FORTRAN_COMP="${fortran_ftn}"
   FORTRAN_FLAGS="${MES_CFLAGS}"
 
@@ -426,13 +438,13 @@ if test "$omu_fortran" != no; then
     OMU_INTDASPK_C="Omu_IntDASPK.C"
     DASPK="daspk"
     DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
-    AC_MSG_RESULT("enabling DASPK")
+    AC_MSG_RESULT([enabling DASPK])
   fi
 
   # default settings with RKsuite
   OMU_INTRKSUITE_C="Omu_IntRKsuite.C"
   RKSUITE_O="`pwd`/rksuite/rksuite.o"
-  AC_MSG_RESULT("enabling RKsuite")
+  AC_MSG_RESULT([enabling RKsuite])
 
   # try to figure out Fortran environment
   AC_CHECK_LIB(f2c, pow_dd, fortran_lib=f2c, fortran_lib="")
@@ -499,23 +511,66 @@ if test "$omu_mex" != no; then
   AC_ARG_WITH(matlab,
       [  --with-matlab       directory containing Matlab installation],
       [with_matlab=$withval])
-  AC_MSG_RESULT("$with_matlab")
+  AC_MSG_RESULT([$with_matlab])
 
   AC_MSG_CHECKING([--with-matlab-libs])
   AC_ARG_WITH(matlab-libs,
       [  --with-matlab-libs  directory containing Matlab run-time libraries],
       [with_matlab_libs=$withval])
-  AC_MSG_RESULT("$with_matlab_libs")
+  AC_MSG_RESULT([$with_matlab_libs])
 
   if test ! -z "${with_matlab}"; then
+    MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
+    MEX_INCDIR1="$with_matlab"
+    MEX_INCDIR2="$with_matlab/extern/include"
+    MEX_LIBDIR=""
+    MEX_LIBS="-lmatlb -lmx -lmex"
+    MEX_SCRIPT="$with_matlab/bin/mex"
+    MEX_EXTENSION=""
+    case "$target" in 
+      Linux*)
+        MEX_LIBDIR="$with_matlab/extern/lib/glnx86"
+        MEX_EXTENSION=".mexglx"
+        ;;
+      SunOS*) 
+        MEX_LIBDIR="$with_matlab/extern/lib/sol2"
+        MEX_EXTENSION=".mexsol"
+        ;;
+      OSF1*) 
+        MEX_LIBDIR="$with_matlab/extern/lib/alpha"
+        MEX_EXTENSION=".mexaxp"
+        ;;
+      IRIX*)
+        MEX_LIBDIR="$with_matlab/extern/lib/sgi"
+        MEX_EXTENSION=".mexsg"
+        ;;
+      HP-UX*)
+        MEX_LIBDIR="$with_matlab/extern/lib/hpux"
+        MEX_EXTENSION=".mexhpux"
+        ;;
+      CYGWIN*)
+        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
+        MEX_EXTENSION=".dll"
+        ;;
+      MSYS*|MINGW*)
+        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+	MEX_LIBS="-llibmatlb -llibmx -llibmex"
+        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
+        MEX_EXTENSION=".dll"
+        ;;
+      CL)
+        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        MEX_LIBS="libmatlb.lib libmx.lib libmex.lib"
+        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
+        MEX_EXTENSION=".dll"
+        ;;
+    esac
+    # overwrite MEX_LIBDIR if set explicitly
     if test ! -z "${with_matlab_libs}"; then
-      MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
-      MEX_INCDIR1="$with_matlab"
-      MEX_INCDIR2="$with_matlab/extern/include"
       MEX_LIBDIR="$with_matlab_libs"
-      MEX_LIBS="-lmatlb -lmx -lmex"
-      OMU_DEFS="$OMU_DEFS -DOMU_WITH_MEX=1"
     fi
+    OMU_DEFS="$OMU_DEFS -DOMU_WITH_MEX=1"
   fi
   if test -z "${MEX_LIBDIR}"; then
     AC_MSG_ERROR([for --enable-mex need --with-matlab and --with-matlab-libs])
@@ -527,6 +582,8 @@ AC_SUBST(MEX_INCDIR1)
 AC_SUBST(MEX_INCDIR2)
 AC_SUBST(MEX_LIBDIR)
 AC_SUBST(MEX_LIBS)
+AC_SUBST(MEX_SCRIPT)
+AC_SUBST(MEX_EXTENSION)
 
 AC_SUBST(OMU_DEFS)
 
@@ -569,7 +626,7 @@ if test "$odc_gmalloc" != no; then
 fi
 
 if test "$GMALLOC_O" != ""; then
-  AC_MSG_RESULT("enabling GNU malloc")
+  AC_MSG_RESULT([enabling GNU malloc])
 fi
 
 AC_SUBST(GMALLOC_O)
@@ -644,4 +701,5 @@ AC_SUBST(HAVE_DOT)
 # 	Produce outputs
 # -----------------------------------------------------------------------
 
-AC_OUTPUT(makedefs makedirs odc/Makefile hqp_docp/Makefile doc/Doxyfile)
+AC_OUTPUT(makedefs makedirs hqp_docp/Makefile odc/Makefile odc/mex.tcl
+          doc/Doxyfile)
