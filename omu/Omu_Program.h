@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -184,6 +184,10 @@ class Omu_Program {
   void		set_K(int K) {_K = K;}	///< set number of stages
   int		KK() const {return _KK;}///< get number of sample periods
   void		set_KK(int KK) {_KK = KK;}///< set number of sample periods
+  double	t0() const {return _t0;}///< get initial time of horizon
+  void		set_t0(double t0) {_t0 = t0;}///< set initial time
+  double	tf() const {return _tf;}///< get final time of horizon
+  void		set_tf(double tf) {_tf = tf;}///< set initial time
 
   /// vector of start indices for sample periods in each stage
   const IVECP 	ks() const {return _ks;}
@@ -256,13 +260,17 @@ class Omu_Program {
 
   int 	_K;	///< number of stages
   int 	_KK;	///< number of sample periods over all stages
+  double _t0; 	///< initial time of optimization time horizon (default: 0)
+  double _tf; 	///< final time of optimization time horizon (default: 1)
 
   /**
    * Service routine that can be called from setup_stages for
-   * initalizing ks and ts.
+   * initalizing ks and ts. The time points ts get initialized
+   * equally spaced from t0 to tf. If t0 or tf are not given, then
+   * the members _t0 and _tf will be used.
    */
   void 	stages_alloc(IVECP ks, VECP ts, int K, int sps,
-		     double t0 = 0.0, double tf = 1.0);
+		     double t0 = -Inf, double tf = Inf);
 
   /**
    * @name Low-level gradient routines

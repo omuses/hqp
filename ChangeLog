@@ -1,3 +1,8 @@
+2003-08-20    <rfranke>
+
+	* omu/Omu_Program.[hC]: add prg_t0 and prg_tf to access initial and
+	  final time of optimization time horizon independently of prg_ts
+
 2003-07-25    <rfranke>
 
 	* omu/Prg_SFunctionEst.[hC], odc/dic_mex_sfunction_est.tcl:

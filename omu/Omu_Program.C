@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -36,6 +36,7 @@
 
 #include <If_Int.h>
 #include <If_IntVec.h>
+#include <If_Real.h>
 #include <If_RealVec.h>
 
 IF_BASE_DEFINE(Omu_Program);
@@ -69,6 +70,8 @@ Omu_Program::Omu_Program()
 {
   _K = 0;
   _KK = 0;
+  _t0 = 0.0;
+  _tf = 1.0;
   _ks = iv_get(1);
   _ts = v_get(1);
 
@@ -78,6 +81,8 @@ Omu_Program::Omu_Program()
 
   _ifList.append(new If_Int(GET_SET_CB(int, K)));
   _ifList.append(new If_Int(GET_SET_CB(int, KK)));
+  _ifList.append(new If_Real(GET_SET_CB(double, t0)));
+  _ifList.append(new If_Real(GET_SET_CB(double, tf)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, ks)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, ts)));
 }
@@ -799,6 +804,11 @@ void Omu_Program::stages_alloc(IVECP ks, VECP ts, int K, int sps,
 {
   int i, KK = K * sps;
 
+  if (t0 <= -Inf)
+    t0 = _t0;
+  if (tf >= Inf)
+    tf = _tf;
+
   assert(tf >= t0 && K >= 0 && sps >= 0);
 
   v_resize(ts, KK + 1);
@@ -811,6 +821,8 @@ void Omu_Program::stages_alloc(IVECP ks, VECP ts, int K, int sps,
 
   _K = K;
   _KK = KK;
+  _t0 = t0;
+  _tf = tf;
 }    
 
 //--------------------------------------------------------------------------
