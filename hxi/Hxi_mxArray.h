@@ -53,13 +53,14 @@
 /** mxArray for HQP. */
 class mxArray {
 protected:
+  real_T 	 	_dummy; // argument for ADOL-C memory management
   vector<real_T> 	_data; 	// data vector
   int_T 		_m;	// number of rows (more generally first dim)
   int_T 		_n;	// number of cols (more generally resting dims)
 
 public:
   /** Constuctor. */
-  mxArray(int_T m, int_T n, int_T) : _data(m*n) {
+  mxArray(int_T m, int_T n, int_T) : _data(m*n, _dummy) {
     _m = m;
     _n = n;
     for (int i = 0; i < (int)_data.size(); i++)
@@ -76,7 +77,7 @@ public:
 
   /** Set number of data elements. */
   int_T setNumberOfElements(int_T num) {
-    _data.resize(num);
+    _data.resize(num, _dummy);
     return _data.size();
   }
   /** Get number of data elements. */
