@@ -544,9 +544,9 @@ void Prg_SFunctionOpt::setup_struct(int k,
   xt.set_linear();
 
   // explicit ODE for continuous-time equations
-  m_ident(F.Jxp);
-  sm_mlt(-1.0, F.Jxp, F.Jxp);
-  F.set_linear(Omu_Dependent::WRT_xp);
+  m_ident(F.Jdx);
+  sm_mlt(-1.0, F.Jdx, F.Jdx);
+  F.set_linear(Omu_Dependent::WRT_dx);
 
   // F.Ju is constant if not multistage
   if (_multistage && k < _K) {
@@ -1144,7 +1144,7 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
 //--------------------------------------------------------------------------
 void Prg_SFunctionOpt::continuous(int kk, double t,
 				  const Omu_StateVec &x, const Omu_Vec &u,
-				  const Omu_StateVec &xp, Omu_DependentVec &F)
+				  const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   int i, idx;
   int upsk = _multistage? 1: _KK;
@@ -1193,19 +1193,19 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   }
 
   // get model derivatives and change to residual form
-  real_T *mdl_xp = ssGetdX(_S);
+  real_T *mdl_dx = ssGetdX(_S);
   for (i = 0; i < _mdl_nx; i++)
-    F[_nu + i] = mdl_xp[i]/_mdl_x_nominal[i] - xp[_nu + i];
+    F[_nu + i] = mdl_dx[i]/_mdl_x_nominal[i] - dx[_nu + i];
 
   // model equations for controlled inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
       if (_mdl_u_order[idx] == 0)
 	// zero order hold
-	F[i] = 0.0 - xp[i];
+	F[i] = 0.0 - dx[i];
       else
 	// piecewise linear interpolation
-	F[i] = u[i*upsk + kk%upsk]/_t_nominal - xp[i];
+	F[i] = u[i*upsk + kk%upsk]/_t_nominal - dx[i];
       i++;
     }
   }
@@ -1213,21 +1213,21 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 
   // obtain Jacobians if required
   if (F.is_required_J())
-    continuous_grds(kk, t, x, u, xp, F);
+    continuous_grds(kk, t, x, u, dx, F);
 }
 
 //--------------------------------------------------------------------------
 void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 				       const Omu_StateVec &x,
 				       const Omu_Vec &u,
-				       const Omu_StateVec &xp,
+				       const Omu_StateVec &dx,
 				       Omu_DependentVec &F)
 {
   if (ssGetmdlJacobian(_S) == NULL) {
     // call predefined continuous_grds for numerical differentiation
     // (indicate Jacobian mode to S-function via reservedForFutureInt[0])
     _S->mdlInfo->reservedForFutureInt[0] = 1;
-    Omu_Program::continuous_grds(kk, t, x, u, xp, F);
+    Omu_Program::continuous_grds(kk, t, x, u, dx, F);
     _S->mdlInfo->reservedForFutureInt[0] = 0;
   }
   else {

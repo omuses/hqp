@@ -56,7 +56,7 @@ public:
     else
       _linear_flags &= ~wrt;
   }
-  bool is_linear(int wrt = Omu_Dependent::WRT_ALL) {
+  bool is_linear(int wrt = Omu_Dependent::WRT_ALL) const {
     return (_linear_flags & wrt) == wrt;
   }
   //@}
@@ -80,7 +80,7 @@ public:
   ~Omu_DepVec();
 
   /** Allocate and initialize memory */
-  void size(int dim, int nx, int nu, int nxp, int nxf);
+  void size(int dim, int nx, int nu, int ndx, int nxf, int nq);
 
   /** Resize dimension without reinitializing memory.
       Argument dim must not be larger than allocated dim. */
@@ -99,7 +99,7 @@ public:
       else
 	_linear_flags[i] &= ~wrt;
   }
-  bool is_linear(int wrt = Omu_Dependent::WRT_ALL) {
+  bool is_linear(int wrt = Omu_Dependent::WRT_ALL) const {
     bool result = true;
     for (int i = 0; i < (int)_linear_flags->dim; i++)
       result &= (_linear_flags[i] & wrt) == wrt;
@@ -115,7 +115,7 @@ public:
     else
       _linear_flags[i] &= ~wrt;
   }
-  bool is_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL) {
+  bool is_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL) const {
     return (_linear_flags[i] & wrt) == wrt;
   }
   //@}

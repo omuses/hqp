@@ -138,7 +138,7 @@ Omu_IntGRK4::~Omu_IntGRK4()
 
 void Omu_IntGRK4::init_stage(int k,
 			     const Omu_States &x, const Omu_Vector &u,
-			     const Omu_DepVec &, bool sa)
+			     bool sa)
 {
     int result = 0;
 

@@ -63,8 +63,9 @@ public:
   //@{
   static const int WRT_x; 	///< dependent with respect to x
   static const int WRT_u; 	///< dependent with respect to u
-  static const int WRT_xp; 	///< dependent with respect to xp
+  static const int WRT_dx; 	///< dependent with respect to dx
   static const int WRT_xf; 	///< dependent with respect to xf
+  static const int WRT_q; 	///< dependent with respect to sens pars q
   static const int WRT_ALL; 	///< dependent with respect to all variables
   //@}
 
@@ -90,7 +91,7 @@ public:
   virtual void set_linear(int wrt = Omu_Dependent::WRT_ALL,
 			  bool value = true) = 0;
   /** Query if a dependency is linear */
-  virtual bool is_linear(int wrt = Omu_Dependent::WRT_ALL) = 0;
+  virtual bool is_linear(int wrt = Omu_Dependent::WRT_ALL) const = 0;
 
   /** Set flag indicating that gradients are required */
   void set_required_g(bool value = true) {
@@ -120,14 +121,41 @@ public:
   /** Free memory. */
   ~Omu_Jacobian();
 
-  /** @name Query properties of Jacobian matrix */
+  /** @name Query properties of Jacobian matrix.
+      The properties are checked with analyze_struct(). */
   //@{
-  bool is_zero() {return _is_zero;}	///< zero matrix
-  bool is_ident() {return _is_ident;}	///< identity matrix
-  bool is_constant() {return _is_constant;} 	///< constant matrix
-  int sbw() {return max(_sbw_lower, _sbw_upper);}///< semi-bandwidth
-  int sbw_lower() {return _sbw_lower;} 	///< lower semi-bandwidth
-  int sbw_upper() {return _sbw_upper;} 	///< upper semi-bandwidth
+  /** zero matrix */
+  bool is_zero() const {return _is_zero;}
+
+  /** diagonal matrix */
+  bool is_diagonal() const {
+    return _is_constant && _sbw_lower < 1 && _sbw_upper < 1;
+  }
+
+  /** identity matrix */
+  bool is_ident() const {return _is_ident;}
+
+  /** scalar matrix
+      (is_diagonal and J[i][i]==J[0][0], i = 1,...,min(nrows,ncols)-1) */
+  bool is_scalar() const {return _is_scalar;}
+
+  /** constant matrix */
+  bool is_constant() const {return _is_constant;}
+
+  /** semi-bandwidth */
+  int sbw() const {return max(_sbw_lower, _sbw_upper);}
+
+  /** lower semi-bandwidth */
+  int sbw_lower() const {return _sbw_lower;}
+
+  /** upper semi-bandwidth */
+  int sbw_upper() const {return _sbw_upper;}
+
+  /** row i is zero */
+  bool is_zero_row(int i) const {return _zero_rows[i] != 0;}
+
+  /** column j is zero */
+  bool is_zero_column(int j) const {return _zero_cols[j] != 0;}
   //@}
 
 protected:
@@ -135,7 +163,7 @@ protected:
   void size(int nrows, int ncols);
 
   /** Resize dimension without reinitializing memory.
-      Argument nrows must not be larger than allocated nrows.*/
+      Argument nrows must not be larger than allocated nrows. */
   void adapt_size(int nrows);
 
   /** Obtain properties for current matrix. */
@@ -143,9 +171,12 @@ protected:
 
   bool _is_zero;
   bool _is_ident;
+  bool _is_scalar;
   bool _is_constant;
   int _sbw_lower;
   int _sbw_upper;
+  IVECP _zero_rows;
+  IVECP _zero_cols;
 };
 
 
@@ -154,8 +185,9 @@ class Omu_DependentVec: public Omu_Vec {
 public:
   Omu_Jacobian Jx;	///< Jacobian wrt x (initial states of sample period)
   Omu_Jacobian Ju;	///< Jacobian wrt u (control parameters of stage)
-  Omu_Jacobian Jxp;	///< Jacobian wrt xp (time derivative of x)
+  Omu_Jacobian Jdx;	///< Jacobian wrt dx (time derivative of x)
   Omu_Jacobian Jxf;	///< Jacobian wrt xf (final states of sample period)
+  Omu_Jacobian Jq;	///< Jacobian wrt q (sensitivity parameters)
 
   Omu_DependentVec();
 
@@ -163,13 +195,14 @@ public:
   virtual void set_linear(int wrt = Omu_Dependent::WRT_ALL,
 			  bool value = true) = 0;
   /** Query if a dependency is linear */
-  virtual bool is_linear(int wrt = Omu_Dependent::WRT_ALL) = 0;
+  virtual bool is_linear(int wrt = Omu_Dependent::WRT_ALL) const = 0;
 
   /** Mark linear element of dependent vector */
   virtual void set_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL,
 				  bool value = true) = 0;
   /** Query if an element of the dependent vector is linear */
-  virtual bool is_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL) = 0;
+  virtual bool is_linear_element(int i,
+				 int wrt = Omu_Dependent::WRT_ALL) const = 0;
 
   /** Set flag indicating that Jacobians are required */
   void set_required_J(bool value = true) {

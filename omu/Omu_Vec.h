@@ -36,6 +36,8 @@ public:
   Omu_Vec() {_v = v_resize(v_get(1), 0);} ///< allocate empty vector
   virtual ~Omu_Vec() {v_free(_v);} 	  ///< destroy vector
 
+  void resize(int dim) {v_resize(_v, dim);}///< resize vector
+
  protected:
   /// protect copy constructor and operator= as they should not be used
   //@{

@@ -247,7 +247,7 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   void continuous(int kk, double t,
 		  const Omu_StateVec &x, const Omu_Vec &u,
-		  const Omu_StateVec &xp, Omu_DependentVec &F);
+		  const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
   /**

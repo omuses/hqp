@@ -58,11 +58,11 @@ void Omu_VarVec::alloc(int n, int n_expand)
 
 //==========================================================================
 
-const int Omu_DynVarVec::Discrete = 1;
-const int Omu_DynVarVec::Algebraic = 2;
+const int Omu_SVarVec::Discrete = 1;
+const int Omu_SVarVec::Algebraic = 2;
 
 //--------------------------------------------------------------------------
-Omu_DynVarVec::Omu_DynVarVec()
+Omu_SVarVec::Omu_SVarVec()
 {
   nd = -1;	// must be determined
   na = 0;
@@ -75,14 +75,14 @@ Omu_DynVarVec::Omu_DynVarVec()
 }
 
 //--------------------------------------------------------------------------
-Omu_DynVarVec::~Omu_DynVarVec()
+Omu_SVarVec::~Omu_SVarVec()
 {
   iv_free(flags);
   v_free(D);
 }
 
 //--------------------------------------------------------------------------
-void Omu_DynVarVec::alloc(int n, int n_expand)
+void Omu_SVarVec::alloc(int n, int n_expand)
 {
   n_expand = max(n, n_expand);
   Omu_VarVec::alloc(n, n_expand);
@@ -96,11 +96,17 @@ void Omu_DynVarVec::alloc(int n, int n_expand)
 //==========================================================================
 
 //--------------------------------------------------------------------------
-void Omu_SVec::size(int dim, int nx, int nu)
+void Omu_SVec::size(int dim, int nx, int nu, int nq)
 {
+  // must either hold sensitivities for x and u or for q
+  // (note: alternatively Sx and Su could be set up as submatrices of Sq,
+  //  however, this is neither supported by Meschach nor really needed)
+  assert(nx + nu == 0 || nq == 0);
+
   v_resize(_v, dim);
   m_resize(Sx, dim, nx);
   m_resize(Su, dim, nu);
+  m_resize(Sq, dim, nq);
 }
 
 

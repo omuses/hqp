@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1996--2002  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2003  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -70,8 +70,8 @@ class Omu_IntDASPK: public Omu_Integrator {
 		  bool sa);
 
   void solve(int kk, double tstart, double tend,
-	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
+	     const Omu_VariableVec &x, const Omu_VariableVec &u,
+	     Omu_Program *sys, Omu_DependentVec &Ft, Omu_StateVec &xt);
 
   //@}
 
@@ -142,8 +142,8 @@ class Omu_IntDASPK: public Omu_Integrator {
 
   // backing store sys and vector of dependent variables for callbacks
   Omu_Program	*_sys;
-  Omu_SVec	*_xc_ptr;
-  Omu_DepVec 	*_Fc_ptr;
+  Omu_StateVec	*_xt_ptr;
+  Omu_DependentVec *_Ft_ptr;
 
   // variables for DASPK
   int		_mu;	// upper semi-bandwidth
@@ -162,10 +162,10 @@ class Omu_IntDASPK: public Omu_Integrator {
   VECP		_senpar;
 
   // arguments for low level _sys->continuous callback
-  Omu_Vec	_uc;
-  Omu_SVec	_xcp;
-  Omu_SVec	_xc_jac;
-  Omu_SVec	_xcp_jac;
+  Omu_Vec	_ut;
+  Omu_SVec	_dxt;
+  Omu_SVec	_xt_jac;
+  Omu_SVec	_dxt_jac;
   MATP		_Yx;
   MATP		_Yu;
 };  

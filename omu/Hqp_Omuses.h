@@ -34,7 +34,7 @@
 class Omu_Program;
 class Omu_Integrator;
 class Omu_VarVec;
-class Omu_DynVarVec;
+class Omu_SVarVec;
 class Omu_SVec;
 class Omu_DepVec;
 class Omu_Dep;
@@ -57,15 +57,17 @@ class Hqp_Omuses: public Hqp_DocpStub {
   Omu_Program		*_prg; 		///< problem definition
   Omu_Integrator	*_integrator; 	///< integrator
 
-  /// integrator that has been set up (to check if new setup required)
-  void 	*_integrator_setup;
   bool 	_stages_ok;	///< setup_stages() was called separately
   MATP 	_IS;		///< help matrix
   bool 	_ad;		///< flag about use of automatic differentiation
   double _fscale;	///< scaling of optimization criterion
 
+  /** Setup integrator for all stages.
+      This is required if the integrator is exchanged after problem setup. */
+  void resetup_integrator();
+
   /**
-   *@name Implement interface of Hqp_Docp_stub
+   * @name Implement interface of Hqp_Docp_stub
    */
   //@{
   void setup_horizon(int &k0, int &kf);
@@ -95,7 +97,7 @@ class Hqp_Omuses: public Hqp_DocpStub {
 		    MATP Lxx, MATP Luu, MATP Lxu);
   //@}
 
-  Omu_DynVarVec	*_xs;	///< state information from problem setup
+  Omu_SVarVec 	*_xs;	///< state information from problem setup
   Omu_VarVec	*_us;	///< control information from problem setup
   Omu_VarVec	*_css;	///< constraint information from problem setup
 

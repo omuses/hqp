@@ -564,14 +564,16 @@ void Omu_IntSDIRK::init_stage(int k,
 //--------------------------------------------------------------------------
 
 void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
-			 const Omu_States &x, const Omu_Vector &u,
-			 Omu_Program *sys, Omu_DepVec &cF, Omu_SVec &cx)
+			 const Omu_VariableVec &x, const Omu_VariableVec &u,
+			 Omu_Program *sys, Omu_DependentVec &cF,
+			 Omu_StateVec &cx)
 {
 
   bool    ok, tend_ok;
   int     i, j, l, nsteps, steps;
   double  err;
 
+  _kk = kk;	// propagate to sys->continuous
   _sys = sys;	// propagate to res() and jac()
 
   err = 0.0;
@@ -1705,8 +1707,8 @@ void Omu_IntSDIRK::sensitivity()
 
   int    i, j, k, l;
 
-  Omu_SVec &cx = *_cx_ptr;
-  Omu_DepVec &cF = *_cF_ptr;
+  Omu_StateVec &cx = *_cx_ptr;
+  Omu_DependentVec &cF = *_cF_ptr;
   
   m_resize(_SF,_n,_n+_nd+_nu);
   m_resize(_Sxd,_n,_n+_nd+_nu);
@@ -1743,7 +1745,7 @@ void Omu_IntSDIRK::sensitivity()
     for (j = 0; j < _n; j++)
       for (l = 0; l < _n; l++)
 	if(!_x_algebraic[l]) {
-	  _irk_jac[j][l] = cF.Jxp[_nd+ j][_nd+ l] + 
+	  _irk_jac[j][l] = cF.Jdx[_nd+ j][_nd+ l] + 
 	    _h*_a[i][i]*cF.Jx[_nd+ j][_nd+ l];
 	  _Sxd[j][_nd+l] = cF.Jx[_nd+ j][_nd+ l];
 	}
@@ -2142,8 +2144,8 @@ void Omu_IntSDIRK::sensitivity_lsqr()
 
   int i, j, k, l;
 
-  Omu_SVec &cx = *_cx_ptr;
-  Omu_DepVec &cF = *_cF_ptr;
+  Omu_StateVec &cx = *_cx_ptr;
+  Omu_DependentVec &cF = *_cF_ptr;
 
   m_resize(_SF,_n,_n+_nd+_nu);
   m_resize(_Sxd,_n,_n+_nd+_nu);
@@ -2183,7 +2185,7 @@ void Omu_IntSDIRK::sensitivity_lsqr()
     for (j = 0; j < _n; j++)
       for (l = 0; l < _n; l++)
 	if(!_x_algebraic[l]) {
-	  _irk_jac[j][l] = cF.Jxp[_nd+ j][_nd+ l] +
+	  _irk_jac[j][l] = cF.Jdx[_nd+ j][_nd+ l] +
 	    _h*_a[i][i]*cF.Jx[_nd+ j][_nd+ l];
 	  _Sxd[j][_nd+l] = cF.Jx[_nd+ j][_nd+ l];
 	}
@@ -2358,8 +2360,8 @@ void Omu_IntSDIRK::res(double t, const VECP  y, const VECP yprime,
 
   int i;
 
-  Omu_SVec &cx = *_cx_ptr;
-  Omu_DepVec &cF = *_cF_ptr;
+  Omu_StateVec &cx = *_cx_ptr;
+  Omu_DependentVec &cF = *_cF_ptr;
 
   // form vectors of independent variables
 
@@ -2393,8 +2395,8 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 
   int    i, j;
 
-  Omu_SVec &cx = *_cx_ptr;
-  Omu_DepVec &cF = *_cF_ptr;
+  Omu_StateVec &cx = *_cx_ptr;
+  Omu_DependentVec &cF = *_cF_ptr;
 
   m_zero(_irk_jac);
 
@@ -2434,7 +2436,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
     
     for(i = 0; i < _n; i++)
       for(j = 0; j < _n; j++)
-	_irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j] + _cFh[j]*cF.Jx[_nd+i][_nd+j];
+	_irk_jac[i][j] = cF.Jdx[_nd+i][_nd+j] + _cFh[j]*cF.Jx[_nd+i][_nd+j];
   }
   else {
     
@@ -2450,7 +2452,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
       
       for(i = 0; i < _n; i++)
 	for(j = 0; j < _n; j++)
-	  _irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j] + _cFh[j]*cF.Jx[_nd+i][_nd+j];
+	  _irk_jac[i][j] = cF.Jdx[_nd+i][_nd+j] + _cFh[j]*cF.Jx[_nd+i][_nd+j];
     }
 
     // only algebraic states
@@ -2474,7 +2476,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 	    _cFh[i] = 1.0;
       for(i = 0; i < _n; i++)
 	for(j = 0; j < _n; j++)
-	  _irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j];
+	  _irk_jac[i][j] = cF.Jdx[_nd+i][_nd+j];
       for(i = 0; i < _n; i++)
 	_irk_jac[i][i] += 1.0e-8;
     }
@@ -2492,7 +2494,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
       for(i = 0; i < _n; i++)
 	if(!_x_algebraic[i]) 
 	  for(j = 0; j < _n; j++)
-	    _irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j] 
+	    _irk_jac[i][j] = cF.Jdx[_nd+i][_nd+j] 
 		+ _cFh[j]*cF.Jx[_nd+i][_nd+j];
 
       if(_na > 0)    
@@ -2508,7 +2510,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_SVec &y, 
+void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_StateVec &y, 
 			       const Omu_Vector &u, VECP yprime)
 {
 
@@ -2516,7 +2518,7 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_SVec &y,
   int     i, j;
   double  cur_err, old_err;
   
-  Omu_DepVec &cF = *_cF_ptr;
+  Omu_DependentVec &cF = *_cF_ptr;
 
   cur_err = 0.0;
   old_err = 0.0;
@@ -2605,7 +2607,7 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_SVec &y,
 	old_err++;
       }
 
-      m_move(cF.Jxp,_nd,_nd,_n,_n,_Sh,0,0);
+      m_move(cF.Jdx,_nd,_nd,_n,_n,_Sh,0,0);
       for(j = 0; j < _n; j++)
 	if(_x_algebraic[j]) 
 	  _Sh[j][j] = 1.0;

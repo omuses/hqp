@@ -40,18 +40,22 @@ Omu_DepVec::~Omu_DepVec()
 }
 
 //--------------------------------------------------------------------------
-void Omu_DepVec::size(int dim, int nx, int nu, int nxp, int nxf)
+void Omu_DepVec::size(int dim, int nx, int nu, int ndx, int nxf, int nq)
 {
-  // should only depend on one of xp or xf
-  // (Omu_Dependent::WRT_xp and Omu_Dependent::WRT_xf are equal!)
-  assert(nxp == 0 || nxf == 0);
+  // should only depend on one of dx or xf
+  // (Omu_Dependent::WRT_dx and Omu_Dependent::WRT_xf are equal!)
+  assert(ndx == 0 || nxf == 0);
+  // should only depend on one of u or q
+  // (Omu_Dependent::WRT_u and Omu_Dependent::WRT_q are equal!)
+  assert(nu == 0 || nq == 0);
 
   v_resize(_v, dim);
   iv_resize(_linear_flags, dim);
   Jx.size(dim, nx);
   Ju.size(dim, nu);
-  Jxp.size(dim, nxp);
+  Jdx.size(dim, ndx);
   Jxf.size(dim, nxf);
+  Jq.size(dim, nq);
 
   v_zero(_v);
   iv_zero(_linear_flags);
@@ -67,8 +71,9 @@ void Omu_DepVec::adapt_size(int dim)
   _linear_flags->dim = dim;
   Jx.adapt_size(dim);
   Ju.adapt_size(dim);
-  Jxp.adapt_size(dim);
+  Jdx.adapt_size(dim);
   Jxf.adapt_size(dim);
+  Jq.adapt_size(dim);
 }
 
 //--------------------------------------------------------------------------
@@ -76,8 +81,9 @@ void Omu_DepVec::analyze_struct()
 {
   Jx.analyze_struct(is_linear(Omu_Dependent::WRT_x) || Jx->n == 0);
   Ju.analyze_struct(is_linear(Omu_Dependent::WRT_u) || Ju->n == 0);
-  Jxp.analyze_struct(is_linear(Omu_Dependent::WRT_xp) || Jxp->n == 0);
+  Jdx.analyze_struct(is_linear(Omu_Dependent::WRT_dx) || Jdx->n == 0);
   Jxf.analyze_struct(is_linear(Omu_Dependent::WRT_xf) || Jxf->n == 0);
+  Jq.analyze_struct(is_linear(Omu_Dependent::WRT_q) || Jq->n == 0);
 }
 
 //==========================================================================

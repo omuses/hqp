@@ -280,7 +280,7 @@ int Omu_IntIMP::step(int IMP, double tstep, double dt, VECP y, double tol)
 //--------------------------------------------------------------------------
 void Omu_IntIMP::init_stage(int k,
 			    const Omu_States &x, const Omu_Vector &u,
-			    const Omu_DepVec &, bool sa)
+			    bool sa)
 {
     Omu_IntODE::init_stage(k, x, u, sa);
 

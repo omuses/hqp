@@ -56,21 +56,24 @@ class Omu_VariableVec: public Omu_Vec {
   //@}
 };
 
-/** Vector of state variables, including sensitivity matrices Sx and Su
-    that hold sensitivities wrt initial states and control parameters,
+/** Vector of state variables, including sensitivity matrices Sx, Su and Sq
+    that hold sensitivities wrt initial states, controls and parameters,
     respectively. */
 class Omu_StateVec: public Omu_Vec {
 public:
   MATP Sx;	///< sensitivity matrix wrt initial states
   MATP Su;	///< sensitivity matrix wrt control parameters
+  MATP Sq;	///< sensitivity matrix wrt general parameters
 
   /// allocate empty sensitivity matrices
   Omu_StateVec() {
     Sx = m_resize(m_get(1, 1), 0, 0);
     Su = m_resize(m_get(1, 1), 0, 0);
+    Sq = m_resize(m_get(1, 1), 0, 0);
   }
   /// destroy sensitivity matrices
   ~Omu_StateVec() {
+    m_free(Sq);
     m_free(Su);
     m_free(Sx);
   }
@@ -81,10 +84,12 @@ public:
   Omu_StateVec(const Omu_StateVec &sv): Omu_Vec(sv) {
     m_copy(sv.Sx, Sx);
     m_copy(sv.Su, Su);
+    m_copy(sv.Sq, Sq);
   }
   Omu_Vec &operator=(const Omu_StateVec &sv) {
     m_copy(sv.Sx, Sx);
     m_copy(sv.Su, Su);
+    m_copy(sv.Sq, Sq);
     return *this;
   }
   //@}

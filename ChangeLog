@@ -1,3 +1,43 @@
+2003-04-19    <rfranke>
+
+	* omu/Omu_Integrator.[hC]: add high-level interface for integrators
+
+	* omu/Omu_Integrator.[hC] (init_stage, solve):
+	    modify call arguments of low-level methods
+	* omu/Omu_IntODE.[hC], omu/Omu_IntDASPK.[hC], omu/Omu_IntSDIRK.[hC]:
+	    adapt to modified Omu_Integrator::solve method
+	* omu/Omu_IntGRK4.[hC], omu/Omu_IntIMP.[hC]:
+	    adapt init_stage method 
+
+	* omu/Omu_Integrator.[hC], omu/Hqp_Omuses.C:
+	    remove method init_sample
+	* omu/Omu_IntOdeTs.C, omu/Omu_IntSDIRK.C, omu/Omu_IntDASPK.C:
+	    initialize _kk in solve method
+
+	* omu/Omu_Dependents.h (Omu_Jacobian):
+	    extend analysis of Jacobian properties
+
+	* omu/Omu_Variables.h, omu/Omu_Variables.[hC]:
+	    introduce sensitivity with respect to sensitivity parameters q
+
+	* omu/Omu_Dependents.[hC], omu/Omu_Deps.[hC]:
+	    introduce dependency with respect to sensitivity parameters q
+
+	* omu/Omu_Vars.[hC], omu/Hqp_Omuses.[hC]:
+	    rename Omu_DynVarVec to Omu_SVarVec
+
+	* omu/Omu_Dependents.[hC], omu/Omu_Deps.[hC], omu/Omu_Vars.h,
+	  omu/Omu_Program.[hC], omu/Omu_Integrator.[hC], Hqp_Omuses.C,
+	  omu/Omu_IntODE.[hC], omu/Omu_IntSDIRK.C, Omu_IntDASPK.[hC],
+	  omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]:
+	    rename xp (dx/dt) to dx
+
+	* omu/Omu_Vec.h: introduce method void Omu_Vec::resize(int dim)
+
+	* omu/Hqp_Omuses.[hC]: improve integrator setup
+
+	* omu/Makefile, omu/Omu_Init.C: add integrator Omu_IntGRK4
+
 2003-04-15    <rfranke>
 
 	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C: 

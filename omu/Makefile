@@ -26,6 +26,7 @@ SRCS =	Omu_Init.C \
 	Omu_IntRK4.C \
 	Omu_IntDopri5.C \
 	Omu_IntIMP.C \
+	Omu_IntGRK4.C \
 	Omu_IntSDIRK.C \
         $(OMU_INTRKSUITE_C) \
         $(OMU_INTDASPK_C) \

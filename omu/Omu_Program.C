@@ -216,7 +216,7 @@ void Omu_Program::setup_struct(int k,
   adoublev ax(nxt);
   adoublev au(nu);
   adoublev axt(nxt);
-  adoublev axp(nxt);
+  adoublev adx(nxt);
   adoublev aF(nxt);
   adoublev af(nf);
   adouble af0;
@@ -233,7 +233,7 @@ void Omu_Program::setup_struct(int k,
     F.set_linear();
     m_zero(F.Jx);
     m_zero(F.Ju);
-    m_zero(F.Jxp);
+    m_zero(F.Jdx);
   }
 
   f.set_linear();
@@ -286,9 +286,9 @@ void Omu_Program::setup_struct(int k,
       ax <<= xt->ve;
       au <<= u->ve;
       for (i = 0; i < nxt; i++)
-	axp[i] <<= 0.0;
+	adx[i] <<= 0.0;
 
-      continuous(kk, ts(kk), ax, au, axp, aF);
+      continuous(kk, ts(kk), ax, au, adx, aF);
 
       aF >>= F->ve; 
 
@@ -298,7 +298,7 @@ void Omu_Program::setup_struct(int k,
 
       setup_Jacobian(_Z3, _nz, F, F.Jx, Omu_Dependent::WRT_x, 0, 0);
       setup_Jacobian(_Z3, _nz, F, F.Ju, Omu_Dependent::WRT_u, 0, nxt);
-      setup_Jacobian(_Z3, _nz, F, F.Jxp, Omu_Dependent::WRT_xp, 0, nxt + nu);
+      setup_Jacobian(_Z3, _nz, F, F.Jdx, Omu_Dependent::WRT_dx, 0, nxt + nu);
 
       // initialize final values of integration
       for (i = 0; i < nxt; i++)
@@ -613,7 +613,7 @@ void Omu_Program::consistic(int kk, double t,
 //--------------------------------------------------------------------------
 void Omu_Program::continuous(int kk, double t,
 			     const adoublev &x, const adoublev &u,
-			     const adoublev &xp, adoublev &F)
+			     const adoublev &dx, adoublev &F)
 {
   // empty default implementation
 }
@@ -621,16 +621,16 @@ void Omu_Program::continuous(int kk, double t,
 //--------------------------------------------------------------------------
 void Omu_Program::continuous(int kk, double t,
 			     const Omu_StateVec &x, const Omu_Vec &u,
-			     const Omu_StateVec &xp, Omu_DependentVec &F)
+			     const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   if (F.is_required_J()) {
-    if (F.Jxp.is_constant())
-      continuous(kk, t, x, u, xp, F, F.Jx, F.Ju, MNULL);
+    if (F.Jdx.is_constant())
+      continuous(kk, t, x, u, dx, F, F.Jx, F.Ju, MNULL);
     else
-      continuous(kk, t, x, u, xp, F, F.Jx, F.Ju, F.Jxp);
+      continuous(kk, t, x, u, dx, F, F.Jx, F.Ju, F.Jdx);
   }
   else
-    continuous(kk, t, x, u, xp, F, MNULL, MNULL, MNULL);
+    continuous(kk, t, x, u, dx, F, MNULL, MNULL, MNULL);
 }
 
 #if 0 // new version using arbitrary order reverse
@@ -638,8 +638,8 @@ void Omu_Program::continuous(int kk, double t,
 //--------------------------------------------------------------------------
 void Omu_Program::continuous(int kk, double t,
 			     const VECP x, const VECP u,
-			     const VECP xp, VECP F,
-			     MATP Fx, MATP Fu, MATP Fxp)
+			     const VECP dx, VECP F,
+			     MATP Fx, MATP Fu, MATP Fdx)
 {
 #ifdef OMU_WITH_ADOLC
   _has_low_level_continuous = false;	// i.e. not overloaded
@@ -656,13 +656,13 @@ void Omu_Program::continuous(int kk, double t,
 
   adoublev ax(nxt);
   adoublev au(nu);
-  adoublev axp(nxt);
+  adoublev adx(nxt);
   adoublev aF(nxt);
 
   for (i = 0; i < nxt; i++) {
     aF[i] = 0.0;
   }
-  axp <<= xp->ve;	// initialize without ADOL-C trace
+  adx <<= dx->ve;	// initialize without ADOL-C trace
 
   if ((MAT *)Fx != MNULL && (MAT *)Fu != MNULL) {
     grds = true;
@@ -673,12 +673,12 @@ void Omu_Program::continuous(int kk, double t,
 
   ax <<= x->ve;
   au <<= u->ve;
-  if ((MAT *)Fxp != MNULL)
-    axp <<= xp->ve;
+  if ((MAT *)Fdx != MNULL)
+    adx <<= dx->ve;
   else
     nindep -= nxt;
   
-  continuous(kk, t, ax, au, axp, aF);
+  continuous(kk, t, ax, au, adx, aF);
 
   aF >>= F->ve;
 
@@ -696,11 +696,11 @@ void Omu_Program::continuous(int kk, double t,
 	Fu[i][j] = *Zi[nxt+j];
     }
 
-    if ((MAT *)Fxp != MNULL) {
+    if ((MAT *)Fdx != MNULL) {
       for (i = 0; i < nxt; i++) {
 	Zi = _Z3[i];
 	for (j = 0; j < nxt; j++)
-	  Fxp[i][j] = *Zi[nxt+nu+j];
+	  Fdx[i][j] = *Zi[nxt+nu+j];
       }
     }
   }
@@ -712,8 +712,8 @@ void Omu_Program::continuous(int kk, double t,
 //--------------------------------------------------------------------------
 void Omu_Program::continuous(int kk, double t,
 			     const VECP x, const VECP u,
-			     const VECP xp, VECP F,
-			     MATP Fx, MATP Fu, MATP Fxp)
+			     const VECP dx, VECP F,
+			     MATP Fx, MATP Fu, MATP Fdx)
 {
 #ifdef OMU_WITH_ADOLC
   _has_low_level_continuous = false;	// i.e. not overloaded
@@ -730,13 +730,13 @@ void Omu_Program::continuous(int kk, double t,
 
   adoublev ax(nxt);
   adoublev au(nu);
-  adoublev axp(nxt);
+  adoublev adx(nxt);
   adoublev aF(nxt);
 
   for (i = 0; i < nxt; i++) {
     aF[i] = 0.0;
   }
-  axp <<= xp->ve;	// initialize without ADOL-C trace
+  adx <<= dx->ve;	// initialize without ADOL-C trace
 
   if ((MAT *)Fx != MNULL && (MAT *)Fu != MNULL) {
     grds = true;
@@ -747,12 +747,12 @@ void Omu_Program::continuous(int kk, double t,
 
   ax <<= x->ve;
   au <<= u->ve;
-  if ((MAT *)Fxp != MNULL)
-    axp <<= xp->ve;
+  if ((MAT *)Fdx != MNULL)
+    adx <<= dx->ve;
   else
     nindep -= nxt;
   
-  continuous(kk, t, ax, au, axp, aF);
+  continuous(kk, t, ax, au, adx, aF);
 
   aF >>= F->ve;
 
@@ -770,11 +770,11 @@ void Omu_Program::continuous(int kk, double t,
 	Fu[i][j] = Zi[nxt+j];
     }
 
-    if ((MAT *)Fxp != MNULL) {
+    if ((MAT *)Fdx != MNULL) {
       for (i = 0; i < nxt; i++) {
 	Zi = _Z[i];
 	for (j = 0; j < nxt; j++)
-	  Fxp[i][j] = Zi[nxt+nu+j];
+	  Fdx[i][j] = Zi[nxt+nu+j];
       }
     }
   }
@@ -873,7 +873,7 @@ void Omu_Program::consistic_grds(int kk, double t,
 //--------------------------------------------------------------------------
 void Omu_Program::continuous_grds(int kk, double t,
 				  const Omu_StateVec &x, const Omu_Vec &u,
-				  const Omu_StateVec &xp, Omu_DependentVec &F)
+				  const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   bool is_required_J = F.is_required_J();
 
@@ -883,7 +883,7 @@ void Omu_Program::continuous_grds(int kk, double t,
     int i, j;
     int nx = x->dim;
     int nu = u->dim;
-    int nxp = xp->dim;
+    int ndx = dx->dim;
     int nF = F->dim;
     double vi_bak, dvi;
     VECP F_bak = v_copy(F, VNULL);
@@ -894,7 +894,7 @@ void Omu_Program::continuous_grds(int kk, double t,
 	dvi = 1e-4 * fabs(vi_bak) + 1e-6;
 	x->ve[i] += dvi;
 
-	continuous(kk, t, x, u, xp, F);
+	continuous(kk, t, x, u, dx, F);
 
 	v_sub(F, F_bak, F);
 	for (j = 0; j < nF; j++)
@@ -910,7 +910,7 @@ void Omu_Program::continuous_grds(int kk, double t,
 	dvi = 1e-4 * fabs(vi_bak) + 1e-6;
 	u->ve[i] += dvi;
 
-	continuous(kk, t, x, u, xp, F);
+	continuous(kk, t, x, u, dx, F);
 
 	v_sub(F, F_bak, F);
 	for (j = 0; j < nF; j++)
@@ -920,19 +920,19 @@ void Omu_Program::continuous_grds(int kk, double t,
       }
     }
 
-    if (!F.Jxp.is_constant()) {
-      for (i = 0; i < nxp; i++) {
-	vi_bak = xp->ve[i];
+    if (!F.Jdx.is_constant()) {
+      for (i = 0; i < ndx; i++) {
+	vi_bak = dx->ve[i];
 	dvi = 1e-4 * fabs(vi_bak) + 1e-6;
-	xp->ve[i] += dvi;
+	dx->ve[i] += dvi;
 
-	continuous(kk, t, x, u, xp, F);
+	continuous(kk, t, x, u, dx, F);
 
 	v_sub(F, F_bak, F);
 	for (j = 0; j < nF; j++)
-	  F.Jxp[j][i] = F[j] / dvi;
+	  F.Jdx[j][i] = F[j] / dvi;
 
-	xp->ve[i] = vi_bak;
+	dx->ve[i] = vi_bak;
       }
     }
 

@@ -48,7 +48,6 @@ Hqp_Omuses::Hqp_Omuses()
 {
   _prg = NULL;
   _integrator = new Omu_IntDopri5;
-  _integrator_setup = NULL;
   _xs = NULL;
   _us = NULL;
   _css = NULL;
@@ -113,7 +112,7 @@ void Hqp_Omuses::setup_stages()
   delete [] _css;
   delete [] _us;
   delete [] _xs;
-  _xs = new Omu_DynVarVec [K+1];
+  _xs = new Omu_SVarVec [K+1];
   _us = new Omu_VarVec [K+1];
   _css = new Omu_VarVec [K+1];
 
@@ -136,7 +135,6 @@ void Hqp_Omuses::setup_stages()
 
   // setup integrator
   _integrator->setup_stages(_prg);
-  _integrator_setup = _integrator;
 }
 
 //--------------------------------------------------------------------------
@@ -170,7 +168,7 @@ void Hqp_Omuses::setup_vars(int k,
 
   int i, nx;
   int K = _prg->ks()->dim - 1;
-  Omu_DynVarVec &xk = _xs[k];
+  Omu_SVarVec &xk = _xs[k];
   Omu_VarVec   &uk = _us[k];
   Omu_VarVec   &ck = _css[k];
 
@@ -220,7 +218,7 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 
   // obtain references to variables and dependents of stage k
   int K = _prg->ks()->dim - 1;
-  Omu_DynVarVec &xk = _xs[k];
+  Omu_SVarVec &xk = _xs[k];
   Omu_VarVec &uk = _us[k];
   Omu_VarVec &csk = _css[k];
   int nx = xk->dim - xk.nv;
@@ -240,16 +238,16 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 
   // allocate dependents
   if (k < K) {
-    xtk.size(nxt, nxt, nu, 0, 0);
-    Fk.size(nxt, nxt, nu, nxt, 0);
-    fk.size(max(nxt, nf), nxt, nu, 0, nxt);
+    xtk.size(nxt, nxt, nu, 0, 0, 0);
+    Fk.size(nxt, nxt, nu, nxt, 0, 0);
+    fk.size(max(nxt, nf), nxt, nu, 0, nxt, 0);
     f0k.size(nxt, nu, nxt);
-    ck.size(nc, nxt, nu, 0, nxt);
+    ck.size(nc, nxt, nu, 0, nxt, 0);
   }
   else {
-    x0k.size(nxt, nx, nu);
+    x0k.size(nxt, nx, nu, 0);
     f0k.size(nxt, nu, 0);
-    ck.size(nc, nxt, nu, 0, 0);
+    ck.size(nc, nxt, nu, 0, 0, 0);
   }
   xtk.c_setup = true;
   Fk.c_setup = true;
@@ -291,10 +289,10 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 	is_zero &= (Fk.Ju[i][j] == 0.0);
       }
       for (j = 0; j < nxt && is_zero; j++) {
-	is_zero &= (Fk.Jxp[i][j] == 0.0);
+	is_zero &= (Fk.Jdx[i][j] == 0.0);
       }
       if (is_zero) {
-	xk.flags[i] |= Omu_DynVarVec::Discrete;
+	xk.flags[i] |= Omu_SVarVec::Discrete;
 	xk.nd++;
       }
       else
@@ -306,23 +304,23 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
     for (j = xk.nd; j < nxt; j++) {
       is_zero = true;
       for (i = xk.nd; i < nxt; i++) {
-	is_zero &= (Fk.Jxp[i][j] == 0.0);
+	is_zero &= (Fk.Jdx[i][j] == 0.0);
       }
-      if (is_zero && !(xk.flags[j] & Omu_DynVarVec::Discrete)) {
+      if (is_zero && !(xk.flags[j] & Omu_SVarVec::Discrete)) {
 	// state j does not appear differentiated in any equation
-	xk.flags[j] |= Omu_DynVarVec::Algebraic;
+	xk.flags[j] |= Omu_SVarVec::Algebraic;
 	xk.na++;
       }
     }
 
-    // check if Fxp is diagonal and constant (can use ODE solver if also na=0)
-    xk.D_is_const = Fk.Jxp.is_constant() && Fk.Jxp.sbw() < 1;
+    // check if Fdx is diagonal and constant (can use ODE solver if also na=0)
+    xk.D_is_const = Fk.Jdx.is_constant() && Fk.Jdx.sbw() < 1;
     for (i = 0; i < nxt; i++)
-      xk.D[i] = Fk.Jxp[i][i];
+      xk.D[i] = Fk.Jdx[i][i];
 
     // propagate semi-bandwidths to integrator
-    xk.sbw_l = max(Fk.Jx.sbw_lower(), Fk.Jxp.sbw_lower());
-    xk.sbw_u = max(Fk.Jx.sbw_upper(), Fk.Jxp.sbw_upper());
+    xk.sbw_l = max(Fk.Jx.sbw_lower(), Fk.Jdx.sbw_lower());
+    xk.sbw_u = max(Fk.Jx.sbw_upper(), Fk.Jdx.sbw_upper());
   }
   else {
     // no continuous-time equations in last stage
@@ -331,10 +329,10 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
   }
 
   // allocate state variables
-  x0k.size(nxt, nx, nu);
+  x0k.size(nxt, nx, nu, 0);
   if (xk.nd < nxt)
     // final states do only exist if there are continuous equations
-    xfk.size(nxt, nx, nu);
+    xfk.size(nxt, nx, nu, 0);
   
   // communicate Jacobian struct of a pure discrete problem to Hqp_Docp
   if (k == K) {
@@ -352,6 +350,26 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
     for (i = 0; i < nc; i++)
       c_lin[i] = (int)ck.is_linear_element(i);
   }
+
+  // setup integrator for stage
+  if (k < K) {
+    if (k == 0 && _integrator->K() != _prg->K()) {
+      // _integrator needs to be set up completely, e.g. as it was exchanged
+      _integrator->setup_stages(_prg);
+    }
+    _integrator->setup_struct(k, xk, uk, Fk);
+  }
+}
+
+//--------------------------------------------------------------------------
+void Hqp_Omuses::resetup_integrator()
+{
+  int k, K = _prg->K();
+
+  _integrator->setup_stages(_prg);
+
+  for (k = 0; k < K; k++)
+    _integrator->setup_struct(k, _xs[k], _us[k], _Fs[k]);
 }
 
 //--------------------------------------------------------------------------
@@ -364,7 +382,7 @@ void Hqp_Omuses::init_simulation(int k, VECP x, VECP u)
   int i;
   int nx = x->dim;
   int nu = u->dim;
-  Omu_DynVarVec &xk = _xs[k];
+  Omu_SVarVec &xk = _xs[k];
   Omu_VarVec &uk = _us[k];
   int nxt = xk->dim;
 
@@ -392,7 +410,7 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
   int i, kk;
   int K = _prg->ks()->dim - 1;
   int kkend = (k < K)? _prg->ks(k+1): _prg->ks(k) + 1;
-  Omu_DynVarVec &xk = _xs[k];
+  Omu_SVarVec &xk = _xs[k];
   Omu_VarVec &uk = _us[k];
   Omu_SVec &x0k = _x0s[k];
   Omu_SVec &xfk = _xfs[k];
@@ -427,10 +445,9 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
   //
 
   if (nxf > 0) {
-    if (_integrator != _integrator_setup) {
+    if (k == 0 && _integrator->K() != _prg->K()) {
       // _integrator needs to be set up, e.g. as it was exchanged
-      _integrator->setup_stages(_prg);
-      _integrator_setup = _integrator;
+      resetup_integrator();
     }
     _integrator->init_stage(k, xk, uk, Fk);
   }
@@ -458,7 +475,6 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
       _prg->consistic(kk, _prg->ts(kk), x0k, uk, xtk);
       v_copy(xtk, xfk);
 
-      _integrator->init_sample(kk, _prg->ts(kk), _prg->ts(kk+1));
       m_catchall(// try
 		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
 				    xk, uk, _prg, Fk, xfk),
@@ -509,7 +525,7 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
   int i, j, kk;
   int K = _prg->ks()->dim - 1;
   int kkend = (k < K)? _prg->ks(k+1): _prg->ks(k) + 1;
-  Omu_DynVarVec &xk = _xs[k];
+  Omu_SVarVec &xk = _xs[k];
   Omu_VarVec &uk = _us[k];
   Omu_SVec &x0k = _x0s[k];
   Omu_SVec &xfk = _xfs[k];
@@ -549,10 +565,9 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
   //
 
   if (nxf > 0) {
-    if (_integrator != _integrator_setup) {
+    if (k == 0 && _integrator->K() != _prg->K()) {
       // _integrator needs to be set up, e.g. as it was exchanged
-      _integrator->setup_stages(_prg);
-      _integrator_setup = _integrator;
+      resetup_integrator();
     }
     _integrator->init_stage(k, xk, uk, Fk, true);
 
@@ -597,7 +612,6 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
       m_mlt(xtk.Jx, x0k.Su, xfk.Su);
       m_add(xfk.Su, xtk.Ju, xfk.Su);
 
-      _integrator->init_sample(kk, _prg->ts(kk), _prg->ts(kk+1));
       m_catchall(// try
 		 _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
 				    xk, uk, _prg, Fk, xfk),

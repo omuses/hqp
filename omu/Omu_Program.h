@@ -108,7 +108,7 @@ class Omu_Program {
    */
   virtual void continuous(int kk, double t,
 			  const adoublev &x, const adoublev &u,
-			  const adoublev &xp, adoublev &F);
+			  const adoublev &dx, adoublev &F);
 
   /**
    * @name Low-level methods
@@ -152,7 +152,7 @@ class Omu_Program {
    */
   virtual void continuous(int kk, double t,
 			  const Omu_StateVec &x, const Omu_Vec &u,
-			  const Omu_StateVec &xp, Omu_DependentVec &F);
+			  const Omu_StateVec &dx, Omu_DependentVec &F);
 
   /**
    * Low-level update. 
@@ -233,16 +233,16 @@ class Omu_Program {
    * by a derived class to provide Jacobians for differential equations.
    * The default implementation calls the high-level continuous()
    * and employs ADOL-C for automatic Jacobian calculation.
-   * If a calling routine passes no Fxp (or a null pointer),
+   * If a calling routine passes no Fdx (or a null pointer),
    * then only Fx and Fu are calculated.
-   * If a calling routine passes no Fx, Fu, and Fxp (or null pointers),
+   * If a calling routine passes no Fx, Fu, and Fdx (or null pointers),
    * then no Jacobians are calculated at all.
    */
   virtual void continuous(int kk, double t,
 			  const VECP x, const VECP u,
-			  const VECP xp, VECP F,
+			  const VECP dx, VECP F,
 			  MATP Fx = MNULL, MATP Fu = MNULL,
-			  MATP Fxp = MNULL);
+			  MATP Fdx = MNULL);
 
   //@}
 
@@ -286,7 +286,7 @@ class Omu_Program {
    */
   virtual void continuous_grds(int kk, double t,
 			       const Omu_StateVec &x, const Omu_Vec &u,
-			       const Omu_StateVec &xp, Omu_DependentVec &F);
+			       const Omu_StateVec &dx, Omu_DependentVec &F);
 
   /**
    * Low-level update routine for obtaining gradients.

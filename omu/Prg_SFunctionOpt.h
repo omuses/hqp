@@ -322,7 +322,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   void continuous(int kk, double t,
 		  const Omu_StateVec &x, const Omu_Vec &u,
-		  const Omu_StateVec &xp, Omu_DependentVec &F);
+		  const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
   /**
@@ -346,7 +346,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    */
   void continuous_grds(int kk, double t,
 		       const Omu_StateVec &x, const Omu_Vec &u,
-		       const Omu_StateVec &xp, Omu_DependentVec &F);
+		       const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
  public:

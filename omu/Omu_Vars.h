@@ -40,17 +40,17 @@ class Omu_VarVec: public Omu_VariableVec {
   void alloc(int n, int n_expand = -1);
 };
 
-/** Internally used vector of dynamic variables with additional structural
-    information. */
-class Omu_DynVarVec: public Omu_VarVec {
+/** Internally used vector of state optimization variables
+    holding additional structural information. */
+class Omu_SVarVec: public Omu_VarVec {
  public:
   int 	nd;		///< number of discrete-time state variables
   int	na;		///< number of algebraic state variables
   int	nv;		///< number of expansion variables
-  VECP	D;		///< diagonal of dF/dxp
+  VECP	D;		///< diagonal of dF/ddx
   bool	D_is_const;	///< F can be treated as explicit ODE
-  int	sbw_u;		///< upper semi-bandwidth of dF/dx + dF/dxp
-  int	sbw_l;		///< lower semi-bandwidth of dF/dx + dF/dxp
+  int	sbw_u;		///< upper semi-bandwidth of dF/dx + dF/ddx
+  int	sbw_l;		///< lower semi-bandwidth of dF/dx + dF/ddx
 
   /**
    * Define flagbits to characterize individual states.
@@ -70,22 +70,23 @@ class Omu_DynVarVec: public Omu_VarVec {
    */
   static const int Algebraic;
 
-  Omu_DynVarVec();
-  ~Omu_DynVarVec();
+  Omu_SVarVec();
+  ~Omu_SVarVec();
 
   void alloc(int n, int n_expand = -1);
 };
 
-/** Depreciated name for Omu_DynVarVec. */
-typedef Omu_DynVarVec Omu_States;
+/** Depreciated name for Omu_SVarVec. */
+typedef Omu_SVarVec Omu_States;
 
 /** Internally used vector of state variables. */
 class Omu_SVec: public Omu_StateVec {
 public:
   /** Allocate variables and sensitivity matrices */
-  void size(int dim, int nx, int nu);
+  void size(int dim, int nx, int nu, int nq);
   /** Reallocate variables and sensitivity matrices */
-  void resize(int dim, int nx, int nu) {size(dim, nx, nu);}
+  void resize(int dim, int nx, int nu, int nq=0) {size(dim, nx, nu, nq);}
 };
+
 
 #endif

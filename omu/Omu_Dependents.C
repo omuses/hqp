@@ -29,8 +29,9 @@
 // flags 
 const int Omu_Dependent::WRT_x = 	0x0001;
 const int Omu_Dependent::WRT_u = 	0x0002;
-const int Omu_Dependent::WRT_xp =	0x0004;
+const int Omu_Dependent::WRT_dx =	0x0004;
 const int Omu_Dependent::WRT_xf = 	0x0004;
+const int Omu_Dependent::WRT_q = 	0x0002;
 const int Omu_Dependent::WRT_ALL = 	0x0007;
 
 //==========================================================================
@@ -79,12 +80,16 @@ void Omu_Gradient::analyze_struct(bool is_constant)
 Omu_Jacobian::Omu_Jacobian()
 {
   _m = m_get(1, 1);
+  _zero_rows = iv_get(1);
+  _zero_cols = iv_get(1);
   size(0, 0);
 }
 
 //--------------------------------------------------------------------------
 Omu_Jacobian::~Omu_Jacobian()
 {
+  iv_free(_zero_cols);
+  iv_free(_zero_rows);
   m_free(_m);
 }
 
@@ -95,9 +100,14 @@ void Omu_Jacobian::size(int nrows, int ncols)
   m_ones(_m);	// indicate dense Jacobian
   _is_zero = false;
   _is_ident = false;
+  _is_scalar = false;
   _is_constant = false;
   _sbw_lower = ncols - 1;
   _sbw_upper = ncols - 1;
+  iv_resize(_zero_rows, nrows);
+  iv_resize(_zero_cols, ncols);
+  iv_zero(_zero_rows);
+  iv_zero(_zero_cols);
 }
 
 //--------------------------------------------------------------------------
@@ -137,13 +147,34 @@ void Omu_Jacobian::analyze_struct(bool is_constant)
     _sbw_upper = max(sbwi, _sbw_upper);
   }
 
-  // check for zero and ident
+  // check for diagonal, zero, ident and scalar
   if (is_constant && _sbw_lower < 1 && _sbw_upper < 1) {
     _is_zero = true;
     _is_ident = true;
+    _is_scalar = true;
     for (i = 0; i < min(nrows, ncols); i++) {
       _is_zero &= ((*this)[i][i] == 0.0);
       _is_ident &= ((*this)[i][i] == 1.0);
+      _is_scalar &= ((*this)[i][i] == (*this)[0][0]);
+    }
+  }
+
+  if (is_constant) {
+    // check for zero rows
+    bool is_zero;
+    for (i = 0; i < nrows; i++) {
+      is_zero = true;
+      for (j = 0; j < ncols; j++)
+	is_zero &= ((*this)[i][j] == 0.0);
+      _zero_rows[i] = (int)is_zero;
+    }
+
+    // check for zero cols
+    for (j = 0; j < ncols; j++) {
+      is_zero = true;
+      for (i = 0; i < nrows; i++)
+	is_zero &= ((*this)[i][j] == 0.0);
+      _zero_cols[j] = (int)is_zero;
     }
   }
 }

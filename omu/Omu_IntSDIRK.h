@@ -42,15 +42,15 @@ class Omu_IntSDIRK: public Omu_Integrator {
 
   // interface routine from Omu_Integrator
   void solve(int kk, Real tstart, Real tend,
-	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys,  Omu_DepVec &Fc, Omu_SVec &xc);
+	     const Omu_VariableVec &x, const Omu_VariableVec &u,
+	     Omu_Program *sys,  Omu_DependentVec &Fc, Omu_StateVec &xc);
 
   void init_stage(int k, const Omu_States &x, const Omu_Vector &u,
 		  bool sa);
 
   private:
 
-  void init_yprime(int , double ,const Omu_SVec &,const Omu_Vector &, VECP );
+  void init_yprime(int , double ,const Omu_StateVec &,const Omu_Vector &, VECP );
   void jac(int ,double ,const VECP ,const VECP , const VECP , VECP );
   void res(double ,const VECP ,const VECP , const VECP , VECP);
   void resize();
@@ -75,8 +75,8 @@ class Omu_IntSDIRK: public Omu_Integrator {
 
   // backing store sys and vector of dependent variables for callbacks
   Omu_Program	*_sys;
-  Omu_SVec	*_cx_ptr;
-  Omu_DepVec 	*_cF_ptr;
+  Omu_StateVec	*_cx_ptr;
+  Omu_DependentVec *_cF_ptr;
 
   bool          _recalc_jac;
   bool          _lsqr_sol;

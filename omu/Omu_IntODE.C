@@ -38,8 +38,8 @@
 Omu_IntODE::Omu_IntODE()
 {
   _sys = NULL;
-  _xc_ptr = NULL;
-  _Fc_ptr = NULL;
+  _xt_ptr = NULL;
+  _Ft_ptr = NULL;
 
   _y = v_get(1);
   _u = v_get(1);
@@ -75,7 +75,7 @@ void Omu_IntODE::init_stage(int k,
 {
   if (!x.D_is_const) {
     m_error(E_FORMAT,
-	    "Omu_IntODE::init_stage, which was called for non const dF/dxp");
+	    "Omu_IntODE::init_stage, which was called for non const dF/ddx");
   }
   if (x.na > 0) {
     m_error(E_FORMAT,
@@ -88,7 +88,7 @@ void Omu_IntODE::init_stage(int k,
 //--------------------------------------------------------------------------
 void Omu_IntODE::resize()
 {
-  if (_xcp->dim == _nx + _nd && _uc->dim == _nu && _u->dim == _nd + _nu)
+  if (_dxt->dim == _nx + _nd && _ut->dim == _nu && _u->dim == _nd + _nu)
     return;
 
   int neq = _n * (1 + _nx + _nu);
@@ -107,48 +107,49 @@ void Omu_IntODE::resize()
   //
   // variables for low level _sys->continuous callback
   //
-  v_resize(_uc, _nu);
-  _xcp.resize(_nd + _n, _nx, _nu);
+  v_resize(_ut, _nu);
+  _dxt.resize(_nd + _n, _nx, _nu);
   m_resize(_Yx, _nd + _n, _nx);
   m_resize(_Yu, _nd + _n, _nu);
 }
 
 //--------------------------------------------------------------------------
 void Omu_IntODE::solve(int kk, double tstart, double tend,
-		       const Omu_States &x, const Omu_Vector &u,
-		       Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc)
+		       const Omu_VariableVec &x, const Omu_VariableVec &u,
+		       Omu_Program *sys, Omu_DependentVec &Ft,
+		       Omu_StateVec &xt)
 {
   int i, j;
 
   _sys = sys;	// propagate to syseq()
-  _xc_ptr = &xc;
-  _Fc_ptr = &Fc;
+  _xt_ptr = &xt;
+  _Ft_ptr = &Ft;
 
   v_zero(_y);
     
   for (i = 0; i < _nd; i++) {
-    _u[i] = xc[i];
+    _u[i] = xt[i];
   }
   for (i = 0; i < _n; i++) {
-    _y[i] = xc[_nd + i];		// initial states
+    _y[i] = xt[_nd + i];		// initial states
   }
   for (i = 0; i < _nu; i++) {
     _u[_nd + i] = u[i];
   }
 
-  v_zero(_xcp);	// time derivatives passed to continuous
+  v_zero(_dxt);	// time derivatives passed to continuous
 
   if (_sa) {
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	_y[(1 + j) * _n + i] = xc.Sx[_nd + i][j];
+	_y[(1 + j) * _n + i] = xt.Sx[_nd + i][j];
       }
       for (j = 0; j < _nu; j++) {
-	_y[(1 + _nx + j) * _n + i] = xc.Su[_nd + i][j];
+	_y[(1 + _nx + j) * _n + i] = xt.Su[_nd + i][j];
       }
     }
-    m_zero(_xcp.Sx);
-    m_zero(_xcp.Su);
+    m_zero(_dxt.Sx);
+    m_zero(_dxt.Su);
   }
 
   _kk = kk;	// propagate to syseq()
@@ -156,16 +157,16 @@ void Omu_IntODE::solve(int kk, double tstart, double tend,
   ode_solve(tstart, _y, _u, tend);
 
   for (i = 0; i < _n; i++) {
-    xc[_nd + i] = _y[i];
+    xt[_nd + i] = _y[i];
   }
 
   if (_sa) {
     for (i = 0; i < _n; i++) {
       for (j = 0; j < _nx; j++) {
-	xc.Sx[_nd + i][j] = _y[(1 + j) * _n + i];
+	xt.Sx[_nd + i][j] = _y[(1 + j) * _n + i];
       }
       for (j = 0; j < _nu; j++) {
-	xc.Su[_nd + i][j] = _y[(1 + _nx + j) * _n + i];
+	xt.Su[_nd + i][j] = _y[(1 + _nx + j) * _n + i];
       }
     }
   }
@@ -185,30 +186,30 @@ void Omu_IntODE::syseq(double t, const VECP y, const VECP u,
 #endif
 
   int i, j;
-  Omu_SVec &xc = *_xc_ptr;
-  Omu_DepVec &Fc = *_Fc_ptr;
+  Omu_StateVec &xt = *_xt_ptr;
+  Omu_DependentVec &Ft = *_Ft_ptr;
 
   //
   // prepare call arguments
   //
 
   for (i = 0; i < _nd; i++) {
-    xc[i] = u[i];
+    xt[i] = u[i];
   }
   for (i = 0; i < _n; i++) {
-    xc[_nd + i] = y[i];
+    xt[_nd + i] = y[i];
   }
   for (i = 0; i < _nu; i++) {
-    _uc[i] = u[_nd + i];
+    _ut[i] = u[_nd + i];
   }
       
   if (_sa) {
     for (i = _nd; i < _nxt; i++) {
       for (j = 0; j < _nx; j++) {
-	xc.Sx[i][j] = y[(1 + j) * _n + i - _nd];
+	xt.Sx[i][j] = y[(1 + j) * _n + i - _nd];
       }
       for (j = 0; j < _nu; j++) {
-	xc.Su[i][j] = y[(1 + _nx + j) * _n + i - _nd];
+	xt.Su[i][j] = y[(1 + _nx + j) * _n + i - _nd];
       }
     }
   }
@@ -217,26 +218,26 @@ void Omu_IntODE::syseq(double t, const VECP y, const VECP u,
   // evaluate residual
   //
 
-  Fc.set_required_J(_sa); // an integrator may request the Jacobian
+  Ft.set_required_J(_sa); // an integrator may request the Jacobian
 
-  _sys->continuous(_kk, t, xc, _uc, _xcp, Fc);
+  _sys->continuous(_kk, t, xt, _ut, _dxt, Ft);
 
   for (i = _nd; i < _nxt; i++) {
-    // f = F * -(dF/dxp)^(-1)
-    f[i - _nd] = Fc[i] / -Fc.Jxp[i][i];
+    // f = F * -(dF/ddx)^(-1)
+    f[i - _nd] = Ft[i] / -Ft.Jdx[i][i];
   }
       
   if (_sa) {
-    m_mlt(Fc.Jx, xc.Sx, _Yx);
-    m_mlt(Fc.Jx, xc.Su, _Yu);
-    m_add(_Yu, Fc.Ju, _Yu);
+    m_mlt(Ft.Jx, xt.Sx, _Yx);
+    m_mlt(Ft.Jx, xt.Su, _Yu);
+    m_add(_Yu, Ft.Ju, _Yu);
 
     for (i = _nd; i < _nxt; i++) {
       for (j = 0; j < _nx; j++) {
-	f[(1 + j) * _n + i - _nd] = _Yx[i][j] / -Fc.Jxp[i][i];
+	f[(1 + j) * _n + i - _nd] = _Yx[i][j] / -Ft.Jdx[i][i];
       }
       for (j = 0; j < _nu; j++) {
-	f[(1 + _nx + j) * _n + i - _nd] = _Yu[i][j] / -Fc.Jxp[i][i];
+	f[(1 + _nx + j) * _n + i - _nd] = _Yu[i][j] / -Ft.Jdx[i][i];
       }
     }
   }
@@ -253,7 +254,7 @@ void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
 {
 #ifdef OMU_WITH_ADOLC
   int i, j;
-  Omu_DepVec &Fc = *_Fc_ptr;
+  Omu_DependentVec &Ft = *_Ft_ptr;
 
   //
   // form a vector of independent variables
@@ -275,12 +276,12 @@ void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
   //
 
   adoublev ax(_nd + _n);
-  adoublev axp(_nd + _n);
+  adoublev adx(_nd + _n);
   adoublev au(_nu);
   adoublev aF(_nd + _n);
 
   for (i = 0; i < _nd; i++)
-    axp[i] = 0.0;
+    adx[i] = 0.0;
   for (i = _nd; i < _nxt; i++)
     aF[i] = 0.0;
 
@@ -288,14 +289,14 @@ void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
     trace_on(3);	// tape 3
   ax <<= _x->ve;
   for (i = 0; i < _n; i++)
-    axp[_nd + i] <<= _x->ve[_nd + _n + i];
+    adx[_nd + i] <<= _x->ve[_nd + _n + i];
   au <<= _x->ve + _nd + 2 * _n;
 
-  _sys->continuous(_kk, t, ax, au, axp, aF);
+  _sys->continuous(_kk, t, ax, au, adx, aF);
 
   for (i = _nd; i < _nxt; i++) {
     aF[i] >>= f[i - _nd];
-    f[i - _nd] /= -Fc.Jxp[i][i];
+    f[i - _nd] /= -Ft.Jdx[i][i];
   }
       
   if (_sa) {
@@ -321,9 +322,9 @@ void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
     forward(3, _n, nindep, npar, _x->ve, _X->me, f->ve, _Y->me);
 
     for (i = _nd; i < _nxt; i++) {
-      f[i - _nd] /= -Fc.Jxp[i][i];
+      f[i - _nd] /= -Ft.Jdx[i][i];
       for (j = 0; j < npar; j++) {
-	f[(1 + j) * _n + i - _nd] = _Y[i - _nd][j] / -Fc.Jxp[i][i];
+	f[(1 + j) * _n + i - _nd] = _Y[i - _nd][j] / -Ft.Jdx[i][i];
       }
     }
   }

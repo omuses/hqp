@@ -251,6 +251,8 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
   double err, h, hp, t, taut, tayl_max;
   adouble  au0;
 
+  _kk = kk;	// propagate to sys->continuous
+
   VECP   hpv;
 
   multiple_record = true;

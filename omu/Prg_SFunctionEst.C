@@ -477,15 +477,15 @@ void Prg_SFunctionEst::setup_struct(int k,
 	  F.Jx[i][j] = 0.0;
       }
 
-      m_zero(F.Jxp);
+      m_zero(F.Jdx);
       for (i = _np; i < _nx; i++)
-	F.Jxp[i][i] = -1.0;
-      F.set_linear(Omu_Dependent::WRT_xp);
+	F.Jdx[i][i] = -1.0;
+      F.set_linear(Omu_Dependent::WRT_dx);
     }
     else {
       // no continuous-time equations between two experiments
       m_zero(F.Jx);
-      m_zero(F.Jxp);
+      m_zero(F.Jdx);
     }
     m_zero(F.Ju);
 
@@ -600,7 +600,7 @@ void Prg_SFunctionEst::update(int kk,
 
   // constraints on time derivatives of initial states
   if (new_experiment) {
-    real_T *mdl_xp = ssGetdX(_S);
+    real_T *mdl_dx = ssGetdX(_S);
     mdlDerivatives(_S);
     if (ssGetErrorStatus(_S)) {
       fprintf(stderr, "Error from mdlDerivatives: %s\n",
@@ -610,7 +610,7 @@ void Prg_SFunctionEst::update(int kk,
     }
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)
-	c[i++] = mdl_xp[idx] / _mdl_x_nominal[idx];
+	c[i++] = mdl_dx[idx] / _mdl_x_nominal[idx];
     }
   }
 
@@ -785,7 +785,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
 //--------------------------------------------------------------------------
 void Prg_SFunctionEst::continuous(int kk, double t,
 				  const Omu_StateVec &x, const Omu_Vec &u,
-				  const Omu_StateVec &xp, Omu_DependentVec &F)
+				  const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   int i;
 
@@ -843,15 +843,15 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   }
 
   // get model derivatives and change to residual form
-  real_T *mdl_xp = ssGetdX(_S);
+  real_T *mdl_dx = ssGetdX(_S);
   for (i = 0; i < _mdl_nx; i++)
-    F[_np + i] = mdl_xp[i]/_mdl_x_nominal[i] - xp[_np + i];
+    F[_np + i] = mdl_dx[i]/_mdl_x_nominal[i] - dx[_np + i];
 
   // obtain Jacobians if required
   if (F.is_required_J()) {
     // call predefined continuous for numerical differentiation
     _S->mdlInfo->reservedForFutureInt[0] = 1;
-    Omu_Program::continuous_grds(kk, t, x, u, xp, F);
+    Omu_Program::continuous_grds(kk, t, x, u, dx, F);
     _S->mdlInfo->reservedForFutureInt[0] = 0;
   }
 }

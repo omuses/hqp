@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -56,8 +56,8 @@ class Omu_IntODE: public Omu_Integrator {
 		  bool sa = false);
 
   void solve(int kk, double tstart, double tend,
-	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
+	     const Omu_VariableVec &x, const Omu_VariableVec &u,
+	     Omu_Program *sys, Omu_DependentVec &Ft, Omu_StateVec &xt);
 
   //@}
 
@@ -84,8 +84,8 @@ class Omu_IntODE: public Omu_Integrator {
 
   // backing store sys and current stage
   Omu_Program	*_sys;
-  Omu_SVec 	*_xc_ptr;
-  Omu_DepVec 	*_Fc_ptr;
+  Omu_StateVec 	*_xt_ptr;
+  Omu_DependentVec *_Ft_ptr;
 
   VECP		_y;
   VECP		_u;
@@ -93,8 +93,8 @@ class Omu_IntODE: public Omu_Integrator {
   void		resize();
 
   // vectors and matrices for low level _sys->continuous callback
-  Omu_Vec	_uc;
-  Omu_SVec	_xcp;
+  Omu_Vec	_ut;
+  Omu_SVec	_dxt;
   MATP		_Yx;
   MATP		_Yu;
 
