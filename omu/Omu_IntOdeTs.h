@@ -1,7 +1,8 @@
 /*
  * Omu_IntOdeTs.h --
- *   -- class for integrating an Ode over a stage
- *   -- using Taylor series
+ *   -- class for integrating an autonomous Ode over a stage
+ *   -- using Taylor series expansion of Ode
+ *   -- derived from adolc driver routine forodec
  *
  * hl, 28/01/98
  */
@@ -30,46 +31,69 @@
 
 #include "Omu_Integrator.h"
 
+/**
+ *  Solving autonomous ordinary differential equations using 
+ *  Taylor series expansion. The implementation is adapted 
+ *  from the driver routine forodec of the adol-c 
+ *  automatic differentiation code.
+ */
+
 //--------------------------------------------------------------------------
 class Omu_IntOdeTs: public Omu_Integrator {
 
  public:
 
-  Omu_IntOdeTs(int );
-  Omu_IntOdeTs();
-  ~Omu_IntOdeTs();
+  Omu_IntOdeTs(int ); 	///< constructor
+  Omu_IntOdeTs(); 	///< constructor
+  ~Omu_IntOdeTs(); 	///< destructor
+
+  /**
+   * @name Implementation of predefined methods.
+   * @see Omu_Integrator
+   */
+
+  //@{
 
   char *name() {return "OdeTs";}
 
-  // interface routine from Omu_Integrator
-  void solve(int kk, Real tstart, Real tend,
-	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys, VECP xt,
-	     MATP Sx, MATP Su);
+  void init_stage(int k, const Omu_VariableVec &x, 
+		  const Omu_VariableVec &u,
+		  const Omu_DependentVec &Fc, bool sa);
 
-  private:
+  void solve(int kk, double tstart, double tend,
+	     const Omu_VariableVec &x, const Omu_VariableVec &u,
+	     Omu_Program *sys, Omu_DependentVec &cF, Omu_StateVec &cx);
+
+  //@}
+
+ protected:
+
+  /**
+   * maximum degree of the taylor series expansion of the ode
+   */
+
+  int           _max_deg;
+
+  /**
+   * time scaling of the taylor series
+   */
+  double	_tau;
+
+ private:
 
   bool          _adtaylor;
   bool          _multiple_record;
+  bool          _check_autonomous;
 
   int           _output;
 
-  int		_n;	// number of continuous states
-  int		_m;	// number of controls
-
-  int           _max_deg;
   int           _max_deg0;
 
   double        _rho;
-  double	_tau;
-
-/*    double    _atol; */
-/*    double  	_rtol; */
-
-  VECP		_x;
-  VECP		_u;
 
   VECP          _a;
+
+  Omu_SVec      _cxp;
 
   MATP          _Sxd;
   MATP          _Sxd0;
@@ -79,6 +103,7 @@ class Omu_IntOdeTs: public Omu_Integrator {
   MATP          _Sxu0;
   MATP          _Sh;
 
+  int           _nnz;
   short         **_nz;         // sparsity pattern
 
   double        *_aa1;
@@ -89,7 +114,7 @@ class Omu_IntOdeTs: public Omu_Integrator {
   double        ***_aA;
   double        ***_aB;
 
-  void		resize(int , int , int , int , int );
+  void		resize(int );
   void          free_adtaylor();
 
 };

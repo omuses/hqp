@@ -1,7 +1,7 @@
 /*
  * Omu_IntSDIRK.h --
  *   -- class for integrating an Ode over a stage
- *   -- using implicit Runge Kutta method
+ *   -- using singly diagonally implicit Runge Kutta method
  *
  * hl, 03/08/00
  */
@@ -30,63 +30,43 @@
 
 #include "Omu_Integrator.h"
 
+/**
+ * Singly diagonally implizit Runge Kutta method for (stiff)
+ * ordinary differential equations (ODEs). The implementation
+ * is based on Hairer/Wanner: "Solving ordinary differential
+ * equations II".
+ */
+
 //--------------------------------------------------------------------------
 class Omu_IntSDIRK: public Omu_Integrator {
 
  public:
 
-  Omu_IntSDIRK();
-  ~Omu_IntSDIRK();
+  Omu_IntSDIRK(); 	///< constructor
+  ~Omu_IntSDIRK(); 	///< destructor
+
+  /**
+   * @name Implementation of predefined methods.
+   * @see Omu_Integrator
+   */
+
+  //@{ 
 
   char *name() {return "SDIRK";}
 
   // interface routine from Omu_Integrator
-  void solve(int kk, Real tstart, Real tend,
-	     const Omu_VariableVec &x, const Omu_VariableVec &u,
-	     Omu_Program *sys,  Omu_DependentVec &Fc, Omu_StateVec &xc);
+  virtual void init(int k,
+		    const Omu_StateVec &x, const Omu_Vec &u,
+		    const Omu_DependentVec &Fc, bool sa);
 
-  void init_stage(int k, const Omu_States &x, const Omu_Vector &u,
-		  bool sa);
+  virtual void solve(int kk, double tstart, double tend,
+		     Omu_StateVec &xc, Omu_StateVec &dxc, Omu_Vec &q,
+		     Omu_DependentVec &Fc);
 
-  private:
+  //@}
 
-  void init_yprime(int , double ,const Omu_StateVec &,const Omu_Vector &, VECP );
-  void jac(int ,double ,const VECP ,const VECP , const VECP , VECP );
-  void res(double ,const VECP ,const VECP , const VECP , VECP);
-  void resize();
-  void init_method2();
-  void init_method4();
-  void init_method5();
-  void init_yprime_pred(MATP );
-  void solve_stage(int , VECP , VECP );
-  void solve_stage_lsqr(int , VECP , VECP );
-  void solve_final(VECP , VECP );
-  void sensitivity();
-  void sensitivity_lsqr();
+ protected:
 
-#ifdef OMU_WITH_ADOLC
-
-  void sensitivity_adolc();
-  void sensitivity_lsqr_adolc();
-
-#endif
-
-  void mat2bandf(const MATP , int  , int , MATP );
-
-  // backing store sys and vector of dependent variables for callbacks
-  Omu_Program	*_sys;
-  Omu_StateVec	*_cx_ptr;
-  Omu_DependentVec *_cF_ptr;
-
-  bool          _recalc_jac;
-  bool          _lsqr_sol;
-  bool          _stiffly_accurate;
-  bool          _sens_adolc;
-  bool          _sens_at_once;
-
-  int           _output;
-  int           _n_splitt_tape_eval;
-  short         _tag;
 
   /**
    * User given semi-bandwidth of Jacobian (default: -1).
@@ -96,20 +76,49 @@ class Omu_IntSDIRK: public Omu_Integrator {
   int		_jac_sbw;
 
   /**
-   * User specification to allow banded solver (default: true).
+   * User specification to allow banded solver (default: false).
    * Banded solvers are used if _banded is true, _jac_sbw < 0,
    * and if the automatic detection indicates that the problem
    * can be solved more efficiently in this way.
    */
   bool		_banded;
-  bool		_banded_solver;	              // use banded solver
-  bool		_sparse_solver;	              // use sparse solver
+  bool		_banded_solver;	  ///< internal flag for using banded solver
+
+  /**
+   * User specification to allow sparse solver (default: false).
+   */
+  bool		_sparse_solver;
+
+  private:
+
+  void init_yprime(int , double ,
+		   const Omu_StateVec &,const Omu_Vec &, VECP );
+  void jac(int ,double ,const VECP ,const VECP , const VECP , VECP );
+  void res(double ,const VECP ,const VECP , const VECP , VECP);
+  void resize();
+  void init_method2();
+  void init_method4();
+  void init_method5();
+  void init_yprime_pred(MATP );
+  void solve_stage(int , VECP , VECP );
+  void solve_final(VECP , VECP );
+  void sensitivity_stage(int , const VECP , const VECP , const VECP );
+  void sensitivity_update( );
+  double  error_check();
+
+  // backing store sys and vector of dependent variables for callbacks
+  Omu_StateVec	    *_xc_ptr;
+  Omu_DependentVec  *_Fc_ptr;
+
+  bool          _ode;
+  bool          _recalc_jac;
+  bool          _stiffly_accurate;
+  bool          _sens_adolc;
+
+  int           _output;
 
   int		_mu;	     // upper semi-bandwidth
   int		_ml;	     // lower semi-bandwidth
-  int           _na;         // number of algebraic states
-  int           _nv;         // number of expansion variables
-  int           _nod;        // number of over determining equations
 
   double        _t;
 
@@ -134,7 +143,7 @@ class Omu_IntSDIRK: public Omu_Integrator {
   VECP          _irk_y;
   VECP          _irk_yprime;
 
-  VECP          _par;
+  VECP          _senpar;
   VECP          _y;
   VECP          _y0;
   VECP          _yprime0;
@@ -161,26 +170,23 @@ class Omu_IntSDIRK: public Omu_Integrator {
   double        _h;
   VECP          _err;
 
-  // vectors and matrices for low level _sys->continuous callback
-  Omu_Vec      	_cu;
-  Omu_SVec	_cxp;
+  // newton parameters
+  double        _eta;
+  double        _kappa;
 
-  VECP		_cFh;
-  MATP		_cFxh;
+  // vectors and matrices for low level _sys->continuous callback
+  Omu_Vec      	_q;
+  Omu_SVec	_xcp;
+
+  VECP		_Fch;
+  MATP		_Fcxh;
 
   // sensitivity equations
-  MATP          _Sxd;
-  MATP          _Sxd0;
-  MATP          _Sxx;
-  MATP          _Sxx0;
-  MATP          _Sxu;
-  MATP          _Sxu0;
-  MATP          _SF;
   MATP          _Sh;
+  MATP          _Sh1;
+  MATP          _Sh2;
+  MATP          _Sh3;
   PERM          *_Spivot;
-
-  MATP          _U;
-  MATP          _Z;
 
   VECP          _vh;
   SPMATP        _smh;
