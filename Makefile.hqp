@@ -24,10 +24,23 @@ distclean: clean
 LIB_DIR = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include
 INC_DIR = $(INC_DIR_ROOT)/hqp
-install:
+install::
+	@PWD=`pwd`
+	if test ! -d $(INSTALL_PREFIX); then mkdirhier $(INSTALL_PREFIX); fi
 	@if test ! -d $(LIB_DIR); then mkdir $(LIB_DIR); fi
-	$(INSTALL) lib/libhqp$(LD_SUFFIX) $(LIB_DIR)
+	$(INSTALL) lib/$(LIB_PREFIX)hqp$(LIB_SUFFIX) \
+	  $(LIB_DIR)/$(LIB_PREFIX)hqp-$(VERSION)$(LIB_SUFFIX)
+	rm -f $(LIB_DIR)/$(LIB_PREFIX)hqp$(LIB_SUFFIX)
+	cd $(LIB_DIR); \
+	ln -s $(LIB_PREFIX)hqp-$(VERSION)$(LIB_SUFFIX) \
+	  $(LIB_PREFIX)hqp$(LIB_SUFFIX); \
+	cd $(PWD)
 	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
-	@if test ! -d $(INC_DIR); then mkdir $(INC_DIR); fi
+	@if test ! -d $(INC_DIR)-$(VERSION); then \
+	  mkdir $(INC_DIR)-$(VERSION); fi
+	rm -rf $(INC_DIR_ROOT)/hqp
+	cd $(INC_DIR_ROOT); \
+	ln -s hqp-$(VERSION) hqp; \
+	cd $(PWD)
 	for f in meschach/*.h iftcl/*.h hqp/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR); done
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done

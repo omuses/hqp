@@ -2,19 +2,25 @@
 README for HQP/Omuses 1.7
 -- This software is free according to the conditions of the 
    GNU LIBRARY GENERAL PUBLIC LICENSE, Version 2 (see COPYING.LIB) --
-Ruediger Franke, 11/01/00
+Ruediger Franke, 05/11/01
 
 HQP is a solver for nonlinearly constrained large-scale optimization
 problems. It is developed with respect to problems that have a
 sufficient regular sparsity structure, e.g. discrete-time optimal
-control problems. Its key features are:
+control problems. The key features are:
  + implementation with algorithms and data structures for sparse matrices
  + interior point procedure for the treatment of constraints
  + Newton-type SQP procedure for the treatment of nonlinearities
 
-Omuses is a front-end for HQP. It supports the efficient formulation
-and solution of multistage problems (e.g. discrete-time optimal control 
-problems). Its key features are:
+HQP provides the following interfaces for problem formulation:
+ + DOCP     -- discrete-time optimal control problems (own interface)
+ + CUTE     -- constrained and unconstrained testing environment
+ + ASCEND   -- simulation environment (experimental status)
+
+Omuses is a front-end for HQP building on the DOCP interface. 
+It supports the efficient formulation and solution of multistage problems 
+(e.g. discrete-time optimal control problems). 
+The key features are:
  + optimization problems are specified in the programming
    language C++
  + ADOL-C is used for the automatic calculation of exact derivatives and 
@@ -23,6 +29,10 @@ problems). Its key features are:
    differential equations
  + HQP is applied to the solution of the internally formed large-scale 
    nonlinear programming problems 
+
+Omuses provides the following interfaces to hook models to HQP:
+ + OmSim     -- object-oriented modeling and simulation environment
+ + S-function-- simulation blocks
 
 Following contributions with partly different copyrights are included:
 meschach     -- matrix library by D.E. Steward and Z. Leyk
@@ -36,115 +46,3 @@ omu/IMP      -- ODE integration using implicit ADOL-C by H. Linke
 omu/OdeTs    -- ODE integration using ADOL-C by H. Linke
 hqp/qsort    -- quick sort routine from NetBSD
 gmalloc      -- GNU malloc routines
-
-The software can be installed as follows (basically two libraries,
-libhqp and libomu, as well as a demo collection in ./odc are built).
-
-0)
-You need to have Tcl version 8.0 (or higher) and a C++ compiler;
-gcc is assumed per default (see below for using an other compiler).
-
-1)
-Unpack the distribution file by invoking
- tar -xzf hqp<version>.tar.gz
-This creates a new directory hqp containing everything.
-
-2)
-cd to the created directory and invoke
- ./configure
-to create the files ./makedirs, ./makedefs 
-   ./odc/Makefile, and ./hqp_docp/Makefile.
-Following options can be specified:
- --prefix=PATH
-     Path where you'd like to install the libraries and include files
-     (default is /usr/local).
-Build options:
- --enable-fortran
-     Include the numerical integration routines RKsuite and 
-     optionally DASPK with libomu (see also daspk/README).
-     This requires an f77 compiler on your machine.
-     Note: The automatic settings done by ./configure are only guesses. 
-     Please check the variables FORTRAN_* in ./makedefs manually.
- --enable-cute
-     Include CUTE interface with HQP.
- --enable-gmalloc
-     Use GNU malloc instead of the system routines. Gmalloc will be enabled
-     automatically if your system malloc doesn't work properly (e.g. under
-     DEC OSF). According to the authors experience gmalloc doesn't work on 
-     all machines, but fortunately it does where it's needed :-)
- --enable-ascend
-     Include current preliminary version of an interface to Ascend4.
-     This requires that this distribution is unpacked in the directory of
-     the Ascend distribution, e.g. in /home/myname/ascendiv-0.9
-     (for Ascend see http://www.cs.cmu.edu/~ascend/Home.html)
-Use a specific Tcl installation, which is not found automatically:
- --with-tcl
-     Directory containing Tcl configuration file tclConfig.sh, e.g.
-     --with-tcl=/cygnus/cygwin-b20/H-i586-cygwin32/lib
- --with-tclinclude
-     Directory containing include file tcl.h.
-
-3)
-Compile the distribution by invoking
-  make
-(or
-  make -f Makefile.hqp
- to avoid building ADOL-C, Omuses, and Odc)
-
-4)
-Directly after compilation, a test run of an example in ./odc is performed 
-automatically that should produce the result "optimal". Some more examples 
-are given in ./odc (please see the documentation in ./doc).
-
-5)
-Install the libraries and includes if you want by invoking
-  make install
-The following files are created:
-
-     $prefix / lib     / libhqp.so
-                       / libomu.so
-             / include / omuses / *.h
-
-6)
-See ./hqp_docp/README if you want to apply HQP directly to multistage 
-problems without using ADOL-C and differential equations.  
-
-7)
-See ./hqp_cute/README if you want to use HQP in the testing environment
-CUTE.
-
-8)
-Send correspondence to: hqp@rz.tu-ilmenau.de
-
-Use an other compiler than gcc
-==============================
-for using an other compiler, say cl, invoke
-  CC=cl ./configure
-
-Hints for using cl, i.e. the "native" compiler under Windows:
- - you need Cygwin (see http://sources.redhat.com)
-   in order to run the automatic configuration and make
-   (Note that Cygwin 1.1 is not considered stable, b20 works fine!)
- - the location of cl must be in your PATH environment
- - the automatically generated file makedirs
-   needs to be customized manually with drive names for absolute paths
-   (e.g. insead of "/Programs/Tcl/lib" write "c:/Programs/Tcl/lib"
- - cl does work for HQP, but not for ADOL-C used in the front-end Omuses
-   You can use cl to greate a DLL for HQP and compile Omuses with gcc.
-
-Alternative for Windows:
- - compile everything under Cygwin
- - Cygwin version b20(.1) was tested successfully. It can be extended
-   with EGCS-1.1 F77 to enable Fortran modules.
-
-Known Problems
-==============
-1) problems with specific gcc versions:
-- gcc 2.95* produces many warnings on standard C++ code
-  (please use a version between 2.8.1 and 2.91*, or wait for 2.96)
-- gcc 2.8.0 and egcs 1.0.3 can't compile a method "resize"
-  (tested and rejected by automatic configuration)
-- gcc 2.7 does not work under DEC OSF with code optimization
-  (Please edit the automatically generated file makedefs.
-   The optimization is not disabled automatically as the generated
-   code will be rather slow)

@@ -1,0 +1,118 @@
+The software can be installed as follows:
+
+(basically two libraries, libhqp and libomu, 
+ as well as an example in hqp_docp and a demo collection in ./odc are built)
+
+0)
+You need to have Tcl version 8.0 (or higher) and a C++ compiler;
+gcc is assumed per default (see below for using an other compiler).
+
+1)
+Unpack the distribution file by invoking
+ tar -xzf hqp<version>.tar.gz
+This creates a new directory hqp containing everything.
+
+2)
+cd to the created directory and invoke
+ ./configure
+to create the files ./makedirs, ./makedefs 
+   ./odc/Makefile, and ./hqp_docp/Makefile.
+Following options can be specified:
+ --prefix=PATH
+     Path where you'd like to install the libraries and include files
+     (default is /usr/local).
+Build options:
+ --enable-fortran
+     Include the numerical integration routines RKsuite and 
+     optionally DASPK with libomu (see also daspk/README).
+     This requires an f77 compiler on your machine.
+     Note: The automatic settings done by ./configure are only guesses. 
+     Please check the variables FORTRAN_* in ./makedefs manually.
+ --enable-cute
+     Include CUTE interface with HQP.
+ --enable-gmalloc
+     Use GNU malloc instead of the system routines. Gmalloc will be enabled
+     automatically if your system malloc doesn't work properly (e.g. under
+     DEC OSF). According to the authors experience gmalloc doesn't work on 
+     all machines, but fortunately it does where it's needed :-)
+ --enable-ascend
+     Include current preliminary version of an interface to Ascend4.
+     This requires that this distribution is unpacked in the directory of
+     the Ascend distribution, e.g. in /home/myname/ascendiv-0.9
+     (for Ascend see http://www.cs.cmu.edu/~ascend/Home.html)
+Use a specific Tcl installation, which is not found automatically:
+ --with-tcl
+     Directory containing Tcl configuration file tclConfig.sh, e.g.
+     --with-tcl=/cygnus/cygwin-b20/H-i586-cygwin32/lib
+ --with-tclinclude
+     Directory containing include file tcl.h.
+
+3)
+Compile the distribution by invoking
+  make
+(or
+  make -f Makefile.hqp
+ to avoid building ADOL-C, Omuses, and Odc)
+
+4)
+Directly after compilation, a test run of an example in ./odc is performed 
+automatically that should produce the result "optimal". Some more examples 
+are given in ./odc (please see the documentation in ./doc).
+
+5)
+Install the libraries and includes if you want by invoking
+  make install
+The following files are created:
+
+     $prefix / lib     / libhqp-<version>.so
+                       / libomu-<version>.so
+                       / libhqp.so -> libhqp-<version>.so
+                       / libomu.so -> libomu-<version>.so
+             / include / hqp-<version> / *.h
+                       / hqp -> hqp-<version>
+
+6)
+See ./hqp_docp/README if you want to apply HQP directly to multistage 
+problems without using ADOL-C and differential equations.  
+
+7)
+See ./hqp_cute/README if you want to use HQP in the testing environment
+CUTE.
+
+8)
+Send correspondence to: hqp@rz.tu-ilmenau.de
+
+
+Using an other compiler than gcc
+================================
+for using an other compiler, say cl, invoke
+  CC=cl ./configure
+
+Hints for using cl, i.e. the "native" compiler under Windows:
+ - you still need Cygwin (see http://sources.redhat.com)
+   in order to run the automatic configuration and make
+   (Note that Cygwin 1.1 is not considered stable,
+    if you have problems with a current version: b20 works fine!)
+ - the location of cl must be in your PATH environment
+ - the automatically generated file makedirs
+   may need to be customized manually with drive names for absolute paths
+   (e.g. insead of "/Programs/Tcl/lib" write "c:/Programs/Tcl/lib"
+ - cl does work for HQP, but not for ADOL-C used in the front-end Omuses
+   You can use cl to greate a DLL for HQP and compile Omuses with gcc.
+ - dynamic link libraries are not yet installed automatically
+
+Alternative for Windows:
+ - compile everything under Cygwin and install it under /usr/local
+   (i.e. c:\cygwin\usr\local)
+
+Known Problems
+==============
+1) Problems with specific gcc versions:
+- gcc 2.8.0 and egcs 1.0.3 can't compile a method "resize"
+  (tested and rejected by automatic configuration)
+- gcc 2.7 does not work under DEC OSF with code optimization
+  (Please edit the automatically generated file makedefs.
+   The optimization is not disabled automatically as the generated
+   code will be rather slow)
+2) Problems with Cygwin
+- some early version of Cygwin 1.1 did setup HUGE_VAL wrong

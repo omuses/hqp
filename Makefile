@@ -27,19 +27,32 @@ distclean: clean
 LIB_DIR = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include
 INC_DIR = $(INC_DIR_ROOT)/hqp
-install:
-	@if test ! -d $(LIB_DIR); then mkdirhier $(LIB_DIR); fi
-	$(INSTALL) lib/libhqp$(LIB_SUFFIX) lib/libomu$(LIB_SUFFIX) $(LIB_DIR)
+install::
+	$(MAKE) -f Makefile.hqp install
+	@PWD=`pwd`
+	@if test ! -d $(LIB_DIR); then mkdir $(LIB_DIR); fi
+	$(INSTALL) lib/$(LIB_PREFIX)omu$(LIB_SUFFIX) \
+	  $(LIB_DIR)/$(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX)
+	rm -f $(LIB_DIR)/$(LIB_PREFIX)omu$(LIB_SUFFIX)
+	cd $(LIB_DIR); \
+	ln -s $(LIB_PREFIX)omu-$(VERSION)$(LIB_SUFFIX) \
+	  $(LIB_PREFIX)omu$(LIB_SUFFIX); \
+	cd $(PWD)
 	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
-	@if test ! -d $(INC_DIR); then mkdir $(INC_DIR); fi
-	for f in meschach/*.h iftcl/*.h hqp/*.h adol-c/SRC/*.h omu/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR); done
+	@if test ! -d $(INC_DIR)-$(VERSION); then \
+	  mkdir $(INC_DIR)-$(VERSION); fi
+	rm -rf $(INC_DIR_ROOT)/hqp
+	cd $(INC_DIR_ROOT); \
+	ln -s hqp-$(VERSION) hqp; \
+	cd $(PWD)
+	for f in adol-c/SRC/*.h omu/*.h hxi/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
 	@if test ! -d $(INC_DIR)/DRIVERS; then mkdir $(INC_DIR)/DRIVERS; fi
 	for f in adol-c/SRC/DRIVERS/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)/DRIVERS; done
+	  $(INSTALL_DATA) $$f $(INC_DIR)/DRIVERS/; done
 	@if test ! -d $(INC_DIR)/SPARSE; then mkdir $(INC_DIR)/SPARSE; fi
 	for f in adol-c/SRC/SPARSE/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)/SPARSE; done
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/SPARSE/; done
 	@if test ! -d $(INC_DIR)/TAPEDOC; then mkdir $(INC_DIR)/TAPEDOC; fi
 	for f in adol-c/SRC/TAPEDOC/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)/TAPEDOC; done
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/TAPEDOC/; done

@@ -3,6 +3,7 @@
 #
 
 include ../makedirs
+# (makedirs should define TCL_LIBDIR)
 
 O = @OBJ_SUFFIX@
 

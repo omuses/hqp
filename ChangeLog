@@ -1,11 +1,20 @@
-2001-05-07    <rfranke>
+2001-05-11    <rfranke@sourcefoge.net>
+
+	* configure.in: change version to 1.7.8
+
+	* INSTALL: add INSTALL file (in addition to README)
+
+	* Makefile, Makefile.hqp, makedefs, configure.in:
+	   add version number and links to installed files
+
+2001-05-07    <rfranke@sourceforge.net>
 
 	* hxi/Hxi_mxArray.h, hxi/Hxi_sfun_types.h:
 	   add treatment of mxArray as required for S-function parameters
 	* hxi/Hxi_SimStruct.h, odc/Prg_DiDSfun.[hC], odc/sfun_did.c:
 	   extend with a parameter
 
-2001-05-06    <rfranke>
+2001-05-06    <rfranke@sourceforge.net>
 
 	* hxi/Hxi_SimStruct.h:
 	   extend SimStruct to work on externally provided storage
@@ -13,7 +22,7 @@
 	   allocate vectors of adoubles used in S-functions locally
 	   to avoid problems with overflow of number of active doubles
 
-2001-05-06    <rfranke>
+2001-05-06    <rfranke@sourceforge.net>
 
 	* hxi/Hxi_SimStruct.h, hxi/README: add S-function interface
 
@@ -26,7 +35,7 @@
 	* odc/Prg_DiCSfun.[hC], odc/sfun_dic.c:
 	   add double integrator example using continuous-time s-Function
 
-2001-04-26    <rfranke>
+2001-04-26    <rfranke@sourceforge.net>
 
 	* Makefile: change INC_DIR for installation of all includes to
 	  $(INSTALL_PREFIX)/include/hqp
