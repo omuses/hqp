@@ -47,8 +47,6 @@ IF_CLASS_DEFINE("OdeTs", Omu_IntOdeTs, Omu_Integrator);
 Omu_IntOdeTs::Omu_IntOdeTs()
 {
 
-  int i;
-
   _adtaylor = false;
   _multiple_record = true;
   _output = 0;
@@ -94,8 +92,6 @@ Omu_IntOdeTs::Omu_IntOdeTs()
 
 Omu_IntOdeTs::Omu_IntOdeTs(int max_deg)
 {
-
-  int i;
 
   _adtaylor = false;
   _multiple_record = true;
@@ -267,7 +263,9 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
   adoublev au(_m);
   adoublev aF(_nd+_n);
 
-  double f[_nd+_n+_m];
+  double *f;
+
+  f = new double[_nd+_n+_m];
 
   if(_tau <= 0) {
     printf("time scaling must be greather then zero!\n");
@@ -553,6 +551,8 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
 
   if(_output > 0)
     v_output(xt);
+
+  delete[] f;
 
   V_FREE(hpv);
 
