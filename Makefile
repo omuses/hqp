@@ -14,8 +14,10 @@ omuses:
 	$(MAKE) test
 
 adolc:
-	cd adol-c/INS; $(MAKE) xxxinstall; cd ../..
-	cd adol-c/SRC; $(MAKE); cd ../..
+	-patch -p0 -N -s < hqp_adolc.patch
+	cd adol-c/adolc; \
+	$(MAKE) CC=$(ADOL_MCC) CXX=$(ADOL_CC) CFLAGS="$(ADOL_CFLAGS)"; \
+	cd ../..
 
 test:
 	@if test -n "$(ADOLC_SRCS)"; then \
@@ -37,7 +39,7 @@ clean:
 	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..
-	cd adol-c/SRC; $(MAKE) cleanall; rm -f makefile; cd ../..
+	cd adol-c/adolc; $(MAKE) clean; cd ../..
 	$(MAKE) -f Makefile.hqp clean
 	cd hqp_docp; $(MAKE) clean; cd ..
 	rm -f hqp_cute/*~
@@ -45,7 +47,7 @@ clean:
 
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
-	rm -f adol-c/SRC/iostream.h
+	cd adol-c/adolc; $(MAKE) distclean; cd ../..
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
@@ -68,20 +70,24 @@ install::
 	@if test ! -d $(INC_DIR)-$(VERSION); then \
 	  mkdir $(INC_DIR)-$(VERSION); fi
 # install include files
-	for f in adol-c/SRC/*.h omu/*.h hxi/*.h; do \
+	for f in omu/*.h hxi/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
-	@if test ! -d $(INC_DIR)/DRIVERS; then \
-	mkdir $(INC_DIR)-$(VERSION)/DRIVERS; fi
-	for f in adol-c/SRC/DRIVERS/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/DRIVERS/; done
-	@if test ! -d $(INC_DIR)/SPARSE; then \
-	mkdir $(INC_DIR)-$(VERSION)/SPARSE; fi
-	for f in adol-c/SRC/SPARSE/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/SPARSE/; done
-	@if test ! -d $(INC_DIR)/TAPEDOC; then \
-	mkdir $(INC_DIR)-$(VERSION)/TAPEDOC; fi
-	for f in adol-c/SRC/TAPEDOC/*.h; do \
-	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/TAPEDOC/; done
+	@if test ! -d $(INC_DIR)-$(VERSION)/adolc; then \
+	mkdir $(INC_DIR)-$(VERSION)/adolc; fi
+	for f in adol-c/adolc/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/; done
+	@if test ! -d $(INC_DIR)-$(VERSION)/adolc/drivers; then \
+	mkdir $(INC_DIR)-$(VERSION)/adolc/drivers; fi
+	for f in adol-c/adolc/drivers/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/drivers/; done
+	@if test ! -d $(INC_DIR)-$(VERSION)/adolc/sparse; then \
+	mkdir $(INC_DIR)-$(VERSION)/adolc/sparse; fi
+	for f in adol-c/adolc/sparse/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/sparse/; done
+	@if test ! -d $(INC_DIR)-$(VERSION)/adolc/tapedoc; then \
+	mkdir $(INC_DIR)-$(VERSION)/adolc/tapedoc; fi
+	for f in adol-c/adolc/tapedoc/*.h; do \
+	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/tapedoc/; done
 # complete directory structure for includes
 	rm -rf $(INC_DIR_ROOT)/hqp
 	cd "$(INC_DIR_ROOT)"; \

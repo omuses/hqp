@@ -27,11 +27,12 @@
  */
 
 #include <assert.h>
-#include <math.h>
 
-#include <adutils.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
+#include <adolc/drivers/odedrivers.h>
+#include "Omu_Program.h"
 
-#include <Hqp.h>
 #include <If_Int.h>
 #include <If_Bool.h>
 #include <If_Real.h>

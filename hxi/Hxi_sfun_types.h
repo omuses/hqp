@@ -36,7 +36,7 @@
 
 /** HXI_REAL_T can be defined before including this file (default: adouble). */
 #if !defined(HXI_REAL_T)
-#include <adouble.h>
+#include <adolc/adouble.h>
 #define HXI_REAL_T adouble
 #endif
 

@@ -39,7 +39,7 @@
 
 #include "Hqp_Docp.h"
 
-#include <adouble.h>
+#include <adolc/adolc.h>
 
 //--------------------------------------------------------------------------
 class Hqp_DocpAdol: public Hqp_Docp {

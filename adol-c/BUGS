@@ -1,0 +1,7 @@
+Not many:
+
+- incorrect results in rare cases if using malloc
+  => default for ADOL-C memory allocation changed to calloc
+
+- incorrect results if using pow-function and whole numbers as exponents
+

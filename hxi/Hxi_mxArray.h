@@ -34,6 +34,8 @@
 #include "Hxi_sfun_types.h"
 #include <vector>
 
+using namespace std;
+
 /// @name Data types
 //@{ 
 #define mxREAL		0x0001

@@ -2927,84 +2927,6 @@ echo "$as_me: error: \"Your $CXX is buggy -- please install a newer version.\"" 
   fi
 fi
 
-# Check for conflicts with symbols defined in ctype.h and included
-# via iostream.h. Note that the solution of generating a local iostream.h
-# is not ultimate as all <iostream.h> should be replaced with <iostream>.
-# Additionally check if algobase.h included via iostream.h undefs min/max.
-echo "$as_me:$LINENO: checking for conflicting _P, _S, _U, _X defined in ctype.h" >&5
-echo $ECHO_N "checking for conflicting _P, _S, _U, _X defined in ctype.h... $ECHO_C" >&6
-rm -f adol-c/SRC/iostream.h
-ac_ext=cc
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-#define min(a,b) (a)<(b)? (a): (b)
-#define max(a,b) (a)>(b)? (a): (b)
-#include <iostream.h>
-
-int
-main ()
-{
-
-               int _P, _S, _U, _X;
-               int i = min(3, 4);
-               int j = max(3, 4);
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  have_P_S_U_X=no
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-have_P_S_U_X=yes
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-echo "$as_me:$LINENO: result: ${have_P_S_U_X}" >&5
-echo "${ECHO_T}${have_P_S_U_X}" >&6
-if test $have_P_S_U_X = yes; then
-  echo "/* generated automatically by configure */" > adol-c/SRC/iostream.h
-  echo "#include <iostream>" >> adol-c/SRC/iostream.h
-  echo "using namespace std;" >> adol-c/SRC/iostream.h
-  echo "#undef _P" >> adol-c/SRC/iostream.h
-  echo "#undef _S" >> adol-c/SRC/iostream.h
-  echo "#undef _U" >> adol-c/SRC/iostream.h
-  echo "#undef _X" >> adol-c/SRC/iostream.h
-fi
-
 # -----------------------------------------------------------------------
 # 	Check for includes
 # -----------------------------------------------------------------------
@@ -4586,7 +4508,8 @@ fi
 if test "$omu_adolc" = yes; then
   ASRCS="\$(ASRCS)"
   OMU_DEFS="$OMU_DEFS -DOMU_WITH_ADOLC=1"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/SRC/*\$O ../adol-c/SRC/*/*\$O"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adolc/*\$O ../adol-c/adolc/*/*\$O"
+  cd adol-c; ./configure; cd ..
 else
   ASRCS=""
 fi

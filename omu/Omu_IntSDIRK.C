@@ -27,7 +27,7 @@
 
 #include <assert.h>
 #include <math.h>
-#include <iostream.h>
+#include <iostream>
 
 #include <Hqp.h>
 #include <If_Int.h>
@@ -551,12 +551,12 @@ void Omu_IntSDIRK::solve(int kk, double tstart, double tend,
     nsteps = (int)ceil((tend - tstart) / _stepsize);
 
   if(_output > 1) {
-    cout << endl;
-    cout << "Omu_IntSDIRK::solve at stage " << kk;
-    cout.precision(16);
-    cout << "  tstart: " << tstart;
-    cout << "  tend: " << tend << endl;
-    cout.precision(8);
+    std::cout << std::endl;
+    std::cout << "Omu_IntSDIRK::solve at stage " << kk;
+    std::cout.precision(16);
+    std::cout << "  tstart: " << tstart;
+    std::cout << "  tend: " << tend << std::endl;
+    std::cout.precision(8);
     v_output(xc);
   }
 
@@ -598,7 +598,7 @@ void Omu_IntSDIRK::solve(int kk, double tstart, double tend,
   _recalc_jac = true;
 
   if(_output > 1)
-    cout << "h: " << _h_new << endl;
+    std::cout << "h: " << _h_new << std::endl;
  
   while(_t < tend) {    
 
@@ -671,9 +671,9 @@ void Omu_IntSDIRK::solve(int kk, double tstart, double tend,
 	      ok = true;
 	  
 	  if(_output > 1 && !ok) {
-	      cout << "t: " << _t << "  err: " << err << "  h_new: ";
-	      cout << _h_new << " accepted: " << ok;
-	      cout << "  newtonsteps: " << _newtonsteps << endl;
+	      std::cout << "t: " << _t << "  err: " << err << "  h_new: ";
+	      std::cout << _h_new << " accepted: " << ok;
+	      std::cout << "  newtonsteps: " << _newtonsteps << std::endl;
 	      v_output(_err);
 	  }
       }
@@ -695,12 +695,12 @@ void Omu_IntSDIRK::solve(int kk, double tstart, double tend,
     while(!ok);
 
     if(_output > 1) {
-      cout.precision(16);
-      cout << "t: " << _t;
-      cout.precision(8);
-      cout << "  err: " << err << "  h_new: ";
-      cout << _h_new << " accepted: " << ok;
-      cout << "  newtonsteps: " << _newtonsteps << endl;
+      std::cout.precision(16);
+      std::cout << "t: " << _t;
+      std::cout.precision(8);
+      std::cout << "  err: " << err << "  h_new: ";
+      std::cout << _h_new << " accepted: " << ok;
+      std::cout << "  newtonsteps: " << _newtonsteps << std::endl;
     }
 
     if(_sa)
@@ -1328,8 +1328,8 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_StateVec &y,
       _irk_yprime[i] = 0.0;
 
   if(_output == -1) {
-    cout << "initial values for yprime at time: " << _t << endl; 
-    cout << "newton method" << endl;
+    std::cout << "initial values for yprime at time: " << _t << std::endl; 
+    std::cout << "newton method" << std::endl;
   };
 
   while (result > 0)  {

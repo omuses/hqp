@@ -26,8 +26,6 @@
 
 #include <malloc.h>
 
-#include <adutils.h>
-
 #include <If_Int.h>
 
 #include "Hqp_DocpAdol.h"

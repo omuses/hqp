@@ -27,7 +27,8 @@
 #include <assert.h>
 
 #ifdef OMU_WITH_ADOLC
-#include <adutils.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
 #endif
 
 #include "Omu_Program.h"

@@ -1,0 +1,8 @@
+
+- check variable initialization (to overcome ADOL-C - malloc bug)
+
+- performance tuning for tape handling and in many other ways
+
+- many interesting mathematics stuff
+
+- change library to no longer need to be rebuilt when user options changes

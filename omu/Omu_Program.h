@@ -28,7 +28,7 @@
 #ifndef Omu_Program_H
 #define Omu_Program_H
 
-#include <adouble.h>
+#include <adolc/adouble.h>
 #include <Meschach.h>
 #include "Omu_Variables.h"
 #include "Omu_Dependents.h"

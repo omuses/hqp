@@ -1,0 +1,10 @@
+--------------------------------------------------------------
+README          ADOL-C version 1.9.0         as of Apr/30/2004
+--------------------------------------------------------------
+
+CONTENTS OF THE DIRECTORY
+
+  scalexam       --> Validation of some operations by
+                     application to algebraic identities
+
+                     scalexam.cpp

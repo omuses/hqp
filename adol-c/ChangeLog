@@ -1,0 +1,24 @@
+! started with ADOL-C version 1.9.0 !
+
+Version 1.9.1
+   20040524 kowarz: changed include of adolc files from standard notation
+                    (#include <...>) to user file notation (#include "...")
+
+   20040607 kowarz: bug fixed in tayutil.c (taylor_begin)
+                    ( old taylor memory was never freed
+                      => chance to run out of memory if used many times on
+                         same tag -> dependend on memory size )
+                    => moved "free( ... save_taylor)" ahead of
+                       " ... save_taylor = 0"
+                    thanks to Teijo T Arponen
+
+   20040717 kowarz: bug fixed in tayutil.c (taylor_begin)
+                    ( old temporary files were never closed
+                      => could result in program crash due to too many file
+                         handles -> system dependend )
+                    => old files are closed now before new ones are opened
+                    thanks to Andrej Ponomarenko
+
+   20040913 kowarz: added driver jacobian_partx in drivers/drivers.c and
+                    drivers/drivers.h that was written down earlier but was
+                    not added to the repository

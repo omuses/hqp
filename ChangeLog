@@ -1,8 +1,22 @@
 2004-10-13	<e_arnold>
 	
+	* configure.in, configure: DEVELOPMENT_VERSION=yes
+
+	* adol-c: replace by adolc-1.9.0-PL2.tar.gz
+	
+	* configure.in, configure, hqp_adolc.patch, makedirs.in, Makefile,
+	  odc/Makefile.in, omu/Omu_Program.[hC], omu/Omu_IntODE.C, 
+	  omu/Omu_IntGRK4.C, omu/Omu_IntOdeTs.C, omu/Omu_IntSDIRK.C,
+	  omu/Omu_IntRKsuite.C, hqp/Hqp_DocpAdol.[hC],
+	  hxi/Hxi_sfun_types.h, hxi/Hxi_mxArray.h, hxi/Hxi_SimStruct.h
+	  - adapt to ADOL-C version 1.9.0
+	
 	* hqp/Hqp_IpDOCP.C:
-	  bug fix for assert'ed GetDim() 
-	  (reported by nnunn@ausport.gov.au, 2004-01-16)
+	  - bug fix for assert'ed GetDim() 
+	    (reported by nnunn@ausport.gov.au, 2004-01-16)
+
+	* Makefile, Makefile.hqp, omu/Makefile:
+	  - bug fix for spaces in directory names	  
 	  	  
 2004-10-06  <rfranke>
 

@@ -1,0 +1,20 @@
+--------------------------------------------------------------
+README          ADOL-C version 1.9.0         as of Apr/30/2004
+--------------------------------------------------------------
+
+This directory contains example programs to demonstrate how to
+separate tape creation and tape usage into different programs.
+   
+--------------------------------------------------------------
+CONTENTS OF THE DIRECTORY
+
+  createTape   --> C++ program to create a tape of the function
+                   of interest.
+                   
+                   createTape.cpp
+
+  useTape      --> C program which uses the tape created with
+                   createTape to compute the gradient.
+
+                   useTape.c 
+		  

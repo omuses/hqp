@@ -36,6 +36,8 @@
 #include "Hxi_sfun_types.h"
 #include "Hxi_mxArray.h"
 
+using namespace std;
+
 /// @name Definitions expected in S-functions (only a subset is supported)
 //@{
 #define SS_OPTION_EXCEPTION_FREE_CODE 		0x0001

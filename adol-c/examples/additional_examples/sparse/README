@@ -1,0 +1,23 @@
+--------------------------------------------------------------
+README          ADOL-C version 1.9.0         as of Apr/30/2004
+--------------------------------------------------------------
+
+This directory contains an example program that demonstrate 
+the application of the special ADOL-C driver
+
+  jac_pat(..)
+
+in different modes to obtain the sparsity structure of 
+Jacobians.
+
+--------------------------------------------------------------
+CONTENTS OF THE DIRECTORY
+
+  jacpatexam  --> Example to validate jac_pat(..) and the
+                  underlying bit pattern forward/reverse calls
+
+                  jacpatexam.cpp
+
+NOTE: the example program makes use of the clock utility 
+      provided in subdirectory ../clock. 
+
