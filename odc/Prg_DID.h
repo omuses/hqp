@@ -1,18 +1,18 @@
 /*
- * Prg_Di.h -- 
- *   - double integrator example
+ * Prg_DID.h -- 
+ *   - double integrator example, discrete-time
  *     (derived from Di example accessing Docp interface)
  *
  * rf, 05/05/01
  */
 
-#ifndef Prg_Di_H
-#define Prg_Di_H
+#ifndef Prg_DID_H
+#define Prg_DID_H
 
 #include <Omu_Program.h>
 
 //--------------------------------------------------------------------------
-class Prg_Di: public Omu_Program {
+class Prg_DID: public Omu_Program {
 
  protected:
 
@@ -31,9 +31,9 @@ class Prg_Di: public Omu_Program {
 
  public:
 
-  Prg_Di();
+  Prg_DID();
 
-  char *name() {return "Di";}
+  char *name() {return "DID";}
 };  
 
 #endif

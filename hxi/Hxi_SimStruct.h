@@ -152,24 +152,16 @@
 
 /**
  * SimStruct for HQP.
- * Note: the standard vector class is used for memory management.
- * Special treatment is required if real_T is defined as adouble,
- * as adoubles should be allocated locally during each evaluation.
- * That is why external memory can be provided for all vector<real_T>
- * to avoid their actual allocation.
- * (Unfortunately the predefined vector type adoublev can not be used
- *  as the S-function treats vectors C-like, using pointers to real_T.)
  */
 class SimStruct {
 protected:
+  /** Argument passed to resize of vectors.
+      This is done to avoid memory management problems with ADOL-C 1.8.7. */
+  real_T 	 _dummy;
+				
   real_T	 _t;		// current simulation time
 
   int_T 	 _p_sfun_size;	// number of parameters expected in S-function
-  int_T 	 _xc_size;	// number of continuous states
-  int_T 	 _xd_size;	// number of discrete states
-  vector<int_T>  _u_width;	// number of inputs per port
-  vector<int_T>  _y_width;	// number of outputs per port
-  vector<int_T>  _dwork_width;	// number of elements per dwork vector
   vector<int_T>  _dwork_usage;	// usage of each data work vector
 
   vector<mxArray> _p; 		// parameters provided by calling program
@@ -196,14 +188,6 @@ protected:
 
   uint_T 	_options; 	// option flags
 
-  real_T	*_xc_ext;	// externally provided memory for cont. states
-  real_T	*_dxc_ext;	// externally provided memory for derivatives
-  real_T	*_xd_ext;	// externally provided memory for disc. states
-  real_T	*_u_ext;	// externally provided memory for inputs
-  real_T	*_y_ext;	// externally provided memory for outputs
-  real_T	*_dwork_ext;	// externally provided memory for dwork vectors
-  real_T	*_rwork_ext;	// externally provided memory for work array
-
   const char_T 	*_model_name; 	// relative name of this model
   const char_T 	*_path; 	// absolute name of this model
   int_T 	_version; 	// version of this model
@@ -220,70 +204,15 @@ public:
     _t = 0.0;
 
     _p_sfun_size = 0;
-    _xc_size = 0;
-    _xd_size = 0;
     _st_size = 0;
-    _rwork_size = 0;
     _userData = NULL;
 
     _options = 0;
-
-    _xc_ext = NULL;
-    _dxc_ext = NULL;
-    _xd_ext = NULL;
-    _u_ext = NULL;
-    _y_ext = NULL;
-    _dwork_ext = NULL;
-    _rwork_ext = NULL;
 
     _model_name = "Hxi_SimStruct";
     _path = "Hxi_SimStruct";
     _version = 1;
     _error_msg = NULL;
-  }
-
-  /** Set external memory for continuous states */
-  void set_xc_ext(real_T *rp) {
-    _xc_ext = rp;
-  }
-  /** Set external memory for derivatives */
-  void set_dxc_ext(real_T *rp) {
-    _dxc_ext = rp;
-  }
-  /** Set external memory for discrete states */
-  void set_xd_ext(real_T *rp) {
-    _xd_ext = rp;
-  }
-  /** Set external memory for inputs */
-  void set_u_ext(real_T *rp) {
-    if (rp != _u_ext) {
-      _u_ext = rp;
-      // mark pointers uninitialized
-      for (int j = 0; j < (int)_uPtrs.size(); ++j) {
-	if (_uPtrs[j].size() > 0)
-	  _uPtrs[j][0] = NULL;
-      }
-    }
-  }
-  /** Set external memory for outputs */
-  void set_y_ext(real_T *rp) {
-    if (rp != _y_ext) {
-      _y_ext = rp;
-      // mark pointers uninitialized
-      for (int j = 0; j < (int)_yPtrs.size(); ++j) {
-	if (_yPtrs[j].size() > 0)
-	  _yPtrs[j][0] = NULL;
-      }
-    }
-  }
-  /** Set external memory for data work vectors.
-      (currently all elements must be of real_T) */
-  void set_dwork_ext(real_T *rp) {
-    _dwork_ext = rp;
-  }
-  /** Set external memory for work array */
-  void set_rwork_ext(real_T *rp) {
-    _rwork_ext = rp;
   }
 
   /*
@@ -319,48 +248,44 @@ public:
 
   /** Set number of continuous states. */
   int_T setNumContStates(int_T nc) {
-    return _xc_size = nc;
+    _xc.resize(nc, _dummy);
+    _dxc.resize(nc, _dummy);
+    return _xc.size();
   }
   /** Get number of continuous states. */
   int_T getNumContStates() {
-    return _xc_size;
+    return _xc.size();
   }
   /** Get continuous states. */
   real_T *getContStates() {
-    if (!_xc_ext && (int_T)_xc.size() != _xc_size)
-      _xc.resize(_xc_size);
-    return _xc_ext? _xc_ext: &_xc[0];
+    return &_xc[0];
   }
   /** Get derivatives of continuous states. */
   real_T *getdX() {
-    if (!_dxc_ext && (int_T)_dxc.size() != _xc_size)
-      _dxc.resize(_xc_size);
-    return _dxc_ext? _dxc_ext: &_dxc[0];
+    return &_dxc[0];
   }
 
   /** Set number of discrete states. */
   int_T setNumDiscStates(int_T nd) {
-    return _xd_size = nd;
+    _xd.resize(nd, _dummy);
+    return _xd.size();
   }
   /** Get number of discrete states. */
   int_T getNumDiscStates() {
-    return _xd_size;
+    return _xd.size();
   }
   /** Get pointer to discrete states. */
   real_T *getDiscStates() {
-    if (!_xd_ext && (int_T)_xd.size() != _xd_size)
-      _xd.resize(_xd_size);
-    return _xd_ext? _xd_ext: &_xd[0];
+    return &_xd[0];
   }
 
   /** Set number of input ports. */
   int_T setNumInputPorts(int_T nports) {
     _u.resize(nports);
-    _u_width.resize(nports);
     _uPtrs.resize(nports);
     _u_dft.resize(nports);
     for (int_T i = 0; i < nports; ++i)
-      _u_dft[i] = 0;	// initialize
+      _u_dft[i] = 0;	// initialize direct feed through flags
     return _u.size();
   }
   /** Get number of input ports. */
@@ -369,39 +294,22 @@ public:
   }
   /** Set number of inputs of a port. */
   int_T setInputPortWidth(int_T port, int_T nu) {
+    _u[port].resize(nu, _dummy);
     _uPtrs[port].resize(nu);
-    if (nu > 0)
-      _uPtrs[port][0] = NULL; // mark uninitialized
-    return _u_width[port] = nu;
+    for (int i = 0; i < nu; ++i)
+      _uPtrs[port][i] = &_u[port][i];
+    return _u[port].size();
   }
   /** Get number of inputs of a port. */
   int_T getInputPortWidth(int_T port) {
-    return _u_width[port];
+    return _u[port].size();
   }
   /** Get pointer to inputs of a port. */
   real_T *getInputPortRealSignal(int_T port) {
-    real_T *rp;
-    if (_u_ext) {
-      // externally provided inputs have linear memory layout
-      rp = _u_ext;
-      for (int_T j = 0; j < port; ++j)
-	rp += _u_width[j];
-    }
-    else {
-      if ((int_T)_u[port].size() != _u_width[port])
-	_u[port].resize(_u_width[port]);
-      rp = &_u[port][0];
-    }
-    return rp;
+    return &_u[port][0];
   }
   /** Get pointer to pointers to inputs of a port. */
   InputRealPtrsType getInputPortRealSignalPtrs(int_T port) {
-    // initialize pointers if required
-    if (_uPtrs[port].size() > 0 && _uPtrs[port][0] == NULL) {
-      real_T *rp = getInputPortRealSignal(port);
-      for (int i = 0; i < (int)_uPtrs[port].size(); ++i)
-	_uPtrs[port][i] = rp++;
-    }
     return &_uPtrs[port][0];
   }
   /** Specify if input port is used in mdlOutputs or mdlGetTimeOfNextVarHit. */
@@ -427,7 +335,6 @@ public:
   /** Set number of output ports. */
   int_T setNumOutputPorts(int_T nports) {
     _y.resize(nports);
-    _y_width.resize(nports);
     _yPtrs.resize(nports);
     return _y.size();
   }
@@ -437,46 +344,28 @@ public:
   }
   /** Set number of outputs of a port. */
   int_T setOutputPortWidth(int_T port, int_T ny) {
+    _y[port].resize(ny, _dummy);
     _yPtrs[port].resize(ny);
-    if (ny > 0)
-      _yPtrs[port][0] = NULL; // mark uninitialized
-    return _y_width[port] = ny;
+    for (int i = 0; i < ny; ++i)
+      _yPtrs[port][i] = &_y[port][i];
+    return _y[port].size();
   }
   /** Get number of outputs of a port. */
   int_T getOutputPortWidth(int_T port) {
-    return _y_width[port];
+    return _y[port].size();
   }
   /** Get pointer to outputs of a port. */
   real_T *getOutputPortRealSignal(int_T port) {
-    real_T *rp;
-    if (_y_ext) {
-      // externally provided outputs have linear memory layout
-      rp = _y_ext;
-      for (int_T j = 0; j < port; ++j)
-	rp += _y_width[j];
-    }
-    else {
-      if ((int_T)_y[port].size() != _y_width[port])
-	_y[port].resize(_y_width[port]);
-      rp = &_y[port][0];
-    }
-    return rp;
+    return &_y[port][0];
   }
   /** Get pointer to pointers to outputs of a port. */
   InputRealPtrsType getOutputPortRealSignalPtrs(int_T port) {
-    // initialize pointers if required
-    if (_yPtrs[port].size() > 0 && _yPtrs[port][0] == NULL) {
-      real_T *rp = getOutputPortRealSignal(port);
-      for (int i = 0; i < (int)_yPtrs[port].size(); ++i)
-	_yPtrs[port][i] = rp++;
-    }
     return &_yPtrs[port][0];
   }
 
   /** Set number of data vectors. */
   int_T setNumDWork(int_T num) {
     _dwork.resize(num);
-    _dwork_width.resize(num);
     _dwork_usage.resize(num);
     return _dwork.size();
   }
@@ -484,13 +373,14 @@ public:
   int_T getNumDWork() {
     return _dwork.size();
   }
-  /** Set number elements of a data work vector. */
+  /** Set number of elements of a data work vector. */
   int_T setDWorkWidth(int_T idx, int_T num) {
-    return _dwork_width[idx] = num;
+    _dwork[idx].resize(num, _dummy);
+    return _dwork[idx].size();
   }
   /** Get number of elements of a data work vector. */
   int_T getDWorkWidth(int_T idx) {
-    return _dwork_width[idx];
+    return _dwork[idx].size();
   }
   /** Specify that a data work vector is used for discrete states. */
   int_T setDWorkUsedAsDState(int_T idx, int_T usage) {
@@ -502,19 +392,7 @@ public:
   }
   /** Get pointer to a data work vector. */
   real_T *getDWork(int_T idx) {
-    real_T *rp;
-    if (_dwork_ext) {
-      // externally provided data has linear memory layout
-      rp = _dwork_ext;
-      for (int_T j = 0; j < idx; ++j)
-	rp += _dwork_width[j];
-    }
-    else {
-      if ((int_T)_dwork[idx].size() != _dwork_width[idx])
-	_dwork[idx].resize(_dwork_width[idx]);
-      rp = &_dwork[idx][0];
-    }
-    return rp;
+    return &_dwork[idx][0];
   }
 
   /** Set number of sample times. Currently at most one is supported. */
@@ -553,17 +431,16 @@ public:
 
   /** Set size of real work array. */
   int_T setNumRWork(int_T nrw) {
-    return _rwork_size = nrw;
+    _rwork.resize(nrw, _dummy);
+    return _rwork.size();
   }
   /** Get size of real work array. */
   int_T getNumRWork() {
-    return _rwork_size;
+    return _rwork.size();
   }
   /** Get pointer to first element of real work vector. */
   real_T *getRWork() {
-    if (!_rwork_ext && (int_T)_rwork.size() != _rwork_size)
-      _rwork.resize(_rwork_size);
-    return _rwork_ext? _rwork_ext: &_rwork[0];
+    return &_rwork[0];
   }
 
   /** Set size of int work vector. */

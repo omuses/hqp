@@ -1,20 +1,20 @@
 /*
- * Prg_DiCSfun.h -- 
- *   - double integrator example accessing Simulink S-function
+ * Prg_DID_SFunction.h -- 
+ *   - double integrator example accessing discrete-time Simulink S-function
  *     (derived from Di example accessing Docp interface)
  *
- * rf, 05/06/01
+ * rf, 05/05/01
  */
 
-#ifndef Prg_DiCSfun_H
-#define Prg_DiCSfun_H
+#ifndef Prg_DID_SFunction_H
+#define Prg_DID_SFunction_H
 
 #include <Omu_Program.h>
 
 #include "simstruc.h"
 
 //--------------------------------------------------------------------------
-class Prg_DiCSfun: public Omu_Program {
+class Prg_DID_SFunction: public Omu_Program {
 
  protected:
 
@@ -29,22 +29,19 @@ class Prg_DiCSfun: public Omu_Program {
 	      const adoublev &x, const adoublev &u,
 	      adoublev &f, adouble &f0, adoublev &c);
 
-  void continuous(int kk, double t,
-		  const adoublev &x, const adoublev &u, const adoublev &xp,
-		  adoublev &F);
-
   int _nx;	// number of states
   int _nu;	// number of control parameters
   int _mdl_ny;	// number of model outputs
   double _dt; 	// sample time
+  adouble _adt;	// active sample time parameter
   bool _with_cns;// treat overshoot with additional constraint
 
  public:
 
-  Prg_DiCSfun();
-  ~Prg_DiCSfun();
+  Prg_DID_SFunction();
+  ~Prg_DID_SFunction();
 
-  char *name() {return "DiCSfun";}
+  char *name() {return "DID_SFunction";}
 };  
 
 #endif

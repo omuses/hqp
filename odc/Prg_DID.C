@@ -1,18 +1,18 @@
 /*
- * Prg_Di.C -- class definition
+ * Prg_DID.C -- class definition
  * (derived from Di example accessing Docp interface)
  *
  * rf, 05/05/01
  */
 
-#include "Prg_Di.h"
+#include "Prg_DID.h"
 
 #include <If_Bool.h>
 
-IF_CLASS_DEFINE("Di", Prg_Di, Omu_Program);
+IF_CLASS_DEFINE("DID", Prg_DID, Omu_Program);
 
 //--------------------------------------------------------------------------
-Prg_Di::Prg_Di()
+Prg_DID::Prg_DID()
 {
   _K = 60;
   _nx = 2;
@@ -24,14 +24,14 @@ Prg_Di::Prg_Di()
 }
 
 //--------------------------------------------------------------------------
-void Prg_Di::setup_stages(IVECP ks, VECP ts)
+void Prg_DID::setup_stages(IVECP ks, VECP ts)
 {
   stages_alloc(ks, ts, _K, 1, 0.0, 1.0);
 }
 
 //--------------------------------------------------------------------------
-void Prg_Di::setup(int k,
-		   Omu_Vector &x, Omu_Vector &u, Omu_Vector &c)
+void Prg_DID::setup(int k,
+		    Omu_Vector &x, Omu_Vector &u, Omu_Vector &c)
 {
   x.alloc(_nx);
   if (k < _K)
@@ -70,9 +70,9 @@ void Prg_Di::setup(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_Di::update(int kk,
-		    const adoublev &x, const adoublev &u,
-		    adoublev &f, adouble &f0, adoublev &c)
+void Prg_DID::update(int kk,
+		     const adoublev &x, const adoublev &u,
+		     adoublev &f, adouble &f0, adoublev &c)
 {
   double dt = 1.0/_KK;
 
