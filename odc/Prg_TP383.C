@@ -50,6 +50,8 @@ void Prg_TP383::update(int kk,
 		       const adoublev &x, const adoublev &u,
 		       adoublev &f, adouble &f0, adoublev &cns)
 {
+  f0 = 0.0;
+  cns[0] = 0.0;
   for (int i = 0; i < 14; i++) {
     f0 += ::a[i] / x[i];
     cns[0] += ::c[i] * x[i];

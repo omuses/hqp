@@ -1,3 +1,8 @@
+2001-07-02    <rfranke>
+
+	* odc/Prg_TP383.C (update): initialize objective and constraint prior
+	  to for loop (init of cns[0] is required by ADOL-C reverse mode)
+
 2001-06-10    <rfranke@sourcefoge.net>
 
 	* hxi/Hxi_SimStruct.h: introduce member _dummy to work around 
