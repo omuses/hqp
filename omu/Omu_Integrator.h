@@ -4,11 +4,10 @@
  *   -- integrate system equations over a discrete stage
  *
  * rf, 10/2/96
- * E. Arnold 2000-03-29 _rtol, _atol
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -46,10 +45,14 @@ class Omu_Integrator {
   Omu_Integrator();
   virtual ~Omu_Integrator();
 
+  /** Initialize solution of differential equations for stage k.
+      The numbers of variables and equation structure (given in F)
+      shall be the same for all sample periods of a stage. */
   virtual void init_stage(int k,
 			  const Omu_States &x, const Omu_Vector &u,
-			  const Omu_DepVec &xt, const Omu_DepVec &F);
+			  const Omu_DepVec &F, bool sa = false);
 
+  /** Initialize solution for one sample period kk. */
   virtual void init_sample(int kk, double tstart, double tend);
 
   /** Solve differential equations over sample period.
@@ -58,8 +61,10 @@ class Omu_Integrator {
 		     const Omu_States &x, const Omu_Vector &u,
 		     Omu_Program *sys, Omu_DepVec &cF, Omu_SVec &cx);
 
+  /** Name of a specific integrator. */
   virtual char *name() = 0;
 
+ protected:
   //
   // depreciated methods
   //

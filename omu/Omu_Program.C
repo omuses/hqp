@@ -348,7 +348,7 @@ void Omu_Program::update(int kk,
   int ndep, nindep;
   int i, j;
   bool grds;
-  double **Zi;
+  double *Zi;
 
   // perform function evaluation
 
@@ -384,63 +384,63 @@ void Omu_Program::update(int kk,
 
     // calculate Jacobians using reverse
     ad_realloc(ndep, nindep);
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z3);
+    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z->me);
 
     if (!f.Jx.is_constant()) {
       for (i = 0; i < nf; i++) {
-	Zi = _Z3[i];
+	Zi = _Z[i];
 	for (j = 0; j < nx; j++)
-	  f.Jx[i][j] = *Zi[j];
+	  f.Jx[i][j] = Zi[j];
       }
     }
     if (!f.Ju.is_constant()) {
       for (i = 0; i < nf; i++) {
-	Zi = _Z3[i];
+	Zi = _Z[i];
 	for (j = 0; j < nu; j++)
-	  f.Ju[i][j] = *Zi[nx + j];
+	  f.Ju[i][j] = Zi[nx + j];
       }
     }
     if (!f.Jxf.is_constant()) {
       for (i = 0; i < nf; i++) {
-	Zi = _Z3[i];
+	Zi = _Z[i];
 	for (j = 0; j < nxf; j++)
-	  f.Jxf[i][j] = *Zi[nx + nu + j];
+	  f.Jxf[i][j] = Zi[nx + nu + j];
       }
     }
 
-    Zi = _Z3[nf];
+    Zi = _Z[nf];
     if (!f0.gx.is_constant()) {
       for (j = 0; j < nx; j++)
-	f0.gx[j] = *Zi[j];
+	f0.gx[j] = Zi[j];
     }
     if (!f0.gu.is_constant()) {
       for (j = 0; j < nu; j++)
-	f0.gu[j] = *Zi[nx + j];
+	f0.gu[j] = Zi[nx + j];
     }
     if (!f0.gxf.is_constant()) {
       for (j = 0; j < nxf; j++)
-	f0.gxf[j] = *Zi[nx + nu + j];
+	f0.gxf[j] = Zi[nx + nu + j];
     }
 
     if (!c.Jx.is_constant()) {
       for (i = 0; i < nc; i++) {
-	Zi = _Z3[nf + 1 + i];
+	Zi = _Z[nf + 1 + i];
 	for (j = 0; j < nx; j++)
-	  c.Jx[i][j] = *Zi[j];
+	  c.Jx[i][j] = Zi[j];
       }
     }
     if (!c.Ju.is_constant()) {
       for (i = 0; i < nc; i++) {
-	Zi = _Z3[nf + 1 + i];
+	Zi = _Z[nf + 1 + i];
 	for (j = 0; j < nu; j++)
-	  c.Ju[i][j] = *Zi[nx + j];
+	  c.Ju[i][j] = Zi[nx + j];
       }
     }
     if (!c.Jxf.is_constant()) {
       for (i = 0; i < nc; i++) {
-	Zi = _Z3[nf + 1 + i];
+	Zi = _Z[nf + 1 + i];
 	for (j = 0; j < nxf; j++)
-	  c.Jxf[i][j] = *Zi[nx + nu + j];
+	  c.Jxf[i][j] = Zi[nx + nu + j];
       }
     }
   }
@@ -465,7 +465,7 @@ void Omu_Program::consistic(int kk, double t,
   int ndep = nxt;
   int nindep = nxt + nu;
   bool grds;
-  double **Zi;
+  double *Zi;
 
   ad_realloc(ndep, nindep);
 
@@ -494,20 +494,20 @@ void Omu_Program::consistic(int kk, double t,
   if (grds) {
     trace_off();
 
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z3);
+    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z->me);
 
     if (!xt.Jx.is_constant()) {
       for (i = 0; i < nxt; i++) {
-	Zi = _Z3[i];
+	Zi = _Z[i];
 	for (j = 0; j < nxt; j++)
-	  xt.Jx[i][j] = *Zi[j];
+	  xt.Jx[i][j] = Zi[j];
       }
     }
     if (!xt.Ju.is_constant()) {
       for (i = 0; i < nxt; i++) {
-	Zi = _Z3[i];
+	Zi = _Z[i];
 	for (j = 0; j < nu; j++)
-	  xt.Ju[i][j] = *Zi[nxt+j];
+	  xt.Ju[i][j] = Zi[nxt+j];
       }
     }
   }

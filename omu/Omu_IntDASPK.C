@@ -429,6 +429,13 @@ void Omu_IntDASPK::solve(int kk, double tstart, double tend,
     // Fixed step size requires external Jacobian.
     _info[5-1] = 1;
   }
+  else if (!_sys->has_low_level_continuous()) {
+    // Don't use analytical Jacobian if not explicitly given
+    // and if variable step size is enabled. DASPK seems to adapt
+    // its behavior assuming a cheap analytical Jacobian evaluation,
+    // which is not true when using ADOL-C.
+    _info[5-1] = 0;
+  }
 
   //
   // init DASPK variables
@@ -611,7 +618,10 @@ void Omu_IntDASPK::res(freal *t, freal *y, freal *yprime,
 	_xcp.Su[_nd + i][j] = yprime[(1 + _nx + j) * _n + i];
       }
     }
+    Fc.set_required_J(true);
   }
+  else
+    Fc.set_required_J(false);
 
   // evaluate residual
   _sys->continuous(_kk, *t, xc, _uc, _xcp, Fc);
@@ -678,12 +688,9 @@ void Omu_IntDASPK::jac(freal *t, freal *y, freal *yprime,
   }
 
   // evaluate residuals and Jacobians
-  bool is_required_J_bak = Fc.is_required_J();
   Fc.set_required_J(true);
 
   _sys->continuous(_kk, *t, _xc_jac, _uc, _xcp_jac, Fc);
-
-  Fc.set_required_J(is_required_J_bak);
 
   // read and return results
 

@@ -174,13 +174,12 @@ void Omu_IntODE::solve(int kk, Real tstart, Real tend,
 void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
 		       VECP f)
 {
-#if 0
   if (!_sys->has_low_level_continuous()) {
     // call faster version if no user defined low-level continuous
     syseq_forward(t, y, u, f);
     return;
   }
-#endif
+
   int i, j;
   Omu_SVec &xc = *_xc_ptr;
   Omu_DepVec &Fc = *_Fc_ptr;
@@ -214,13 +213,10 @@ void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
   // evaluate residual
   //
 
-  bool is_required_J_bak = Fc.is_required_J();
   Fc.set_required_J(_sa); // an integrator may request the Jacobian
 
   _sys->continuous(_kk, t, xc, _uc, _xcp, Fc);
 
-  Fc.set_required_J(is_required_J_bak);
-    
   for (i = _nd; i < _nxt; i++) {
     // f = F * -(dF/dxp)^(-1)
     f[i - _nd] = Fc[i] / -Fc.Jxp[i][i];

@@ -1,11 +1,24 @@
 2002-05-01    <rfranke>
 
-	
+
+	* omu/Omu_Integrator.[hC]: change signature to better distinguish
+	  if sensitivities are required
+	* omu/Hqp_Omuses.C, omu/Omu_IntDASPK.C, omu/Omu_IntODE.C:
+	  adapt to new calling interface
+	* omu/Omu_IntDASPK.C (res): fix bug causing too many Jacobian evals
+	* omu/Omu_IntDASPK.C, omu/Omu_IntODE.C: speed up by adapting to
+	  prg->has_low_level_continuous()
+
+	* omu/Omu_Program.C (update, consistic): use faster reverse routines
+	  for obtaining first order derivatives
+
+	* hqp/Hqp_SqpPowell.C (update_vals): fix bug in watchdog initialization
+
 	* meschach/err.h: rename back from m_err.h,
 	  as includes are now bundled in a meschach subdirectory
 	* meschach/{err.[hc], makefile, matdef.h, matrix.h, version.c}:
 	  prepend m_ to macros error, warning, catchall, tracecath
-	  to avoid name conflicts with othe software packages;
+	  to avoid name conflicts with other software packages;
 	* iftcl/*.C, hqp/*.C, omu/*.[hC]: use new names for error handling
 
 	* configure.in: change message for malloc check (for mingw)

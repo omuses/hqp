@@ -672,7 +672,6 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
   }
 
   xtk.set_required_J(false);
-  Fk.set_required_J(false);
   fk.set_required_J(false);
   f0k.set_required_g(false);
   ck.set_required_J(false);
@@ -686,7 +685,7 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
   //
 
   if (nxf > 0) {
-    _integrator->init_stage(k, xk, uk, xtk, Fk);
+    _integrator->init_stage(k, xk, uk, Fk);
   }
 
   // initial states of stage
@@ -782,7 +781,6 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
   }
 
   xtk.set_required_J(true);
-  Fk.set_required_J(true);
   fk.set_required_J(true);
   f0k.set_required_g(true);
   ck.set_required_J(true);
@@ -800,7 +798,7 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
   //
 
   if (nxf > 0) {
-    _integrator->init_stage(k, xk, uk, xtk, Fk);
+    _integrator->init_stage(k, xk, uk, Fk, true);
 
     // initial states of stage
     m_zero(x0k.Sx);
