@@ -280,6 +280,8 @@ void Hqp_SqpPowell::update_vals()
   }
 
   // watchdog
+  if (_iter == 0)
+    _phil = phi0; // initialize _phil in first iteration
   if (_watchdog_iter < 0) {
     _phil_test = _phil;	// phi0 from last iteration
     _phil = phi0;
