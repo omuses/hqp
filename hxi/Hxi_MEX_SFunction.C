@@ -284,6 +284,14 @@ void mdlInitializeSizes(SimStruct *S)
     return;
 
   //
+  // check for sensible settings
+  //
+
+  // at least one sample time is required
+  if (ssGetNumSampleTimes(S) < 1)
+    ssSetNumSampleTimes(S, 1);
+
+  //
   // allocate memory for SimStruct
   //
 
@@ -425,7 +433,8 @@ void mdlInitializeSizes(SimStruct *S)
 
   // allocate and setup times
   ssSetSampleHitPtr(S, iptr);
-  iptr[0] = 1; // required for ssIsContinuousTask(0) == true
+  if (nst > 0)
+    iptr[0] = 1; // required for ssIsContinuousTask(0) == true
   iptr += nst;
   ssSetSampleTimeTaskIDPtr(S, iptr);
   for (i = 0; i < nst; i++)
