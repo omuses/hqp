@@ -1,16 +1,23 @@
-This dicectory contains Hqp eXternal Interfaces (HXI). 
+This directory contains Hqp eXternal Interfaces (HXI).
 
-Currently an S-function interface is provided. It emulates the data
-structures and macros required to compile a simple discrete-time or
-continuous-time S-function for Hqp. Even though only a subset of the
-S-function interface is emulated, this approch has the main advantage
-that problems with not supported features more likely appear already
-at compilation time (note that hardly all S-function features are
-sensible for optimization). Furthermore exact derivatives can be
-obtained in this way using ADOL-C. The main drawback is that the whole
-s-Function must be available in source form.
+Currently provided is:
+
+* Interface to Simulink(R) S-function. 
+
+The interface provides the data structures and macros required to
+compile a simple discrete-time or continuous-time S-function for
+Hqp. Even though only a subset of the Simulink(R) S-function interface
+is covered, this approch has the main advantage that problems with not
+supported features more likely appear already at compilation time
+(note that hardly all S-function features are sensible for
+optimization). Furthermore exact derivatives can be obtained in this
+way using ADOL-C. The main obstacles of the current interface are that
+the whole S-function must be available in source form and must compile
+with real_T defined as ADOL-C adouble.
 
 See also the sfun examples in the demo collection (odc directory).
 
 Ruediger Franke, May 6, 2001
 rfranke@sourceforge.net
+
+(Simulink is a registered trademark of The MathWorks, Inc.)

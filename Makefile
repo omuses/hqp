@@ -13,6 +13,7 @@ omuses:
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
+	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..
 	cd adol-c/SRC; $(MAKE) cleanall; rm -f makefile; cd ../..

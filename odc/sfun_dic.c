@@ -12,7 +12,7 @@
  *      For more details about S-functions, see simulink/src/sfuntmpl_doc.c.
  * 
  *  Copyright 1990-2000 The MathWorks, Inc.
- *  $Revision: 1.1 $
+ *  Revision: 1.7 
  */
 
 #define S_FUNCTION_NAME sfun_dic

@@ -1,5 +1,8 @@
 /*
- * Hxi_SimStruct.h: implement SimStruct for evaluating an S-function from HQP
+ * Hxi_SimStruct.h:
+ *   SimStruct for compiling a Simulink(R) S-function for HQP
+ *
+ * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
  * rf, 05/05/2001
  */
@@ -29,84 +32,80 @@
 #include <assert.h>
 #include <vector>
 
-// HXI_REAL_T can be defined before including this file (default: double).
-#if !defined(HXI_REAL_T)
-#define HXI_REAL_T double
-#endif
+#include "Hxi_sfun_types.h"
+#include "Hxi_mxArray.h"
 
 // definitions expected in S-functions (only a subset is supported)
 #define SS_OPTION_EXCEPTION_FREE_CODE 	0x0001
 #define CONTINUOUS_SAMPLE_TIME 		0.0
-#define UNUSED_ARG(arg) 		(arg)=(arg)
 
 // Macros to access SimStruct (only a subset is supported)
-#define ssSetNumSFcnParams(S, np) 	S->setNumSFcnParams(np)
-#define ssGetNumSFcnParams(S) 		S->getNumSFcnParams()
-#define ssGetSFcnParamsCount(S) 	S->getSFcnParamsCount()
-#define ssSetNumContStates(S, nc)	S->setNumContStates(nc)
-#define ssGetNumContStates(S)		S->getNumContStates()
-#define ssGetContStates(S) 		S->getContStates()
-#define ssGetdX(S) 			S->getdX()
-#define ssSetNumDiscStates(S, nd)	S->setNumDiscStates(nd)
-#define ssGetNumDiscStates(S)		S->getNumDiscStates()
-#define ssGetDiscStates(S) 		S->getDiscStates()
+#define ssSetNumSFcnParams(S, np) 	(S)->setNumSFcnParams(np)
+#define ssGetNumSFcnParams(S) 		(S)->getNumSFcnParams()
+#define ssSetSFcnParamsCount(S, num) 	(S)->setSFcnParamsCount(num)
+#define ssGetSFcnParamsCount(S) 	(S)->getSFcnParamsCount()
+#define ssSetSFcnParam(S, idx, ptr) 	(S)->setSFcnParam(idx, ptr)
+#define ssGetSFcnParam(S, idx) 		(S)->getSFcnParam(idx)
+#define ssSetNumContStates(S, nc)	(S)->setNumContStates(nc)
+#define ssGetNumContStates(S)		(S)->getNumContStates()
+#define ssGetContStates(S) 		(S)->getContStates()
+#define ssGetdX(S) 			(S)->getdX()
+#define ssSetNumDiscStates(S, nd)	(S)->setNumDiscStates(nd)
+#define ssGetNumDiscStates(S)		(S)->getNumDiscStates()
+#define ssGetDiscStates(S) 		(S)->getDiscStates()
 #define ssGetRealDiscStates(S) 		ssGetDiscStates(S)
-#define ssSetNumInputPorts(S, nports) 	S->setNumInputPorts(nports)
-#define ssGetNumInputPorts(S) 		S->getNumInputPorts()
-#define ssSetInputPortWidth(S, port, nu) S->setInputPortWidth(port, nu)
-#define ssGetInputPortWidth(S, port) 	S->getInputPortWidth(port)
-#define ssGetInputPortRealSignal(S, port) S->getInputPortRealSignal(port)
+#define ssSetNumInputPorts(S, nports) 	(S)->setNumInputPorts(nports)
+#define ssGetNumInputPorts(S) 		(S)->getNumInputPorts()
+#define ssSetInputPortWidth(S, port, nu) (S)->setInputPortWidth(port, nu)
+#define ssGetInputPortWidth(S, port) 	(S)->getInputPortWidth(port)
+#define ssGetInputPortRealSignal(S, port) (S)->getInputPortRealSignal(port)
 #define ssGetInputPortRealSignalPtrs(S, port) \
-  S->getInputPortRealSignalPtrs(port)
+  (S)->getInputPortRealSignalPtrs(port)
 #define ssSetInputPortDirectFeedThrough(S, port, dft) \
-  S->setInputPortDirectFeedThrough(port, dft)
+  (S)->setInputPortDirectFeedThrough(port, dft)
 #define ssGetInputPortDirectFeedThrough(S, port) \
-  S->getInputPortDirectFeedThrough(port)
+  (S)->getInputPortDirectFeedThrough(port)
 #define ssSetInputPortRequiredContiguous(S, port) \
-  S->setInputPortRequiredContiguous(port)
+  (S)->setInputPortRequiredContiguous(port)
 #define ssGetInputPortRequiredContiguous(S, port) \
-  S->getInputPortRequiredContiguous(port)
-#define ssSetNumOutputPorts(S, nports) 	S->setNumOutputPorts(nports)
-#define ssGetNumOutputPorts(S) 		S->getNumOutputPorts()
-#define ssSetOutputPortWidth(S, port, ny) S->setOutputPortWidth(port, ny)
-#define ssGetOutputPortWidth(S, port) 	S->getOutputPortWidth(port)
-#define ssGetOutputPortRealSignal(S, port) S->getOutputPortRealSignal(port)
+  (S)->getInputPortRequiredContiguous(port)
+#define ssSetNumOutputPorts(S, nports) 	(S)->setNumOutputPorts(nports)
+#define ssGetNumOutputPorts(S) 		(S)->getNumOutputPorts()
+#define ssSetOutputPortWidth(S, port, ny) (S)->setOutputPortWidth(port, ny)
+#define ssGetOutputPortWidth(S, port) 	(S)->getOutputPortWidth(port)
+#define ssGetOutputPortRealSignal(S, port) (S)->getOutputPortRealSignal(port)
 #define ssGetOutputPortRealSignalPtrs(S, port) \
-  S->getOutputPortRealSignalPtrs(port)
-#define ssSetNumSampleTimes(S, ns) 	S->setNumSampleTimes(ns)
-#define ssGetNumSampleTimes(S) 		S->getNumSampleTimes()
-#define ssSetSampleTime(S, idx, val) 	S->setSampleTime(idx, val)
-#define ssGetSampleTime(S, idx) 	S->getSampleTime(idx)
-#define ssSetOffsetTime(S, idx, val) 	S->setOffsetTime(idx, val)
-#define ssGetOffsetTime(S, idx) 	S->getOffsetTime(idx)
-#define ssSetNumRWork(S, nrw) 		S->setNumRWork(nrw)
-#define ssGetNumRWork(S) 		S->getNumRWork()
-#define ssGetRWork(S) 			S->getRWork()
-#define ssSetNumIWork(S, niw) 		S->setNumIWork(niw)
-#define ssGetNumIWork(S) 		S->getNumIWork()
-#define ssGetIWork(S) 			S->getIWork()
-#define ssSetNumPWork(S, npw) 		S->setNumPWork(npw)
-#define ssGetNumPWork(S) 		S->getNumPWork()
-#define ssGetPWork(S) 			S->getPWork()
-#define ssSetNumModes(S, nm)		S->setNumModes(nm)
-#define ssGetNumModes(S)		S->getNumModes()
-#define ssGetModeVector(S)		S->getModeVector()
-#define ssSetNumNonsampledZCs(S, nzcs) 	S->setNumNonsampledZCs(nzcs)
-#define ssGetNumNonsampledZCs(S) 	S->getNumNonsampledZCs()
-#define ssSetOptions(S, opts) 		S->setOptions(opts)
-#define ssGetOptions(S) 		S->getOptions()
-#define ssSetT(S, t)			S->setT(t)
-#define ssGetT(S)			S->getT()
-
-/** Real type used in S-function. */
-typedef HXI_REAL_T real_T;
-typedef real_T **InputRealPtrsType;
-
-/** Integer type used in S-function. */
-typedef int int_T;
-
-/** Unsigned integer type used in S-function. */
-typedef unsigned uint_T;
+  (S)->getOutputPortRealSignalPtrs(port)
+#define ssSetNumSampleTimes(S, ns) 	(S)->setNumSampleTimes(ns)
+#define ssGetNumSampleTimes(S) 		(S)->getNumSampleTimes()
+#define ssSetSampleTime(S, idx, val) 	(S)->setSampleTime(idx, val)
+#define ssGetSampleTime(S, idx) 	(S)->getSampleTime(idx)
+#define ssSetOffsetTime(S, idx, val) 	(S)->setOffsetTime(idx, val)
+#define ssGetOffsetTime(S, idx) 	(S)->getOffsetTime(idx)
+#define ssSetNumRWork(S, nrw) 		(S)->setNumRWork(nrw)
+#define ssGetNumRWork(S) 		(S)->getNumRWork()
+#define ssGetRWork(S) 			(S)->getRWork()
+#define ssSetNumIWork(S, niw) 		(S)->setNumIWork(niw)
+#define ssGetNumIWork(S) 		(S)->getNumIWork()
+#define ssGetIWork(S) 			(S)->getIWork()
+#define ssSetNumPWork(S, npw) 		(S)->setNumPWork(npw)
+#define ssGetNumPWork(S) 		(S)->getNumPWork()
+#define ssGetPWork(S) 			(S)->getPWork()
+#define ssSetNumModes(S, nm)		(S)->setNumModes(nm)
+#define ssGetNumModes(S)		(S)->getNumModes()
+#define ssGetModeVector(S)		(S)->getModeVector()
+#define ssSetNumNonsampledZCs(S, nzcs) 	(S)->setNumNonsampledZCs(nzcs)
+#define ssGetNumNonsampledZCs(S) 	(S)->getNumNonsampledZCs()
+#define ssSetOptions(S, opts) 		(S)->setOptions(opts)
+#define ssGetOptions(S) 		(S)->getOptions()
+#define ssSetT(S, t)			(S)->setT(t)
+#define ssGetT(S)			(S)->getT()
+#define ssSetModelName(S, name) 	(S)->setModelName(name)
+#define ssGetModelName(S) 		(S)->getModelName()
+#define ssSetVersion(S, ver) 		(S)->setVersion(ver)
+#define ssGetVersion(S) 		(S)->getVersion()
+#define ssSetErrorStatus(S, msg)	(S)->setErrorStatus(msg)
+#define ssGetErrorStatus(S)		(S)->getErrorStatus()
 
 /**
  * SimStruct for HQP.
@@ -121,12 +120,14 @@ typedef unsigned uint_T;
 class SimStruct {
 protected:
   real_T	 _t;		// current simulation time
-  int_T 	 _p_size;
-  int_T 	 _xc_size;
-  int_T 	 _xd_size;
-  vector<int_T>  _u_width;
-  vector<int_T>  _y_width;
-  vector<real_T> _p; 		// parameters
+
+  int_T 	 _p_sfun_size;	// number of parameters expected in S-function
+  int_T 	 _xc_size;	// number of continuous states
+  int_T 	 _xd_size;	// number of discrete states
+  vector<int_T>  _u_width;	// number of inputs per port
+  vector<int_T>  _y_width;	// number of outputs per port
+
+  vector<mxArray> _p; 		// parameters provided by calling program
   vector<real_T> _xc; 		// continuous states
   vector<real_T> _dxc; 		// derivatives of continuous states
   vector<real_T> _xd; 		// discrete states
@@ -135,6 +136,7 @@ protected:
   vector<int_T>  _u_dft;	// mark if input port is accessed in mdlOutputs
   vector< vector<real_T> > _y; 	// outputs
   vector< vector<real_T *> > _yPtrs; // pointers to outputs
+
   int_T 	 _st_size;	// number of sample times
   real_T 	 _st_period;	// sample time period 
   real_T 	 _st_offset;	// sample time offset
@@ -147,13 +149,16 @@ protected:
 
   uint_T 	_options; 	// option flags
 
-  real_T	*_p_ext;	// externally provided memory for parameters
   real_T	*_xc_ext;	// externally provided memory for cont. states
   real_T	*_dxc_ext;	// externally provided memory for derivatives
   real_T	*_xd_ext;	// externally provided memory for disc. states
   real_T	*_u_ext;	// externally provided memory for inputs
   real_T	*_y_ext;	// externally provided memory for outputs
   real_T	*_rwork_ext;	// externally provided memory for work array
+
+  const char_T 	*_model_name; 	// name of this model
+  int_T 	_version; 	// version of this model
+  const char_T 	*_error_msg;	// used to report errors from S-function
 
 public:
   /*
@@ -165,19 +170,26 @@ public:
   {
     _t = 0.0;
 
-    _p_ext = NULL;
+    _p_sfun_size = 0;
+    _xc_size = 0;
+    _xd_size = 0;
+    _st_size = 0;
+    _rwork_size = 0;
+
+    _options = 0;
+
     _xc_ext = NULL;
     _dxc_ext = NULL;
     _xd_ext = NULL;
     _u_ext = NULL;
     _y_ext = NULL;
     _rwork_ext = NULL;
+
+    _model_name = "Hix_SimStruct";
+    _version = 1;
+    _error_msg = NULL;
   }
 
-  /** Set external memory for parameters */
-  void set_p_ext(real_T *rp) {
-    _p_ext = rp;
-  }
   /** Set external memory for continuous states */
   void set_xc_ext(real_T *rp) {
     _xc_ext = rp;
@@ -221,18 +233,31 @@ public:
    * General S-function methods.
    */
 
-  /** Set number of parameters. */
-  int_T setNumSFcnParams(int_T np) {
-    return _p_size = np;
+  /** Set number of externally provided parameters. */
+  int_T setSFcnParamsCount(int_T num) {
+    _p.resize(num);
+    return _p.size();
   }
-  /** Get number of parameters. */
-  int_T getNumSFcnParams() {
-    return _p_size;
-  }
-  /** Get number of externally provided parameters.
-      Currently just the size of the parameter vector is returned. */
+  /** Get number of externally provided parameters. */
   int_T getSFcnParamsCount() {
-    return _p_size;
+    return _p.size();
+  }
+  /** Set number of parameters used by S-function. */
+  int_T setNumSFcnParams(int_T np) {
+    return _p_sfun_size = np;
+  }
+  /** Get number of parameters used by S-function. */
+  int_T getNumSFcnParams() {
+    return _p_sfun_size;
+  }
+  /** Set mxArray pointing to parameter. A copy of the passed mxArray
+      is stored to avoid memory problems and side effects. */
+  const mxArray *setSFcnParam(int_T idx, const mxArray *val) {
+    return &(_p[idx] = *val);
+  }
+  /** Get mxArray pointing to parameter. */
+  const mxArray *getSFcnParam(int_T idx) {
+    return &_p[idx];
   }
 
   /** Set number of continuous states. */
@@ -403,21 +428,25 @@ public:
   /** Set sample time period for given st_index. */
   real_T setSampleTime(int_T st_index, real_T period) {
     assert(st_index == 0);
+    assert(_st_size == 1);  // must be initialized
     return _st_period = period;
   }
   /** Get sample time period for given st_index. */
   real_T getSampleTime(int_T st_index) {
     assert(st_index == 0);
+    assert(_st_size == 1);  // must be initialized
     return _st_period;
   }
   /** Set offset time for given st_index. */
   real_T setOffsetTime(int_T st_index, real_T offset) {
     assert(st_index == 0);
+    assert(_st_size == 1);  // must be initialized
     return _st_offset = offset;
   }
   /** Get offset time for given st_index. */
   real_T getOffsetTime(int_T st_index) {
     assert(st_index == 0);
+    assert(_st_size == 1);  // must be initialized
     return _st_offset;
   }
 
@@ -494,8 +523,7 @@ public:
 
   /** Set option flags. */
   uint_T setOptions(uint_T opts) {
-    _options = opts;
-    return _options;
+    return _options = opts;
   }
   /** Get option flags. */
   uint_T getOptions() {
@@ -504,12 +532,37 @@ public:
 
   /** Set current simulation time. */
   real_T setT(real_T t) {
-    _t = t;
-    return _t;
+    return _t = t;
   }
   /** Get current simulation time. */
   real_T getT() {
     return _t;
+  }
+
+  /** Set model name. */
+  const char_T *setModelName(const char_T *name) {
+    return _model_name = name;
+  }
+  /** Get model name. */
+  const char_T *getModelName() const {
+    return _model_name;
+  }
+  /** Set model version. */
+  int_T setVersion(int_T version) {
+    return _version = version;
+  }
+  /** Get model version. */
+  int_T getVersion() const {
+    return _version;
+  }
+
+  /** Set error message. */
+  const char_T *setErrorStatus(const char_T *msg) {
+    return _error_msg = msg;
+  }
+  /** Get error message. */
+  const char_T *getErrorStatus() const {
+    return _error_msg;
   }
 };
 

@@ -1,3 +1,10 @@
+2001-05-07    <rfranke>
+
+	* hxi/Hxi_mxArray.h, hxi/Hxi_sfun_types.h:
+	   add treatment of mxArray as required for S-function parameters
+	* hxi/Hxi_SimStruct.h, odc/Prg_DiDSfun.[hC], odc/sfun_did.c:
+	   extend with a parameter
+
 2001-05-06    <rfranke>
 
 	* hxi/Hxi_SimStruct.h:

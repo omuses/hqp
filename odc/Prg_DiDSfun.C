@@ -9,6 +9,7 @@
 
 #include <assert.h>
 #include <If_Bool.h>
+#include <If_Real.h>
 
 // include model definition
 #include "sfun_did.c"
@@ -26,6 +27,7 @@ Prg_DiDSfun::Prg_DiDSfun()
   _nx = 2;
   _nu = 1;
   _mdl_ny = 2;
+  _dt = 1.0/_K;
 
  _with_cns = true;
 
@@ -34,6 +36,7 @@ Prg_DiDSfun::Prg_DiDSfun()
 
   // interface elements
   _ifList.append(new If_Bool("prg_with_cns", &_with_cns));
+  _ifList.append(new If_Real("prg_dt", &_dt));
 }
 
 //--------------------------------------------------------------------------
@@ -45,8 +48,31 @@ Prg_DiDSfun::~Prg_DiDSfun()
 //--------------------------------------------------------------------------
 void Prg_DiDSfun::setup_stages(IVECP ks, VECP ts)
 {
+  // initialize model parameters
+  mxArray a;
+  _adt = _dt;
+  mxSetPr(&a, &_adt);
+  mxSetNumberOfElements(&a, 1);
+
+  // pass model parameters to SimStruct
+  ssSetSFcnParamsCount(_S, 1);
+  ssSetSFcnParam(_S, 0, &a);
+
   // initialize model sizes
   mdlInitializeSizes(_S);
+
+  // check for initialization errors
+  const char *error_msg = ssGetErrorStatus(_S);
+  if (error_msg) {
+    cerr << "S-function initialization error: " << error_msg << "\n";
+    exit(-1);
+  }
+  if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
+    cerr << "S-function parameter count mismatch: expected "
+	 << ssGetNumSFcnParams(_S) << ", provided "
+	 << ssGetSFcnParamsCount(_S) << "!\n";
+    exit(-1);
+  }
 
   // check model sizes
   assert(_nx == ssGetNumDiscStates(_S));

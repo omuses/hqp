@@ -5,14 +5,14 @@
  *
  *  derived from:
  *
- *  File    : dsfunc.c
+ *  File    : dsfunc.c (treatment of parameters: sfun_zc_sat.c)
  *  Abstract:
  *
  *      Example C-file S-function for defining a discrete system.  
  *      For more details about S-functions, see simulink/src/sfuntmpl_doc.c.
  * 
  *  Copyright 1990-2000 The MathWorks, Inc.
- *  $Revision: 1.1 $
+ *  Revision: 1.10 
  */
 
 #define S_FUNCTION_NAME sfun_did
@@ -20,11 +20,65 @@
 
 #include "simstruc.h"
 
+/*========================*
+ * General Defines/macros *
+ *========================*/
+
+/* index to dt parameter */
+#define I_PAR_DT                  0
+
+/* total number of block parameters */
+#define N_PAR                     1
+
+/*
+ *  Make access to data more readable.
+ */
+#define P_PAR_DT    ssGetSFcnParam(S, I_PAR_DT)
+
 #define U(element) (*uPtrs[element])  /* Pointer to Input Port0 */
 
 /*====================*
  * S-function methods *
  *====================*/
+
+#define     MDL_CHECK_PARAMETERS
+#if defined(MDL_CHECK_PARAMETERS)
+
+  /* Function: mdlCheckParameters =============================================
+   * Abstract:
+   *   Check that parameter choices are allowable.
+   */
+  static void mdlCheckParameters(SimStruct *S)
+  {
+      int_T      i;
+      int_T      numDT;
+
+      /*
+       * check parameter basics
+       */
+      for ( i = 0; i < N_PAR; i++ ) {
+          if ( mxIsEmpty(    ssGetSFcnParam(S,i) ) ||
+               mxIsSparse(   ssGetSFcnParam(S,i) ) ||
+               mxIsComplex(  ssGetSFcnParam(S,i) ) ||
+               !mxIsNumeric( ssGetSFcnParam(S,i) ) ) {
+              ssSetErrorStatus(S, "Parameters must be real vectors.");
+              return;
+          }
+      }
+
+      /*
+       * Check sizes of parameters.
+       */
+      numDT = mxGetNumberOfElements(P_PAR_DT);
+
+      if ( numDT != 1 ) {
+          ssSetErrorStatus(S, "Parameter dt must have size one.");
+	  return;
+      }
+  }
+#endif /* MDL_CHECK_PARAMETERS */
+
+
 
 /* Function: mdlInitializeSizes ===============================================
  * Abstract:
@@ -33,8 +87,14 @@
  */
 static void mdlInitializeSizes(SimStruct *S)
 {
-    ssSetNumSFcnParams(S, 0);  /* Number of expected parameters */
-    if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
+    ssSetNumSFcnParams(S, N_PAR);  /* Number of expected parameters */
+
+    if (ssGetNumSFcnParams(S) == ssGetSFcnParamsCount(S)) {
+        mdlCheckParameters(S);
+        if (ssGetErrorStatus(S) != NULL) {
+            return;
+        }
+    } else {
         return; /* Parameter mismatch will be reported by Simulink */
     }
 
@@ -67,7 +127,9 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
-    ssSetSampleTime(S, 0, 1.0/60);
+    const real_T *dt = mxGetPr(P_PAR_DT);
+
+    ssSetSampleTime(S, 0, *dt);
     ssSetOffsetTime(S, 0, 0.0);
 }
 

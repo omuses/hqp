@@ -32,6 +32,8 @@ class Prg_DiDSfun: public Omu_Program {
   int _nx;	// number of states
   int _nu;	// number of control parameters
   int _mdl_ny;	// number of model outputs
+  double _dt; 	// sample time
+  adouble _adt;	// active sample time parameter
   bool _with_cns;// treat overshoot with additional constraint
 
  public:
