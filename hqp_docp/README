@@ -1,7 +1,6 @@
 
-README for hqp_docp, an example for applying HQP 1.5 
+README for hqp_docp, an example for applying HQP 1.7 
 directly to multistage problems
-Ruediger Franke, 9/13/98
 
 The front-end Omuses is intended to provide as much comfort as
 possible when specifying multistage problems. However, the cost is
@@ -21,7 +20,7 @@ to create the executable 'docp'.
 
 (2)
 Invoke
-  ./run Di
+  ./docp
 to run a simple example (constrained double integrator).
 
 (4)
