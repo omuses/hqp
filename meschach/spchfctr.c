@@ -30,20 +30,13 @@
 
 */
 
-static char	rcsid[] = "$Id: spchfctr.c,v 1.1 2001/03/01 17:19:06 rfranke Exp $";
+static char	rcsid[] = "$Id: spchfctr.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
 #include	"matrix.h"
 #include	"sparse.h"
 #include        "sparse2.h"
-
-
-#ifndef MALLOCDECL
-#ifndef ANSI_C
-extern	char	*calloc(), *realloc();
-#endif
-#endif
 
 
 
@@ -77,7 +70,7 @@ int	lim;
 		idx1 = sprow_idx(row1,elts2->col);
 		idx1 = (idx1 < 0) ? -(idx1+2) : idx1;
 		if ( idx1 < 0 )
-			error(E_UNKNOWN,"sprow_ip");
+			m_error(E_UNKNOWN,"sprow_ip");
 		len1 -= idx1;
 	}
 	else if ( len2 > 2*len1 )
@@ -85,7 +78,7 @@ int	lim;
 		idx2 = sprow_idx(row2,elts1->col);
 		idx2 = (idx2 < 0) ? -(idx2+2) : idx2;
 		if ( idx2 < 0 )
-			error(E_UNKNOWN,"sprow_ip");
+			m_error(E_UNKNOWN,"sprow_ip");
 		len2 -= idx2;
 	}
 	if ( len1 <= 0 || len2 <= 0 )
@@ -172,7 +165,7 @@ int	new_len;
 	}
 
 	if ( ! scan_row || ! scan_idx || ! col_list )
-		error(E_MEM,"set_scan");
+		m_error(E_MEM,"set_scan");
 	return new_len;
 }
 
@@ -188,9 +181,9 @@ SPMAT	*A;
 	row_elt	*elt_piv, *elt_op, *old_elt;
 
 	if ( A == SMNULL )
-		error(E_NULL,"spCHfactor");
+		m_error(E_NULL,"spCHfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"spCHfactor");
+		m_error(E_SQUARE,"spCHfactor");
 
 	/* set up access paths if not already done so */
 	sp_col_access(A);
@@ -206,7 +199,7 @@ SPMAT	*A;
 		elt_piv = r_piv->elt;
 		diag_idx = sprow_idx2(r_piv,k,r_piv->diag);
 		if ( diag_idx < 0 )
-			error(E_POSDEF,"spCHfactor");
+			m_error(E_POSDEF,"spCHfactor");
 		old_elt = &(elt_piv[diag_idx]);
 		for ( i = 0; i < r_piv->len; i++ )
 		{
@@ -223,7 +216,7 @@ SPMAT	*A;
 		/* set diagonal entry of Cholesky factor */
 		tmp2 = elt_piv[diag_idx].val - sprow_sqr(r_piv,k);
 		if ( tmp2 <= 0.0 )
-			error(E_POSDEF,"spCHfactor");
+			m_error(E_POSDEF,"spCHfactor");
 		elt_piv[diag_idx].val = pivot = sqrt(tmp2);
 
 		/* now set the k-th column of the Cholesky factors */
@@ -319,11 +312,11 @@ VEC	*b, *out;
 	Real	diag_val, sum, *out_ve;
 
 	if ( L == SMNULL || b == VNULL )
-		error(E_NULL,"spCHsolve");
+		m_error(E_NULL,"spCHsolve");
 	if ( L->m != L->n )
-		error(E_SQUARE,"spCHsolve");
+		m_error(E_SQUARE,"spCHsolve");
 	if ( b->dim != L->m )
-		error(E_SIZES,"spCHsolve");
+		m_error(E_SIZES,"spCHsolve");
 
 	if ( ! L->flag_col )
 		sp_col_access(L);
@@ -349,7 +342,7 @@ VEC	*b, *out;
 		if ( row->diag >= 0 )
 		    out_ve[i] = sum/(row->elt[row->diag].val);
 		else
-		    error(E_SING,"spCHsolve");
+		    m_error(E_SING,"spCHsolve");
 	}
 
 	/* backward substitution: solve L^T.out = x for out */
@@ -390,9 +383,9 @@ SPMAT	*A;
 	row_elt	*elt_piv, *elt_op;
 
 	if ( A == SMNULL )
-		error(E_NULL,"spICHfactor");
+		m_error(E_NULL,"spICHfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"spICHfactor");
+		m_error(E_SQUARE,"spICHfactor");
 
 	/* set up access paths if not already done so */
 	if ( ! A->flag_col )
@@ -407,14 +400,14 @@ SPMAT	*A;
 
 		diag_idx = r_piv->diag;
 		if ( diag_idx < 0 )
-			error(E_POSDEF,"spICHfactor");
+			m_error(E_POSDEF,"spICHfactor");
 
 		elt_piv = r_piv->elt;
 
 		/* set diagonal entry of Cholesky factor */
 		tmp2 = elt_piv[diag_idx].val - sprow_sqr(r_piv,k);
 		if ( tmp2 <= 0.0 )
-			error(E_POSDEF,"spICHfactor");
+			m_error(E_POSDEF,"spICHfactor");
 		elt_piv[diag_idx].val = pivot = sqrt(tmp2);
 
 		/* find next row where something (non-trivial) happens */
@@ -452,9 +445,9 @@ SPMAT	*A;
 	row_elt	*elt_piv, *elt_op, *old_elt;
 
 	if ( A == SMNULL )
-		error(E_NULL,"spCHsymb");
+		m_error(E_NULL,"spCHsymb");
 	if ( A->m != A->n )
-		error(E_SQUARE,"spCHsymb");
+		m_error(E_SQUARE,"spCHsymb");
 
 	/* set up access paths if not already done so */
 	if ( ! A->flag_col )
@@ -472,7 +465,7 @@ SPMAT	*A;
 		elt_piv = r_piv->elt;
 		diag_idx = sprow_idx2(r_piv,k,r_piv->diag);
 		if ( diag_idx < 0 )
-			error(E_POSDEF,"spCHsymb");
+			m_error(E_POSDEF,"spCHsymb");
 		old_elt = &(elt_piv[diag_idx]);
 		for ( i = 0; i < r_piv->len; i++ )
 		{
@@ -563,7 +556,7 @@ SPMAT	*A;
 	Real	ip;
 
 	if ( ! A )
-		error(E_NULL,"comp_AAT");
+		m_error(E_NULL,"comp_AAT");
 	m = A->m;	n = A->n;
 
 	/* set up column access paths */

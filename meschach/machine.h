@@ -2,7 +2,7 @@
 /* Any machine specific stuff goes here */
 /* Add details necessary for your own installation here! */
 
-/* RCS id: $Id: machine.h,v 1.2 2002/05/13 18:08:52 rfranke Exp $ */
+/* RCS id: $Id: machine.h,v 1.3 2002/12/09 10:57:47 e_arnold Exp $ */
 
 /* This is for use with "configure" -- if you are not using configure
 	then use machine.van for the "vanilla" version of machine.h */
@@ -56,7 +56,7 @@
 #endif /* HAVE_PROTOTYPES_IN_STRUCT */
 
 /* for basic or larger versions */
-#define COMPLEX 1
+/* #define COMPLEX 1 */
 #define SPARSE 1
 
 /* for loop unrolling */
@@ -91,14 +91,9 @@
 #define	MEM_COPY(from,to,size)	memmove((to),(from),(size))
 #define	MEM_ZERO(where,size)	memset((where),'\0',(size))
 
-#ifndef ANSI_C
-#define ANSI_C 1
-#endif
-
 #endif
 
 /* standard headers */
-#ifdef ANSI_C
 #include	<stdlib.h>
 #include	<stddef.h>
 #include	<string.h>
@@ -106,7 +101,6 @@
 /*----------   E. Arnold   1999-04-29   ----------*/
 #include	<math.h>
 /*----------*/
-#endif
 
 
 /* if have bcopy & bzero and no alternatives yet known, use them */
@@ -127,15 +121,6 @@
 /* if the system has complex.h */
 #ifdef HAVE_COMPLEX_H
 #include	<complex.h>
-#endif
-
-/* If prototypes are available & ANSI_C not yet defined, then define it,
-	but don't include any header files as the proper ANSI C headers
-        aren't here */
-#ifdef HAVE_PROTOTYPES
-#ifndef ANSI_C
-#define ANSI_C  1
-#endif
 #endif
 
 /* floating point precision */
@@ -245,13 +230,6 @@
 #endif
 #endif
 
-/* for non-ANSI sources */
-#ifdef TRADITIONAL
-#undef ANSI_C
-#undef MESCH__P
-#define MESCH__P(protos)	()
-#endif
-
 #ifndef MESCH__BEGIN_DECLS
 #ifdef __cplusplus
 #define	MESCH__BEGIN_DECLS	extern "C" {
@@ -267,9 +245,16 @@
 #define setjmp(ENV)	_setjmp(ENV)
 #endif
 
-/*#define SPARSE_COL_ACCESS 1*/
+/** define SPARSE_COL_ACCESS for compilation of column accesses */
+/* #define SPARSE_COL_ACCESS 1 */
 
 /* modified files
  *  sparse.c:
  *    no function sp_col_access()
  */
+
+/** define MESCH_API when compiling a Dynamic Link Library (DLL) */
+#ifndef MESCH_API
+#define MESCH_API 
+#endif
+

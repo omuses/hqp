@@ -30,7 +30,7 @@
 	"Digital Signal Processing"
 */
 
-static char rcsid[] = "$Id: fft.c,v 1.1 2001/03/01 17:18:35 rfranke Exp $";
+static char rcsid[] = "$Id: fft.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include        <stdio.h>
 #include        <math.h>
@@ -51,9 +51,9 @@ VEC     *x_re, *x_im;
     Real      tmp, tmpr, tmpi;
 
     if ( ! x_re || ! x_im )
-        error(E_NULL,"fft");
+        m_error(E_NULL,"fft");
     if ( x_re->dim != x_im->dim )
-        error(E_SIZES,"fft");
+        m_error(E_SIZES,"fft");
 
     n = 1;
     while ( x_re->dim > n )

@@ -39,16 +39,11 @@
 #include	"sparse.h"
 #include        "iter.h"
 
-static char rcsid[] = "$Id: itersym.c,v 1.1 2001/03/01 17:18:40 rfranke Exp $";
+static char rcsid[] = "$Id: itersym.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
-#ifdef ANSI_C
 VEC	*spCHsolve(SPMAT *,VEC *,VEC *);
 VEC	*trieig(VEC *,VEC *,MAT *);
-#else
-VEC	*spCHsolve();
-VEC	*trieig();
-#endif
 
 
 
@@ -99,13 +94,13 @@ ITER *ip;
    VEC *rr;   /* rr == r or rr == z */
    
    if (ip == INULL)
-     error(E_NULL,"iter_cg");
+     m_error(E_NULL,"iter_cg");
    if (!ip->Ax || !ip->b)
-     error(E_NULL,"iter_cg");
+     m_error(E_NULL,"iter_cg");
    if ( ip->x == ip->b )
-     error(E_INSITU,"iter_cg");
+     m_error(E_INSITU,"iter_cg");
    if (!ip->stop_crit)
-     error(E_NULL,"iter_cg");
+     m_error(E_NULL,"iter_cg");
    
    if ( ip->eps <= 0.0 )
      ip->eps = MACHEPS;
@@ -127,7 +122,7 @@ ITER *ip;
    
    if (ip->x != VNULL) {
       if (ip->x->dim != ip->b->dim)
-	error(E_SIZES,"iter_cg");
+	m_error(E_SIZES,"iter_cg");
       ip->Ax(ip->A_par,ip->x,p);    		/* p = A*x */
       v_sub(ip->b,p,r);		 		/* r = b - A*x */
    }
@@ -186,13 +181,13 @@ MAT	*Q;
    Real	alpha, beta, c;
    
    if ( ! ip )
-     error(E_NULL,"iter_lanczos");
+     m_error(E_NULL,"iter_lanczos");
    if ( ! ip->Ax || ! ip->x || ! a || ! b )
-     error(E_NULL,"iter_lanczos");
+     m_error(E_NULL,"iter_lanczos");
    if ( ip->k <= 0 )
-     error(E_BOUNDS,"iter_lanczos");
+     m_error(E_BOUNDS,"iter_lanczos");
    if ( Q && ( Q->n < ip->x->dim || Q->m < ip->k ) )
-     error(E_SIZES,"iter_lanczos");
+     m_error(E_SIZES,"iter_lanczos");
    
    a = v_resize(a,(u_int)ip->k);	
    b = v_resize(b,(u_int)(ip->k-1));
@@ -281,7 +276,7 @@ int	*expt;
    int	i, tmp_expt;
    
    if ( ! a )
-     error(E_NULL,"product");
+     m_error(E_NULL,"product");
    
    mant = 1.0;
    *expt = 0;
@@ -328,9 +323,9 @@ int	*expt;
    int	i, tmp_expt;
    
    if ( ! a )
-     error(E_NULL,"product2");
+     m_error(E_NULL,"product2");
    if ( k < 0 || k >= a->dim )
-     error(E_BOUNDS,"product2");
+     m_error(E_BOUNDS,"product2");
    
    mant = 1.0;
    *expt = 0;
@@ -380,11 +375,11 @@ VEC	*err_est;	/* error estimates of eigenvalues */
    int	i, pb_expt, det_expt, det_expt1, det_expt2;
    
    if ( ! ip )
-     error(E_NULL,"iter_lanczos2");
+     m_error(E_NULL,"iter_lanczos2");
    if ( ! ip->Ax || ! ip->x )
-     error(E_NULL,"iter_lanczos2");
+     m_error(E_NULL,"iter_lanczos2");
    if ( ip->k <= 0 )
-     error(E_RANGE,"iter_lanczos2");
+     m_error(E_RANGE,"iter_lanczos2");
    
    a = evals;
    a = v_resize(a,(u_int)ip->k);
@@ -501,13 +496,13 @@ ITER *ip;
    VEC *rr;   /* rr == r or rr == z */
    
    if (ip == INULL)
-     error(E_NULL,"iter_cg");
+     m_error(E_NULL,"iter_cg");
    if (!ip->Ax || !ip->b)
-     error(E_NULL,"iter_cg");
+     m_error(E_NULL,"iter_cg");
    if ( ip->x == ip->b )
-     error(E_INSITU,"iter_cg");
+     m_error(E_INSITU,"iter_cg");
    if (!ip->stop_crit)
-     error(E_NULL,"iter_cg");
+     m_error(E_NULL,"iter_cg");
    
    if ( ip->eps <= 0.0 )
      ip->eps = MACHEPS;
@@ -529,7 +524,7 @@ ITER *ip;
    
    if (ip->x != VNULL) {
       if (ip->x->dim != ip->b->dim)
-	error(E_SIZES,"iter_cg");
+	m_error(E_SIZES,"iter_cg");
       ip->Ax(ip->A_par,ip->x,p);    		/* p = A*x */
       v_sub(ip->b,p,r);		 		/* r = b - A*x */
    }
@@ -552,7 +547,7 @@ ITER *ip;
       ip->Ax(ip->A_par,p,q);
       inner = in_prod(q,p);
       if (inner <= 0.0) {
-	 warning(WARN_RES_LESS_0,"iter_cg");
+	 m_warning(WARN_RES_LESS_0,"iter_cg");
 	 break;
       }
       alpha = in_prod(p,r)/inner;
@@ -567,7 +562,7 @@ ITER *ip;
       
       nres = in_prod(r,rr);
       if (nres < 0.0) {
-	 warning(WARN_RES_LESS_0,"iter_cg");
+	 m_warning(WARN_RES_LESS_0,"iter_cg");
 	 break;
       }
       nres = sqrt(fabs(nres));

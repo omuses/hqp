@@ -40,7 +40,7 @@
 #include        "iter.h"
 
 
-static char rcsid[] = "$Id: iter0.c,v 1.1 2001/03/01 17:18:37 rfranke Exp $";
+static char rcsid[] = "$Id: iter0.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 /* standard functions */
@@ -82,7 +82,7 @@ int lenb, lenx;
    ITER *ip;
 
    if ((ip = NEW(ITER)) == (ITER *) NULL)
-     error(E_MEM,"iter_get");
+     m_error(E_MEM,"iter_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_ITER,0,sizeof(ITER));
       mem_numvar(TYPE_ITER,1);
@@ -103,9 +103,9 @@ int lenb, lenx;
    if (lenx > 0) ip->x = v_get(lenx);
    else ip->x = (VEC *)NULL;
 
-   ip->Ax = ip->A_par = NULL;
-   ip->ATx = ip->AT_par = NULL;
-   ip->Bx = ip->B_par = NULL;
+   ip->Ax = NULL; ip->A_par = NULL;
+   ip->ATx = NULL; ip->AT_par = NULL;
+   ip->Bx = NULL; ip->B_par = NULL;
    ip->info = iter_std_info;
    ip->stop_crit = iter_std_stop_crit;
    ip->init_res = 0.0;
@@ -140,16 +140,16 @@ int new_lenb, new_lenx;
    VEC *old;
 
    if ( ip == (ITER *) NULL)
-     error(E_NULL,"iter_resize");
+     m_error(E_NULL,"iter_resize");
 
    old = ip->x;
    ip->x = v_resize(ip->x,new_lenx);
    if ( ip->shared_x && old != ip->x )
-     warning(WARN_SHARED_VEC,"iter_resize");
+     m_warning(WARN_SHARED_VEC,"iter_resize");
    old = ip->b;
    ip->b = v_resize(ip->b,new_lenb);
    if ( ip->shared_b && old != ip->b )
-     warning(WARN_SHARED_VEC,"iter_resize");
+     m_warning(WARN_SHARED_VEC,"iter_resize");
 
    return ip;
 }
@@ -194,11 +194,11 @@ ITER *ip1, *ip2;
    int shx, shb;
 
    if (ip1 == (ITER *)NULL) 
-     error(E_NULL,"iter_copy2");
+     m_error(E_NULL,"iter_copy2");
 
    if (ip2 == (ITER *)NULL) {
       if ((ip2 = NEW(ITER)) == (ITER *) NULL)
-	error(E_MEM,"iter_copy2");
+	m_error(E_MEM,"iter_copy2");
       else if (mem_info_is_on()) {
 	 mem_bytes(TYPE_ITER,0,sizeof(ITER));
 	 mem_numvar(TYPE_ITER,1);
@@ -228,11 +228,11 @@ ITER *ip1, *ip2;
    VEC *x, *b;
 
    if (ip1 == (ITER *)NULL) 
-     error(E_NULL,"iter_copy");
+     m_error(E_NULL,"iter_copy");
 
    if (ip2 == (ITER *)NULL) {
       if ((ip2 = NEW(ITER)) == (ITER *) NULL)
-	error(E_MEM,"iter_copy2");
+	m_error(E_MEM,"iter_copy2");
       else if (mem_info_is_on()) {
 	 mem_bytes(TYPE_ITER,0,sizeof(ITER));
 	 mem_numvar(TYPE_ITER,1);

@@ -34,7 +34,7 @@
 #include        "matrix2.h"
 
 
-static char rcsid[] = "$Id: svd.c,v 1.1 2001/03/01 17:19:10 rfranke Exp $";
+static char rcsid[] = "$Id: svd.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
@@ -147,14 +147,14 @@ MAT	*U, *V;
 	Real	d_tmp, diff, t11, t12, t22, *d_ve, *f_ve;
 
 	if ( ! d || ! f )
-		error(E_NULL,"bisvd");
+		m_error(E_NULL,"bisvd");
 	if ( d->dim != f->dim + 1 )
-		error(E_SIZES,"bisvd");
+		m_error(E_SIZES,"bisvd");
 	n = d->dim;
 	if ( ( U && U->n < n ) || ( V && V->m < n ) )
-		error(E_SIZES,"bisvd");
+		m_error(E_SIZES,"bisvd");
 	if ( ( U && U->m != U->n ) || ( V && V->m != V->n ) )
-		error(E_SQUARE,"bisvd");
+		m_error(E_SQUARE,"bisvd");
 
 
 	if ( n == 1 )
@@ -297,11 +297,11 @@ MAT	*A, *U, *V;
 	Real	beta;
 
 	if ( ! A )
-		error(E_NULL,"bifactor");
+		m_error(E_NULL,"bifactor");
 	if ( ( U && ( U->m != U->n ) ) || ( V && ( V->m != V->n ) ) )
-		error(E_SQUARE,"bifactor");
+		m_error(E_SQUARE,"bifactor");
 	if ( ( U && U->m != A->m ) || ( V && V->m != A->n ) )
-		error(E_SIZES,"bifactor");
+		m_error(E_SIZES,"bifactor");
 	tmp1 = v_resize(tmp1,A->m);
 	tmp2 = v_resize(tmp2,A->n);
 	MEM_STAT_REG(tmp1,TYPE_VEC);
@@ -355,11 +355,11 @@ VEC	*d;
 	MAT	*A_tmp;
 
 	if ( ! A )
-		error(E_NULL,"svd");
+		m_error(E_NULL,"svd");
 	if ( ( U && ( U->m != U->n ) ) || ( V && ( V->m != V->n ) ) )
-		error(E_SQUARE,"svd");
+		m_error(E_SQUARE,"svd");
 	if ( ( U && U->m != A->m ) || ( V && V->m != A->n ) )
-		error(E_SIZES,"svd");
+		m_error(E_SIZES,"svd");
 
 	A_tmp = m_copy(A,MNULL);
 	if ( U != MNULL )

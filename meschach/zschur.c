@@ -55,11 +55,11 @@ ZMAT	*A, *Q;
     static	ZVEC	*diag=ZVNULL;
     
     if ( ! A )
-	error(E_NULL,"zschur");
+	m_error(E_NULL,"zschur");
     if ( A->m != A->n || ( Q && Q->m != Q->n ) )
-	error(E_SQUARE,"zschur");
+	m_error(E_SQUARE,"zschur");
     if ( Q != ZMNULL && Q->m != A->m )
-	error(E_SIZES,"zschur");
+	m_error(E_SIZES,"zschur");
     n = A->n;
     diag = zv_resize(diag,A->n);
     MEM_STAT_REG(diag,TYPE_ZVEC);
@@ -203,15 +203,15 @@ MAT	*T, *Q, *X_re, *X_im;
 			*tmp2_re=VNULL, *tmp2_im=VNULL;
 
 	if ( ! T || ! X_re )
-	    error(E_NULL,"schur_vecs");
+	    m_error(E_NULL,"schur_vecs");
 	if ( T->m != T->n || X_re->m != X_re->n ||
 		( Q != MNULL && Q->m != Q->n ) ||
 		( X_im != MNULL && X_im->m != X_im->n ) )
-	    error(E_SQUARE,"schur_vecs");
+	    m_error(E_SQUARE,"schur_vecs");
 	if ( T->m != X_re->m ||
 		( Q != MNULL && T->m != Q->m ) ||
 		( X_im != MNULL && T->m != X_im->m ) )
-	    error(E_SIZES,"schur_vecs");
+	    m_error(E_SIZES,"schur_vecs");
 
 	tmp1_re = v_resize(tmp1_re,T->m);
 	tmp1_im = v_resize(tmp1_im,T->m);
@@ -238,7 +238,7 @@ MAT	*T, *Q, *X_re, *X_im;
 		    l_im = sqrt(-discrim);
 		}
 		else /* not correct Real Schur form */
-		    error(E_RANGE,"schur_vecs");
+		    m_error(E_RANGE,"schur_vecs");
 	    }
 	    else
 	    {
@@ -352,7 +352,7 @@ MAT	*T, *Q, *X_re, *X_im;
 	    if ( l_im != 0.0 )
 	    {
 		if ( ! X_im )
-		error(E_NULL,"schur_vecs");
+		m_error(E_NULL,"schur_vecs");
 		set_col(X_re,i,tmp2_re);
 		set_col(X_im,i,tmp2_im);
 		sv_mlt(-1.0,tmp2_im,tmp2_im);

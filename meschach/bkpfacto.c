@@ -28,7 +28,7 @@
 	Matrix factorisation routines to work with the other matrix files.
 */
 
-static	char	rcsid[] = "$Id: bkpfacto.c,v 1.1 2001/03/01 17:18:31 rfranke Exp $";
+static	char	rcsid[] = "$Id: bkpfacto.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -108,11 +108,11 @@ PERM	*pivot, *blocks;
 	Real	det, s, t;
 
 	if ( ! A || ! pivot || ! blocks )
-		error(E_NULL,"BKPfactor");
+		m_error(E_NULL,"BKPfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"BKPfactor");
+		m_error(E_SQUARE,"BKPfactor");
 	if ( A->m != pivot->size || pivot->size != blocks->size )
-		error(E_SIZES,"BKPfactor");
+		m_error(E_SIZES,"BKPfactor");
 
 	n = A->n;
 	A_me = A->me;
@@ -234,12 +234,12 @@ VEC	*b, *x;
 	Real	**A_me, a11, a12, a22, b1, b2, det, sum, *tmp_ve, tmp_diag;
 
 	if ( ! A || ! pivot || ! block || ! b )
-		error(E_NULL,"BKPsolve");
+		m_error(E_NULL,"BKPsolve");
 	if ( A->m != A->n )
-		error(E_SQUARE,"BKPsolve");
+		m_error(E_SQUARE,"BKPsolve");
 	n = A->n;
 	if ( b->dim != n || pivot->size != n || block->size != n )
-		error(E_SIZES,"BKPsolve");
+		m_error(E_SIZES,"BKPsolve");
 	x = v_resize(x,n);
 	tmp = v_resize(tmp,n);
 	MEM_STAT_REG(tmp,TYPE_VEC);
@@ -268,7 +268,7 @@ VEC	*b, *x;
 		{
 		    tmp_diag = m_entry(A,i,i);
 		    if ( tmp_diag == 0.0 )
-			error(E_SING,"BKPsolve");
+			m_error(E_SING,"BKPsolve");
 		    /* tmp_ve[i] /= tmp_diag; */
 		    v_set_val(tmp,i,v_entry(tmp,i) / tmp_diag);
 		}
@@ -280,7 +280,7 @@ VEC	*b, *x;
 		    b1 = v_entry(tmp,i);	b2 = v_entry(tmp,i+1);
 		    det = a11*a22-a12*a12;	/* < 0 : see BKPfactor() */
 		    if ( det == 0.0 )
-			error(E_SING,"BKPsolve");
+			m_error(E_SING,"BKPsolve");
 		    det = 1/det;
 		    v_set_val(tmp,i,det*(a22*b1-a12*b2));
 		    v_set_val(tmp,i+1,det*(a11*b2-a12*b1));

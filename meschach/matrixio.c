@@ -31,7 +31,7 @@
 #include        <ctype.h>
 #include        "matrix.h"
 
-static char rcsid[] = "$Id: matrixio.c,v 1.1 2001/03/01 17:18:48 rfranke Exp $";
+static char rcsid[] = "$Id: matrixio.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 /* local variables */
@@ -100,7 +100,7 @@ MAT     *mat;
 	  {
 	       fprintf(stderr,"Matrix: rows cols:");
 	       if ( fgets(line,MAXLINE,fp)==NULL )
-		    error(E_INPUT,"im_finput");
+		    m_error(E_INPUT,"im_finput");
 	  } while ( sscanf(line,"%u%u",&m,&n)<2 || m>MAXDIM || n>MAXDIM );
 	  mat = m_get(m,n);
      }
@@ -119,7 +119,7 @@ MAT     *mat;
 			 fprintf(stderr,"old %14.9g new: ",
 				 mat->me[i][j]);
 		    if ( fgets(line,MAXLINE,fp)==NULL )
-			 error(E_INPUT,"im_finput");
+			 m_error(E_INPUT,"im_finput");
 		    if ( (*line == 'b' || *line == 'B') && j > 0 )
 		    {   j--;    dynamic = FALSE;        goto redo2;     }
 		    if ( (*line == 'f' || *line == 'F') && j < n-1 )
@@ -155,7 +155,7 @@ MAT     *mat;
      skipjunk(fp);
      if ((io_code=fscanf(fp," Matrix: %u by %u",&m,&n)) < 2 ||
 	 m>MAXDIM || n>MAXDIM )
-	  error(io_code==EOF ? E_EOF : E_FORMAT,"bm_finput");
+	  m_error(io_code==EOF ? E_EOF : E_FORMAT,"bm_finput");
      
      /* allocate memory if necessary */
      if( mat==(MAT *)NULL || mat->m != m || mat->n !=n ) 
@@ -166,14 +166,14 @@ MAT     *mat;
      {
 	  skipjunk(fp);
 	  if ( fscanf(fp," row %u:",&dummy) < 1 )
-	       error(E_FORMAT,"bm_finput");
+	       m_error(E_FORMAT,"bm_finput");
 	  for ( j=0; j<n; j++ )
 #if REAL == DOUBLE
 	       if ((io_code=fscanf(fp,"%lf",&mat->me[i][j])) < 1 )
 #elif REAL == FLOAT
 	       if ((io_code=fscanf(fp,"%f",&mat->me[i][j])) < 1 )
 #endif
-		    error(io_code==EOF ? 7 : 6,"bm_finput");
+		    m_error(io_code==EOF ? 7 : 6,"bm_finput");
      }
      
      return (mat);
@@ -210,7 +210,7 @@ PERM    *px;
 	  {
 	       fprintf(stderr,"Permutation: size: ");
 	       if ( fgets(line,MAXLINE,fp)==NULL )
-		    error(E_INPUT,"ipx_finput");
+		    m_error(E_INPUT,"ipx_finput");
 	  } while ( sscanf(line,"%u",&size)<1 || size>MAXDIM );
 	  px = px_get(size);
      }
@@ -228,7 +228,7 @@ PERM    *px;
 		    fprintf(stderr,"old: %u->%u new: ",
 			    i,px->pe[i]);
 	       if ( fgets(line,MAXLINE,fp)==NULL )
-		    error(E_INPUT,"ipx_finput");
+		    m_error(E_INPUT,"ipx_finput");
 	       if ( (*line == 'b' || *line == 'B') && i > 0 )
 	       {        i--;    dynamic = FALSE;        goto redo;      }
 	  } while ( *line=='\0' || sscanf(line,"%u",&entry) < 1 );
@@ -258,7 +258,7 @@ PERM    *px;
      skipjunk(fp);
      if ((io_code=fscanf(fp," Permutation: size:%u",&size)) < 1 ||
 	 size>MAXDIM )
-	  error(io_code==EOF ? 7 : 6,"bpx_finput");
+	  m_error(io_code==EOF ? 7 : 6,"bpx_finput");
      
      /* allocate memory if necessary */
      if ( px==(PERM *)NULL || px->size<size )
@@ -271,7 +271,7 @@ PERM    *px;
      {
 	  /* input entry */
 	  if ((io_code=fscanf(fp,"%*u -> %u",&entry)) < 1 )
-	       error(io_code==EOF ? 7 : 6,"bpx_finput");
+	       m_error(io_code==EOF ? 7 : 6,"bpx_finput");
 	  /* check entry */
 	  ok = (entry < size);
 	  for ( j=0; j<i; j++ )
@@ -282,7 +282,7 @@ PERM    *px;
 	       i++;
 	  }
 	  else
-	       error(E_BOUNDS,"bpx_finput");
+	       m_error(E_BOUNDS,"bpx_finput");
      }
      
      return (px);
@@ -318,7 +318,7 @@ VEC     *vec;
 	  {
 	       fprintf(stderr,"Vector: dim: ");
 	       if ( fgets(line,MAXLINE,fp)==NULL )
-		    error(E_INPUT,"ifin_vec");
+		    m_error(E_INPUT,"ifin_vec");
 	  } while ( sscanf(line,"%u",&dim)<1 || dim>MAXDIM );
 	  vec = v_get(dim);
      }
@@ -332,7 +332,7 @@ VEC     *vec;
 	       if ( !dynamic )
 		    fprintf(stderr,"old %14.9g new: ",vec->ve[i]);
 	       if ( fgets(line,MAXLINE,fp)==NULL )
-		    error(E_INPUT,"ifin_vec");
+		    m_error(E_INPUT,"ifin_vec");
 	       if ( (*line == 'b' || *line == 'B') && i > 0 )
 	       {        i--;    dynamic = FALSE;        goto redo;         }
 	       if ( (*line == 'f' || *line == 'F') && i < dim-1 )
@@ -358,7 +358,7 @@ VEC     *vec;
      skipjunk(fp);
      if ((io_code=fscanf(fp," Vector: dim:%u",&dim)) < 1 ||
 	 dim>MAXDIM )
-	  error(io_code==EOF ? 7 : 6,"bfin_vec");
+	  m_error(io_code==EOF ? 7 : 6,"bfin_vec");
      
      /* allocate memory if necessary */
      if ( vec==(VEC *)NULL || vec->dim != dim )
@@ -372,7 +372,7 @@ VEC     *vec;
 #elif REAL == FLOAT
 	  if ((io_code=fscanf(fp,"%f",&vec->ve[i])) < 1 )
 #endif
-	       error(io_code==EOF ? 7 : 6,"bfin_vec");
+	       m_error(io_code==EOF ? 7 : 6,"bfin_vec");
      
      return (vec);
 }
@@ -394,8 +394,8 @@ char    *f_string;
 }
 
 void    m_foutput(fp,a)
-FILE    *fp;
-MAT     *a;
+FILE      *fp;
+const MAT *a;
 {
      u_int      i, j, tmp;
      
@@ -417,8 +417,8 @@ MAT     *a;
 }
 
 void    px_foutput(fp,px)
-FILE    *fp;
-PERM    *px;
+FILE       *fp;
+const PERM *px;
 {
      u_int      i;
      
@@ -436,8 +436,8 @@ PERM    *px;
 }
 
 void    v_foutput(fp,x)
-FILE    *fp;
-VEC     *x;
+FILE      *fp;
+const VEC *x;
 {
      u_int      i, tmp;
      
@@ -456,8 +456,8 @@ VEC     *x;
 
 
 void    m_dump(fp,a)
-FILE    *fp;
-MAT     *a;
+FILE      *fp;
+const MAT *a;
 {
 	u_int   i, j, tmp;
      
@@ -483,8 +483,8 @@ MAT     *a;
 }
 
 void    px_dump(fp,px)
-FILE    *fp;
-PERM    *px;
+FILE       *fp;
+const PERM *px;
 {
      u_int      i;
      
@@ -501,8 +501,8 @@ PERM    *px;
 
 
 void    v_dump(fp,x)
-FILE    *fp;
-VEC     *x;
+FILE      *fp;
+const VEC *x;
 {
      u_int      i, tmp;
      

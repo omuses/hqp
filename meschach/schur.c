@@ -36,18 +36,12 @@
 #include        "matrix2.h"
 
 
-static char rcsid[] = "$Id: schur.c,v 1.1 2001/03/01 17:18:58 rfranke Exp $";
+static char rcsid[] = "$Id: schur.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
-#ifndef ANSI_C
-static	void	hhldr3(x,y,z,nu1,beta,newval)
-double	x, y, z;
-Real	*nu1, *beta, *newval;
-#else
 static	void	hhldr3(double x, double y, double z,
 		       Real *nu1, Real *beta, Real *newval)
-#endif
 {
 	Real	alpha;
 
@@ -60,21 +54,14 @@ static	void	hhldr3(double x, double y, double z,
 	*newval = alpha;
 }
 
-#ifndef ANSI_C
-static	void	hhldr3cols(A,k,j0,beta,nu1,nu2,nu3)
-MAT	*A;
-int	k, j0;
-double	beta, nu1, nu2, nu3;
-#else
 static	void	hhldr3cols(MAT *A, int k, int j0, double beta,
 			   double nu1, double nu2, double nu3)
-#endif
 {
 	Real	**A_me, ip, prod;
 	int	j, n;
 
 	if ( k < 0 || k+3 > A->m || j0 < 0 )
-		error(E_BOUNDS,"hhldr3cols");
+		m_error(E_BOUNDS,"hhldr3cols");
 	A_me = A->me;		n = A->n;
 
 	/* printf("hhldr3cols:(l.%d) j0 = %d, k = %d, A at 0x%lx, m = %d, n = %d\n",
@@ -109,15 +96,8 @@ static	void	hhldr3cols(MAT *A, int k, int j0, double beta,
 	/* putc('\n',stdout); */
 }
 
-#ifndef ANSI_C
-static	void	hhldr3rows(A,k,i0,beta,nu1,nu2,nu3)
-MAT	*A;
-int	k, i0;
-double	beta, nu1, nu2, nu3;
-#else
 static	void	hhldr3rows(MAT *A, int k, int i0, double beta,
 			   double nu1, double nu2, double nu3)
-#endif
 {
 	Real	**A_me, ip, prod;
 	int	i, m;
@@ -125,7 +105,7 @@ static	void	hhldr3rows(MAT *A, int k, int i0, double beta,
 	/* printf("hhldr3rows:(l.%d) A at 0x%lx\n", __LINE__, (long)A); */
 	/* printf("hhldr3rows: k = %d\n", k); */
 	if ( k < 0 || k+3 > A->n )
-		error(E_BOUNDS,"hhldr3rows");
+		m_error(E_BOUNDS,"hhldr3rows");
 	A_me = A->me;		m = A->m;
 	i0 = min(i0,m-1);
 
@@ -161,11 +141,11 @@ MAT	*A, *Q;
     static	VEC	*diag=VNULL, *beta=VNULL;
     
     if ( ! A )
-	error(E_NULL,"schur");
+	m_error(E_NULL,"schur");
     if ( A->m != A->n || ( Q && Q->m != Q->n ) )
-	error(E_SQUARE,"schur");
+	m_error(E_SQUARE,"schur");
     if ( Q != MNULL && Q->m != A->m )
-	error(E_SIZES,"schur");
+	m_error(E_SIZES,"schur");
     n = A->n;
     diag = v_resize(diag,A->n);
     beta = v_resize(beta,A->n);
@@ -363,8 +343,10 @@ MAT	*A, *Q;
 		if ( k < k_max - 1 )
 		{
 		    hhldr3(x,y,z,&nu1,&beta2,&dummy);
-		    tracecatch(hhldr3cols(A,k,max(k-1,0),  beta2,nu1,y,z),"schur");
-		    tracecatch(hhldr3rows(A,k,min(n-1,k+3),beta2,nu1,y,z),"schur");
+		    m_tracecatch(hhldr3cols(A,k,max(k-1,0),  beta2,nu1,y,z),
+				 "schur");
+		    m_tracecatch(hhldr3rows(A,k,min(n-1,k+3),beta2,nu1,y,z),
+				 "schur");
 		    if ( Q != MNULL )
 			hhldr3rows(Q,k,n-1,beta2,nu1,y,z);
 		}
@@ -437,9 +419,9 @@ VEC	*real_pt, *imag_pt;
 	Real	diff, sum, tmp;
 
 	if ( ! T || ! real_pt || ! imag_pt )
-		error(E_NULL,"schur_evals");
+		m_error(E_NULL,"schur_evals");
 	if ( T->m != T->n )
-		error(E_SQUARE,"schur_evals");
+		m_error(E_SQUARE,"schur_evals");
 	n = T->n;	T_me = T->me;
 	real_pt = v_resize(real_pt,(u_int)n);
 	imag_pt = v_resize(imag_pt,(u_int)n);
@@ -497,15 +479,15 @@ MAT	*T, *Q, *X_re, *X_im;
 			*tmp2_re=VNULL, *tmp2_im=VNULL;
 
 	if ( ! T || ! X_re )
-	    error(E_NULL,"schur_vecs");
+	    m_error(E_NULL,"schur_vecs");
 	if ( T->m != T->n || X_re->m != X_re->n ||
 		( Q != MNULL && Q->m != Q->n ) ||
 		( X_im != MNULL && X_im->m != X_im->n ) )
-	    error(E_SQUARE,"schur_vecs");
+	    m_error(E_SQUARE,"schur_vecs");
 	if ( T->m != X_re->m ||
 		( Q != MNULL && T->m != Q->m ) ||
 		( X_im != MNULL && T->m != X_im->m ) )
-	    error(E_SIZES,"schur_vecs");
+	    m_error(E_SIZES,"schur_vecs");
 
 	tmp1_re = v_resize(tmp1_re,T->m);
 	tmp1_im = v_resize(tmp1_im,T->m);
@@ -532,7 +514,7 @@ MAT	*T, *Q, *X_re, *X_im;
 		    l_im = sqrt(-discrim);
 		}
 		else /* not correct Real Schur form */
-		    error(E_RANGE,"schur_vecs");
+		    m_error(E_RANGE,"schur_vecs");
 	    }
 	    else
 	    {
@@ -646,7 +628,7 @@ MAT	*T, *Q, *X_re, *X_im;
 	    if ( l_im != 0.0 )
 	    {
 		if ( ! X_im )
-		error(E_NULL,"schur_vecs");
+		m_error(E_NULL,"schur_vecs");
 		set_col(X_re,i,tmp2_re);
 		set_col(X_im,i,tmp2_im);
 		sv_mlt(-1.0,tmp2_im,tmp2_im);

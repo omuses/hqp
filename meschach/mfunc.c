@@ -35,7 +35,7 @@
 #include "matrix.h"
 #include "matrix2.h"
 
-static char	rcsid[] = "$Id: mfunc.c,v 1.1 2001/03/01 17:18:54 rfranke Exp $";
+static char	rcsid[] = "$Id: mfunc.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
@@ -55,11 +55,11 @@ int	p;
 #define	Z(k)	(((k) & 1) ? tmp : out)
    
    if ( ! A )
-     error(E_NULL,"_m_pow");
+     m_error(E_NULL,"_m_pow");
    if ( A->m != A->n )
-     error(E_SQUARE,"_m_pow");
+     m_error(E_SQUARE,"_m_pow");
    if ( p < 0 )
-     error(E_NEG,"_m_pow");
+     m_error(E_NEG,"_m_pow");
    out = m_resize(out,A->m,A->n);
    tmp = m_resize(tmp,A->m,A->n);
    
@@ -102,9 +102,9 @@ int	p;
    static MAT	*wkspace = MNULL;
    
    if ( ! A )
-     error(E_NULL,"m_pow");
+     m_error(E_NULL,"m_pow");
    if ( A->m != A->n )
-     error(E_SQUARE,"m_pow");
+     m_error(E_SQUARE,"m_pow");
    
    wkspace = m_resize(wkspace,A->m,A->n);
    MEM_STAT_REG(wkspace,TYPE_MAT);
@@ -136,13 +136,13 @@ int *q_out, *j_out;
    double inf_norm, eqq, power2, c, sign;
    
    if ( ! A )
-     error(E_SIZES,"_m_exp");
+     m_error(E_SIZES,"_m_exp");
    if ( A->m != A->n )
-     error(E_SIZES,"_m_exp");
+     m_error(E_SIZES,"_m_exp");
    if ( A == out )
-     error(E_INSITU,"_m_exp");
+     m_error(E_INSITU,"_m_exp");
    if ( eps < 0.0 )
-     error(E_RANGE,"_m_exp");
+     m_error(E_RANGE,"_m_exp");
    else if (eps == 0.0)
      eps = MACHEPS;
       
@@ -310,11 +310,11 @@ VEC *a;
    int j, k, l, q, r, s, t;
    
    if ( ! A || ! a )
-     error(E_NULL,"m_poly");
+     m_error(E_NULL,"m_poly");
    if ( A->m != A->n )
-     error(E_SIZES,"m_poly");
+     m_error(E_SIZES,"m_poly");
    if ( A == out )
-     error(E_INSITU,"m_poly");
+     m_error(E_INSITU,"m_poly");
    
    out = m_resize(out,A->m,A->n);
    Apow = m_resize(Apow,A->m,A->n);

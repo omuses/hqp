@@ -28,7 +28,7 @@
 	library, parts 1 and 2
 */
 
-static char rcsid[] = "$Id: torture.c,v 1.1 2001/03/01 17:19:13 rfranke Exp $";
+static char rcsid[] = "$Id: torture.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -60,7 +60,7 @@ PERM	*pi1, *pi2;
     int		i;
 
     if ( ! pi1 || ! pi2 )
-	error(E_NULL,"cmp_perm");
+	m_error(E_NULL,"cmp_perm");
     if ( pi1->size != pi2->size )
 	return 0;
     for ( i = 0; i < pi1->size; i++ )
@@ -76,7 +76,7 @@ PERM	*pi;
     int		i, j, k;
 
     if ( ! pi )
-	error(E_NULL,"px_rand");
+	m_error(E_NULL,"px_rand");
 
     for ( i = 0; i < 3*pi->size; i++ )
     {
@@ -206,13 +206,13 @@ char	*argv[];
     /* testing m_catch() etc */
     notice("error handling routines");
     m_catch(E_NULL,
-	  catchall(v_add(VNULL,VNULL,VNULL);
-		     errmesg("tracecatch() failure"),
-		     printf("# tracecatch() caught error\n");
-		     error(E_NULL,"main"));
-	             errmesg("m_catch() failure"),
-	  printf("# m_catch() caught E_NULL error\n"));
-
+	    m_catchall(v_add(VNULL,VNULL,VNULL);
+		       errmesg("tracecatch() failure"),
+		       printf("# tracecatch() caught error\n");
+		       m_error(E_NULL,"main"));
+	    errmesg("m_catch() failure"),
+	    printf("# m_catch() caught E_NULL error\n"));
+    
     /* testing attaching a new error list (error list 2) */
 
     notice("attaching error lists");
@@ -241,17 +241,9 @@ char	*argv[];
     if ( v_norm2(v_sub(u,z,u)) >= MACHEPS*x->dim )
 	errmesg("sv_mlt()/v_norm2()");
 
-#ifdef ANSI_C 
     v_linlist(u,x,s1,y,1.0,VNULL);
     if ( v_norm2(v_sub(u,z,u)) >= MACHEPS*x->dim )
 	errmesg("v_linlist()");
-#endif
-#ifdef VARARGS
-    v_linlist(u,x,s1,y,1.0,VNULL);
-    if ( v_norm2(v_sub(u,z,u)) >= MACHEPS*x->dim )
-	errmesg("v_linlist()");
-#endif
-
 
     MEMCHK();
 
@@ -431,8 +423,8 @@ char	*argv[];
     notice("LU factor/solve");
     pivot = px_get(A->m);
     LUfactor(A,pivot);
-    tracecatch(LUsolve(A,pivot,y,x),"main");
-    tracecatch(cond_est = LUcondest(A,pivot),"main");
+    m_tracecatch(LUsolve(A,pivot,y,x),"main");
+    m_tracecatch(cond_est = LUcondest(A,pivot),"main");
     printf("# cond(A) approx= %g\n", cond_est);
     if ( v_norm2(v_sub(x,z,u)) >= MACHEPS*v_norm2(x)*cond_est)
     {
@@ -442,8 +434,8 @@ char	*argv[];
     }
 
     v_copy(y,x);
-    tracecatch(LUsolve(A,pivot,x,x),"main");
-    tracecatch(cond_est = LUcondest(A,pivot),"main");
+    m_tracecatch(LUsolve(A,pivot,x,x),"main");
+    m_tracecatch(cond_est = LUcondest(A,pivot),"main");
     if ( v_norm2(v_sub(x,z,u)) >= MACHEPS*v_norm2(x)*cond_est)
     {
 	errmesg("LUfactor()/LUsolve()");
@@ -453,7 +445,7 @@ char	*argv[];
 
     vm_mlt(B,z,y);
     v_copy(y,x);
-    tracecatch(LUTsolve(A,pivot,x,x),"main");
+    m_tracecatch(LUTsolve(A,pivot,x,x),"main");
     if ( v_norm2(v_sub(x,z,u)) >= MACHEPS*v_norm2(x)*cond_est)
     {
 	errmesg("LUfactor()/LUTsolve()");

@@ -39,82 +39,49 @@
 
 MESCH__BEGIN_DECLS
 
-#ifdef ANSI_C
-extern ZVEC	*zUsolve(ZMAT *matrix, ZVEC *b, ZVEC *out, double diag);
-extern ZVEC	*zLsolve(ZMAT *matrix, ZVEC *b, ZVEC *out, double diag);
-extern ZVEC	*zUAsolve(ZMAT *U, ZVEC *b, ZVEC *out, double diag);
-extern ZVEC	*zDsolve(ZMAT *A, ZVEC *b, ZVEC *x);
-extern ZVEC	*zLAsolve(ZMAT *L, ZVEC *b, ZVEC *out, double diag);
+MESCH_API ZVEC	*zUsolve(ZMAT *matrix, ZVEC *b, ZVEC *out, double diag);
+MESCH_API ZVEC	*zLsolve(ZMAT *matrix, ZVEC *b, ZVEC *out, double diag);
+MESCH_API ZVEC	*zUAsolve(ZMAT *U, ZVEC *b, ZVEC *out, double diag);
+MESCH_API ZVEC	*zDsolve(ZMAT *A, ZVEC *b, ZVEC *x);
+MESCH_API ZVEC	*zLAsolve(ZMAT *L, ZVEC *b, ZVEC *out, double diag);
 
-extern ZVEC	*zhhvec(ZVEC *,int,Real *,ZVEC *,complex *);
-extern ZVEC	*zhhtrvec(ZVEC *,double,int,ZVEC *,ZVEC *);
-extern ZMAT	*zhhtrrows(ZMAT *,int,int,ZVEC *,double);
-extern ZMAT	*zhhtrcols(ZMAT *,int,int,ZVEC *,double);
-extern ZMAT     *zHfactor(ZMAT *,ZVEC *);
-extern ZMAT     *zHQunpack(ZMAT *,ZVEC *,ZMAT *,ZMAT *);
+MESCH_API ZVEC	*zhhvec(ZVEC *,int,Real *,ZVEC *,complex *);
+MESCH_API ZVEC	*zhhtrvec(ZVEC *,double,int,ZVEC *,ZVEC *);
+MESCH_API ZMAT	*zhhtrrows(ZMAT *,int,int,ZVEC *,double);
+MESCH_API ZMAT	*zhhtrcols(ZMAT *,int,int,ZVEC *,double);
+MESCH_API ZMAT     *zHfactor(ZMAT *,ZVEC *);
+MESCH_API ZMAT     *zHQunpack(ZMAT *,ZVEC *,ZMAT *,ZMAT *);
 
-extern ZMAT	*zQRfactor(ZMAT *A, ZVEC *diag);
-extern ZMAT	*zQRCPfactor(ZMAT *A, ZVEC *diag, PERM *px);
-extern ZVEC	*_zQsolve(ZMAT *QR, ZVEC *diag, ZVEC *b, ZVEC *x, ZVEC *tmp);
-extern ZMAT	*zmakeQ(ZMAT *QR, ZVEC *diag, ZMAT *Qout);
-extern ZMAT	*zmakeR(ZMAT *QR, ZMAT *Rout);
-extern ZVEC	*zQRsolve(ZMAT *QR, ZVEC *diag, ZVEC *b, ZVEC *x);
-extern ZVEC	*zQRAsolve(ZMAT *QR, ZVEC *diag, ZVEC *b, ZVEC *x);
-extern ZVEC	*zQRCPsolve(ZMAT *QR,ZVEC *diag,PERM *pivot,ZVEC *b,ZVEC *x);
-extern ZVEC	*zUmlt(ZMAT *U, ZVEC *x, ZVEC *out);
-extern ZVEC	*zUAmlt(ZMAT *U, ZVEC *x, ZVEC *out);
-extern double	zQRcondest(ZMAT *QR);
+MESCH_API ZMAT	*zQRfactor(ZMAT *A, ZVEC *diag);
+MESCH_API ZMAT	*zQRCPfactor(ZMAT *A, ZVEC *diag, PERM *px);
+MESCH_API ZVEC	*_zQsolve(ZMAT *QR, ZVEC *diag, ZVEC *b, ZVEC *x, ZVEC *tmp);
+MESCH_API ZMAT	*zmakeQ(ZMAT *QR, ZVEC *diag, ZMAT *Qout);
+MESCH_API ZMAT	*zmakeR(ZMAT *QR, ZMAT *Rout);
+MESCH_API ZVEC	*zQRsolve(ZMAT *QR, ZVEC *diag, ZVEC *b, ZVEC *x);
+MESCH_API ZVEC	*zQRAsolve(ZMAT *QR, ZVEC *diag, ZVEC *b, ZVEC *x);
+MESCH_API ZVEC	*zQRCPsolve(ZMAT *QR,ZVEC *diag,PERM *pivot,ZVEC *b,ZVEC *x);
+MESCH_API ZVEC	*zUmlt(ZMAT *U, ZVEC *x, ZVEC *out);
+MESCH_API ZVEC	*zUAmlt(ZMAT *U, ZVEC *x, ZVEC *out);
+MESCH_API double	zQRcondest(ZMAT *QR);
 
-extern ZVEC	*zLsolve(ZMAT *, ZVEC *, ZVEC *, double);
-extern ZMAT	*zset_col(ZMAT *, int, ZVEC *);
+MESCH_API ZVEC	*zLsolve(ZMAT *, ZVEC *, ZVEC *, double);
+MESCH_API ZMAT	*zset_col(ZMAT *, int, ZVEC *);
 
-extern ZMAT	*zLUfactor(ZMAT *A, PERM *pivot);
-extern ZVEC	*zLUsolve(ZMAT *A, PERM *pivot, ZVEC *b, ZVEC *x);
-extern ZVEC	*zLUAsolve(ZMAT *LU, PERM *pivot, ZVEC *b, ZVEC *x);
-extern ZMAT	*zm_inverse(ZMAT *A, ZMAT *out);
-extern double	zLUcondest(ZMAT *LU, PERM *pivot);
+MESCH_API ZMAT	*zLUfactor(ZMAT *A, PERM *pivot);
+MESCH_API ZVEC	*zLUsolve(ZMAT *A, PERM *pivot, ZVEC *b, ZVEC *x);
+MESCH_API ZVEC	*zLUAsolve(ZMAT *LU, PERM *pivot, ZVEC *b, ZVEC *x);
+MESCH_API ZMAT	*zm_inverse(ZMAT *A, ZMAT *out);
+MESCH_API double	zLUcondest(ZMAT *LU, PERM *pivot);
 
-extern void	zgivens(complex, complex, Real *, complex *);
-extern ZMAT	*zrot_rows(ZMAT *A, int i, int k, double c, complex s,
+MESCH_API void	zgivens(complex, complex, Real *, complex *);
+MESCH_API ZMAT	*zrot_rows(ZMAT *A, int i, int k, double c, complex s,
 			   ZMAT *out);
-extern ZMAT	*zrot_cols(ZMAT *A, int i, int k, double c, complex s,
+MESCH_API ZMAT	*zrot_cols(ZMAT *A, int i, int k, double c, complex s,
 			   ZMAT *out);
-extern ZVEC	*rot_zvec(ZVEC *x, int i, int k, double c, complex s,
+MESCH_API ZVEC	*rot_zvec(ZVEC *x, int i, int k, double c, complex s,
 			  ZVEC *out);
-extern ZMAT	*zschur(ZMAT *A,ZMAT *Q);
-/* extern ZMAT	*schur_vecs(ZMAT *T,ZMAT *Q,X_re,X_im) */
-#else
-extern ZVEC	*zUsolve(), *zLsolve(), *zUAsolve(), *zDsolve(), *zLAsolve();
-
-extern ZVEC	*zhhvec();
-extern ZVEC	*zhhtrvec();
-extern ZMAT	*zhhtrrows();
-extern ZMAT     *zhhtrcols();
-extern ZMAT     *zHfactor();
-extern ZMAT     *zHQunpack();
-
-
-extern ZMAT	*zQRfactor(), *zQRCPfactor();
-extern ZVEC	*_zQsolve();
-extern ZMAT	*zmakeQ(), *zmakeR();
-extern ZVEC	*zQRsolve(), *zQRAsolve(), *zQRCPsolve();
-extern ZVEC	*zUmlt(), *zUAmlt();
-extern double	zQRcondest();
-
-extern ZVEC	*zLsolve();
-extern ZMAT	*zset_col();
-
-extern ZMAT	*zLUfactor();
-extern ZVEC	*zLUsolve(), *zLUAsolve();
-extern ZMAT	*zm_inverse();
-extern double	zLUcondest();
-
-extern void	zgivens();
-extern ZMAT	*zrot_rows(), *zrot_cols();
-extern ZVEC	*rot_zvec();
-extern ZMAT	*zschur();
-/* extern ZMAT	*schur_vecs(); */
-#endif
+MESCH_API ZMAT	*zschur(ZMAT *A,ZMAT *Q);
+/* MESCH_API ZMAT	*schur_vecs(ZMAT *T,ZMAT *Q,X_re,X_im) */
 
 MESCH__END_DECLS
 

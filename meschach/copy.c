@@ -24,7 +24,7 @@
 ***************************************************************************/
 
 
-static	char	rcsid[] = "$Id: copy.c,v 1.1 2001/03/01 17:18:33 rfranke Exp $";
+static	char	rcsid[] = "$Id: copy.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 #include	<stdio.h>
 #include	"matrix.h"
 
@@ -32,13 +32,14 @@ static	char	rcsid[] = "$Id: copy.c,v 1.1 2001/03/01 17:18:33 rfranke Exp $";
 
 /* _m_copy -- copies matrix into new area */
 MAT	*_m_copy(in,out,i0,j0)
-MAT	*in,*out;
-u_int	i0,j0;
+const MAT *in;
+MAT       *out;
+u_int	  i0,j0;
 {
 	u_int	i /* ,j */;
 
 	if ( in==MNULL )
-		error(E_NULL,"_m_copy");
+		m_error(E_NULL,"_m_copy");
 	if ( in==out )
 		return (out);
 	if ( out==MNULL || out->m != in->m || out->n != in->n )
@@ -55,13 +56,14 @@ u_int	i0,j0;
 
 /* _v_copy -- copies vector into new area */
 VEC	*_v_copy(in,out,i0)
-VEC	*in,*out;
-u_int	i0;
+const VEC *in;
+VEC       *out;
+u_int	  i0;
 {
 	/* u_int	i,j; */
 
 	if ( in==VNULL )
-		error(E_NULL,"_v_copy");
+		m_error(E_NULL,"_v_copy");
 	if ( in==out )
 		return (out);
 	if ( out==VNULL || out->dim != in->dim )
@@ -76,12 +78,13 @@ u_int	i0;
 
 /* px_copy -- copies permutation 'in' to 'out' */
 PERM	*px_copy(in,out)
-PERM	*in,*out;
+const PERM *in;
+PERM       *out;
 {
 	/* int	i; */
 
 	if ( in == PNULL )
-		error(E_NULL,"px_copy");
+		m_error(E_NULL,"px_copy");
 	if ( in == out )
 		return out;
 	if ( out == PNULL || out->size != in->size )
@@ -106,16 +109,17 @@ PERM	*in,*out;
 	   (i1,j1)
 	-- out is resized (& created) if necessary */
 MAT	*m_move(in,i0,j0,m0,n0,out,i1,j1)
-MAT	*in, *out;
-int	i0, j0, m0, n0, i1, j1;
+const MAT *in;
+MAT	  *out;
+int	  i0, j0, m0, n0, i1, j1;
 {
     int		i;
 
     if ( ! in )
-	error(E_NULL,"m_move");
+	m_error(E_NULL,"m_move");
     if ( i0 < 0 || j0 < 0 || i1 < 0 || j1 < 0 || m0 < 0 || n0 < 0 ||
 	 i0+m0 > in->m || j0+n0 > in->n )
-	error(E_BOUNDS,"m_move");
+	m_error(E_BOUNDS,"m_move");
 
     if ( ! out )
 	out = m_resize(out,i1+m0,j1+n0);
@@ -134,14 +138,15 @@ int	i0, j0, m0, n0, i1, j1;
 	   to the corresponding subvector of out with initial index i1
 	-- out is resized if necessary */
 VEC	*v_move(in,i0,dim0,out,i1)
-VEC	*in, *out;
-int	i0, dim0, i1;
+const VEC *in;
+VEC	  *out;
+int	  i0, dim0, i1;
 {
     if ( ! in )
-	error(E_NULL,"v_move");
+	m_error(E_NULL,"v_move");
     if ( i0 < 0 || dim0 < 0 || i1 < 0 ||
 	 i0+dim0 > in->dim )
-	error(E_BOUNDS,"v_move");
+	m_error(E_BOUNDS,"v_move");
 
     if ( (! out) || i1+dim0 > out->dim )
 	out = v_resize(out,i1+dim0);
@@ -157,17 +162,17 @@ int	i0, dim0, i1;
 	-- rows are copied contiguously
 	-- out is resized if necessary */
 VEC	*mv_move(in,i0,j0,m0,n0,out,i1)
-MAT	*in;
-VEC	*out;
-int	i0, j0, m0, n0, i1;
+const MAT *in;
+VEC	  *out;
+int	  i0, j0, m0, n0, i1;
 {
     int		dim1, i;
 
     if ( ! in )
-	error(E_NULL,"mv_move");
+	m_error(E_NULL,"mv_move");
     if ( i0 < 0 || j0 < 0 || m0 < 0 || n0 < 0 || i1 < 0 ||
 	 i0+m0 > in->m || j0+n0 > in->n )
-	error(E_BOUNDS,"mv_move");
+	m_error(E_BOUNDS,"mv_move");
 
     dim1 = m0*n0;
     if ( (! out) || i1+dim1 > out->dim )
@@ -185,17 +190,17 @@ int	i0, j0, m0, n0, i1;
         -- copying is done by rows
 	-- out is resized if necessary */
 MAT	*vm_move(in,i0,out,i1,j1,m1,n1)
-VEC	*in;
-MAT	*out;
-int	i0, i1, j1, m1, n1;
+const VEC *in;
+MAT	  *out;
+int	  i0, i1, j1, m1, n1;
 {
     int		dim0, i;
 
     if ( ! in )
-	error(E_NULL,"vm_move");
+	m_error(E_NULL,"vm_move");
     if ( i0 < 0 || i1 < 0 || j1 < 0 || m1 < 0 || n1 < 0 ||
 	 i0+m1*n1 > in->dim )
-	error(E_BOUNDS,"vm_move");
+	m_error(E_BOUNDS,"vm_move");
 
     if ( ! out )
 	out = m_resize(out,i1+m1,j1+n1);

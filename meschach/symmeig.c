@@ -34,7 +34,7 @@
 #include        "matrix2.h"
 
 
-static char rcsid[] = "$Id: symmeig.c,v 1.1 2001/03/01 17:19:11 rfranke Exp $";
+static char rcsid[] = "$Id: symmeig.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
@@ -55,11 +55,11 @@ MAT	*Q;
 	Real	c, c2, cs, s, s2, d, mu;
 
 	if ( ! a || ! b )
-		error(E_NULL,"trieig");
+		m_error(E_NULL,"trieig");
 	if ( a->dim != b->dim + 1 || ( Q && Q->m != a->dim ) )
-		error(E_SIZES,"trieig");
+		m_error(E_SIZES,"trieig");
 	if ( Q && Q->m != Q->n )
-		error(E_SQUARE,"trieig");
+		m_error(E_SQUARE,"trieig");
 
 	n = a->dim;
 	a_ve = a->ve;		b_ve = b->ve;
@@ -179,9 +179,9 @@ VEC	*out;
 	static VEC	*b   = VNULL, *diag = VNULL, *beta = VNULL;
 
 	if ( ! A )
-		error(E_NULL,"symmeig");
+		m_error(E_NULL,"symmeig");
 	if ( A->m != A->n )
-		error(E_SQUARE,"symmeig");
+		m_error(E_SQUARE,"symmeig");
 	if ( ! out || out->dim != A->m )
 		out = v_resize(out,A->m);
 

@@ -29,7 +29,7 @@
 */
 
 /* CHfactor.c 1.2 11/25/87 */
-static	char	rcsid[] = "$Id: chfactor.c,v 1.1 2001/03/01 17:18:32 rfranke Exp $";
+static	char	rcsid[] = "$Id: chfactor.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -47,9 +47,9 @@ MAT	*A;
 	Real	**A_ent, *A_piv, *A_row, sum, tmp;
 
 	if ( A==(MAT *)NULL )
-		error(E_NULL,"CHfactor");
+		m_error(E_NULL,"CHfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"CHfactor");
+		m_error(E_SQUARE,"CHfactor");
 	n = A->n;	A_ent = A->me;
 
 	for ( k=0; k<n; k++ )
@@ -64,7 +64,7 @@ MAT	*A;
 			sum -= tmp*tmp;
 		}
 		if ( sum <= 0.0 )
-			error(E_POSDEF,"CHfactor");
+			m_error(E_POSDEF,"CHfactor");
 		A_ent[k][k] = sqrt(sum);
 
 		/* set values of column k */
@@ -93,9 +93,9 @@ MAT	*A;
 VEC	*b,*x;
 {
 	if ( A==(MAT *)NULL || b==(VEC *)NULL )
-		error(E_NULL,"CHsolve");
+		m_error(E_NULL,"CHsolve");
 	if ( A->m != A->n || A->n != b->dim )
-		error(E_SIZES,"CHsolve");
+		m_error(E_SIZES,"CHsolve");
 	x = v_resize(x,b->dim);
 	Lsolve(A,b,x,0.0);
 	Usolve(A,x,x,0.0);
@@ -113,9 +113,9 @@ MAT	*A;
 	static VEC	*r = VNULL;
 
 	if ( ! A )
-		error(E_NULL,"LDLfactor");
+		m_error(E_NULL,"LDLfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"LDLfactor");
+		m_error(E_SQUARE,"LDLfactor");
 	n = A->n;	A_ent = A->me;
 	r = v_resize(r,n);
 	MEM_STAT_REG(r,TYPE_VEC);
@@ -131,7 +131,7 @@ MAT	*A;
 		d = A_ent[k][k] -= sum;
 
 		if ( d == 0.0 )
-		    error(E_SING,"LDLfactor");
+		    m_error(E_SING,"LDLfactor");
 		for ( i = k+1; i < n; i++ )
 		{
 		    sum = __ip__(A_ent[i],r->ve,(int)k);
@@ -152,11 +152,11 @@ MAT	*LDL;
 VEC	*b, *x;
 {
 	if ( ! LDL || ! b )
-		error(E_NULL,"LDLsolve");
+		m_error(E_NULL,"LDLsolve");
 	if ( LDL->m != LDL->n )
-		error(E_SQUARE,"LDLsolve");
+		m_error(E_SQUARE,"LDLsolve");
 	if ( LDL->m != b->dim )
-		error(E_SIZES,"LDLsolve");
+		m_error(E_SIZES,"LDLsolve");
 	x = v_resize(x,b->dim);
 
 	Lsolve(LDL,b,x,1.0);
@@ -175,11 +175,11 @@ double  tol;
 	Real	**A_ent, *A_piv, *A_row, sum, tmp;
 
 	if ( A==(MAT *)NULL )
-		error(E_NULL,"MCHfactor");
+		m_error(E_NULL,"MCHfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"MCHfactor");
+		m_error(E_SQUARE,"MCHfactor");
 	if ( tol <= 0.0 )
-	        error(E_RANGE,"MCHfactor");
+	        m_error(E_RANGE,"MCHfactor");
 	n = A->n;	A_ent = A->me;
 
 	for ( k=0; k<n; k++ )

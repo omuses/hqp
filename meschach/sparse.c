@@ -34,7 +34,7 @@
 #include	"sparse.h"
 
 
-static char	rcsid[] = "$Id: sparse.c,v 1.1 2001/03/01 17:19:00 rfranke Exp $";
+static char	rcsid[] = "$Id: sparse.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #define	MINROWLEN	10
 
@@ -42,16 +42,16 @@ static char	rcsid[] = "$Id: sparse.c,v 1.1 2001/03/01 17:19:00 rfranke Exp $";
 
 /* sp_get_val -- returns the (i,j) entry of the sparse matrix A */
 double	sp_get_val(A,i,j)
-SPMAT	*A;
-int	i, j;
+const SPMAT *A;
+int	    i, j;
 {
    SPROW	*r;
    int	idx;
    
    if ( A == SMNULL )
-     error(E_NULL,"sp_get_val");
+     m_error(E_NULL,"sp_get_val");
    if ( i < 0 || i >= A->m || j < 0 || j >= A->n )
-     error(E_SIZES,"sp_get_val");
+     m_error(E_SIZES,"sp_get_val");
    
    r = A->row+i;
    idx = sprow_idx(r,j);
@@ -63,7 +63,7 @@ int	i, j;
 
 /* sp_set_val -- sets the (i,j) entry of the sparse matrix A */
 double	sp_set_val(A,i,j,val)
-SPMAT	*A;
+SPMAT   *A;
 int	i, j;
 double	val;
 {
@@ -71,9 +71,9 @@ double	val;
    int	idx, idx2, new_len;
    
    if ( A == SMNULL )
-     error(E_NULL,"sp_set_val");
+     m_error(E_NULL,"sp_set_val");
    if ( i < 0 || i >= A->m || j < 0 || j >= A->n )
-     error(E_SIZES,"sp_set_val");
+     m_error(E_SIZES,"sp_set_val");
    
    r = A->row+i;
    idx = sprow_idx(r,j);
@@ -97,7 +97,7 @@ double	val;
 
 	 r->elt = RENEW(r->elt,new_len,row_elt);
 	 if ( ! r->elt )	/* can't allocate */
-	   error(E_MEM,"sp_set_val");
+	   m_error(E_MEM,"sp_set_val");
 	 r->maxlen = new_len;
       }
       for ( idx2 = r->len-1; idx2 >= idx; idx2-- )
@@ -120,8 +120,9 @@ double	val;
    -- result is in out, which is returned unless out==NULL on entry
    --  if out==NULL on entry then the result vector is created */
 VEC	*sp_mv_mlt(A,x,out)
-SPMAT	*A;
-VEC	*x, *out;
+const SPMAT *A;
+const VEC   *x;
+VEC         *out;
 {
    int	i, j_idx, m, n, max_idx;
    Real	sum, *x_ve;
@@ -129,13 +130,13 @@ VEC	*x, *out;
    row_elt	*elts;
    
    if ( ! A || ! x )
-     error(E_NULL,"sp_mv_mlt");
+     m_error(E_NULL,"sp_mv_mlt");
    if ( x->dim != A->n )
-     error(E_SIZES,"sp_mv_mlt");
+     m_error(E_SIZES,"sp_mv_mlt");
    if ( ! out || out->dim < A->m )
      out = v_resize(out,A->m);
    if ( out == x )
-     error(E_INSITU,"sp_mv_mlt");
+     m_error(E_INSITU,"sp_mv_mlt");
    m = A->m;	n = A->n;
    x_ve = x->ve;
    
@@ -156,8 +157,9 @@ VEC	*x, *out;
    -- result is in out, which is returned unless out==NULL on entry
    -- if out==NULL on entry then result vector is created & returned */
 VEC	*sp_vm_mlt(A,x,out)
-SPMAT	*A;
-VEC	*x, *out;
+const SPMAT *A;
+const VEC   *x;
+VEC         *out;
 {
    int	i, j_idx, m, n, max_idx;
    Real	tmp, *x_ve, *out_ve;
@@ -165,13 +167,13 @@ VEC	*x, *out;
    row_elt	*elts;
    
    if ( ! A || ! x )
-     error(E_NULL,"sp_vm_mlt");
+     m_error(E_NULL,"sp_vm_mlt");
    if ( x->dim != A->m )
-     error(E_SIZES,"sp_vm_mlt");
+     m_error(E_SIZES,"sp_vm_mlt");
    if ( ! out || out->dim < A->n )
      out = v_resize(out,A->n);
    if ( out == x )
-     error(E_INSITU,"sp_vm_mlt");
+     m_error(E_INSITU,"sp_vm_mlt");
    
    m = A->m;	n = A->n;
    v_zero(out);
@@ -202,13 +204,13 @@ int	m, n, maxlen;
    int	i;
    
    if ( m < 0 || n < 0 )
-     error(E_NEG,"sp_get");
+     m_error(E_NEG,"sp_get");
 
    maxlen = max(maxlen,1);
    
    A = NEW(SPMAT);
    if ( ! A )		/* can't allocate */
-     error(E_MEM,"sp_get");
+     m_error(E_MEM,"sp_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_SPMAT,0,sizeof(SPMAT));
       mem_numvar(TYPE_SPMAT,1);
@@ -217,7 +219,7 @@ int	m, n, maxlen;
    
    A->row = rows = NEW_A(m,SPROW);
    if ( ! A->row )		/* can't allocate */
-     error(E_MEM,"sp_get");
+     m_error(E_MEM,"sp_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_SPMAT,0,m*sizeof(SPROW));
    }
@@ -226,7 +228,7 @@ int	m, n, maxlen;
    A->start_row = NEW_A(n,int);
    A->start_idx = NEW_A(n,int);
    if ( ! A->start_row || ! A->start_idx )	/* can't allocate */
-     error(E_MEM,"sp_get");
+     m_error(E_MEM,"sp_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_SPMAT,0,2*n*sizeof(int));
    }
@@ -241,7 +243,7 @@ int	m, n, maxlen;
    {
       rows->elt = NEW_A(maxlen,row_elt);
       if ( ! rows->elt )
-	error(E_MEM,"sp_get");
+	m_error(E_MEM,"sp_get");
       else if (mem_info_is_on()) {
 	 mem_bytes(TYPE_SPMAT,0,maxlen*sizeof(row_elt));
       }
@@ -317,16 +319,16 @@ SPMAT	*A;
    than necessary
    -- result is returned */
 SPMAT	*sp_copy(A)
-SPMAT	*A;
+const SPMAT *A;
 {
    SPMAT	*out;
    SPROW	*row1, *row2;
    int	i;
    
    if ( A == SMNULL )
-     error(E_NULL,"sp_copy");
+     m_error(E_NULL,"sp_copy");
    if ( ! (out=NEW(SPMAT)) )
-     error(E_MEM,"sp_copy");
+     m_error(E_MEM,"sp_copy");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_SPMAT,0,sizeof(SPMAT));
       mem_numvar(TYPE_SPMAT,1);
@@ -335,7 +337,7 @@ SPMAT	*A;
    
    /* set up rows */
    if ( ! (out->row=NEW_A(A->m,SPROW)) )
-     error(E_MEM,"sp_copy");
+     m_error(E_MEM,"sp_copy");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_SPMAT,0,A->m*sizeof(SPROW));
    }
@@ -344,7 +346,7 @@ SPMAT	*A;
       row1 = &(A->row[i]);
       row2 = &(out->row[i]);
       if ( ! (row2->elt=NEW_A(max(row1->len,3),row_elt)) )
-	error(E_MEM,"sp_copy");
+	m_error(E_MEM,"sp_copy");
       else if (mem_info_is_on()) {
 	 mem_bytes(TYPE_SPMAT,0,max(row1->len,3)*sizeof(row_elt));
       }
@@ -358,7 +360,7 @@ SPMAT	*A;
    /* set up start arrays -- for column access */
    if ( ! (out->start_idx=NEW_A(A->n,int)) ||
        ! (out->start_row=NEW_A(A->n,int)) )
-     error(E_MEM,"sp_copy");
+     m_error(E_MEM,"sp_copy");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_SPMAT,0,2*A->n*sizeof(int));
    }
@@ -382,7 +384,7 @@ SPMAT	*A;
    int	*start_row, *start_idx;
    
    if ( A == SMNULL )
-     error(E_NULL,"sp_col_access");
+     m_error(E_NULL,"sp_col_access");
    
    m = A->m;	n = A->n;
    
@@ -422,7 +424,7 @@ SPMAT	*A;
    SPROW	*row;
    
    if ( A == SMNULL )
-     error(E_NULL,"sp_diag_access");
+     m_error(E_NULL,"sp_diag_access");
    
    m = A->m;
    
@@ -437,15 +439,15 @@ SPMAT	*A;
 
 /* sp_m2dense -- convert a sparse matrix to a dense one */
 MAT	*sp_m2dense(A,out)
-SPMAT	*A;
-MAT	*out;
+const SPMAT *A;
+MAT	    *out;
 {
    int	i, j_idx;
    SPROW	*row;
    row_elt	*elt;
    
    if ( ! A )
-     error(E_NULL,"sp_m2dense");
+     m_error(E_NULL,"sp_m2dense");
    if ( ! out || out->m < A->m || out->n < A->n )
      out = m_get(A->m,A->n);
    
@@ -464,16 +466,17 @@ MAT	*out;
 
 /*  C = A+B, can be in situ */
 SPMAT *sp_add(A,B,C)
-SPMAT *A, *B, *C;
+const SPMAT *A, *B;
+SPMAT       *C;
 {
    int i, in_situ;
    SPROW *rc;
    static SPROW *tmp;
 
    if ( ! A || ! B )
-     error(E_NULL,"sp_add");
+     m_error(E_NULL,"sp_add");
    if ( A->m != B->m || A->n != B->n )
-     error(E_SIZES,"sp_add");
+     m_error(E_SIZES,"sp_add");
    if (C == A || C == B)
      in_situ = TRUE;
    else in_situ = FALSE;
@@ -482,7 +485,7 @@ SPMAT *A, *B, *C;
      C = sp_get(A->m,A->n,5);
    else {
       if ( C->m != A->m || C->n != A->n  )
-	error(E_SIZES,"sp_add");
+	m_error(E_SIZES,"sp_add");
       if (!in_situ) sp_zero(C);
    }
 
@@ -511,16 +514,17 @@ SPMAT *A, *B, *C;
 
 /*  C = A-B, cannot be in situ */
 SPMAT *sp_sub(A,B,C)
-SPMAT *A, *B, *C;
+const SPMAT *A, *B;
+SPMAT       *C;
 {
    int i, in_situ;
    SPROW *rc;
    static SPROW *tmp;
    
    if ( ! A || ! B )
-     error(E_NULL,"sp_sub");
+     m_error(E_NULL,"sp_sub");
    if ( A->m != B->m || A->n != B->n )
-     error(E_SIZES,"sp_sub");
+     m_error(E_SIZES,"sp_sub");
    if (C == A || C == B)
      in_situ = TRUE;
    else in_situ = FALSE;
@@ -529,7 +533,7 @@ SPMAT *A, *B, *C;
      C = sp_get(A->m,A->n,5);
    else {
       if ( C->m != A->m || C->n != A->n  )
-	error(E_SIZES,"sp_sub");
+	m_error(E_SIZES,"sp_sub");
       if (!in_situ) sp_zero(C);
    }
 
@@ -558,7 +562,8 @@ SPMAT *A, *B, *C;
 
 /*  C = A+alpha*B, cannot be in situ */
 SPMAT *sp_mltadd(A,B,alpha,C)
-SPMAT *A, *B, *C;
+const SPMAT *A, *B;
+SPMAT *C;
 double alpha;
 {
    int i, in_situ;
@@ -566,9 +571,9 @@ double alpha;
    static SPROW *tmp;
 
    if ( ! A || ! B )
-     error(E_NULL,"sp_mltadd");
+     m_error(E_NULL,"sp_mltadd");
    if ( A->m != B->m || A->n != B->n )
-     error(E_SIZES,"sp_mltadd");
+     m_error(E_SIZES,"sp_mltadd");
    if (C == A || C == B)
      in_situ = TRUE;
    else in_situ = FALSE;
@@ -577,7 +582,7 @@ double alpha;
      C = sp_get(A->m,A->n,5);
    else {
       if ( C->m != A->m || C->n != A->n  )
-	error(E_SIZES,"sp_mltadd");
+	m_error(E_SIZES,"sp_mltadd");
       if (!in_situ) sp_zero(C);
    }
 
@@ -609,18 +614,19 @@ double alpha;
 
 /*  B = alpha*A, can be in situ */
 SPMAT *sp_smlt(A,alpha,B)
-SPMAT *A, *B;
-double alpha;
+const SPMAT *A;
+SPMAT       *B;
+double      alpha;
 {
    int i;
 
    if ( ! A )
-     error(E_NULL,"sp_smlt");
+     m_error(E_NULL,"sp_smlt");
    if ( ! B )
      B = sp_get(A->m,A->n,5);
    else
      if ( A->m != B->m || A->n != B->n )
-       error(E_SIZES,"sp_smlt");
+       m_error(E_SIZES,"sp_smlt");
 
    for (i=0; i < A->m; i++) {
       sprow_smlt(&(A->row[i]),alpha,0,&(B->row[i]),TYPE_SPMAT);
@@ -638,7 +644,7 @@ SPMAT	*A;
    row_elt	*elt;
    
    if ( ! A )
-     error(E_NULL,"sp_zero");
+     m_error(E_NULL,"sp_zero");
    
    for ( i = 0; i < A->m; i++ )
    {
@@ -654,7 +660,8 @@ SPMAT	*A;
 /* sp_copy2 -- copy sparse matrix (type 2) 
    -- keeps structure of the OUT matrix */
 SPMAT	*sp_copy2(A,OUT)
-SPMAT	*A, *OUT;
+const SPMAT *A;
+SPMAT       *OUT;
 {
    int	i /* , idx, len1, len2 */;
    SPROW	*r1, *r2;
@@ -662,7 +669,7 @@ SPMAT	*A, *OUT;
    /* row_elt	*e1, *e2; */
    
    if ( ! A )
-     error(E_NULL,"sp_copy2");
+     m_error(E_NULL,"sp_copy2");
    if ( ! OUT )
      OUT = sp_get(A->m,A->n,10);
    if ( ! scratch ) {
@@ -679,13 +686,13 @@ SPMAT	*A, *OUT;
 
       OUT->row = RENEW(OUT->row,A->m,SPROW);
       if ( ! OUT->row )
-	error(E_MEM,"sp_copy2");
+	m_error(E_MEM,"sp_copy2");
       
       for ( i = OUT->m; i < A->m; i++ )
       {
 	 OUT->row[i].elt = NEW_A(MINROWLEN,row_elt);
 	 if ( ! OUT->row[i].elt )
-	   error(E_MEM,"sp_copy2");
+	   m_error(E_MEM,"sp_copy2");
 	 else if (mem_info_is_on()) {
 	    mem_bytes(TYPE_SPMAT,0,MINROWLEN*sizeof(row_elt));
 	 }
@@ -734,7 +741,7 @@ int	m, n;
    SPROW	*r;
    
    if (m < 0 || n < 0)
-     error(E_NEG,"sp_resize");
+     m_error(E_NEG,"sp_resize");
 
    if ( ! A )
      return sp_get(m,n,10);
@@ -757,11 +764,11 @@ int	m, n;
 
       A->row = RENEW(A->row,(unsigned)m,SPROW);
       if ( ! A->row )
-	error(E_MEM,"sp_resize");
+	m_error(E_MEM,"sp_resize");
       for ( i = A->m; i < m; i++ )
       {
 	 if ( ! (A->row[i].elt = NEW_A(MINROWLEN,row_elt)) )
-	   error(E_MEM,"sp_resize");
+	   m_error(E_MEM,"sp_resize");
 	 else if (mem_info_is_on()) {
 	    mem_bytes(TYPE_SPMAT,0,MINROWLEN*sizeof(row_elt));
 	 }
@@ -785,7 +792,7 @@ int	m, n;
       A->start_row = RENEW(A->start_row,(unsigned)n,int);
       A->start_idx = RENEW(A->start_idx,(unsigned)n,int);
       if ( ! A->start_row || ! A->start_idx )
-	error(E_MEM,"sp_resize");
+	m_error(E_MEM,"sp_resize");
       A->max_n = n;	/* ...and update max_n */
 
       return A;
@@ -800,7 +807,7 @@ int	m, n;
 	   if ( len < 0 )
 	       len = -(len+2);
 	   if ( len < 0 )
-	       error(E_MEM,"sp_resize");
+	       m_error(E_MEM,"sp_resize");
 	   r->len = len;
        }
    
@@ -818,9 +825,9 @@ double	tol;
    row_elt	*elt1, *elt2;
    
    if (  ! A )
-     error(E_NULL,"sp_compact");
+     m_error(E_NULL,"sp_compact");
    if ( tol < 0.0 )
-     error(E_RANGE,"sp_compact");
+     m_error(E_RANGE,"sp_compact");
    
    A->flag_col = A->flag_diag = FALSE;
    
@@ -847,8 +854,6 @@ double	tol;
 
 /* varying number of arguments */
 
-#ifdef ANSI_C
-
 /* To allocate memory to many arguments. 
    The function should be called:
    sp_get_vars(m,n,deg,&x,&y,&z,...,NULL);
@@ -867,7 +872,7 @@ int sp_get_vars(int m,int n,int deg,...)
    SPMAT **par;
    
    va_start(ap, deg);
-   while (par = va_arg(ap,SPMAT **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,SPMAT **))) {   /* NULL ends the list*/
       *par = sp_get(m,n,deg);
       i++;
    } 
@@ -897,7 +902,7 @@ int sp_resize_vars(int m,int n,...)
    SPMAT **par;
    
    va_start(ap, n);
-   while (par = va_arg(ap,SPMAT **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,SPMAT **))) {   /* NULL ends the list*/
       *par = sp_resize(*par,m,n);
       i++;
    } 
@@ -926,7 +931,7 @@ int sp_free_vars(SPMAT **va,...)
    sp_free(*va);
    *va = (SPMAT *) NULL;
    va_start(ap, va);
-   while (par = va_arg(ap,SPMAT **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,SPMAT **))) {   /* NULL ends the list*/
       sp_free(*par); 
       *par = (SPMAT *)NULL;
       i++;
@@ -935,103 +940,3 @@ int sp_free_vars(SPMAT **va,...)
    va_end(ap);
    return i;
 }
-
-
-#elif VARARGS
-
-/* To allocate memory to many arguments. 
-   The function should be called:
-   sp_get_vars(m,n,deg,&x,&y,&z,...,NULL);
-   where 
-     int m,n,deg;
-     SPMAT *x, *y, *z,...;
-     The last argument should be NULL ! 
-     m x n is the dimension of matrices x,y,z,...
-     returned value is equal to the number of allocated variables
-*/
-
-int sp_get_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, m, n, deg;
-   SPMAT **par;
-   
-   va_start(ap);
-   m = va_arg(ap,int);
-   n = va_arg(ap,int);
-   deg = va_arg(ap,int);
-   while (par = va_arg(ap,SPMAT **)) {   /* NULL ends the list*/
-      *par = sp_get(m,n,deg);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-/* To resize memory for many arguments. 
-   The function should be called:
-   sp_resize_vars(m,n,&x,&y,&z,...,NULL);
-   where 
-     int m,n;
-     SPMAT *x, *y, *z,...;
-     The last argument should be NULL ! 
-     m X n is the resized dimension of matrices x,y,z,...
-     returned value is equal to the number of allocated variables.
-     If one of x,y,z,.. arguments is NULL then memory is allocated to this 
-     argument. 
-*/
-
-int sp_resize_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, m, n;
-   SPMAT **par;
-   
-   va_start(ap);
-   m = va_arg(ap,int);
-   n = va_arg(ap,int);
-   while (par = va_arg(ap,SPMAT **)) {   /* NULL ends the list*/
-      *par = sp_resize(*par,m,n);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-/* To deallocate memory for many arguments. 
-   The function should be called:
-   sp_free_vars(&x,&y,&z,...,NULL);
-   where 
-     SPMAT *x, *y, *z,...;
-     The last argument should be NULL ! 
-     There must be at least one not NULL argument.
-     returned value is equal to the number of allocated variables.
-     Returned value of x,y,z,.. is VNULL.
-*/
-
-int sp_free_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0;
-   SPMAT **par;
-   
-   va_start(ap);
-   while (par = va_arg(ap,SPMAT **)) {   /* NULL ends the list*/
-      sp_free(*par); 
-      *par = (SPMAT *)NULL;
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-#endif
-

@@ -30,7 +30,7 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: pxop.c,v 1.1 2001/03/01 17:18:55 rfranke Exp $";
+static	char	rcsid[] = "$Id: pxop.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 /**********************************************************************
 Note: A permutation is often interpreted as a matrix
@@ -43,7 +43,8 @@ Note: A permutation is often interpreted as a matrix
 /* px_inv -- invert permutation -- in situ
 	-- taken from ACM Collected Algorithms #250 */
 PERM	*px_inv(px,out)
-PERM	*px, *out;
+const PERM *px;
+PERM       *out;
 {
     int	i, j, k, n, *p;
     
@@ -60,7 +61,7 @@ PERM	*px, *out;
 	    while (TRUE)
 	    {
 		if ( i < 0 || i >= out->size )
-		    error(E_BOUNDS,"px_inv");
+		    m_error(E_BOUNDS,"px_inv");
 		j = p[i];	p[i] = -1 - k;
 		if ( j == n )
 		{	p[n] = i;	break;		}
@@ -73,23 +74,24 @@ PERM	*px, *out;
 
 /* px_mlt -- permutation multiplication (composition) */
 PERM	*px_mlt(px1,px2,out)
-PERM	*px1,*px2,*out;
+const PERM *px1,*px2;
+PERM       *out;
 {
     u_int	i,size;
     
     if ( px1==(PERM *)NULL || px2==(PERM *)NULL )
-	error(E_NULL,"px_mlt");
+	m_error(E_NULL,"px_mlt");
     if ( px1->size != px2->size )
-	error(E_SIZES,"px_mlt");
+	m_error(E_SIZES,"px_mlt");
     if ( px1 == out || px2 == out )
-	error(E_INSITU,"px_mlt");
+	m_error(E_INSITU,"px_mlt");
     if ( out==(PERM *)NULL || out->size < px1->size )
 	out = px_resize(out,px1->size);
     
     size = px1->size;
     for ( i=0; i<size; i++ )
 	if ( px2->pe[i] >= size )
-	    error(E_BOUNDS,"px_mlt");
+	    m_error(E_BOUNDS,"px_mlt");
 	else
 	    out->pe[i] = px1->pe[px2->pe[i]];
     
@@ -98,16 +100,17 @@ PERM	*px1,*px2,*out;
 
 /* px_vec -- permute vector */
 VEC	*px_vec(px,vector,out)
-PERM	*px;
-VEC	*vector,*out;
+const PERM *px;
+const VEC  *vector;
+VEC        *out;
 {
     u_int	old_i, i, size, start;
     Real	tmp;
     
     if ( px==(PERM *)NULL || vector==(VEC *)NULL )
-	error(E_NULL,"px_vec");
+	m_error(E_NULL,"px_vec");
     if ( px->size > vector->dim )
-	error(E_SIZES,"px_vec");
+	m_error(E_SIZES,"px_vec");
     if ( out==(VEC *)NULL || out->dim < vector->dim )
 	out = v_resize(out,vector->dim);
     
@@ -118,7 +121,7 @@ VEC	*vector,*out;
     {
 	for ( i=0; i<size; i++ )
 	    if ( px->pe[i] >= size )
-		error(E_BOUNDS,"px_vec");
+		m_error(E_BOUNDS,"px_vec");
 	    else
 		out->ve[i] = vector->ve[px->pe[i]];
     }
@@ -155,7 +158,7 @@ VEC	*vector,*out;
 
 	for ( i = 0; i < size; i++ )
 	    if ( px->pe[i] < size )
-		error(E_BOUNDS,"px_vec");
+		m_error(E_BOUNDS,"px_vec");
 	    else
 		px->pe[i] = px->pe[i]-size;
     }
@@ -165,17 +168,18 @@ VEC	*vector,*out;
 #if 0
 /* pxinv_vec -- apply the inverse of px to x, returning the result in out */
 VEC	*pxinv_vec(px,x,out)
-PERM	*px;
-VEC	*x, *out;
+const PERM *px;
+const VEC  *x;
+VEC        *out;
 {
     u_int	i, size;
     
     if ( ! px || ! x )
-	error(E_NULL,"pxinv_vec");
+	m_error(E_NULL,"pxinv_vec");
     if ( px->size > x->dim )
-	error(E_SIZES,"pxinv_vec");
+	m_error(E_SIZES,"pxinv_vec");
     /* if ( x == out )
-	error(E_INSITU,"pxinv_vec"); */
+	m_error(E_INSITU,"pxinv_vec"); */
     if ( ! out || out->dim < x->dim )
 	out = v_resize(out,x->dim);
     
@@ -186,7 +190,7 @@ VEC	*x, *out;
     {
 	for ( i=0; i<size; i++ )
 	    if ( px->pe[i] >= size )
-		error(E_BOUNDS,"pxinv_vec");
+		m_error(E_BOUNDS,"pxinv_vec");
 	    else
 		out->ve[px->pe[i]] = x->ve[i];
     }
@@ -201,6 +205,69 @@ VEC	*x, *out;
 }
 #endif
 
+/*
+ * copied from R. Franke Hqp sprcm.C
+ * pxinv_vec:
+ *   -- permute a vector
+ *      dst = px' * src
+ */
+/* VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst) */
+VEC	*pxinv_vec(px,src,dst)
+const PERM *px;
+const VEC  *src;
+VEC        *dst;
+{
+  int start, size, i, i_new, dim;
+  Real tmp, tmp_new;
+
+  if (!px || !src)
+    m_error(E_NULL, "pxinv_vec");
+  dim = src->dim;
+  size = px->size;
+  if (dim != size)
+    m_error(E_SIZES, "pxinv_vec");
+
+  /*
+   * copy src into dst
+   */
+
+  if (dst != src) {
+    dst = v_copy(src, dst);
+    dst->dim = src->dim;
+  }
+
+  /*
+   * perform permutation in situ
+   */
+
+  if (size == 0)
+    return dst;
+
+  start = 0;
+  do {
+    tmp_new = dst->ve[start];
+    i_new = start;
+    do {
+      i = i_new;
+      i_new = px->pe[i];
+      if (i_new >= size)
+	/* invalid multiple occurence of same row index */
+	m_error(E_INTERN, "pxinv_vec");
+      if (i != i_new) {
+	tmp = tmp_new;
+	tmp_new = dst->ve[i_new];
+	dst->ve[i_new] = tmp;
+      }
+      px->pe[i] += size;
+    } while (i_new != start);
+    for (start = 0; start < size && (int)px->pe[start] >= size; start++);
+  } while (start < size);
+
+  for (i = 0; i < size; i++)
+    px->pe[i] -= size;
+
+  return dst;
+}
 
 /* px_transp -- transpose elements of permutation
 		-- Really multiplying a permutation by a transposition */
@@ -211,7 +278,7 @@ u_int	i1,i2;		/* elements to transpose */
 	u_int	temp;
 
 	if ( px==(PERM *)NULL )
-		error(E_NULL,"px_transp");
+		m_error(E_NULL,"px_transp");
 
 	if ( i1 < px->size && i2 < px->size )
 	{
@@ -266,13 +333,13 @@ int	*a, num;
 /* px_sign -- compute the ``sign'' of a permutation = +/-1 where
 		px is the product of an even/odd # transpositions */
 int	px_sign(px)
-PERM	*px;
+const PERM *px;
 {
 	int	numtransp;
 	PERM	*px2;
 
 	if ( px==(PERM *)NULL )
-		error(E_NULL,"px_sign");
+		m_error(E_NULL,"px_sign");
 	px2 = px_copy(px,PNULL);
 	numtransp = myqsort(px2->pe,px2->size);
 	px_free(px2);
@@ -284,23 +351,20 @@ PERM	*px;
 /* px_cols -- permute columns of matrix A; out = A.px'
 	-- May NOT be in situ */
 MAT	*px_cols(px,A,out)
-PERM	*px;
-MAT	*A, *out;
+const PERM *px;
+const MAT  *A;
+MAT        *out;
 {
 	int	i, j, m, n, px_j;
 	Real	**A_me, **out_me;
-#ifdef ANSI_C
 	MAT	*m_get(int, int);
-#else
-	extern MAT	*m_get();
-#endif
 
 	if ( ! A || ! px )
-		error(E_NULL,"px_cols");
+		m_error(E_NULL,"px_cols");
 	if ( px->size != A->n )
-		error(E_SIZES,"px_cols");
+		m_error(E_SIZES,"px_cols");
 	if ( A == out )
-		error(E_INSITU,"px_cols");
+		m_error(E_INSITU,"px_cols");
 	m = A->m;	n = A->n;
 	if ( ! out || out->m != m || out->n != n )
 		out = m_get(m,n);
@@ -310,7 +374,7 @@ MAT	*A, *out;
 	{
 		px_j = px->pe[j];
 		if ( px_j >= n )
-		    error(E_BOUNDS,"px_cols");
+		    m_error(E_BOUNDS,"px_cols");
 		for ( i = 0; i < m; i++ )
 		    out_me[i][px_j] = A_me[i][j];
 	}
@@ -321,23 +385,20 @@ MAT	*A, *out;
 /* px_rows -- permute columns of matrix A; out = px.A
 	-- May NOT be in situ */
 MAT	*px_rows(px,A,out)
-PERM	*px;
-MAT	*A, *out;
+const PERM *px;
+const MAT  *A;
+MAT        *out;
 {
 	int	i, j, m, n, px_i;
 	Real	**A_me, **out_me;
-#ifdef ANSI_C
 	MAT	*m_get(int, int);
-#else
-	extern MAT	*m_get();
-#endif
 
 	if ( ! A || ! px )
-		error(E_NULL,"px_rows");
+		m_error(E_NULL,"px_rows");
 	if ( px->size != A->m )
-		error(E_SIZES,"px_rows");
+		m_error(E_SIZES,"px_rows");
 	if ( A == out )
-		error(E_INSITU,"px_rows");
+		m_error(E_INSITU,"px_rows");
 	m = A->m;	n = A->n;
 	if ( ! out || out->m != m || out->n != n )
 		out = m_get(m,n);
@@ -347,7 +408,7 @@ MAT	*A, *out;
 	{
 		px_i = px->pe[i];
 		if ( px_i >= m )
-		    error(E_BOUNDS,"px_rows");
+		    m_error(E_BOUNDS,"px_rows");
 		for ( j = 0; j < n; j++ )
 		    out_me[i][j] = A_me[px_i][j];
 	}

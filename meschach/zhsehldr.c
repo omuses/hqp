@@ -34,7 +34,7 @@
 	Complex version
 */
 
-static	char	rcsid[] = "$Id: zhsehldr.c,v 1.1 2001/03/01 17:19:17 rfranke Exp $";
+static	char	rcsid[] = "$Id: zhsehldr.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -55,7 +55,7 @@ complex	*newval;
 	Real	norm, abs_val;
 
 	if ( i0 < 0 || i0 >= vec->dim )
-	    error(E_BOUNDS,"zhhvec");
+	    m_error(E_BOUNDS,"zhhvec");
 	out = _zv_copy(vec,out,i0);
 	tmp = _zin_prod(out,out,i0,Z_CONJ);
 	if ( tmp.re <= 0.0 )
@@ -94,11 +94,11 @@ double	beta;
 	/* u_int	i; */
 
 	if ( hh==ZVNULL || in==ZVNULL )
-		error(E_NULL,"zhhtrvec");
+		m_error(E_NULL,"zhhtrvec");
 	if ( in->dim != hh->dim )
-		error(E_SIZES,"zhhtrvec");
+		m_error(E_SIZES,"zhhtrvec");
 	if ( i0 < 0 || i0 > in->dim )
-	    error(E_BOUNDS,"zhhvec");
+	    m_error(E_BOUNDS,"zhhvec");
 
 	tmp = _zin_prod(hh,in,i0,Z_CONJ);
 	scale.re = -beta*tmp.re;
@@ -126,11 +126,11 @@ double	beta;
 	int	i /*, j */;
 
 	if ( M==ZMNULL || hh==ZVNULL )
-		error(E_NULL,"zhhtrrows");
+		m_error(E_NULL,"zhhtrrows");
 	if ( M->n != hh->dim )
-		error(E_RANGE,"zhhtrrows");
+		m_error(E_RANGE,"zhhtrrows");
 	if ( i0 < 0 || i0 > M->m || j0 < 0 || j0 > M->n )
-		error(E_BOUNDS,"zhhtrrows");
+		m_error(E_BOUNDS,"zhhtrrows");
 
 	if ( beta == 0.0 )	return (M);
 
@@ -177,11 +177,11 @@ double	beta;
 	static	ZVEC	*w = ZVNULL;
 
 	if ( M==ZMNULL || hh==ZVNULL )
-		error(E_NULL,"zhhtrcols");
+		m_error(E_NULL,"zhhtrcols");
 	if ( M->m != hh->dim )
-		error(E_SIZES,"zhhtrcols");
+		m_error(E_SIZES,"zhhtrcols");
 	if ( i0 < 0 || i0 > M->m || j0 < 0 || j0 > M->n )
-		error(E_BOUNDS,"zhhtrcols");
+		m_error(E_BOUNDS,"zhhtrcols");
 
 	if ( beta == 0.0 )	return (M);
 

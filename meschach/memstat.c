@@ -40,7 +40,7 @@
 #include  "iter.h"
 #endif
 
-static char rcsid[] = "$Id: memstat.c,v 1.1 2001/03/01 17:18:52 rfranke Exp $";
+static char rcsid[] = "$Id: memstat.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 /* global variable */
 
@@ -128,7 +128,7 @@ void **var;
 	        " Increase MEM_HASHSIZE in file: %s (currently = %d)\n\n",
 		    MEM_HASHSIZE_FILE, MEM_HASHSIZE);
 	    }
-	    error(E_MEM,"mem_lookup");
+	    m_error(E_MEM,"mem_lookup");
 	 }
       }
    }
@@ -163,7 +163,7 @@ int type,list;
    if ( type < 0 || type >= mem_connect[list].ntypes || 
        mem_connect[list].free_funcs[type] == NULL )
    {
-      warning(WARN_WRONG_TYPE,"mem_stat_reg_list");
+      m_warning(WARN_WRONG_TYPE,"mem_stat_reg_list");
       return -1;
    }
    
@@ -237,7 +237,7 @@ int mark,list;
    }
    
    if (mem_stat_mark_many <= 0) {
-      warning(WARN_NO_MARK,"mem_stat_free");
+      m_warning(WARN_NO_MARK,"mem_stat_free");
       return -1;
    }
 
@@ -252,7 +252,7 @@ int mark,list;
 	     if ( free_fn != NULL )
 		 (*free_fn)(*mem_stat_var[j].var);
 	     else
-		 warning(WARN_WRONG_TYPE,"mem_stat_free");
+		 m_warning(WARN_WRONG_TYPE,"mem_stat_free");
 	    
 	    *(mem_stat_var[j].var) = NULL;
 	    mem_stat_var[j].var = NULL;
@@ -305,11 +305,7 @@ int list;
 
 
 /* query function about the current mark */
-#ifdef ANSI_C
 int mem_stat_show_mark(void)
-#else
-int mem_stat_show_mark()
-#endif
 {
    return mem_stat_mark_curr;
 }
@@ -317,8 +313,6 @@ int mem_stat_show_mark()
 
 /* Varying number of arguments */
 
-
-#ifdef ANSI_C
 
 /* To allocate memory to many arguments. 
    The function should be called:
@@ -346,38 +340,3 @@ int mem_stat_reg_vars(int list,int type,...)
    va_end(ap);
    return i;
 }
-
-#elif VARARGS
-/* old varargs is used */
-
-/* To allocate memory to many arguments. 
-   The function should be called:
-   mem_stat_vars(list,type,&v1,&v2,&v3,...,VNULL);
-   where 
-     int list,type;
-     void **v1, **v2, **v3,...;
-     The last argument should be VNULL ! 
-     type is the type of variables v1,v2,v3,...
-     (of course they must be of the same type)
-*/
-
-int mem_stat_reg_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int type,list,i=0;
-   void **par;
-   
-   va_start(ap);
-   list = va_arg(ap,int);
-   type = va_arg(ap,int);
-   while (par = va_arg(ap,void **)) {   /* NULL ends the list*/
-      mem_stat_reg_list(par,type,list);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-#endif

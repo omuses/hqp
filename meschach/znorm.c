@@ -28,7 +28,7 @@
 	A collection of functions for computing norms: scaled and unscaled
 	Complex version
 */
-static	char	rcsid[] = "$Id: znorm.c,v 1.2 2002/05/13 18:07:38 rfranke Exp $";
+static	char	rcsid[] = "$Id: znorm.c,v 1.3 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -45,7 +45,7 @@ VEC	*scale;
     Real	s, sum;
     
     if ( x == ZVNULL )
-	error(E_NULL,"_zv_norm1");
+	m_error(E_NULL,"_zv_norm1");
     dim = x->dim;
     
     sum = 0.0;
@@ -53,7 +53,7 @@ VEC	*scale;
 	for ( i = 0; i < dim; i++ )
 	    sum += zabs(x->ve[i]);
     else if ( scale->dim < dim )
-	error(E_SIZES,"_zv_norm1");
+	m_error(E_SIZES,"_zv_norm1");
     else
 	for ( i = 0; i < dim; i++ )
 	{
@@ -82,7 +82,7 @@ VEC	*scale;
     Real	s, sum;
     
     if ( x == ZVNULL )
-	error(E_NULL,"_zv_norm2");
+	m_error(E_NULL,"_zv_norm2");
     dim = x->dim;
     
     sum = 0.0;
@@ -90,7 +90,7 @@ VEC	*scale;
 	for ( i = 0; i < dim; i++ )
 	    sum += square(x->ve[i].re) + square(x->ve[i].im);
     else if ( scale->dim < dim )
-	error(E_SIZES,"_v_norm2");
+	m_error(E_SIZES,"_v_norm2");
     else
 	for ( i = 0; i < dim; i++ )
 	{
@@ -111,7 +111,7 @@ VEC	*scale;
     Real	s, maxval, tmp;
     
     if ( x == ZVNULL )
-	error(E_NULL,"_zv_norm_inf");
+	m_error(E_NULL,"_zv_norm_inf");
     dim = x->dim;
     
     maxval = 0.0;
@@ -122,7 +122,7 @@ VEC	*scale;
 	    maxval = max(maxval,tmp);
 	}
     else if ( scale->dim < dim )
-	error(E_SIZES,"_zv_norm_inf");
+	m_error(E_SIZES,"_zv_norm_inf");
     else
 	for ( i = 0; i < dim; i++ )
 	{
@@ -143,7 +143,7 @@ ZMAT	*A;
     Real	maxval, sum;
     
     if ( A == ZMNULL )
-	error(E_NULL,"zm_norm1");
+	m_error(E_NULL,"zm_norm1");
 
     m = A->m;	n = A->n;
     maxval = 0.0;
@@ -168,7 +168,7 @@ ZMAT	*A;
     Real	maxval, sum;
     
     if ( A == ZMNULL )
-	error(E_NULL,"zm_norm_inf");
+	m_error(E_NULL,"zm_norm_inf");
     
     m = A->m;	n = A->n;
     maxval = 0.0;
@@ -192,7 +192,7 @@ ZMAT	*A;
     Real	sum;
     
     if ( A == ZMNULL )
-	error(E_NULL,"zm_norm_frob");
+	m_error(E_NULL,"zm_norm_frob");
     
     m = A->m;	n = A->n;
     sum = 0.0;

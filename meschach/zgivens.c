@@ -85,9 +85,9 @@ complex	s;
 	complex	temp1, temp2;
 
 	if ( x==ZVNULL )
-		error(E_NULL,"rot_zvec");
+		m_error(E_NULL,"rot_zvec");
 	if ( i < 0 || i >= x->dim || k < 0 || k >= x->dim )
-		error(E_RANGE,"rot_zvec");
+		m_error(E_RANGE,"rot_zvec");
 	if ( x != out )
 	    out = zv_copy(x,out);
 
@@ -120,9 +120,9 @@ complex	s;
 	complex	temp1, temp2;
 
 	if ( mat==ZMNULL )
-		error(E_NULL,"zrot_rows");
+		m_error(E_NULL,"zrot_rows");
 	if ( i < 0 || i >= mat->m || k < 0 || k >= mat->m )
-		error(E_RANGE,"zrot_rows");
+		m_error(E_RANGE,"zrot_rows");
 	out = zm_copy(mat,out);
 
 	/* temp1 = c*out->me[i][j] - s*out->me[k][j]; */
@@ -158,9 +158,9 @@ complex	s;
 	complex	x, y;
 
 	if ( mat==ZMNULL )
-		error(E_NULL,"zrot_cols");
+		m_error(E_NULL,"zrot_cols");
 	if ( i < 0 || i >= mat->n || k < 0 || k >= mat->n )
-		error(E_RANGE,"zrot_cols");
+		m_error(E_RANGE,"zrot_cols");
 	out = zm_copy(mat,out);
 
 	for ( j=0; j<mat->m; j++ )

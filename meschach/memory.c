@@ -29,7 +29,7 @@
 #include 	"matrix.h"
 
 
-static	char	rcsid[] = "$Id: memory.c,v 1.1 2001/03/01 17:18:52 rfranke Exp $";
+static	char	rcsid[] = "$Id: memory.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 /* m_get -- gets an mxn matrix (in MAT form) by dynamic memory allocation */
 MAT	*m_get(m,n)
@@ -39,10 +39,10 @@ int	m,n;
    int	i;
    
    if (m < 0 || n < 0)
-     error(E_NEG,"m_get");
+     m_error(E_NEG,"m_get");
 
    if ((matrix=NEW(MAT)) == (MAT *)NULL )
-     error(E_MEM,"m_get");
+     m_error(E_MEM,"m_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_MAT,0,sizeof(MAT));
       mem_numvar(TYPE_MAT,1);
@@ -54,7 +54,7 @@ int	m,n;
    if ((matrix->base = NEW_A(m*n,Real)) == (Real *)NULL )
    {
       free(matrix);
-      error(E_MEM,"m_get");
+      m_error(E_MEM,"m_get");
    }
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_MAT,0,m*n*sizeof(Real));
@@ -65,7 +65,7 @@ int	m,n;
    if ((matrix->me = (Real **)calloc(m,sizeof(Real *))) == 
        (Real **)NULL )
    {	free(matrix->base);	free(matrix);
-	error(E_MEM,"m_get");
+	m_error(E_MEM,"m_get");
      }
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_MAT,0,m*sizeof(Real *));
@@ -78,7 +78,7 @@ int	m,n;
 #else
    for ( i = 0; i < m; i++ )
      if ( (matrix->me[i]=NEW_A(n,Real)) == (Real *)NULL )
-       error(E_MEM,"m_get");
+       m_error(E_MEM,"m_get");
      else if (mem_info_is_on()) {
 	mem_bytes(TYPE_MAT,0,n*sizeof(Real));
        }
@@ -97,10 +97,10 @@ int	size;
    int	i;
 
    if (size < 0)
-     error(E_NEG,"px_get");
+     m_error(E_NEG,"px_get");
 
    if ((permute=NEW(PERM)) == (PERM *)NULL )
-     error(E_MEM,"px_get");
+     m_error(E_MEM,"px_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_PERM,0,sizeof(PERM));
       mem_numvar(TYPE_PERM,1);
@@ -108,7 +108,7 @@ int	size;
    
    permute->size = permute->max_size = size;
    if ((permute->pe = NEW_A(size,u_int)) == (u_int *)NULL )
-     error(E_MEM,"px_get");
+     m_error(E_MEM,"px_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_PERM,0,size*sizeof(u_int));
    }
@@ -127,10 +127,10 @@ int	size;
    VEC	*vector;
    
    if (size < 0)
-     error(E_NEG,"v_get");
+     m_error(E_NEG,"v_get");
 
    if ((vector=NEW(VEC)) == (VEC *)NULL )
-     error(E_MEM,"v_get");
+     m_error(E_MEM,"v_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_VEC,0,sizeof(VEC));
       mem_numvar(TYPE_VEC,1);
@@ -140,7 +140,7 @@ int	size;
    if ((vector->ve=NEW_A(size,Real)) == (Real *)NULL )
    {
       free(vector);
-      error(E_MEM,"v_get");
+      m_error(E_MEM,"v_get");
    }
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_VEC,0,size*sizeof(Real));
@@ -266,7 +266,7 @@ int	new_m, new_n;
    int	new_max_m, new_max_n, new_size, old_m, old_n;
    
    if (new_m < 0 || new_n < 0)
-     error(E_NEG,"m_resize");
+     m_error(E_NEG,"m_resize");
 
    if ( ! A )
      return m_get(new_m,new_n);
@@ -285,7 +285,7 @@ int	new_m, new_n;
 
       A->me = RENEW(A->me,new_m,Real *);
       if ( ! A->me )
-	error(E_MEM,"m_resize");
+	m_error(E_MEM,"m_resize");
    }
    new_max_m = max(new_m,A->max_m);
    new_max_n = max(new_n,A->max_n);
@@ -301,7 +301,7 @@ int	new_m, new_n;
 
       A->base = RENEW(A->base,new_size,Real);
       if ( ! A->base )
-	error(E_MEM,"m_resize");
+	m_error(E_MEM,"m_resize");
       A->max_size = new_size;
    }
    
@@ -345,7 +345,7 @@ int	new_m, new_n;
 	 }	
 
 	 if ( (tmp = RENEW(A->me[i],new_max_n,Real)) == NULL )
-	   error(E_MEM,"m_resize");
+	   m_error(E_MEM,"m_resize");
 	 else {	
 	    A->me[i] = tmp;
 	 }
@@ -353,7 +353,7 @@ int	new_m, new_n;
       for ( i = A->max_m; i < new_max_m; i++ )
       {
 	 if ( (tmp = NEW_A(new_max_n,Real)) == NULL )
-	   error(E_MEM,"m_resize");
+	   m_error(E_MEM,"m_resize");
 	 else {
 	    A->me[i] = tmp;
 
@@ -367,7 +367,7 @@ int	new_m, new_n;
    {
       for ( i = A->max_m; i < new_m; i++ ) 
 	if ( (A->me[i] = NEW_A(new_max_n,Real)) == NULL )
-	  error(E_MEM,"m_resize");
+	  m_error(E_MEM,"m_resize");
 	else if (mem_info_is_on()) {
 	   mem_bytes(TYPE_MAT,0,new_max_n*sizeof(Real));
 	}
@@ -402,7 +402,7 @@ int	new_size;
    int	i;
    
    if (new_size < 0)
-     error(E_NEG,"px_resize");
+     m_error(E_NEG,"px_resize");
 
    if ( ! px )
      return px_get(new_size);
@@ -419,7 +419,7 @@ int	new_size;
       }
       px->pe = RENEW(px->pe,new_size,u_int);
       if ( ! px->pe )
-	error(E_MEM,"px_resize");
+	m_error(E_MEM,"px_resize");
       px->max_size = new_size;
    }
    if ( px->size <= new_size )
@@ -443,7 +443,7 @@ int	new_dim;
 {
 
    if (new_dim < 0)
-     error(E_NEG,"v_resize");
+     m_error(E_NEG,"v_resize");
 
    if ( ! x )
      return v_get(new_dim);
@@ -464,7 +464,7 @@ int	new_dim;
 
       x->ve = RENEW(x->ve,new_dim,Real);
       if ( ! x->ve )
-	error(E_MEM,"v_resize");
+	m_error(E_MEM,"v_resize");
       x->max_dim = new_dim;
    }
    
@@ -481,9 +481,6 @@ int	new_dim;
 /* Varying number of arguments */
 /* other functions of this type are in sparse.c and zmemory.c */
 
-
-
-#ifdef ANSI_C
 
 
 /* To allocate memory to many arguments. 
@@ -505,7 +502,7 @@ int v_get_vars(int dim,...)
    VEC **par;
    
    va_start(ap, dim);
-   while (par = va_arg(ap,VEC **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,VEC **))) {   /* NULL ends the list*/
       *par = v_get(dim);
       i++;
    } 
@@ -522,7 +519,7 @@ int iv_get_vars(int dim,...)
    IVEC **par;
    
    va_start(ap, dim);
-   while (par = va_arg(ap,IVEC **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,IVEC **))) {   /* NULL ends the list*/
       *par = iv_get(dim);
       i++;
    } 
@@ -538,7 +535,7 @@ int m_get_vars(int m,int n,...)
    MAT **par;
    
    va_start(ap, n);
-   while (par = va_arg(ap,MAT **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,MAT **))) {   /* NULL ends the list*/
       *par = m_get(m,n);
       i++;
    } 
@@ -554,7 +551,7 @@ int px_get_vars(int dim,...)
    PERM **par;
    
    va_start(ap, dim);
-   while (par = va_arg(ap,PERM **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,PERM **))) {   /* NULL ends the list*/
       *par = px_get(dim);
       i++;
    } 
@@ -586,7 +583,7 @@ int v_resize_vars(int new_dim,...)
    VEC **par;
    
    va_start(ap, new_dim);
-   while (par = va_arg(ap,VEC **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,VEC **))) {   /* NULL ends the list*/
       *par = v_resize(*par,new_dim);
       i++;
    } 
@@ -604,7 +601,7 @@ int iv_resize_vars(int new_dim,...)
    IVEC **par;
    
    va_start(ap, new_dim);
-   while (par = va_arg(ap,IVEC **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,IVEC **))) {   /* NULL ends the list*/
       *par = iv_resize(*par,new_dim);
       i++;
    } 
@@ -620,7 +617,7 @@ int m_resize_vars(int m,int n,...)
    MAT **par;
    
    va_start(ap, n);
-   while (par = va_arg(ap,MAT **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,MAT **))) {   /* NULL ends the list*/
       *par = m_resize(*par,m,n);
       i++;
    } 
@@ -637,7 +634,7 @@ int px_resize_vars(int new_dim,...)
    PERM **par;
    
    va_start(ap, new_dim);
-   while (par = va_arg(ap,PERM **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,PERM **))) {   /* NULL ends the list*/
       *par = px_resize(*par,new_dim);
       i++;
    } 
@@ -668,7 +665,7 @@ int v_free_vars(VEC **pv,...)
    v_free(*pv);
    *pv = VNULL;
    va_start(ap, pv);
-   while (par = va_arg(ap,VEC **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,VEC **))) {   /* NULL ends the list*/
       v_free(*par); 
       *par = VNULL;
       i++;
@@ -688,7 +685,7 @@ int iv_free_vars(IVEC **ipv,...)
    iv_free(*ipv);
    *ipv = IVNULL;
    va_start(ap, ipv);
-   while (par = va_arg(ap,IVEC **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,IVEC **))) {   /* NULL ends the list*/
       iv_free(*par); 
       *par = IVNULL;
       i++;
@@ -708,7 +705,7 @@ int px_free_vars(PERM **vpx,...)
    px_free(*vpx);
    *vpx = PNULL;
    va_start(ap, vpx);
-   while (par = va_arg(ap,PERM **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,PERM **))) {   /* NULL ends the list*/
       px_free(*par); 
       *par = PNULL;
       i++;
@@ -727,7 +724,7 @@ int m_free_vars(MAT **va,...)
    m_free(*va);
    *va = MNULL;
    va_start(ap, va);
-   while (par = va_arg(ap,MAT **)) {   /* NULL ends the list*/
+   while ((par = va_arg(ap,MAT **))) {   /* NULL ends the list*/
       m_free(*par); 
       *par = MNULL;
       i++;
@@ -736,268 +733,3 @@ int m_free_vars(MAT **va,...)
    va_end(ap);
    return i;
 }
-
-
-#elif VARARGS
-/* old varargs is used */
-
-
-
-/* To allocate memory to many arguments. 
-   The function should be called:
-   v_get_vars(dim,&x,&y,&z,...,VNULL);
-   where 
-     int dim;
-     VEC *x, *y, *z,...;
-     The last argument should be VNULL ! 
-     dim is the length of vectors x,y,z,...
-*/
-
-int v_get_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int dim,i=0;
-   VEC **par;
-   
-   va_start(ap);
-   dim = va_arg(ap,int);
-   while (par = va_arg(ap,VEC **)) {   /* NULL ends the list*/
-      *par = v_get(dim);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-int iv_get_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, dim;
-   IVEC **par;
-   
-   va_start(ap);
-   dim = va_arg(ap,int);
-   while (par = va_arg(ap,IVEC **)) {   /* NULL ends the list*/
-      *par = iv_get(dim);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-int m_get_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, n, m;
-   MAT **par;
-   
-   va_start(ap);
-   m = va_arg(ap,int);
-   n = va_arg(ap,int);
-   while (par = va_arg(ap,MAT **)) {   /* NULL ends the list*/
-      *par = m_get(m,n);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-int px_get_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, dim;
-   PERM **par;
-   
-   va_start(ap);
-   dim = va_arg(ap,int);
-   while (par = va_arg(ap,PERM **)) {   /* NULL ends the list*/
-      *par = px_get(dim);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-/* To resize memory for many arguments. 
-   The function should be called:
-   v_resize_vars(new_dim,&x,&y,&z,...,NULL);
-   where 
-     int new_dim;
-     VEC *x, *y, *z,...;
-     The last argument should be NULL ! 
-     rdim is the resized length of vectors x,y,z,...
-     returned value is equal to the number of allocated variables.
-     If one of x,y,z,.. arguments is NULL then memory is allocated to this 
-     argument. 
-     Other *_resize_list() functions are similar.
-*/
-
-int v_resize_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, new_dim;
-   VEC **par;
-   
-   va_start(ap);
-   new_dim = va_arg(ap,int);
-   while (par = va_arg(ap,VEC **)) {   /* NULL ends the list*/
-      *par = v_resize(*par,new_dim);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-int iv_resize_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, new_dim;
-   IVEC **par;
-   
-   va_start(ap);
-   new_dim = va_arg(ap,int);
-   while (par = va_arg(ap,IVEC **)) {   /* NULL ends the list*/
-      *par = iv_resize(*par,new_dim);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-int m_resize_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, m, n;
-   MAT **par;
-   
-   va_start(ap);
-   m = va_arg(ap,int);
-   n = va_arg(ap,int);
-   while (par = va_arg(ap,MAT **)) {   /* NULL ends the list*/
-      *par = m_resize(*par,m,n);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-int px_resize_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0, new_dim;
-   PERM **par;
-   
-   va_start(ap);
-   new_dim = va_arg(ap,int);
-   while (par = va_arg(ap,PERM **)) {   /* NULL ends the list*/
-      *par = px_resize(*par,new_dim);
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-/* To deallocate memory for many arguments. 
-   The function should be called:
-   v_free_vars(&x,&y,&z,...,NULL);
-   where 
-     VEC *x, *y, *z,...;
-     The last argument should be NULL ! 
-     returned value is equal to the number of allocated variables.
-     Returned value of x,y,z,.. is VNULL.
-     Other *_free_list() functions are similar.
-*/
-
-
-int v_free_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0;
-   VEC **par;
-   
-   va_start(ap);
-   while (par = va_arg(ap,VEC **)) {   /* NULL ends the list*/
-      v_free(*par); 
-      *par = VNULL;
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-int iv_free_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0;
-   IVEC **par;
-   
-   va_start(ap);
-   while (par = va_arg(ap,IVEC **)) {   /* NULL ends the list*/
-      iv_free(*par); 
-      *par = IVNULL;
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-int px_free_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0;
-   PERM **par;
-   
-   va_start(ap);
-   while (par = va_arg(ap,PERM **)) {   /* NULL ends the list*/
-      px_free(*par); 
-      *par = PNULL;
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-int m_free_vars(va_alist) va_dcl
-{
-   va_list ap;
-   int i=0;
-   MAT **par;
-   
-   va_start(ap);
-   while (par = va_arg(ap,MAT **)) {   /* NULL ends the list*/
-      m_free(*par); 
-      *par = MNULL;
-      i++;
-   } 
-
-   va_end(ap);
-   return i;
-}
-
-
-
-#endif /* VARARGS */
-  
-

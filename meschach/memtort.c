@@ -28,7 +28,7 @@
   Tests for mem_info.c functions
   */
 
-static char rcsid[] = "$Id: memtort.c,v 1.1 2001/03/01 17:18:53 rfranke Exp $";
+static char rcsid[] = "$Id: memtort.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include        <stdio.h>
 #include        <math.h>
@@ -72,7 +72,7 @@ int dim;
    FOO_1 *f;
    
    if ((f = (FOO_1 *)malloc(sizeof(FOO_1))) == NULL)
-     error(E_MEM,"foo_1_get");
+     m_error(E_MEM,"foo_1_get");
    else if (mem_info_is_on()) {
       mem_bytes_list(TYPE_FOO_1,0,sizeof(FOO_1),FOO_LIST);
       mem_numvar_list(TYPE_FOO_1,1,FOO_LIST);
@@ -81,7 +81,7 @@ int dim;
    f->dim = dim;
    f->fix_dim = 10;
    if ((f->a = (Real (*)[10])malloc(dim*sizeof(Real [10]))) == NULL)
-      error(E_MEM,"foo_1_get");
+      m_error(E_MEM,"foo_1_get");
    else if (mem_info_is_on())
      mem_bytes_list(TYPE_FOO_1,0,dim*sizeof(Real [10]),FOO_LIST); 
 
@@ -95,7 +95,7 @@ int dim;
    FOO_2 *f;
    
    if ((f = (FOO_2 *)malloc(sizeof(FOO_2))) == NULL)
-     error(E_MEM,"foo_2_get");
+     m_error(E_MEM,"foo_2_get");
    else if (mem_info_is_on()) {
       mem_bytes_list(TYPE_FOO_2,0,sizeof(FOO_2),FOO_LIST);
       mem_numvar_list(TYPE_FOO_2,1,FOO_LIST);
@@ -104,7 +104,7 @@ int dim;
    f->dim = dim;
    f->fix_dim = 2;
    if ((f->a = (Real (*)[2])malloc(dim*sizeof(Real [2]))) == NULL)
-      error(E_MEM,"foo_2_get");
+      m_error(E_MEM,"foo_2_get");
    else if (mem_info_is_on())
      mem_bytes_list(TYPE_FOO_2,0,dim*sizeof(Real [2]),FOO_LIST); 
 
@@ -177,7 +177,7 @@ PERM    *pi;
    int         i, j, k;
    
    if ( ! pi )
-     error(E_NULL,"px_rand");
+     m_error(E_NULL,"px_rand");
    
    for ( i = 0; i < 3*pi->size; i++ )
    {
@@ -247,24 +247,8 @@ int par;
 
    MEM_STAT_REG(AT,TYPE_MAT);
 
-#ifdef ANSI_C
    mem_stat_reg_vars(0,TYPE_VEC,&xt1,&xt2,&xt3,&xt4,&yt1,
 		     &yt2,&yt3,&yt4,NULL);
-#else
-#ifdef VARARGS
-   mem_stat_reg_vars(0,TYPE_VEC,&xt1,&xt2,&xt3,&xt4,&yt1,
-		     &yt2,&yt3,&yt4,NULL);
-#else
-   MEM_STAT_REG(xt1,TYPE_VEC);
-   MEM_STAT_REG(yt1,TYPE_VEC);
-   MEM_STAT_REG(xt2,TYPE_VEC);
-   MEM_STAT_REG(yt2,TYPE_VEC);
-   MEM_STAT_REG(xt3,TYPE_VEC);
-   MEM_STAT_REG(yt3,TYPE_VEC);
-   MEM_STAT_REG(xt4,TYPE_VEC);
-   MEM_STAT_REG(yt4,TYPE_VEC);
-#endif
-#endif
 
    v_rand(xt1);
    m_rand(AT);
@@ -341,7 +325,7 @@ int par;
 #endif
 
 
-void main(argc, argv)
+int main(argc, argv)
 int     argc;
 char    *argv[];
 {
@@ -366,8 +350,6 @@ char    *argv[];
 
 
    mem_info_on(TRUE);
-
-#if defined(ANSI_C) || defined(VARARGS)
 
    notice("vector initialize, copy & resize");
    
@@ -631,8 +613,6 @@ char    *argv[];
    zm_free_vars(&zA,&zB,&zC,NULL);
 #endif /* COMPLEX */
 
-#endif  /* if defined(ANSI_C) || defined(VARARGS) */
-
    printf("# test of mem_info_bytes and mem_info_numvar\n");
    printf("  TYPE VEC: %ld bytes allocated, %d variables allocated\n",
 	  mem_info_bytes(TYPE_VEC,0),mem_info_numvar(TYPE_VEC,0));
@@ -733,16 +713,6 @@ char    *argv[];
    printf("# DOUBLE PRECISION was used\n");
 #endif
 
-#define ANSI_OR_VAR
-
-#ifndef ANSI_C
-#ifndef VARARGS
-#undef ANSI_OR_VAR
-#endif
-#endif
-
-#ifdef ANSI_OR_VAR
-
    printf("# you should get: \n");
 #if (REAL == FLOAT)
      printf("#   type VEC: 276 bytes allocated, 3 variables allocated\n");
@@ -751,8 +721,6 @@ char    *argv[];
 #endif
    printf("#   and other types are zeros\n");
 
-#endif /*#if defined(ANSI_C) || defined(VARAGS) */
-
    printf("# Finished memory torture test\n");
-   return;
+   return 0;
 }

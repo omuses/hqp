@@ -38,14 +38,10 @@
 #include	"sparse.h"
 #include        "iter.h"
 
-static char rcsid[] = "$Id: iternsym.c,v 1.1 2001/03/01 17:18:39 rfranke Exp $";
+static char rcsid[] = "$Id: iternsym.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
-#ifdef ANSI_C
 VEC	*spCHsolve(SPMAT *,VEC *,VEC *);
-#else
-VEC	*spCHsolve();
-#endif
 
 
 /* 
@@ -62,15 +58,15 @@ VEC *r0;
    Real	alpha, beta, nres, rho, old_rho, sigma, inner;
 
    if (ip == INULL)
-     error(E_NULL,"iter_cgs");
+     m_error(E_NULL,"iter_cgs");
    if (!ip->Ax || !ip->b || !r0)
-     error(E_NULL,"iter_cgs");
+     m_error(E_NULL,"iter_cgs");
    if ( ip->x == ip->b )
-     error(E_INSITU,"iter_cgs");
+     m_error(E_INSITU,"iter_cgs");
    if (!ip->stop_crit)
-     error(E_NULL,"iter_cgs");
+     m_error(E_NULL,"iter_cgs");
    if ( r0->dim != ip->b->dim )
-     error(E_SIZES,"iter_cgs");
+     m_error(E_SIZES,"iter_cgs");
    
    if ( ip->eps <= 0.0 )
      ip->eps = MACHEPS;
@@ -94,7 +90,7 @@ VEC *r0;
 
    if (ip->x != VNULL) {
       if (ip->x->dim != ip->b->dim)
-	error(E_SIZES,"iter_cgs");
+	m_error(E_SIZES,"iter_cgs");
       ip->Ax(ip->A_par,ip->x,v);    		/* v = A*x */
       if (ip->Bx) {
 	 v_sub(ip->b,v,v);			/* v = b - A*x */
@@ -123,7 +119,7 @@ VEC *r0;
 
       rho = in_prod(r0,r);
       if ( old_rho == 0.0 )
-	error(E_SING,"iter_cgs");
+	m_error(E_SING,"iter_cgs");
       beta = rho/old_rho;
       v_mltadd(r,q,beta,u);
       v_mltadd(q,p,beta,v);
@@ -138,7 +134,7 @@ VEC *r0;
       
       sigma = in_prod(r0,tmp);
       if ( sigma == 0.0 )
-	error(E_SING,"iter_cgs");
+	m_error(E_SING,"iter_cgs");
       alpha = rho/sigma;
       v_mltadd(u,tmp,-alpha,q);
       v_add(u,q,v);
@@ -222,11 +218,11 @@ ITER *ip;
    int  m, n;
    
    if ( ! ip || ! ip->b || !ip->Ax || !ip->ATx )
-     error(E_NULL,"iter_lsqr");
+     m_error(E_NULL,"iter_lsqr");
    if ( ip->x == ip->b )
-     error(E_INSITU,"iter_lsqr");
+     m_error(E_INSITU,"iter_lsqr");
    if (!ip->stop_crit || !ip->x)
-     error(E_NULL,"iter_lsqr");
+     m_error(E_NULL,"iter_lsqr");
 
    if ( ip->eps <= 0.0 )
      ip->eps = MACHEPS;
@@ -295,7 +291,7 @@ ITER *ip;
       
       /* update ip->x & w */
       if ( rho == 0.0 )
-	error(E_SING,"iter_lsqr");
+	m_error(E_SING,"iter_lsqr");
       v_mltadd(ip->x,w,phi/rho,ip->x);
       v_mltadd(v,w,-theta/rho,w);
 
@@ -354,13 +350,13 @@ MAT   *Q, *H;
    Real	h_val, c;
    
    if (ip == INULL)
-     error(E_NULL,"iter_arnoldi_iref");
+     m_error(E_NULL,"iter_arnoldi_iref");
    if ( ! ip->Ax || ! Q || ! ip->x )
-     error(E_NULL,"iter_arnoldi_iref");
+     m_error(E_NULL,"iter_arnoldi_iref");
    if ( ip->k <= 0 )
-     error(E_BOUNDS,"iter_arnoldi_iref");
+     m_error(E_BOUNDS,"iter_arnoldi_iref");
    if ( Q->n != ip->x->dim ||	Q->m != ip->k )
-     error(E_SIZES,"iter_arnoldi_iref");
+     m_error(E_SIZES,"iter_arnoldi_iref");
    
    m_zero(Q);
    H = m_resize(H,ip->k,ip->k);
@@ -452,13 +448,13 @@ MAT   *Q, *H;
    Real	h_val, c;
    
    if (ip == INULL)
-     error(E_NULL,"iter_arnoldi");
+     m_error(E_NULL,"iter_arnoldi");
    if ( ! ip->Ax || ! Q || ! ip->x )
-     error(E_NULL,"iter_arnoldi");
+     m_error(E_NULL,"iter_arnoldi");
    if ( ip->k <= 0 )
-     error(E_BOUNDS,"iter_arnoldi");
+     m_error(E_BOUNDS,"iter_arnoldi");
    if ( Q->n != ip->x->dim ||	Q->m != ip->k )
-     error(E_SIZES,"iter_arnoldi");
+     m_error(E_SIZES,"iter_arnoldi");
    
    m_zero(Q);
    H = m_resize(H,ip->k,ip->k);
@@ -610,15 +606,15 @@ ITER *ip;
 /*   Real last_h;  */
    
    if (ip == INULL)
-     error(E_NULL,"iter_gmres");
+     m_error(E_NULL,"iter_gmres");
    if ( ! ip->Ax || ! ip->b )
-     error(E_NULL,"iter_gmres");
+     m_error(E_NULL,"iter_gmres");
    if ( ! ip->stop_crit )
-     error(E_NULL,"iter_gmres");
+     m_error(E_NULL,"iter_gmres");
    if ( ip->k <= 0 )
-     error(E_BOUNDS,"iter_gmres");
+     m_error(E_BOUNDS,"iter_gmres");
    if (ip->x != VNULL && ip->x->dim != ip->b->dim)
-     error(E_SIZES,"iter_gmres");
+     m_error(E_SIZES,"iter_gmres");
 
    r = v_resize(r,ip->k+1);
    u = v_resize(u,ip->b->dim);
@@ -702,7 +698,7 @@ ITER *ip;
 	    
 	    r->ve[i+1] = nres = v_norm2(&v1);
 	    if (nres <= 0.0) {
-	       warning(WARN_RES_LESS_0,"iter_gmres");
+	       m_warning(WARN_RES_LESS_0,"iter_gmres");
 	       break;
 	    }
 	    sv_mlt(1.0/nres,&v1,&v1);
@@ -717,7 +713,7 @@ ITER *ip;
 	    
 	    nres = in_prod(rr,rr) - in_prod(r,r);
 	    if (nres <= 0.0) {
-	       warning(WARN_RES_LESS_0,"iter_gmres");
+	       m_warning(WARN_RES_LESS_0,"iter_gmres");
 	       break;
 	    }
 	    r->ve[i+1] = sqrt(nres);
@@ -894,15 +890,15 @@ ITER *ip;
    int dim;       /* dimension of the problem */
    
    /* ip cannot be NULL */
-   if (ip == INULL) error(E_NULL,"mgcr");
+   if (ip == INULL) m_error(E_NULL,"mgcr");
    /* Ax, b and stopping criterion must be given */
    if (! ip->Ax || ! ip->b || ! ip->stop_crit) 
-     error(E_NULL,"mgcr");
+     m_error(E_NULL,"mgcr");
    /* at least one direction vector must exist */
-   if ( ip->k <= 0) error(E_BOUNDS,"mgcr");
+   if ( ip->k <= 0) m_error(E_BOUNDS,"mgcr");
    /* if the vector x is given then b and x must have the same dimension */
    if ( ip->x && ip->x->dim != ip->b->dim)
-     error(E_SIZES,"mgcr");
+     m_error(E_SIZES,"mgcr");
    
    dim = ip->b->dim;
    As = v_resize(As,dim);
@@ -1121,13 +1117,13 @@ ITER *ip;
    VEC *rr1;   /* pointer only */
    
    if (ip == INULL)
-     error(E_NULL,"iter_cgne");
+     m_error(E_NULL,"iter_cgne");
    if (!ip->Ax || ! ip->ATx || !ip->b)
-     error(E_NULL,"iter_cgne");
+     m_error(E_NULL,"iter_cgne");
    if ( ip->x == ip->b )
-     error(E_INSITU,"iter_cgne");
+     m_error(E_INSITU,"iter_cgne");
    if (!ip->stop_crit)
-     error(E_NULL,"iter_cgne");
+     m_error(E_NULL,"iter_cgne");
    
    if ( ip->eps <= 0.0 )
      ip->eps = MACHEPS;
@@ -1145,7 +1141,7 @@ ITER *ip;
 
    if (ip->x) {
       if (ip->x->dim != ip->b->dim)
-	error(E_SIZES,"iter_cgne");
+	m_error(E_SIZES,"iter_cgne");
       ip->Ax(ip->A_par,ip->x,p);    		/* p = A*x */
       v_sub(ip->b,p,z);		 		/* z = b - A*x */
    }

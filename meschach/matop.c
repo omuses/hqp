@@ -30,19 +30,20 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: matop.c,v 1.1 2001/03/01 17:18:46 rfranke Exp $";
+static	char	rcsid[] = "$Id: matop.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 /* m_add -- matrix addition -- may be in-situ */
 MAT	*m_add(mat1,mat2,out)
-MAT	*mat1,*mat2,*out;
+const MAT *mat1,*mat2;
+MAT       *out;
 {
 	u_int	m,n,i;
 
 	if ( mat1==(MAT *)NULL || mat2==(MAT *)NULL )
-		error(E_NULL,"m_add");
+		m_error(E_NULL,"m_add");
 	if ( mat1->m != mat2->m || mat1->n != mat2->n )
-		error(E_SIZES,"m_add");
+		m_error(E_SIZES,"m_add");
 	if ( out==(MAT *)NULL || out->m != mat1->m || out->n != mat1->n )
 		out = m_resize(out,mat1->m,mat1->n);
 	m = mat1->m;	n = mat1->n;
@@ -60,14 +61,15 @@ MAT	*mat1,*mat2,*out;
 
 /* m_sub -- matrix subtraction -- may be in-situ */
 MAT	*m_sub(mat1,mat2,out)
-MAT	*mat1,*mat2,*out;
+const MAT *mat1,*mat2;
+MAT       *out;
 {
 	u_int	m,n,i;
 
 	if ( mat1==(MAT *)NULL || mat2==(MAT *)NULL )
-		error(E_NULL,"m_sub");
+		m_error(E_NULL,"m_sub");
 	if ( mat1->m != mat2->m || mat1->n != mat2->n )
-		error(E_SIZES,"m_sub");
+		m_error(E_SIZES,"m_sub");
 	if ( out==(MAT *)NULL || out->m != mat1->m || out->n != mat1->n )
 		out = m_resize(out,mat1->m,mat1->n);
 	m = mat1->m;	n = mat1->n;
@@ -85,17 +87,18 @@ MAT	*mat1,*mat2,*out;
 
 /* m_mlt -- matrix-matrix multiplication */
 MAT	*m_mlt(A,B,OUT)
-MAT	*A,*B,*OUT;
+const MAT *A,*B;
+MAT       *OUT;
 {
 	u_int	i, /* j, */ k, m, n, p;
 	Real	**A_v, **B_v /*, *B_row, *OUT_row, sum, tmp */;
 
 	if ( A==(MAT *)NULL || B==(MAT *)NULL )
-		error(E_NULL,"m_mlt");
+		m_error(E_NULL,"m_mlt");
 	if ( A->n != B->m )
-		error(E_SIZES,"m_mlt");
+		m_error(E_SIZES,"m_mlt");
 	if ( A == OUT || B == OUT )
-		error(E_INSITU,"m_mlt");
+		m_error(E_INSITU,"m_mlt");
 	m = A->m;	n = A->n;	p = B->n;
 	A_v = A->me;		B_v = B->me;
 
@@ -131,17 +134,18 @@ MAT	*A,*B,*OUT;
 /* mmtr_mlt -- matrix-matrix transposed multiplication
 	-- A.B^T is returned, and stored in OUT */
 MAT	*mmtr_mlt(A,B,OUT)
-MAT	*A, *B, *OUT;
+const MAT *A, *B;
+MAT       *OUT;
 {
 	int	i, j, limit;
 	/* Real	*A_row, *B_row, sum; */
 
 	if ( ! A || ! B )
-		error(E_NULL,"mmtr_mlt");
+		m_error(E_NULL,"mmtr_mlt");
 	if ( A == OUT || B == OUT )
-		error(E_INSITU,"mmtr_mlt");
+		m_error(E_INSITU,"mmtr_mlt");
 	if ( A->n != B->n )
-		error(E_SIZES,"mmtr_mlt");
+		m_error(E_SIZES,"mmtr_mlt");
 	if ( ! OUT || OUT->m != A->m || OUT->n != B->m )
 		OUT = m_resize(OUT,A->m,B->m);
 
@@ -166,17 +170,18 @@ MAT	*A, *B, *OUT;
 /* mtrm_mlt -- matrix transposed-matrix multiplication
 	-- A^T.B is returned, result stored in OUT */
 MAT	*mtrm_mlt(A,B,OUT)
-MAT	*A, *B, *OUT;
+const MAT *A, *B;
+MAT       *OUT;
 {
 	int	i, k, limit;
 	/* Real	*B_row, *OUT_row, multiplier; */
 
 	if ( ! A || ! B )
-		error(E_NULL,"mmtr_mlt");
+		m_error(E_NULL,"mmtr_mlt");
 	if ( A == OUT || B == OUT )
-		error(E_INSITU,"mtrm_mlt");
+		m_error(E_INSITU,"mtrm_mlt");
 	if ( A->m != B->m )
-		error(E_SIZES,"mmtr_mlt");
+		m_error(E_SIZES,"mmtr_mlt");
 	if ( ! OUT || OUT->m != A->n || OUT->n != B->n )
 		OUT = m_resize(OUT,A->n,B->n);
 
@@ -202,19 +207,20 @@ MAT	*A, *B, *OUT;
 /* mv_mlt -- matrix-vector multiplication 
 		-- Note: b is treated as a column vector */
 VEC	*mv_mlt(A,b,out)
-MAT	*A;
-VEC	*b,*out;
+const MAT *A;
+const VEC *b;
+VEC       *out;
 {
 	u_int	i, m, n;
 	Real	**A_v, *b_v /*, *A_row */;
 	/* register Real	sum; */
 
 	if ( A==(MAT *)NULL || b==(VEC *)NULL )
-		error(E_NULL,"mv_mlt");
+		m_error(E_NULL,"mv_mlt");
 	if ( A->n != b->dim )
-		error(E_SIZES,"mv_mlt");
+		m_error(E_SIZES,"mv_mlt");
 	if ( b == out )
-		error(E_INSITU,"mv_mlt");
+		m_error(E_INSITU,"mv_mlt");
 	if ( out == (VEC *)NULL || out->dim != A->m )
 		out = v_resize(out,A->m);
 
@@ -238,13 +244,14 @@ VEC	*b,*out;
 
 /* sm_mlt -- scalar-matrix multiply -- may be in-situ */
 MAT	*sm_mlt(scalar,matrix,out)
-double	scalar;
-MAT	*matrix,*out;
+double	  scalar;
+const MAT *matrix;
+MAT       *out;
 {
 	u_int	m,n,i;
 
 	if ( matrix==(MAT *)NULL )
-		error(E_NULL,"sm_mlt");
+		m_error(E_NULL,"sm_mlt");
 	if ( out==(MAT *)NULL || out->m != matrix->m || out->n != matrix->n )
 		out = m_resize(out,matrix->m,matrix->n);
 	m = matrix->m;	n = matrix->n;
@@ -260,18 +267,19 @@ MAT	*matrix,*out;
 /* vm_mlt -- vector-matrix multiplication 
 		-- Note: b is treated as a row vector */
 VEC	*vm_mlt(A,b,out)
-MAT	*A;
-VEC	*b,*out;
+const MAT *A;
+const VEC *b;
+VEC       *out;
 {
 	u_int	j,m,n;
 	/* Real	sum,**A_v,*b_v; */
 
 	if ( A==(MAT *)NULL || b==(VEC *)NULL )
-		error(E_NULL,"vm_mlt");
+		m_error(E_NULL,"vm_mlt");
 	if ( A->m != b->dim )
-		error(E_SIZES,"vm_mlt");
+		m_error(E_SIZES,"vm_mlt");
 	if ( b == out )
-		error(E_INSITU,"vm_mlt");
+		m_error(E_INSITU,"vm_mlt");
 	if ( out == (VEC *)NULL || out->dim != A->n )
 		out = v_resize(out,A->n);
 
@@ -297,16 +305,17 @@ VEC	*b,*out;
 
 /* m_transp -- transpose matrix */
 MAT	*m_transp(in,out)
-MAT	*in, *out;
+const MAT *in;
+MAT       *out;
 {
 	int	i, j;
 	int	in_situ;
 	Real	tmp;
 
 	if ( in == (MAT *)NULL )
-		error(E_NULL,"m_transp");
+		m_error(E_NULL,"m_transp");
 	if ( in == out && in->n != in->m )
-		error(E_INSITU2,"m_transp");
+		m_error(E_INSITU2,"m_transp");
 	in_situ = ( in == out );
 	if ( out == (MAT *)NULL || out->m != in->n || out->n != in->m )
 		out = m_resize(out,in->n,in->m);
@@ -335,9 +344,9 @@ int	i, j, lo, hi;
 	Real	**A_me, tmp;
 
 	if ( ! A )
-		error(E_NULL,"swap_rows");
+		m_error(E_NULL,"swap_rows");
 	if ( i < 0 || j < 0 || i >= A->m || j >= A->m )
-		error(E_SIZES,"swap_rows");
+		m_error(E_SIZES,"swap_rows");
 	lo = max(0,lo);
 	hi = min(hi,A->n-1);
 	A_me = A->me;
@@ -360,9 +369,9 @@ int	i, j, lo, hi;
 	Real	**A_me, tmp;
 
 	if ( ! A )
-		error(E_NULL,"swap_cols");
+		m_error(E_NULL,"swap_cols");
 	if ( i < 0 || j < 0 || i >= A->n || j >= A->n )
-		error(E_SIZES,"swap_cols");
+		m_error(E_SIZES,"swap_cols");
 	lo = max(0,lo);
 	hi = min(hi,A->m-1);
 	A_me = A->me;
@@ -380,24 +389,25 @@ int	i, j, lo, hi;
 	-- may be in situ
 	-- returns out == A1 + s*A2 */
 MAT	*ms_mltadd(A1,A2,s,out)
-MAT	*A1, *A2, *out;
-double	s;
+const MAT *A1, *A2;
+MAT       *out;
+double	  s;
 {
 	/* register Real	*A1_e, *A2_e, *out_e; */
 	/* register int	j; */
 	int	i, m, n;
 
 	if ( ! A1 || ! A2 )
-		error(E_NULL,"ms_mltadd");
+		m_error(E_NULL,"ms_mltadd");
 	if ( A1->m != A2->m || A1->n != A2->n )
-		error(E_SIZES,"ms_mltadd");
+		m_error(E_SIZES,"ms_mltadd");
 
 	if ( s == 0.0 )
 		return m_copy(A1,out);
 	if ( s == 1.0 )
 		return m_add(A1,A2,out);
 
-	tracecatch(out = m_copy(A1,out),"ms_mltadd");
+	m_tracecatch(out = m_copy(A1,out),"ms_mltadd");
 
 	m = A1->m;	n = A1->n;
 	for ( i = 0; i < m; i++ )
@@ -419,22 +429,23 @@ double	s;
 	-- may not be in situ
 	-- returns out == v1 + alpha*A*v2 */
 VEC	*mv_mltadd(v1,v2,A,alpha,out)
-VEC	*v1, *v2, *out;
-MAT	*A;
-double	alpha;
+const VEC *v1, *v2;
+VEC       *out;
+const MAT *A;
+double	  alpha;
 {
 	/* register	int	j; */
 	int	i, m, n;
 	Real	*v2_ve, *out_ve;
 
 	if ( ! v1 || ! v2 || ! A )
-		error(E_NULL,"mv_mltadd");
+		m_error(E_NULL,"mv_mltadd");
 	if ( out == v2 )
-		error(E_INSITU,"mv_mltadd");
+		m_error(E_INSITU,"mv_mltadd");
 	if ( v1->dim != A->m || v2->dim != A-> n )
-		error(E_SIZES,"mv_mltadd");
+		m_error(E_SIZES,"mv_mltadd");
 
-	tracecatch(out = v_copy(v1,out),"mv_mltadd");
+	m_tracecatch(out = v_copy(v1,out),"mv_mltadd");
 
 	v2_ve = v2->ve;	out_ve = out->ve;
 	m = A->m;	n = A->n;
@@ -461,21 +472,22 @@ double	alpha;
 	-- may not be in situ
 	-- returns out' == v1' + v2'*A */
 VEC	*vm_mltadd(v1,v2,A,alpha,out)
-VEC	*v1, *v2, *out;
-MAT	*A;
-double	alpha;
+const VEC *v1, *v2;
+VEC       *out;
+const MAT *A;
+double	  alpha;
 {
 	int	/* i, */ j, m, n;
 	Real	tmp, /* *A_e, */ *out_ve;
 
 	if ( ! v1 || ! v2 || ! A )
-		error(E_NULL,"vm_mltadd");
+		m_error(E_NULL,"vm_mltadd");
 	if ( v2 == out )
-		error(E_INSITU,"vm_mltadd");
+		m_error(E_INSITU,"vm_mltadd");
 	if ( v1->dim != A->n || A->m != v2->dim )
-		error(E_SIZES,"vm_mltadd");
+		m_error(E_SIZES,"vm_mltadd");
 
-	tracecatch(out = v_copy(v1,out),"vm_mltadd");
+	m_tracecatch(out = v_copy(v1,out),"vm_mltadd");
 
 	out_ve = out->ve;	m = A->m;	n = A->n;
 	for ( j = 0; j < m; j++ )

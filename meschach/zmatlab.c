@@ -37,7 +37,7 @@
 #include        "zmatrix.h"
 #include	"matlab.h"
 
-static char rcsid[] = "$Id: zmatlab.c,v 1.1 2001/03/01 17:19:19 rfranke Exp $";
+static char rcsid[] = "$Id: zmatlab.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 /* zm_save -- save matrix in ".mat" file for MATLAB
    -- returns matrix to be saved */
@@ -50,7 +50,7 @@ char    *name;
     matlab  mat;
     
     if ( ! A )
-	error(E_NULL,"zm_save");
+	m_error(E_NULL,"zm_save");
     
     mat.type = 1000*MACH_ID + 100*ORDER + 10*PRECISION + 0;
     mat.m = A->m;
@@ -89,7 +89,7 @@ char    *name;
     matlab  mat;
     
     if ( ! x )
-	error(E_NULL,"zv_save");
+	m_error(E_NULL,"zv_save");
     
     mat.type = 1000*MACH_ID + 100*ORDER + 10*PRECISION + 0;
     mat.m = x->dim;
@@ -157,22 +157,22 @@ char    **name;
     matlab  mat;
     
     if ( fread(&mat,sizeof(matlab),1,fp) != 1 )
-	error(E_FORMAT,"zm_load");
+	m_error(E_FORMAT,"zm_load");
     if ( mat.type >= 10000 )	/* don't load a sparse matrix! */
-	error(E_FORMAT,"zm_load");
+	m_error(E_FORMAT,"zm_load");
     m_flag = (mat.type/1000) % 10;
     o_flag = (mat.type/100) % 10;
     p_flag = (mat.type/10) % 10;
     t_flag = (mat.type) % 10;
     if ( m_flag != MACH_ID )
-	error(E_FORMAT,"zm_load");
+	m_error(E_FORMAT,"zm_load");
     if ( t_flag != 0 )
-	error(E_FORMAT,"zm_load");
+	m_error(E_FORMAT,"zm_load");
     if ( p_flag != DOUBLE_PREC && p_flag != SINGLE_PREC )
-	error(E_FORMAT,"zm_load");
+	m_error(E_FORMAT,"zm_load");
     *name = (char *)malloc((unsigned)(mat.namlen)+1);
     if ( fread(*name,sizeof(char),(unsigned)(mat.namlen),fp) == 0 )
-	error(E_FORMAT,"zm_load");
+	m_error(E_FORMAT,"zm_load");
     A = zm_get((unsigned)(mat.m),(unsigned)(mat.n));
     for ( i = 0; i < A->m*A->n; i++ )
     {
@@ -188,7 +188,7 @@ char    **name;
 	else if ( o_flag == COL_ORDER )
 	    A->me[i % A->m][i / A->m].re = d_temp;
 	else
-	    error(E_FORMAT,"zm_load");
+	    m_error(E_FORMAT,"zm_load");
     }
     
     if ( mat.imag )         /* skip imaginary part */
@@ -206,7 +206,7 @@ char    **name;
 	    else if ( o_flag == COL_ORDER )
 		A->me[i % A->m][i / A->m].im = d_temp;
 	    else
-		error(E_FORMAT,"zm_load");
+		m_error(E_FORMAT,"zm_load");
 	}
     
     return A;

@@ -24,7 +24,7 @@
 ***************************************************************************/
 
 
-static	char	rcsid[] = "$Id: zcopy.c,v 1.1 2001/03/01 17:19:15 rfranke Exp $";
+static	char	rcsid[] = "$Id: zcopy.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 #include	<stdio.h>
 #include	"zmatrix.h"
 
@@ -38,7 +38,7 @@ u_int	i0,j0;
 	u_int	i /* ,j */;
 
 	if ( in==ZMNULL )
-		error(E_NULL,"_zm_copy");
+		m_error(E_NULL,"_zm_copy");
 	if ( in==out )
 		return (out);
 	if ( out==ZMNULL || out->m < in->m || out->n < in->n )
@@ -61,7 +61,7 @@ u_int	i0;
 	/* u_int	i,j; */
 
 	if ( in==ZVNULL )
-		error(E_NULL,"_zv_copy");
+		m_error(E_NULL,"_zv_copy");
 	if ( in==out )
 		return (out);
 	if ( out==ZVNULL || out->dim < in->dim )
@@ -93,10 +93,10 @@ int	i0, j0, m0, n0, i1, j1;
     int		i;
 
     if ( ! in )
-	error(E_NULL,"zm_move");
+	m_error(E_NULL,"zm_move");
     if ( i0 < 0 || j0 < 0 || i1 < 0 || j1 < 0 || m0 < 0 || n0 < 0 ||
 	 i0+m0 > in->m || j0+n0 > in->n )
-	error(E_BOUNDS,"zm_move");
+	m_error(E_BOUNDS,"zm_move");
 
     if ( ! out )
 	out = zm_resize(out,i1+m0,j1+n0);
@@ -119,10 +119,10 @@ ZVEC	*in, *out;
 int	i0, dim0, i1;
 {
     if ( ! in )
-	error(E_NULL,"zv_move");
+	m_error(E_NULL,"zv_move");
     if ( i0 < 0 || dim0 < 0 || i1 < 0 ||
 	 i0+dim0 > in->dim )
-	error(E_BOUNDS,"zv_move");
+	m_error(E_BOUNDS,"zv_move");
 
     if ( (! out) || i1+dim0 > out->dim )
 	out = zv_resize(out,i1+dim0);
@@ -146,10 +146,10 @@ int	i0, j0, m0, n0, i1;
     int		dim1, i;
 
     if ( ! in )
-	error(E_NULL,"zmv_move");
+	m_error(E_NULL,"zmv_move");
     if ( i0 < 0 || j0 < 0 || m0 < 0 || n0 < 0 || i1 < 0 ||
 	 i0+m0 > in->m || j0+n0 > in->n )
-	error(E_BOUNDS,"zmv_move");
+	m_error(E_BOUNDS,"zmv_move");
 
     dim1 = m0*n0;
     if ( (! out) || i1+dim1 > out->dim )
@@ -174,10 +174,10 @@ int	i0, i1, j1, m1, n1;
     int		dim0, i;
 
     if ( ! in )
-	error(E_NULL,"zvm_move");
+	m_error(E_NULL,"zvm_move");
     if ( i0 < 0 || i1 < 0 || j1 < 0 || m1 < 0 || n1 < 0 ||
 	 i0+m1*n1 > in->dim )
-	error(E_BOUNDS,"zvm_move");
+	m_error(E_BOUNDS,"zvm_move");
 
     if ( ! out )
 	out = zm_resize(out,i1+m1,j1+n1);

@@ -138,9 +138,9 @@ VEC	*d, *x, *out;
     int		i;
 
     if ( ! d || ! x )
-	error(E_NULL,"Dv_mlt");
+	m_error(E_NULL,"Dv_mlt");
     if ( d->dim != x->dim )
-	error(E_SIZES,"Dv_mlt");
+	m_error(E_SIZES,"Dv_mlt");
     out = v_resize(out,x->dim);
 
     for ( i = 0; i < x->dim; i++ )
@@ -152,7 +152,7 @@ VEC	*d, *x, *out;
 
 
 /************************************************/
-void	main(argc, argv)
+int	main(argc, argv)
 int	argc;
 char	*argv[];
 {
@@ -688,4 +688,6 @@ char	*argv[];
 
    printf("# Done testing (%s)\n",argv[0]);
    mem_info();
+
+   return 0;
 }

@@ -29,7 +29,7 @@
 	Basic sparse routines to be held in sparse.c
 */
 
-/* RCS id: $Id: sparse.h,v 1.1 2001/03/01 17:19:00 rfranke Exp $ */
+/* RCS id: $Id: sparse.h,v 1.2 2002/12/09 10:57:47 e_arnold Exp $ */
 
 #ifndef SPARSEH
 
@@ -85,63 +85,67 @@ MESCH__BEGIN_DECLS
 
 /* memory functions */
 
-int sp_get_vars MESCH__P((int m, int n, int deg, ...));
-int sp_resize_vars MESCH__P((int m, int n, ...));
-int sp_free_vars MESCH__P((SPMAT **, ...));
+MESCH_API int sp_get_vars MESCH__P((int m, int n, int deg, ...));
+MESCH_API int sp_resize_vars MESCH__P((int m, int n, ...));
+MESCH_API int sp_free_vars MESCH__P((SPMAT **, ...));
 
 /* Sparse Matrix Operations and Utilities */
 
-SPMAT	*sp_get MESCH__P((int, int, int));
-SPMAT	*sp_copy MESCH__P((const SPMAT *));
-SPMAT	*sp_copy2 MESCH__P((const SPMAT *, SPMAT *));
-SPMAT	*sp_zero MESCH__P((SPMAT *));
-SPMAT	*sp_resize MESCH__P((SPMAT *,int, int));
-SPMAT	*sp_compact MESCH__P((SPMAT *, double));
-double	sp_get_val MESCH__P((const SPMAT *, int, int));
-double	sp_set_val MESCH__P((SPMAT *, int, int, double));
-VEC	*sp_mv_mlt MESCH__P((const SPMAT *, const VEC *, VEC *));
-VEC	*sp_vm_mlt MESCH__P((const SPMAT *, const VEC *,VEC *));
-int	sp_free MESCH__P((SPMAT *));
+MESCH_API SPMAT	*sp_get MESCH__P((int, int, int));
+MESCH_API SPMAT	*sp_copy MESCH__P((const SPMAT *));
+MESCH_API SPMAT	*sp_copy2 MESCH__P((const SPMAT *, SPMAT *));
+MESCH_API SPMAT	*sp_zero MESCH__P((SPMAT *));
+MESCH_API SPMAT	*sp_resize MESCH__P((SPMAT *,int, int));
+MESCH_API SPMAT	*sp_compact MESCH__P((SPMAT *, double));
+MESCH_API double	sp_get_val MESCH__P((const SPMAT *, int, int));
+MESCH_API double	sp_set_val MESCH__P((SPMAT *, int, int, double));
+MESCH_API VEC	*sp_mv_mlt MESCH__P((const SPMAT *, const VEC *, VEC *));
+MESCH_API VEC	*sp_vm_mlt MESCH__P((const SPMAT *, const VEC *,VEC *));
+MESCH_API int	sp_free MESCH__P((SPMAT *));
 
 /* Access path operations */
-SPMAT	*sp_col_access MESCH__P((SPMAT *));
-SPMAT	*sp_diag_access MESCH__P((SPMAT *));
-int     chk_col_access MESCH__P((const SPMAT *));
+MESCH_API SPMAT	*sp_col_access MESCH__P((SPMAT *));
+MESCH_API SPMAT	*sp_diag_access MESCH__P((SPMAT *));
+MESCH_API int     chk_col_access MESCH__P((const SPMAT *));
 
 /* Input/output operations */
-SPMAT	*sp_finput MESCH__P((FILE *));
-void	sp_foutput MESCH__P((FILE *, const SPMAT *));
-void	sp_foutput2 MESCH__P((FILE * , const SPMAT *));
+MESCH_API SPMAT	*sp_finput MESCH__P((FILE *));
+MESCH_API void	sp_foutput MESCH__P((FILE *, const SPMAT *));
+MESCH_API void	sp_foutput2 MESCH__P((FILE * , const SPMAT *));
 
 /* algebraic operations */
-SPMAT 	*sp_smlt MESCH__P((const SPMAT *A, double alpha, SPMAT *B));
-SPMAT	*sp_add MESCH__P((const SPMAT *A, const SPMAT *B, SPMAT *C));
-SPMAT	*sp_sub MESCH__P((const SPMAT *A, const SPMAT *B, SPMAT *C));
-SPMAT	*sp_mltadd MESCH__P((const SPMAT *A, const SPMAT *B, double alpha,
-			SPMAT *C));
+MESCH_API SPMAT 	*sp_smlt MESCH__P((const SPMAT *A, double alpha, 
+					   SPMAT *B));
+MESCH_API SPMAT	*sp_add MESCH__P((const SPMAT *A, const SPMAT *B, SPMAT *C));
+MESCH_API SPMAT	*sp_sub MESCH__P((const SPMAT *A, const SPMAT *B, SPMAT *C));
+MESCH_API SPMAT	*sp_mltadd MESCH__P((const SPMAT *A, const SPMAT *B, 
+				     double alpha, SPMAT *C));
 
 /* sparse row operations */
-SPROW	*sprow_get MESCH__P((int)), *sprow_xpd MESCH__P((SPROW *r, int n, int type));
-SPROW	*sprow_resize MESCH__P((SPROW *r, int n, int type));
-SPROW	*sprow_merge MESCH__P((const SPROW *, const SPROW *, SPROW *, int type));
-SPROW	*sprow_copy MESCH__P((const SPROW *, const SPROW *, SPROW *, int type));
-SPROW	*sprow_mltadd MESCH__P((const SPROW *, const SPROW *, double, int,
-			   SPROW *, int type));
-SPROW 	*sprow_add MESCH__P((const SPROW *r1, const SPROW *r2, int j0,
-			SPROW *r_out, int type));
-SPROW 	*sprow_sub MESCH__P((const SPROW *r1, const SPROW *r2, int j0,
-			SPROW *r_out, int type)); 
-SPROW 	*sprow_smlt MESCH__P((const SPROW *r1, double alpha, int j0,
-			 SPROW *r_out, int type));
-double	sprow_set_val MESCH__P((SPROW *, int, double));
-int     sprow_free MESCH__P((SPROW *));
-int	sprow_idx MESCH__P((const SPROW *, int));
-void	sprow_foutput MESCH__P((FILE *, const SPROW *));
+MESCH_API SPROW	*sprow_get MESCH__P((int)), 
+    *sprow_xpd MESCH__P((SPROW *r, int n, int type));
+MESCH_API SPROW	*sprow_resize MESCH__P((SPROW *r, int n, int type));
+MESCH_API SPROW	*sprow_merge MESCH__P((const SPROW *, const SPROW *, 
+				       SPROW *, int type));
+MESCH_API SPROW	*sprow_copy MESCH__P((const SPROW *, const SPROW *, 
+				      SPROW *, int type));
+MESCH_API SPROW	*sprow_mltadd MESCH__P((const SPROW *, const SPROW *, 
+					double, int, SPROW *, int type));
+MESCH_API SPROW 	*sprow_add MESCH__P((const SPROW *r1, const SPROW *r2,
+					     int j0, SPROW *r_out, int type));
+MESCH_API SPROW 	*sprow_sub MESCH__P((const SPROW *r1, const SPROW *r2,
+					     int j0, SPROW *r_out, int type)); 
+MESCH_API SPROW 	*sprow_smlt MESCH__P((const SPROW *r1, double alpha, 
+					      int j0, SPROW *r_out, int type));
+MESCH_API double	sprow_set_val MESCH__P((SPROW *, int, double));
+MESCH_API int     sprow_free MESCH__P((SPROW *));
+MESCH_API int	sprow_idx MESCH__P((const SPROW *, int));
+MESCH_API void	sprow_foutput MESCH__P((FILE *, const SPROW *));
 
 /* dump */
-void    sp_dump MESCH__P((FILE *fp, const SPMAT *A));
-void    sprow_dump MESCH__P((FILE *fp, SPROW *r));
-MAT	*sp_m2dense MESCH__P((const SPMAT *A, MAT *out));
+MESCH_API void    sp_dump MESCH__P((FILE *fp, const SPMAT *A));
+MESCH_API void    sprow_dump MESCH__P((FILE *fp, SPROW *r));
+MESCH_API MAT	*sp_m2dense MESCH__P((const SPMAT *A, MAT *out));
 
 
 /* MACROS */
@@ -155,7 +159,7 @@ MAT	*sp_m2dense MESCH__P((const SPMAT *A, MAT *out));
 #define SP_FREE(A)    ( sp_free((A)),  (A)=(SPMAT *)NULL) 
 
 /* utility for index computations -- ensures index returned >= 0 */
-#define	fixindex(idx)	((idx) == -1 ? (error(E_BOUNDS,"fixindex"),0) : \
+#define	fixindex(idx)	((idx) == -1 ? (m_error(E_BOUNDS,"fixindex"),0) : \
 			 (idx) < 0 ? -((idx)+2) : (idx))
 
 
@@ -176,7 +180,7 @@ MAT	*sp_m2dense MESCH__P((const SPMAT *A, MAT *out));
 	  if ( ! (A)->flag_col )	sp_col_access((A));		\
 	  col_num = (col);						\
 	  if ( col_num < 0 || col_num >= A->n )				\
-	      error(E_BOUNDS,"loop_cols");				\
+	      m_error(E_BOUNDS,"loop_cols");				\
           _r_num = (A)->start_row[_c]; _r_idx = (A)->start_idx[_c];	\
 	  while ( _r_num >= 0 )  {					\
 	      _r = &((A)->row[_r_num]);					\

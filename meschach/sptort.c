@@ -46,14 +46,14 @@
 #endif
 
 int	chk_col_access(A)
-SPMAT	*A;
+const SPMAT *A;
 {
     int		i, j, nxt_idx, nxt_row, scan_cnt, total_cnt;
     SPROW	*r;
     row_elt	*e;
 
     if ( ! A )
-	error(E_NULL,"chk_col_access");
+	m_error(E_NULL,"chk_col_access");
     if ( ! A->flag_col )
 	return FALSE;
 
@@ -85,7 +85,7 @@ SPMAT	*A;
 }
 
 
-void	main(argc, argv)
+int	main(argc, argv)
 int	argc;
 char	*argv[];
 {
@@ -477,9 +477,6 @@ char	*argv[];
 
     printf("# Done testing (%s)\n",argv[0]);
     mem_info();
+
+    return 0;
 }
-    
-
-
-
-

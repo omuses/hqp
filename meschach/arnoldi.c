@@ -33,7 +33,7 @@
 #include	"matrix2.h"
 #include	"sparse.h"
 
-static char rcsid[] = "$Id: arnoldi.c,v 1.1 2001/03/01 17:18:30 rfranke Exp $";
+static char rcsid[] = "$Id: arnoldi.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 /* arnoldi -- an implementation of the Arnoldi method */
 MAT	*arnoldi(A,A_param,x0,m,h_rem,Q,H)
@@ -49,11 +49,11 @@ MAT	*Q, *H;
 	Real	h_val;
 
 	if ( ! A || ! Q || ! x0 )
-	    error(E_NULL,"arnoldi");
+	    m_error(E_NULL,"arnoldi");
 	if ( m <= 0 )
-	    error(E_BOUNDS,"arnoldi");
+	    m_error(E_BOUNDS,"arnoldi");
 	if ( Q->n != x0->dim ||	Q->m != m )
-	    error(E_SIZES,"arnoldi");
+	    m_error(E_SIZES,"arnoldi");
 
 	m_zero(Q);
 	H = m_resize(H,m,m);
@@ -131,11 +131,11 @@ double	tol;
     Real	h_val, norm_b;
     
     if ( ! A || ! Q || ! b || ! R )
-	error(E_NULL,"gmres");
+	m_error(E_NULL,"gmres");
     if ( m <= 0 )
-	error(E_BOUNDS,"gmres");
+	m_error(E_BOUNDS,"gmres");
     if ( Q->n != b->dim || Q->m != m )
-	error(E_SIZES,"gmres");
+	m_error(E_SIZES,"gmres");
     
     x = v_copy(b,x);
     m_zero(Q);
@@ -152,13 +152,13 @@ double	tol;
     MEM_STAT_REG(rhs,TYPE_VEC);
     norm_b = v_norm2(x);
     if ( norm_b == 0.0 )
-	error(E_RANGE,"gmres");
+	m_error(E_RANGE,"gmres");
     sv_mlt(1.0/norm_b,x,v);
     
     for ( i = 0; i < m; i++ )
     {
 	set_row(Q,i,v);
-	tracecatch(u = (*A)(A_param,v,u),"gmres");
+	m_tracecatch(u = (*A)(A_param,v,u),"gmres");
 	r = mv_mlt(Q,u,r);
 	tmp = vm_mlt(Q,r,tmp);
 	v_sub(u,tmp,u);

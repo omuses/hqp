@@ -41,7 +41,10 @@ extern "C" {
 #include "Hqp_Program.h"
 #include "Hqp_SqpProgram.h"
 #include "Meschach.h"
-#include "meschext_ea.h"
+extern "C" {
+#include <meschach/addon_hqp.h>
+#include <meschach/spaddon_hqp.h>
+}
 #include "sprcm.h"
 
 IF_BASE_DEFINE(Hqp_HL);

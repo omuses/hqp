@@ -30,7 +30,7 @@
 
 #ifndef	MATRIXH
 
-/* RCS id: $Id: matrix.h,v 1.3 2002/05/01 17:50:39 rfranke Exp $ */
+/* RCS id: $Id: matrix.h,v 1.4 2002/12/09 10:57:47 e_arnold Exp $ */
 
 #define	MATRIXH	
 
@@ -45,32 +45,32 @@ typedef	unsigned int	u_int;
 #endif
 
 /* vector definition */
-typedef	struct VEC {
+typedef	struct  {
 		u_int	dim, max_dim;
 		Real	*ve;
 		} VEC;
 
 /* matrix definition */
-typedef	struct MAT {
+typedef	struct  {
 		u_int	m, n;
 		u_int	max_m, max_n, max_size;
 		Real	**me,*base;	/* base is base of alloc'd mem */
 		} MAT;
 
 /* band matrix definition */
-typedef struct BAND {
+typedef struct {
                MAT   *mat;       /* matrix */
                int   lb,ub;    /* lower and upper bandwidth */
                } BAND;
 
 
 /* permutation definition */
-typedef	struct PERM {
+typedef	struct  {
 		u_int	size, max_size, *pe;
 		} PERM;
 
 /* integer vector definition */
-typedef struct IVEC {
+typedef struct  {
 		u_int	dim, max_dim;
 		int	*ive;
 	        } IVEC;
@@ -78,25 +78,8 @@ typedef struct IVEC {
 MESCH__BEGIN_DECLS
 
 /* Meschach version routine */
-void	m_version MESCH__P((void));
+MESCH_API void	m_version MESCH__P((void));
 
-#ifndef ANSI_C
-/* allocate one object of given type */
-#define	NEW(type)	((type *)calloc(1,sizeof(type)))
-
-/* allocate num objects of given type */
-#define	NEW_A(num,type)	((type *)calloc((unsigned)((num)>1?(num):1),sizeof(type)))
-
-/* re-allocate arry to have num objects of the given type */
-#define	RENEW(var,num,type) \
-    ((var)=(type *)((var) ? \
-		    realloc((char *)(var),(unsigned)(num)*sizeof(type)) : \
-		    calloc((unsigned)(num),sizeof(type))))
-
-#define	MEMCOPY(from,to,n_items,type) \
-    MEM_COPY((char *)(from),(char *)(to),(unsigned)(n_items)*sizeof(type))
-
-#else
 /* allocate one object of given type */
 #define	NEW(type)	((type *)calloc((size_t)1,(size_t)sizeof(type)))
 
@@ -111,8 +94,6 @@ void	m_version MESCH__P((void));
 
 #define	MEMCOPY(from,to,n_items,type) \
  MEM_COPY((char *)(from),(char *)(to),(unsigned)(n_items)*sizeof(type))
-
-#endif
 
 /* type independent min and max operations */
 #ifndef max
@@ -139,26 +120,27 @@ void	m_version MESCH__P((void));
    as this is considerably safer -- also provides a simple type check ! */
 
 /* get/resize vector to given dimension */
-VEC 	*v_get MESCH__P((int)), *v_resize MESCH__P((VEC *, int));
+MESCH_API VEC 	*v_get MESCH__P((int)), *v_resize MESCH__P((VEC *, int));
 
 /* get/resize matrix to be m x n */
-MAT 	*m_get MESCH__P((int, int)), *m_resize MESCH__P((MAT *, int, int));
+MESCH_API MAT 	*m_get MESCH__P((int, int)), *m_resize MESCH__P((MAT *, int, int));
 
 /* get/resize permutation to have the given size */
-PERM 	*px_get MESCH__P((int)), *px_resize MESCH__P((PERM *, int));
+MESCH_API PERM 	*px_get MESCH__P((int)), *px_resize MESCH__P((PERM *, int));
 
 /* get/resize an integer vector to given dimension */
-IVEC 	*iv_get MESCH__P((int)), *iv_resize MESCH__P((IVEC *, int));
+MESCH_API IVEC 	*iv_get MESCH__P((int)), *iv_resize MESCH__P((IVEC *, int));
 
 /* get/resize a band matrix to given dimension */
-BAND 	*bd_get MESCH__P((int, int, int));
-BAND	*bd_resize MESCH__P((BAND *, int, int, int));
+MESCH_API BAND 	*bd_get MESCH__P((int, int, int));
+MESCH_API BAND	*bd_resize MESCH__P((BAND *, int, int, int));
 
 /* free (de-allocate) (band) matrices, vectors, permutations and 
    integer vectors */
-int	iv_free MESCH__P((IVEC *));
-int	m_free MESCH__P((MAT *)), v_free MESCH__P((VEC *)), px_free MESCH__P((PERM *));
-int	bd_free MESCH__P((BAND *));
+MESCH_API int	iv_free MESCH__P((IVEC *));
+MESCH_API int	m_free MESCH__P((MAT *)), v_free MESCH__P((VEC *)), 
+    px_free MESCH__P((PERM *));
+MESCH_API int	bd_free MESCH__P((BAND *));
 
 
 /* MACROS */
@@ -177,39 +159,39 @@ int	bd_free MESCH__P((BAND *));
 
 /* returns x[i] */
 #define	v_entry(x,i)	(((i) < 0 || (i) >= (x)->dim) ? \
-			 error(E_BOUNDS,"v_entry"), 0.0 : (x)->ve[i] )
+			 m_error(E_BOUNDS,"v_entry"), 0.0 : (x)->ve[i] )
 
 /* x[i] <- val */
 #define	v_set_val(x,i,val) ((x)->ve[i] = ((i) < 0 || (i) >= (x)->dim) ? \
-			    error(E_BOUNDS,"v_set_val"), 0.0 : (val))
+			    m_error(E_BOUNDS,"v_set_val"), 0.0 : (val))
 
 /* x[i] <- x[i] + val */
 #define	v_add_val(x,i,val) ((x)->ve[i] += ((i) < 0 || (i) >= (x)->dim) ? \
-			    error(E_BOUNDS,"v_set_val"), 0.0 : (val))
+			    m_error(E_BOUNDS,"v_add_val"), 0.0 : (val))
 
 /* x[i] <- x[i] - val */
 #define	v_sub_val(x,i,val) ((x)->ve[i] -= ((i) < 0 || (i) >= (x)->dim) ? \
-			    error(E_BOUNDS,"v_set_val"), 0.0 : (val))
+			    m_error(E_BOUNDS,"v_sub_val"), 0.0 : (val))
 
 /* returns A[i][j] */
 #define	m_entry(A,i,j)	(((i) < 0 || (i) >= (A)->m || \
 			  (j) < 0 || (j) >= (A)->n) ? \
-			 error(E_BOUNDS,"m_entry"), 0.0 : (A)->me[i][j] )
+			 m_error(E_BOUNDS,"m_entry"), 0.0 : (A)->me[i][j] )
 
 /* A[i][j] <- val */
 #define	m_set_val(A,i,j,val) ((A)->me[i][j] = ((i) < 0 || (i) >= (A)->m || \
 					       (j) < 0 || (j) >= (A)->n) ? \
-			      error(E_BOUNDS,"m_set_val"), 0.0 : (val) )
+			      m_error(E_BOUNDS,"m_set_val"), 0.0 : (val) )
 
 /* A[i][j] <- A[i][j] + val */
 #define	m_add_val(A,i,j,val) ((A)->me[i][j] += ((i) < 0 || (i) >= (A)->m || \
 						(j) < 0 || (j) >= (A)->n) ? \
-			      error(E_BOUNDS,"m_set_val"), 0.0 : (val) )
+			      m_error(E_BOUNDS,"m_add_val"), 0.0 : (val) )
 
 /* A[i][j] <- A[i][j] - val */
 #define	m_sub_val(A,i,j,val) ((A)->me[i][j] -= ((i) < 0 || (i) >= (A)->m || \
 						(j) < 0 || (j) >= (A)->n) ? \
-			      error(E_BOUNDS,"m_set_val"), 0.0 : (val) )
+			      m_error(E_BOUNDS,"m_sub_val"), 0.0 : (val) )
 #else
 
 /* returns x[i] */
@@ -242,58 +224,59 @@ int	bd_free MESCH__P((BAND *));
 /* I/O routines */
 
 /* print x on file fp */
-void	v_foutput MESCH__P((FILE *fp, const VEC *x));
+MESCH_API void	v_foutput MESCH__P((FILE *fp, const VEC *x));
 
 /* print A on file fp */
-void	m_foutput MESCH__P((FILE *fp, const MAT *A));
+MESCH_API void	m_foutput MESCH__P((FILE *fp, const MAT *A));
 
 /* print px on file fp */
-void	px_foutput MESCH__P((FILE *fp, const PERM *px));
+MESCH_API void	px_foutput MESCH__P((FILE *fp, const PERM *px));
 
 /* print ix on file fp */
-void	iv_foutput MESCH__P((FILE *fp, const IVEC *ix));
+MESCH_API void	iv_foutput MESCH__P((FILE *fp, const IVEC *ix));
 
 /* Note: if out is NULL, then returned object is newly allocated;
         Also: if out is not NULL, then that size is assumed */
 
 /* read in vector from fp */
-VEC	*v_finput MESCH__P((FILE *fp, VEC *out));
+MESCH_API VEC	*v_finput MESCH__P((FILE *fp, VEC *out));
 
 /* read in matrix from fp */
-MAT 	*m_finput MESCH__P((FILE *fp, MAT *out));
+MESCH_API MAT 	*m_finput MESCH__P((FILE *fp, MAT *out));
 
 /* read in permutation from fp */
-PERM 	*px_finput MESCH__P((FILE *fp, PERM *out));
+MESCH_API PERM 	*px_finput MESCH__P((FILE *fp, PERM *out));
 
 /* read in int vector from fp */
-IVEC 	*iv_finput MESCH__P((FILE *fp, IVEC *out));
+MESCH_API IVEC 	*iv_finput MESCH__P((FILE *fp, IVEC *out));
 
 
 /* fy_or_n -- yes-or-no to question in string s
         -- question written to stderr, input from fp 
         -- if fp is NOT a tty then return y_n_dflt */
-int 	fy_or_n MESCH__P((FILE *fp, const char *s));
+MESCH_API int 	fy_or_n MESCH__P((FILE *fp, const char *s));
 
 /* yn_dflt -- sets the value of y_n_dflt to val */
-int 	yn_dflt MESCH__P((int val));
+MESCH_API int 	yn_dflt MESCH__P((int val));
 
 /* fin_int -- return integer read from file/stream fp
         -- prompt s on stderr if fp is a tty
         -- check that x lies between low and high: re-prompt if
                 fp is a tty, error exit otherwise
         -- ignore check if low > high           */
-int 	fin_int MESCH__P((FILE *fp, const char *s, int low, int high));
+MESCH_API int 	fin_int MESCH__P((FILE *fp, const char *s, int low, int high));
 
 /* fin_double -- return double read from file/stream fp
         -- prompt s on stderr if fp is a tty
         -- check that x lies between low and high: re-prompt if
                 fp is a tty, error exit otherwise
         -- ignore check if low > high           */
-double 	fin_double MESCH__P((FILE *fp, const char *s, double low, double high));
+MESCH_API double 	fin_double MESCH__P((FILE *fp, const char *s, 
+					     double low, double high));
 
 /* it skips white spaces and strings of the form #....\n
    Here .... is a comment string */
-int 	skipjunk MESCH__P((FILE *fp));
+MESCH_API int 	skipjunk MESCH__P((FILE *fp));
 
 
 /* MACROS */
@@ -323,18 +306,22 @@ int 	skipjunk MESCH__P((FILE *fp));
 /* Copying routines */
 
 /* copy in to out starting at out[i0][j0] */
-MAT	*_m_copy MESCH__P((const MAT *in, MAT *out, u_int i0, u_int j0));
-MAT	* m_move MESCH__P((const MAT *in, int, int, int, int, MAT *out, int, int));
-MAT	*vm_move MESCH__P((const VEC *in, int, MAT *out, int, int, int, int));
+MESCH_API MAT	*_m_copy MESCH__P((const MAT *in, MAT *out, u_int i0, 
+				   u_int j0));
+MESCH_API MAT	* m_move MESCH__P((const MAT *in, int, int, int, int, 
+				   MAT *out, int, int));
+MESCH_API MAT	*vm_move MESCH__P((const VEC *in, int, MAT *out, int, int, 
+				   int, int));
 
 /* copy in to out starting at out[i0] */
-VEC	*_v_copy MESCH__P((const VEC *in, VEC *out, u_int i0));
-VEC	* v_move MESCH__P((const VEC *in, int, int, VEC *out, int));
-VEC	*mv_move MESCH__P((const MAT *in, int, int, int, int, VEC *out, int));
-PERM	*px_copy MESCH__P((const PERM *in, PERM *out));
-IVEC	*iv_copy MESCH__P((const IVEC *in, IVEC *out));
-IVEC	*iv_move MESCH__P((const IVEC *in, int, int, IVEC *out, int));
-BAND	*bd_copy MESCH__P((const BAND *in, BAND *out));
+MESCH_API VEC	*_v_copy MESCH__P((const VEC *in, VEC *out, u_int i0));
+MESCH_API VEC	* v_move MESCH__P((const VEC *in, int, int, VEC *out, int));
+MESCH_API VEC	*mv_move MESCH__P((const MAT *in, int, int, int, int, 
+				   VEC *out, int));
+MESCH_API PERM	*px_copy MESCH__P((const PERM *in, PERM *out));
+MESCH_API IVEC	*iv_copy MESCH__P((const IVEC *in, IVEC *out));
+MESCH_API IVEC	*iv_move MESCH__P((const IVEC *in, int, int, IVEC *out, int));
+MESCH_API BAND	*bd_copy MESCH__P((const BAND *in, BAND *out));
 
 /* MACROS */
 #define	m_copy(in,out)	_m_copy(in,out,0,0)
@@ -342,62 +329,64 @@ BAND	*bd_copy MESCH__P((const BAND *in, BAND *out));
 
 
 /* Initialisation routines -- to be zero, ones, random or identity */
-VEC	*v_zero MESCH__P((VEC *)); 
-VEC	*v_rand MESCH__P((VEC *)); 
-VEC	*v_ones MESCH__P((VEC *));
-MAT 	*m_zero MESCH__P((MAT *));
-MAT	*m_ident MESCH__P((MAT *));
-MAT	*m_rand MESCH__P((MAT *));
-MAT	*m_ones MESCH__P((MAT *));
-PERM 	*px_ident MESCH__P((PERM *));
-IVEC	*iv_zero MESCH__P((IVEC *));
+MESCH_API VEC	*v_zero MESCH__P((VEC *)); 
+MESCH_API VEC	*v_rand MESCH__P((VEC *)); 
+MESCH_API VEC	*v_ones MESCH__P((VEC *));
+MESCH_API MAT 	*m_zero MESCH__P((MAT *));
+MESCH_API MAT	*m_ident MESCH__P((MAT *));
+MESCH_API MAT	*m_rand MESCH__P((MAT *));
+MESCH_API MAT	*m_ones MESCH__P((MAT *));
+MESCH_API PERM 	*px_ident MESCH__P((PERM *));
+MESCH_API IVEC	*iv_zero MESCH__P((IVEC *));
 
 /* Basic vector operations */
 
-VEC	*sv_mlt MESCH__P((double, const VEC *, VEC *));
-VEC	*mv_mlt MESCH__P((const MAT *, const VEC *, VEC *));
-VEC	*vm_mlt MESCH__P((const MAT *, const VEC *,VEC *));
-VEC	*v_add MESCH__P((const VEC *, const VEC *, VEC *));
-VEC	*v_sub MESCH__P((const VEC *, const VEC *, VEC *));
-VEC	*px_vec MESCH__P((const PERM *, const VEC *, VEC *));
-VEC	*pxinv_vec MESCH__P((const PERM *,const VEC *,VEC *));
-VEC	*v_mltadd MESCH__P((const VEC *, const VEC *, double, VEC *));
+MESCH_API VEC	*sv_mlt MESCH__P((double, const VEC *, VEC *));
+MESCH_API VEC	*mv_mlt MESCH__P((const MAT *, const VEC *, VEC *));
+MESCH_API VEC	*vm_mlt MESCH__P((const MAT *, const VEC *,VEC *));
+MESCH_API VEC	*v_add MESCH__P((const VEC *, const VEC *, VEC *));
+MESCH_API VEC	*v_sub MESCH__P((const VEC *, const VEC *, VEC *));
+MESCH_API VEC	*px_vec MESCH__P((const PERM *, const VEC *, VEC *));
+MESCH_API VEC	*pxinv_vec MESCH__P((const PERM *,const VEC *,VEC *));
+MESCH_API VEC	*v_mltadd MESCH__P((const VEC *, const VEC *, double, VEC *));
 
 #ifdef HAVE_PROTOTYPES_IN_STRUCT
-VEC	*v_map MESCH__P((double (*f) MESCH__P((double)), const VEC *, VEC *));
-VEC	*_v_map MESCH__P((double (*f) MESCH__P((void *, double)), void *, const VEC *,
-		     VEC *));
+MESCH_API VEC	*v_map MESCH__P((double (*f) MESCH__P((double)), 
+				 const VEC *, VEC *));
+MESCH_API VEC	*_v_map MESCH__P((double (*f) MESCH__P((void *, double)), 
+				  void *, const VEC *, VEC *));
 #else
-VEC	*v_map MESCH__P((double (*f)(), const VEC *, VEC *));
-VEC	*_v_map MESCH__P((double (*f)(), void *, const VEC *, VEC *));
+MESCH_API VEC	*v_map MESCH__P((double (*f)(), const VEC *, VEC *));
+MESCH_API VEC	*_v_map MESCH__P((double (*f)(), void *, const VEC *, VEC *));
 #endif
 
-VEC	*v_lincomb MESCH__P((int, const VEC *[], const Real *, VEC *));
-VEC	*v_linlist MESCH__P((VEC *out, const VEC *v1, double a1, ...));
+MESCH_API VEC	*v_lincomb MESCH__P((int, const VEC *[], const Real *, VEC *));
+MESCH_API VEC	*v_linlist MESCH__P((VEC *out, const VEC *v1, double a1, ...));
 
-double	v_min MESCH__P((const VEC *, int *));
-double	v_max MESCH__P((const VEC *, int *));
-double	v_sum MESCH__P((const VEC *));
+MESCH_API double	v_min MESCH__P((const VEC *, int *));
+MESCH_API double	v_max MESCH__P((const VEC *, int *));
+MESCH_API double	v_sum MESCH__P((const VEC *));
 
 /* Hadamard product: out[i] <- x[i].y[i] */
-VEC	*v_star MESCH__P((const VEC *, const VEC *, VEC *));
-VEC	*v_slash MESCH__P((const VEC *, const VEC *, VEC *));
+MESCH_API VEC	*v_star MESCH__P((const VEC *, const VEC *, VEC *));
+MESCH_API VEC	*v_slash MESCH__P((const VEC *, const VEC *, VEC *));
 
 /* sorts x, and sets order so that sorted x[i] = x[order[i]] */ 
-VEC	*v_sort MESCH__P((VEC *, PERM *));
+MESCH_API VEC	*v_sort MESCH__P((VEC *, PERM *));
 
 /* returns inner product starting at component i0 */
-double	_in_prod MESCH__P((const VEC *x, const VEC *y, u_int i0));
+MESCH_API double	_in_prod MESCH__P((const VEC *x, const VEC *y, 
+					   u_int i0));
 
 /* returns sum_{i=0}^{len-1} x[i].y[i] */
-double	__ip__ MESCH__P((const Real *, const Real *, int));
+MESCH_API double	__ip__ MESCH__P((const Real *, const Real *, int));
 
 /* see v_mltadd(), v_add(), v_sub() and v_zero() */
-void	__mltadd__ MESCH__P((const Real *, Real *, double, int));
-void	__add__ MESCH__P((const Real *, const Real *, Real *, int));
-void	__sub__ MESCH__P((const Real *, const Real *, Real *, int));
-void	__smlt__ MESCH__P((const Real *, double, Real *, int));
-void	__zero__ MESCH__P((Real *,int));
+MESCH_API void	__mltadd__ MESCH__P((const Real *, Real *, double, int));
+MESCH_API void	__add__ MESCH__P((const Real *, const Real *, Real *, int));
+MESCH_API void	__sub__ MESCH__P((const Real *, const Real *, Real *, int));
+MESCH_API void	__smlt__ MESCH__P((const Real *, double, Real *, int));
+MESCH_API void	__zero__ MESCH__P((Real *,int));
 
 
 /* MACRO */
@@ -407,14 +396,14 @@ void	__zero__ MESCH__P((Real *,int));
 /* Norms */
 
 /* scaled vector norms -- scale == NULL implies unscaled */
-double	_v_norm1 MESCH__P((const VEC *x, const VEC *scale));
-double	_v_norm2 MESCH__P((const VEC *x, const VEC *scale));
-double	_v_norm_inf MESCH__P((const VEC *x, const VEC *scale));
+MESCH_API double	_v_norm1 MESCH__P((const VEC *x, const VEC *scale));
+MESCH_API double	_v_norm2 MESCH__P((const VEC *x, const VEC *scale));
+MESCH_API double	_v_norm_inf MESCH__P((const VEC *x, const VEC *scale));
 
 /* unscaled matrix norms */
-double	m_norm1 MESCH__P((const MAT *A));
-double	m_norm_inf MESCH__P((const MAT *A));
-double	m_norm_frob MESCH__P((const MAT *A));
+MESCH_API double	m_norm1 MESCH__P((const MAT *A));
+MESCH_API double	m_norm_inf MESCH__P((const MAT *A));
+MESCH_API double	m_norm_frob MESCH__P((const MAT *A));
 
 /* MACROS */
 /* unscaled vector norms */
@@ -423,32 +412,36 @@ double	m_norm_frob MESCH__P((const MAT *A));
 #define	v_norm_inf(x)	_v_norm_inf(x,VNULL)
 
 /* Basic matrix operations */
-MAT	*sm_mlt MESCH__P((double s, const MAT *A, MAT *out));
-MAT	*m_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
-MAT	*mmtr_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
-MAT	*mtrm_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
-MAT	*m_add MESCH__P((const MAT *A, const MAT *B, MAT *out));
-MAT	*m_sub MESCH__P((const MAT *A, const MAT *B, MAT *out));
-MAT	*sub_mat MESCH__P((const MAT *A, u_int, u_int, u_int, u_int, MAT *out));
-MAT	*m_transp MESCH__P((const MAT *A, MAT *out));
-MAT	*ms_mltadd MESCH__P((const MAT *A, const MAT *B, double s, MAT *out));
+MESCH_API MAT	*sm_mlt MESCH__P((double s, const MAT *A, MAT *out));
+MESCH_API MAT	*m_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
+MESCH_API MAT	*mmtr_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
+MESCH_API MAT	*mtrm_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
+MESCH_API MAT	*m_add MESCH__P((const MAT *A, const MAT *B, MAT *out));
+MESCH_API MAT	*m_sub MESCH__P((const MAT *A, const MAT *B, MAT *out));
+MESCH_API MAT	*sub_mat MESCH__P((const MAT *A, u_int, u_int, u_int, u_int, 
+				   MAT *out));
+MESCH_API MAT	*m_transp MESCH__P((const MAT *A, MAT *out));
+MESCH_API MAT	*ms_mltadd MESCH__P((const MAT *A, const MAT *B, double s, 
+				     MAT *out));
 
-BAND	*bd_transp MESCH__P((const BAND *in, BAND *out));
+MESCH_API BAND	*bd_transp MESCH__P((const BAND *in, BAND *out));
 
-MAT	*px_rows MESCH__P((const PERM *px, const MAT *A, MAT *out));
-MAT	*px_cols MESCH__P((const PERM *px, const MAT *A, MAT *out));
-MAT	*swap_rows MESCH__P((MAT *, int, int, int, int));
-MAT	*swap_cols MESCH__P((MAT *, int, int, int, int));
-MAT	*_set_col MESCH__P((MAT *A, u_int i, const VEC *out, u_int j0));
-MAT	*_set_row MESCH__P((MAT *A, u_int j, const VEC *out, u_int i0));
+MESCH_API MAT	*px_rows MESCH__P((const PERM *px, const MAT *A, MAT *out));
+MESCH_API MAT	*px_cols MESCH__P((const PERM *px, const MAT *A, MAT *out));
+MESCH_API MAT	*swap_rows MESCH__P((MAT *, int, int, int, int));
+MESCH_API MAT	*swap_cols MESCH__P((MAT *, int, int, int, int));
+MESCH_API MAT	*_set_col MESCH__P((MAT *A, u_int i, const VEC *out, 
+				    u_int j0));
+MESCH_API MAT	*_set_row MESCH__P((MAT *A, u_int j, const VEC *out, 
+				    u_int i0));
 
-VEC	*get_row MESCH__P((const MAT *, u_int, VEC *));
-VEC	*get_col MESCH__P((const MAT *, u_int, VEC *));
-VEC	*sub_vec MESCH__P((const VEC *, int, int, VEC *));
-VEC	*mv_mltadd MESCH__P((const VEC *x, const VEC *y, const MAT *A, double s,
-			VEC *out));
-VEC	*vm_mltadd MESCH__P((const VEC *x, const VEC *y, const MAT *A, double s,
-			VEC *out));
+MESCH_API VEC	*get_row MESCH__P((const MAT *, u_int, VEC *));
+MESCH_API VEC	*get_col MESCH__P((const MAT *, u_int, VEC *));
+MESCH_API VEC	*sub_vec MESCH__P((const VEC *, int, int, VEC *));
+MESCH_API VEC	*mv_mltadd MESCH__P((const VEC *x, const VEC *y, 
+				     const MAT *A, double s, VEC *out));
+MESCH_API VEC	*vm_mltadd MESCH__P((const VEC *x, const VEC *y, 
+				     const MAT *A, double s, VEC *out));
 
 
 /* MACROS */
@@ -459,36 +452,37 @@ VEC	*vm_mltadd MESCH__P((const VEC *x, const VEC *y, const MAT *A, double s,
 
 
 /* Basic permutation operations */
-PERM	*px_mlt MESCH__P((const PERM *px1, const PERM *px2, PERM *out));
-PERM	*px_inv MESCH__P((const PERM *px, PERM *out));
-PERM	*px_transp MESCH__P((PERM *px, u_int i, u_int j));
+MESCH_API PERM	*px_mlt MESCH__P((const PERM *px1, const PERM *px2, 
+				  PERM *out));
+MESCH_API PERM	*px_inv MESCH__P((const PERM *px, PERM *out));
+MESCH_API PERM	*px_transp MESCH__P((PERM *px, u_int i, u_int j));
 
 /* returns sign(px) = +1 if px product of even # transpositions
                       -1 if ps product of odd  # transpositions */
-int	px_sign MESCH__P((const PERM *));
+MESCH_API int	px_sign MESCH__P((const PERM *));
 
 
 /* Basic integer vector operations */
-IVEC	*iv_add MESCH__P((const IVEC *ix, const IVEC *iy, IVEC *out));
-IVEC	*iv_sub MESCH__P((const IVEC *ix, const IVEC *iy, IVEC *out));
-IVEC	*iv_sort MESCH__P((IVEC *ix, PERM *order));
+MESCH_API IVEC	*iv_add MESCH__P((const IVEC *ix, const IVEC *iy, IVEC *out));
+MESCH_API IVEC	*iv_sub MESCH__P((const IVEC *ix, const IVEC *iy, IVEC *out));
+MESCH_API IVEC	*iv_sort MESCH__P((IVEC *ix, PERM *order));
 
 
 /* miscellaneous functions */
 
-double	square MESCH__P((double x));
-/*double	cube MESCH__P((double x)); */
-double	mrand MESCH__P((void));
-void	smrand MESCH__P((int seed));
-void	mrandlist MESCH__P((Real *x, int len));
+MESCH_API double	square MESCH__P((double x));
+/*MESCH_API double	cube MESCH__P((double x)); */
+MESCH_API double	mrand MESCH__P((void));
+MESCH_API void	smrand MESCH__P((int seed));
+MESCH_API void	mrandlist MESCH__P((Real *x, int len));
 
-void	m_dump MESCH__P((FILE *fp, const MAT *a));
-void	px_dump MESCH__P((FILE *fp, const PERM *px));
-void	v_dump MESCH__P((FILE *fp, const VEC *x));
-void	iv_dump MESCH__P((FILE *fp, const IVEC *ix));
+MESCH_API void	m_dump MESCH__P((FILE *fp, const MAT *a));
+MESCH_API void	px_dump MESCH__P((FILE *fp, const PERM *px));
+MESCH_API void	v_dump MESCH__P((FILE *fp, const VEC *x));
+MESCH_API void	iv_dump MESCH__P((FILE *fp, const IVEC *ix));
 
-MAT	*band2mat MESCH__P((const BAND *bA, MAT *A));
-BAND	*mat2band MESCH__P((const MAT *A, int lb, int ub, BAND *bA));
+MESCH_API MAT	*band2mat MESCH__P((const BAND *bA, MAT *A));
+MESCH_API BAND	*mat2band MESCH__P((const MAT *A, int lb, int ub, BAND *bA));
 
 
 /* miscellaneous constants */
@@ -501,30 +495,23 @@ BAND	*mat2band MESCH__P((const MAT *A, int lb, int ub, BAND *bA));
 
 /* varying number of arguments */
 
-#ifdef ANSI_C
 #include <stdarg.h>
-#elif VARARGS
-/* old varargs is used */
-#include <varargs.h>
-#endif
 
-int 	v_get_vars MESCH__P((int dim, ...));
-int 	iv_get_vars MESCH__P((int dim, ...));
-int 	m_get_vars MESCH__P((int m,int n, ...));
-int 	px_get_vars MESCH__P((int dim, ...));
+MESCH_API int 	v_get_vars MESCH__P((int dim, ...));
+MESCH_API int 	iv_get_vars MESCH__P((int dim, ...));
+MESCH_API int 	m_get_vars MESCH__P((int m,int n, ...));
+MESCH_API int 	px_get_vars MESCH__P((int dim, ...));
 
-int 	v_resize_vars MESCH__P((int new_dim, ...));
-int 	iv_resize_vars MESCH__P((int new_dim, ...));
-int 	m_resize_vars MESCH__P((int m,int n, ...));
-int 	px_resize_vars MESCH__P((int new_dim, ...));
+MESCH_API int 	v_resize_vars MESCH__P((int new_dim, ...));
+MESCH_API int 	iv_resize_vars MESCH__P((int new_dim, ...));
+MESCH_API int 	m_resize_vars MESCH__P((int m,int n, ...));
+MESCH_API int 	px_resize_vars MESCH__P((int new_dim, ...));
 
-int 	v_free_vars MESCH__P((VEC **, ...));
-int 	iv_free_vars MESCH__P((IVEC **, ...));
-int 	px_free_vars MESCH__P((PERM **, ...));
-int 	m_free_vars MESCH__P((MAT **, ...));
+MESCH_API int 	v_free_vars MESCH__P((VEC **, ...));
+MESCH_API int 	iv_free_vars MESCH__P((IVEC **, ...));
+MESCH_API int 	px_free_vars MESCH__P((PERM **, ...));
+MESCH_API int 	m_free_vars MESCH__P((MAT **, ...));
 
 MESCH__END_DECLS
 
 #endif
-
-

@@ -74,38 +74,19 @@ typedef struct {
 
 /* prototypes */
 
-#ifdef ANSI_C
-
-MAT *m_save(FILE *,MAT *,char *);
-MAT *m_load(FILE *,char **);
-VEC *v_save(FILE *,VEC *,char *);
-double d_save(FILE *,double,char *);
-
-#else
-
-extern	MAT *m_save(), *m_load();
-extern	VEC *v_save();
-extern	double d_save();
-#endif
+MESCH_API MAT *m_save(FILE *,MAT *,char *);
+MESCH_API MAT *m_load(FILE *,char **);
+MESCH_API VEC *v_save(FILE *,VEC *,char *);
+MESCH_API double d_save(FILE *,double,char *);
 
 /* complex variant */
 #ifdef COMPLEX
 #include "zmatrix.h"
 
-#ifdef ANSI_C
-extern ZMAT	*zm_save(FILE *fp,ZMAT *A,char *name);
-extern ZVEC	*zv_save(FILE *fp,ZVEC *x,char *name);
-extern complex	z_save(FILE *fp,complex z,char *name);
-extern ZMAT	*zm_load(FILE *fp,char **name);
-
-#else
-
-extern ZMAT	*zm_save();
-extern ZVEC	*zv_save();
-extern complex	z_save();
-extern ZMAT	*zm_load();
-
-#endif
+MESCH_API ZMAT	*zm_save(FILE *fp,ZMAT *A,char *name);
+MESCH_API ZVEC	*zv_save(FILE *fp,ZVEC *x,char *name);
+MESCH_API complex	z_save(FILE *fp,complex z,char *name);
+MESCH_API ZMAT	*zm_load(FILE *fp,char **name);
 
 #endif
 

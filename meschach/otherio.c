@@ -28,7 +28,7 @@
 	File for doing assorted I/O operations not invlolving
 	MAT/VEC/PERM objects
 */
-static	char	rcsid[] = "$Id: otherio.c,v 1.1 2001/03/01 17:18:55 rfranke Exp $";
+static	char	rcsid[] = "$Id: otherio.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -46,8 +46,8 @@ static	int	y_n_dflt = TRUE;
 	-- question written to stderr, input from fp 
 	-- if fp is NOT a tty then return y_n_dflt */
 int	fy_or_n(fp,s)
-FILE	*fp;
-char	*s;
+FILE	   *fp;
+const char *s;
 {
 	char	*cp;
 
@@ -58,7 +58,7 @@ char	*s;
 	{
 		fprintf(stderr,"%s (y/n) ? ",s);
 		if ( fgets(scratch,MAXLINE,fp)==NULL )
-			error(E_INPUT,"fy_or_n");
+			m_error(E_INPUT,"fy_or_n");
 		cp = scratch;
 		while ( isspace(*cp) )
 			cp++;
@@ -82,9 +82,9 @@ int	val;
 		fp is a tty, error exit otherwise
 	-- ignore check if low > high		*/
 int	fin_int(fp,s,low,high)
-FILE	*fp;
-char	*s;
-int	low, high;
+FILE	   *fp;
+const char *s;
+int	   low, high;
 {
 	int	retcode, x;
 
@@ -92,11 +92,11 @@ int	low, high;
 	{
 		skipjunk(fp);
 		if ( (retcode=fscanf(fp,"%d",&x)) == EOF )
-			error(E_INPUT,"fin_int");
+			m_error(E_INPUT,"fin_int");
 		if ( retcode <= 0 )
-			error(E_FORMAT,"fin_int");
+			m_error(E_FORMAT,"fin_int");
 		if ( low <= high && ( x < low || x > high ) )
-			error(E_BOUNDS,"fin_int");
+			m_error(E_BOUNDS,"fin_int");
 		return x;
 	}
 
@@ -104,7 +104,7 @@ int	low, high;
 	{
 		fprintf(stderr,"%s: ",s);
 		if ( fgets(scratch,MAXLINE,stdin)==NULL )
-			error(E_INPUT,"fin_int");
+			m_error(E_INPUT,"fin_int");
 		retcode = sscanf(scratch,"%d",&x);
 		if ( ( retcode==1 && low > high ) ||
 					( x >= low && x <= high ) )
@@ -121,9 +121,9 @@ int	low, high;
 		fp is a tty, error exit otherwise
 	-- ignore check if low > high		*/
 double	fin_double(fp,s,low,high)
-FILE	*fp;
-char	*s;
-double	low, high;
+FILE	   *fp;
+const char *s;
+double	   low, high;
 {
 	Real	retcode, x;
 
@@ -135,11 +135,11 @@ double	low, high;
 #elif REAL == FLOAT
 		if ( (retcode=fscanf(fp,"%f",&x)) == EOF )
 #endif
-			error(E_INPUT,"fin_double");
+			m_error(E_INPUT,"fin_double");
 		if ( retcode <= 0 )
-			error(E_FORMAT,"fin_double");
+			m_error(E_FORMAT,"fin_double");
 		if ( low <= high && ( x < low || x > high ) )
-			error(E_BOUNDS,"fin_double");
+			m_error(E_BOUNDS,"fin_double");
 		return (double)x;
 	}
 
@@ -147,7 +147,7 @@ double	low, high;
 	{
 		fprintf(stderr,"%s: ",s);
 		if ( fgets(scratch,MAXLINE,stdin)==NULL )
-			error(E_INPUT,"fin_double");
+			m_error(E_INPUT,"fin_double");
 #if REAL == DOUBLE
 		retcode = sscanf(scratch,"%lf",&x);
 #elif REAL == FLOAT 

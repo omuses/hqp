@@ -33,7 +33,7 @@
 */
 
 /* hsehldr.c 1.3 10/8/87 */
-static	char	rcsid[] = "$Id: hsehldr.c,v 1.1 2001/03/01 17:18:35 rfranke Exp $";
+static	char	rcsid[] = "$Id: hsehldr.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -77,11 +77,11 @@ double	beta;
 	/* u_int	i; */
 
 	if ( hh==(VEC *)NULL || in==(VEC *)NULL )
-		error(E_NULL,"hhtrvec");
+		m_error(E_NULL,"hhtrvec");
 	if ( in->dim != hh->dim )
-		error(E_SIZES,"hhtrvec");
+		m_error(E_SIZES,"hhtrvec");
 	if ( i0 > in->dim )
-		error(E_BOUNDS,"hhtrvec");
+		m_error(E_BOUNDS,"hhtrvec");
 
 	scale = beta*_in_prod(hh,in,i0);
 	out = v_copy(in,out);
@@ -106,11 +106,11 @@ double	beta;
 	int	i /*, j */;
 
 	if ( M==(MAT *)NULL || hh==(VEC *)NULL )
-		error(E_NULL,"hhtrrows");
+		m_error(E_NULL,"hhtrrows");
 	if ( M->n != hh->dim )
-		error(E_RANGE,"hhtrrows");
+		m_error(E_RANGE,"hhtrrows");
 	if ( i0 > M->m || j0 > M->n )
-		error(E_BOUNDS,"hhtrrows");
+		m_error(E_BOUNDS,"hhtrrows");
 
 	if ( beta == 0.0 )	return (M);
 
@@ -153,11 +153,11 @@ double	beta;
 	static	VEC	*w = VNULL;
 
 	if ( M==(MAT *)NULL || hh==(VEC *)NULL )
-		error(E_NULL,"hhtrcols");
+		m_error(E_NULL,"hhtrcols");
 	if ( M->m != hh->dim )
-		error(E_SIZES,"hhtrcols");
+		m_error(E_SIZES,"hhtrcols");
 	if ( i0 > M->m || j0 > M->n )
-		error(E_BOUNDS,"hhtrcols");
+		m_error(E_BOUNDS,"hhtrcols");
 
 	if ( beta == 0.0 )	return (M);
 

@@ -29,21 +29,21 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: submat.c,v 1.1 2001/03/01 17:19:10 rfranke Exp $";
+static	char	rcsid[] = "$Id: submat.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
-/* get_col -- gets a specified column of a matrix and retruns it as a vector */
+/* get_col -- gets a specified column of a matrix and returns it as a vector */
 VEC	*get_col(mat,col,vec)
-u_int	col;
-MAT	*mat;
-VEC	*vec;
+u_int	  col;
+const MAT *mat;
+VEC	  *vec;
 {
    u_int	i;
    
    if ( mat==(MAT *)NULL )
-     error(E_NULL,"get_col");
+     m_error(E_NULL,"get_col");
    if ( col >= mat->n )
-     error(E_RANGE,"get_col");
+     m_error(E_RANGE,"get_col");
    if ( vec==(VEC *)NULL || vec->dim<mat->m )
      vec = v_resize(vec,mat->m);
    
@@ -55,16 +55,16 @@ VEC	*vec;
 
 /* get_row -- gets a specified row of a matrix and retruns it as a vector */
 VEC	*get_row(mat,row,vec)
-u_int	row;
-MAT	*mat;
-VEC	*vec;
+u_int	  row;
+const MAT *mat;
+VEC	  *vec;
 {
    u_int	i;
    
    if ( mat==(MAT *)NULL )
-     error(E_NULL,"get_row");
+     m_error(E_NULL,"get_row");
    if ( row >= mat->m )
-     error(E_RANGE,"get_row");
+     m_error(E_RANGE,"get_row");
    if ( vec==(VEC *)NULL || vec->dim<mat->n )
      vec = v_resize(vec,mat->n);
    
@@ -76,16 +76,16 @@ VEC	*vec;
 
 /* _set_col -- sets column of matrix to values given in vec (in situ) */
 MAT	*_set_col(mat,col,vec,i0)
-MAT	*mat;
-VEC	*vec;
-u_int	col,i0;
+MAT	  *mat;
+const VEC *vec;
+u_int	  col,i0;
 {
    u_int	i,lim;
    
    if ( mat==(MAT *)NULL || vec==(VEC *)NULL )
-     error(E_NULL,"_set_col");
+     m_error(E_NULL,"_set_col");
    if ( col >= mat->n )
-     error(E_RANGE,"_set_col");
+     m_error(E_RANGE,"_set_col");
    lim = min(mat->m,vec->dim);
    for ( i=i0; i<lim; i++ )
      mat->me[i][col] = vec->ve[i];
@@ -95,16 +95,16 @@ u_int	col,i0;
 
 /* _set_row -- sets row of matrix to values given in vec (in situ) */
 MAT	*_set_row(mat,row,vec,j0)
-MAT	*mat;
-VEC	*vec;
-u_int	row,j0;
+MAT	  *mat;
+const VEC *vec;
+u_int	  row,j0;
 {
    u_int	j,lim;
    
    if ( mat==(MAT *)NULL || vec==(VEC *)NULL )
-     error(E_NULL,"_set_row");
+     m_error(E_NULL,"_set_row");
    if ( row >= mat->m )
-     error(E_RANGE,"_set_row");
+     m_error(E_RANGE,"_set_row");
    lim = min(mat->n,vec->dim);
    for ( j=j0; j<lim; j++ )
      mat->me[row][j] = vec->ve[j];
@@ -117,21 +117,22 @@ u_int	row,j0;
    -- Note: storage is shared so that altering the "new"
    matrix will alter the "old" matrix */
 MAT	*sub_mat(old,row1,col1,row2,col2,new)
-MAT	*old,*new;
+const MAT *old;
+MAT       *new;
 u_int	row1,col1,row2,col2;
 {
    u_int	i;
    
    if ( old==(MAT *)NULL )
-     error(E_NULL,"sub_mat");
+     m_error(E_NULL,"sub_mat");
    if ( row1 > row2 || col1 > col2 || row2 >= old->m || col2 >= old->n )
-     error(E_RANGE,"sub_mat");
+     m_error(E_RANGE,"sub_mat");
    if ( new==(MAT *)NULL || new->m < row2-row1+1 )
    {
       new = NEW(MAT);
       new->me = NEW_A(row2-row1+1,Real *);
       if ( new==(MAT *)NULL || new->me==(Real **)NULL )
-	error(E_MEM,"sub_mat");
+	m_error(E_MEM,"sub_mat");
       else if (mem_info_is_on()) {
 	 mem_bytes(TYPE_MAT,0,sizeof(MAT)+
 		      (row2-row1+1)*sizeof(Real *));
@@ -154,18 +155,19 @@ u_int	row1,col1,row2,col2;
 /* sub_vec -- returns sub-vector which is formed by the elements i1 to i2
    -- as for sub_mat, storage is shared */
 VEC	*sub_vec(old,i1,i2,new)
-VEC	*old, *new;
+const VEC *old;
+VEC       *new;
 int	i1, i2;
 {
    if ( old == (VEC *)NULL )
-     error(E_NULL,"sub_vec");
+     m_error(E_NULL,"sub_vec");
    if ( i1 > i2 || old->dim < i2 )
-     error(E_RANGE,"sub_vec");
+     m_error(E_RANGE,"sub_vec");
    
    if ( new == (VEC *)NULL )
      new = NEW(VEC);
    if ( new == (VEC *)NULL )
-     error(E_MEM,"sub_vec");
+     m_error(E_MEM,"sub_vec");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_VEC,0,sizeof(VEC));
    }

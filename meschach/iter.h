@@ -36,7 +36,7 @@
 
 #define ITERHH
 
-/* RCS id: $Id: iter.h,v 1.2 2002/05/13 18:10:26 rfranke Exp $  */
+/* RCS id: $Id: iter.h,v 1.3 2002/12/09 10:57:47 e_arnold Exp $  */
 
 
 #include	"sparse.h"
@@ -46,11 +46,7 @@ MESCH__BEGIN_DECLS
 /* basic structure for iterative methods */
 
 /* type Fun_Ax for functions to get y = A*x */
-#ifdef ANSI_C
 typedef VEC  *(*Fun_Ax)(void *,VEC *,VEC *);
-#else
-typedef VEC *(*Fun_Ax)();
-#endif
 
 
 /* type ITER */
@@ -76,8 +72,6 @@ typedef struct Iter_data {
    Fun_Ax  Bx; /* function computing y = B*x; B - preconditioner */
    void *B_par;         /* parameters for Bx */
 
-#ifdef ANSI_C
-
 #ifdef PROTOTYPES_IN_STRUCT
    void (*info)(struct Iter_data *, double, VEC *,VEC *);
             /* function giving some information for a user;
@@ -94,17 +88,6 @@ typedef struct Iter_data {
    int  (*stop_crit)();
 #endif /* PROTOTYPES_IN_STRUCT */
 
-#else
-
-   void (*info)();
-            /* function giving some information for a user */
-   
-   int (*stop_crit)();
-           /* stopping criterion:
-	    if returned value == TRUE then stop;
-	    if returned value == FALSE then continue; */
-
-#endif /* ANSI_C */
 
    Real init_res;   /* the norm of the initial residual */
 
@@ -114,19 +97,10 @@ typedef struct Iter_data {
 #define INULL   (ITER *)NULL
 
 /* type Fun_info */
-#ifdef ANSI_C
 typedef void (*Fun_info)(ITER *, double, VEC *,VEC *);
-#else
-typedef void (*Fun_info)();
-#endif
 
 /* type Fun_stp_crt */
-#ifdef ANSI_C
 typedef int (*Fun_stp_crt)(ITER *, double, VEC *,VEC *);
-#else
-typedef int (*Fun_stp_crt)();
-#endif
-
 
 
 /* macros */
@@ -151,99 +125,59 @@ typedef int (*Fun_stp_crt)();
 
 /* prototypes from iter0.c */
 
-#ifdef ANSI_C
 /* standard information */
-void iter_std_info(ITER *ip,double nres,VEC *res,VEC *Bres);
+MESCH_API void iter_std_info(ITER *ip,double nres,VEC *res,VEC *Bres);
 /* standard stopping criterion */
-int iter_std_stop_crit(ITER *ip, double nres, VEC *res,VEC *Bres);
+MESCH_API int iter_std_stop_crit(ITER *ip, double nres, VEC *res,VEC *Bres);
 
 /* get, resize and free ITER variable */
-ITER *iter_get(int lenb, int lenx);
-ITER *iter_resize(ITER *ip,int lenb,int lenx);
-int iter_free(ITER *ip);
+MESCH_API ITER *iter_get(int lenb, int lenx);
+MESCH_API ITER *iter_resize(ITER *ip,int lenb,int lenx);
+MESCH_API int iter_free(ITER *ip);
 
-void iter_dump(FILE *fp,ITER *ip);
+MESCH_API void iter_dump(FILE *fp,ITER *ip);
 
 /* copy ip1 to ip2 copying also elements of x and b */
-ITER *iter_copy(ITER *ip1, ITER *ip2);
+MESCH_API ITER *iter_copy(ITER *ip1, ITER *ip2);
 /* copy ip1 to ip2 without copying elements of x and b */
-ITER *iter_copy2(ITER *ip1,ITER *ip2);
+MESCH_API ITER *iter_copy2(ITER *ip1,ITER *ip2);
 
 /* functions for generating sparse matrices with random elements */
-SPMAT	*iter_gen_sym(int n, int nrow);
-SPMAT	*iter_gen_nonsym(int m,int n,int nrow,double diag);
-SPMAT	*iter_gen_nonsym_posdef(int n,int nrow);
-
-#else
-
-void iter_std_info();
-int iter_std_stop_crit();
-ITER *iter_get();
-int iter_free();
-ITER *iter_resize();
-void iter_dump();
-ITER *iter_copy();
-ITER *iter_copy2();
-SPMAT	*iter_gen_sym();
-SPMAT	*iter_gen_nonsym();
-SPMAT	*iter_gen_nonsym_posdef();
-
-#endif
+MESCH_API SPMAT	*iter_gen_sym(int n, int nrow);
+MESCH_API SPMAT	*iter_gen_nonsym(int m,int n,int nrow,double diag);
+MESCH_API SPMAT	*iter_gen_nonsym_posdef(int n,int nrow);
 
 /* prototypes from iter.c */
 
 /* different iterative procedures */
-#ifdef ANSI_C
-VEC  *iter_cg(ITER *ip);
-VEC  *iter_cg1(ITER *ip);
-VEC  *iter_spcg(SPMAT *A,SPMAT *LLT,VEC *b,double eps,VEC *x,int limit,
-		int *steps);
-VEC  *iter_cgs(ITER *ip,VEC *r0);
-VEC  *iter_spcgs(SPMAT *A,SPMAT *B,VEC *b,VEC *r0,double eps,VEC *x,
-		 int limit, int *steps);
-VEC  *iter_lsqr(ITER *ip);
-VEC  *iter_splsqr(SPMAT *A,VEC *b,double tol,VEC *x,
-		  int limit,int *steps);
-VEC  *iter_gmres(ITER *ip);
-VEC  *iter_spgmres(SPMAT *A,SPMAT *B,VEC *b,double tol,VEC *x,int k,
-		   int limit, int *steps);
-MAT  *iter_arnoldi_iref(ITER *ip,Real *h,MAT *Q,MAT *H);
-MAT  *iter_arnoldi(ITER *ip,Real *h,MAT *Q,MAT *H);
-MAT  *iter_sparnoldi(SPMAT *A,VEC *x0,int k,Real *h,MAT *Q,MAT *H);
-VEC  *iter_mgcr(ITER *ip);
-VEC  *iter_spmgcr(SPMAT *A,SPMAT *B,VEC *b,double tol,VEC *x,int k,
-		  int limit, int *steps);
-void	iter_lanczos(ITER *ip,VEC *a,VEC *b,Real *beta2,MAT *Q);
-void    iter_splanczos(SPMAT *A,int m,VEC *x0,VEC *a,VEC *b,Real *beta2,
-		       MAT *Q);
-VEC  *iter_lanczos2(ITER *ip,VEC *evals,VEC *err_est);
-VEC  *iter_splanczos2(SPMAT *A,int m,VEC *x0,VEC *evals,VEC *err_est);
-VEC  *iter_cgne(ITER *ip);
-VEC  *iter_spcgne(SPMAT *A,SPMAT *B,VEC *b,double eps,VEC *x,
-		  int limit,int *steps);
-#else
-VEC  *iter_cg();
-VEC  *iter_cg1();
-VEC  *iter_spcg();
-VEC  *iter_cgs();
-VEC  *iter_spcgs();
-VEC  *iter_lsqr();
-VEC  *iter_splsqr();
-VEC  *iter_gmres();
-VEC  *iter_spgmres();
-MAT  *iter_arnoldi_iref();
-MAT  *iter_arnoldi();
-MAT  *iter_sparnoldi();
-VEC  *iter_mgcr();
-VEC  *iter_spmgcr();
-void  iter_lanczos();
-void  iter_splanczos();
-VEC  *iter_lanczos2();
-VEC  *iter_splanczos2();
-VEC  *iter_cgne();
-VEC  *iter_spcgne();
-
-#endif
+MESCH_API VEC  *iter_cg(ITER *ip);
+MESCH_API VEC  *iter_cg1(ITER *ip);
+MESCH_API VEC  *iter_spcg(SPMAT *A,SPMAT *LLT,VEC *b,double eps,VEC *x,
+			  int limit,int *steps);
+MESCH_API VEC  *iter_cgs(ITER *ip,VEC *r0);
+MESCH_API VEC  *iter_spcgs(SPMAT *A,SPMAT *B,VEC *b,VEC *r0,double eps,VEC *x,
+			   int limit, int *steps);
+MESCH_API VEC  *iter_lsqr(ITER *ip);
+MESCH_API VEC  *iter_splsqr(SPMAT *A,VEC *b,double tol,VEC *x,
+			    int limit,int *steps);
+MESCH_API VEC  *iter_gmres(ITER *ip);
+MESCH_API VEC  *iter_spgmres(SPMAT *A,SPMAT *B,VEC *b,double tol,VEC *x,int k,
+			     int limit, int *steps);
+MESCH_API MAT  *iter_arnoldi_iref(ITER *ip,Real *h,MAT *Q,MAT *H);
+MESCH_API MAT  *iter_arnoldi(ITER *ip,Real *h,MAT *Q,MAT *H);
+MESCH_API MAT  *iter_sparnoldi(SPMAT *A,VEC *x0,int k,Real *h,MAT *Q,MAT *H);
+MESCH_API VEC  *iter_mgcr(ITER *ip);
+MESCH_API VEC  *iter_spmgcr(SPMAT *A,SPMAT *B,VEC *b,double tol,VEC *x,int k,
+			    int limit, int *steps);
+MESCH_API void	iter_lanczos(ITER *ip,VEC *a,VEC *b,Real *beta2,MAT *Q);
+MESCH_API void    iter_splanczos(SPMAT *A,int m,VEC *x0,VEC *a,VEC *b,
+				 Real *beta2,MAT *Q);
+MESCH_API VEC  *iter_lanczos2(ITER *ip,VEC *evals,VEC *err_est);
+MESCH_API VEC  *iter_splanczos2(SPMAT *A,int m,VEC *x0,VEC *evals,
+				VEC *err_est);
+MESCH_API VEC  *iter_cgne(ITER *ip);
+MESCH_API VEC  *iter_spcgne(SPMAT *A,SPMAT *B,VEC *b,double eps,VEC *x,
+			    int limit,int *steps);
 
 MESCH__END_DECLS
 

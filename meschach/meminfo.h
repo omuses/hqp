@@ -75,55 +75,28 @@ typedef struct {
 } MEM_ARRAY;
 
 
+MESCH_API int  mem_info_is_on(void);
+MESCH_API int mem_info_on(int sw);
 
-#ifdef ANSI_C
+MESCH_API long mem_info_bytes(int type,int list);
+MESCH_API int mem_info_numvar(int type,int list);
+MESCH_API void mem_info_file(FILE * fp,int list);
 
-int  mem_info_is_on(void);
-int mem_info_on(int sw);
+MESCH_API void mem_bytes_list(int type,int old_size,int new_size,
+			     int list);
+MESCH_API void mem_numvar_list(int type, int num, int list);
 
-long mem_info_bytes(int type,int list);
-int mem_info_numvar(int type,int list);
-void mem_info_file(FILE * fp,int list);
-
-void mem_bytes_list(int type,int old_size,int new_size,
-		       int list);
-void mem_numvar_list(int type, int num, int list);
-
-int mem_stat_reg_list(void **var,int type,int list);
-int mem_stat_mark(int mark);
-int mem_stat_free_list(int mark,int list);
-int mem_stat_show_mark(void);
-void mem_stat_dump(FILE *fp,int list);
-int mem_attach_list(int list,int ntypes,char *type_names[],
-	int (*free_funcs[])(), MEM_ARRAY info_sum[]);
-int mem_free_vars(int list);
-int mem_is_list_attached(int list);
-void mem_dump_list(FILE *fp,int list);
-int mem_stat_reg_vars(int list,int type,...);
-
-#else
-int mem_info_is_on();
-int mem_info_on();
-
-long mem_info_bytes();
-int mem_info_numvar();
-void mem_info_file();
-
-void mem_bytes_list();
-void mem_numvar_list();
-
-int mem_stat_reg_list();
-int mem_stat_mark();
-int mem_stat_free_list();
-int mem_stat_show_mark();
-void mem_stat_dump();
-int mem_attach_list();
-int mem_free_vars();
-int mem_is_list_attached();
-void mem_dump_list();
-int mem_stat_reg_vars();
-
-#endif 
+MESCH_API int mem_stat_reg_list(void **var,int type,int list);
+MESCH_API int mem_stat_mark(int mark);
+MESCH_API int mem_stat_free_list(int mark,int list);
+MESCH_API int mem_stat_show_mark(void);
+MESCH_API void mem_stat_dump(FILE *fp,int list);
+MESCH_API int mem_attach_list(int list,int ntypes,char *type_names[],
+			     int (*free_funcs[])(), MEM_ARRAY info_sum[]);
+MESCH_API int mem_free_vars(int list);
+MESCH_API int mem_is_list_attached(int list);
+MESCH_API void mem_dump_list(FILE *fp,int list);
+MESCH_API int mem_stat_reg_vars(int list,int type,...);
 
 /* macros */
 

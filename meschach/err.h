@@ -26,7 +26,7 @@
 
 /* err.h  28/09/1993 */
 
-/*  RCS id: $Id: err.h,v 1.2 2002/05/13 18:10:26 rfranke Exp $  */
+/*  RCS id: $Id: err.h,v 1.3 2002/12/09 10:57:47 e_arnold Exp $  */
 
 
 #ifndef M_ERRHEADER
@@ -46,29 +46,15 @@ extern	jmp_buf	restart;
 #define ERR_LIST_MAX_LEN   10
 
 /* main error functions */
-#ifndef ANSI_C
-extern	int ev_err();			/* main error handler */
-extern	int set_err_flag();		/* for different ways of handling
+MESCH_API int ev_err(char *,int,int,char *,int);  /* main error handler */
+MESCH_API int set_err_flag(int flag);         /* for different ways of handling
                                                 errors, returns old value */
-extern  int count_errs();		/* to avoid "too many errors" */
-extern  int err_list_attach();		/* for attaching a list of errors */
-extern  int err_is_list_attached();	/* checking if a list is attached */
-extern  int err_list_free();		/* freeing a list of errors */
-
-#else  /* ANSI_C */
-
-extern	int ev_err(char *,int,int,char *,int);  /* main error handler */
-extern	int set_err_flag(int flag);         /* for different ways of handling
-                                                errors, returns old value */
-extern  int count_errs(int true_false);     /* to avoid "too many errors" */
-extern  int err_list_attach(int list_num, int list_len,
-	       char **err_ptr,int warn);  /* for attaching a list of errors */
-extern  int err_is_list_attached(int list_num);  /* checking if a list 
+MESCH_API int count_errs(int true_false);     /* to avoid "too many errors" */
+MESCH_API int err_list_attach(int list_num, int list_len,
+			      char **err_ptr,int warn);  /* for attaching a list of errors */
+MESCH_API int err_is_list_attached(int list_num);  /* checking if a list 
 						    is attached */
-extern  int err_list_free(int list_num);   /* freeing a list of errors */
-
-#endif
-
+MESCH_API int err_list_free(int list_num);   /* freeing a list of errors */
 
 /* m_error(E_TYPE,"myfunc") raises error type E_TYPE for function my_func() */
 #define	m_error(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name,0)
@@ -176,15 +162,6 @@ extern  int err_list_free(int list_num);   /* freeing a list of errors */
 			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
 			m_error(_err_num,function);	} \
 	}
-
-
-#ifdef TRADITIONAL
-/* keep original names for Meschach implementation files */
-#define error(err_num,fn_name) 		m_error(err_num,fn_name)
-#define warning(err_num,fn_name) 	m_warning(err_num,fn_name)
-#define	catchall(ok_part,err_part) 	m_catchall(ok_part,err_part)
-#define	tracecatch(ok_part,function) 	m_tracecatch(ok_part,function)
-#endif
 
 MESCH__END_DECLS
 

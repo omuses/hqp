@@ -34,13 +34,9 @@
 #include	"matrix.h"
 #include	"sparse.h"
 
-static char rcsid[] = "$Id: lanczos.c,v 1.1 2001/03/01 17:18:42 rfranke Exp $";
+static char rcsid[] = "$Id: lanczos.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
-#ifdef ANSI_C
 extern	VEC	*trieig(VEC *,VEC *,MAT *);
-#else
-extern	VEC	*trieig();
-#endif
 
 /* lanczos -- raw lanczos algorithm -- no re-orthogonalisation
 	-- creates T matrix of size == m,
@@ -59,11 +55,11 @@ MAT	*Q;
 	Real	alpha, beta;
 
 	if ( ! A_fn || ! x0 || ! a || ! b )
-		error(E_NULL,"lanczos");
+		m_error(E_NULL,"lanczos");
 	if ( m <= 0 )
-		error(E_BOUNDS,"lanczos");
+		m_error(E_BOUNDS,"lanczos");
 	if ( Q && ( Q->m < x0->dim || Q->n < m ) )
-		error(E_SIZES,"lanczos");
+		m_error(E_SIZES,"lanczos");
 
 	a = v_resize(a,(u_int)m);	b = v_resize(b,(u_int)(m-1));
 	v = v_get(x0->dim);
@@ -122,7 +118,7 @@ int	*expt;
 	int	i, tmp_expt;
 
 	if ( ! a )
-		error(E_NULL,"product");
+		m_error(E_NULL,"product");
 
 	mant = 1.0;
 	*expt = 0;
@@ -169,9 +165,9 @@ int	*expt;
 	int	i, tmp_expt;
 
 	if ( ! a )
-		error(E_NULL,"product2");
+		m_error(E_NULL,"product2");
 	if ( k < 0 || k >= a->dim )
-		error(E_BOUNDS,"product2");
+		m_error(E_BOUNDS,"product2");
 
 	mant = 1.0;
 	*expt = 0;
@@ -224,9 +220,9 @@ VEC	*err_est;	/* error estimates of eigenvalues */
 	int	i, pb_expt, det_expt, det_expt1, det_expt2;
 
 	if ( ! A_fn || ! x0 )
-		error(E_NULL,"lanczos2");
+		m_error(E_NULL,"lanczos2");
 	if ( m <= 0 )
-		error(E_RANGE,"lanczos2");
+		m_error(E_RANGE,"lanczos2");
 
 	a = evals;
 	a = v_resize(a,(u_int)m);

@@ -38,7 +38,7 @@
 */
 
 
-static	char	rcsid[] = "$Id: qrfactor.c,v 1.1 2001/03/01 17:18:57 rfranke Exp $";
+static	char	rcsid[] = "$Id: qrfactor.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -70,10 +70,10 @@ VEC	*diag /* ,*beta */;
     static	VEC	*tmp1=VNULL;
     
     if ( ! A || ! diag )
-	error(E_NULL,"QRfactor");
+	m_error(E_NULL,"QRfactor");
     limit = min(A->m,A->n);
     if ( diag->dim < limit )
-	error(E_SIZES,"QRfactor");
+	m_error(E_SIZES,"QRfactor");
     
     tmp1 = v_resize(tmp1,A->m);
     MEM_STAT_REG(tmp1,TYPE_VEC);
@@ -108,10 +108,10 @@ PERM	*px;
     Real	beta, maxgamma, sum, tmp;
     
     if ( ! A || ! diag || ! px )
-	error(E_NULL,"QRCPfactor");
+	m_error(E_NULL,"QRCPfactor");
     limit = min(A->m,A->n);
     if ( diag->dim < limit || px->size != A->n )
-	error(E_SIZES,"QRCPfactor");
+	m_error(E_SIZES,"QRCPfactor");
     
     tmp1 = v_resize(tmp1,A->m);
     tmp2 = v_resize(tmp2,A->m);
@@ -192,9 +192,9 @@ VEC	*diag /* ,*beta */ , *b, *x, *tmp;
     limit = min(QR->m,QR->n);
     dynamic = FALSE;
     if ( ! QR || ! diag || ! b )
-	error(E_NULL,"_Qsolve");
+	m_error(E_NULL,"_Qsolve");
     if ( diag->dim < limit || b->dim != QR->m )
-	error(E_SIZES,"_Qsolve");
+	m_error(E_SIZES,"_Qsolve");
     x = v_resize(x,QR->m);
     if ( tmp == VNULL )
 	dynamic = TRUE;
@@ -233,9 +233,9 @@ VEC	*diag /* , *beta */;
     
     limit = min(QR->m,QR->n);
     if ( ! QR || ! diag )
-	error(E_NULL,"makeQ");
+	m_error(E_NULL,"makeQ");
     if ( diag->dim < limit )
-	error(E_SIZES,"makeQ");
+	m_error(E_SIZES,"makeQ");
     if ( Qout==(MAT *)NULL || Qout->m < QR->m || Qout->n < QR->m )
 	Qout = m_get(QR->m,QR->m);
     
@@ -278,7 +278,7 @@ MAT	*QR,*Rout;
     u_int	i,j;
     
     if ( QR==(MAT *)NULL )
-	error(E_NULL,"makeR");
+	m_error(E_NULL,"makeR");
     Rout = m_copy(QR,Rout);
     
     for ( i=1; i<QR->m; i++ )
@@ -299,10 +299,10 @@ VEC	*diag /* , *beta */ , *b, *x;
     static	VEC	*tmp = VNULL;
     
     if ( ! QR || ! diag || ! b )
-	error(E_NULL,"QRsolve");
+	m_error(E_NULL,"QRsolve");
     limit = min(QR->m,QR->n);
     if ( diag->dim < limit || b->dim != QR->m )
-	error(E_SIZES,"QRsolve");
+	m_error(E_SIZES,"QRsolve");
     tmp = v_resize(tmp,limit);
     MEM_STAT_REG(tmp,TYPE_VEC);
 
@@ -326,9 +326,9 @@ VEC	*b, *x;
     static	VEC	*tmp=VNULL;
     
     if ( ! QR || ! diag || ! pivot || ! b )
-	error(E_NULL,"QRCPsolve");
+	m_error(E_NULL,"QRCPsolve");
     if ( (QR->m > diag->dim &&QR->n > diag->dim) || QR->n != pivot->size )
-	error(E_SIZES,"QRCPsolve");
+	m_error(E_SIZES,"QRCPsolve");
     
     tmp = QRsolve(QR,diag /* , beta */ ,b,tmp);
     MEM_STAT_REG(tmp,TYPE_VEC);
@@ -346,10 +346,10 @@ VEC	*x, *out;
     int		i, limit;
 
     if ( U == MNULL || x == VNULL )
-	error(E_NULL,"Umlt");
+	m_error(E_NULL,"Umlt");
     limit = min(U->m,U->n);
     if ( limit != x->dim )
-	error(E_SIZES,"Umlt");
+	m_error(E_SIZES,"Umlt");
     if ( out == VNULL || out->dim < limit )
 	out = v_resize(out,limit);
 
@@ -367,7 +367,7 @@ VEC	*x, *out;
     int		i, j, limit;
 
     if ( U == MNULL || x == VNULL )
-	error(E_NULL,"UTmlt");
+	m_error(E_NULL,"UTmlt");
     limit = min(U->m,U->n);
     if ( out == VNULL || out->dim < limit )
 	out = v_resize(out,limit);
@@ -394,9 +394,9 @@ VEC *diag, *c, *sc;
     Real	beta, r_ii, s, tmp_val;
 
     if ( ! A || ! diag || ! c )
-	error(E_NULL,"QRTsolve");
+	m_error(E_NULL,"QRTsolve");
     if ( diag->dim < min(A->m,A->n) )
-	error(E_SIZES,"QRTsolve");
+	m_error(E_SIZES,"QRTsolve");
     sc = v_resize(sc,A->m);
     n = sc->dim;
     p = c->dim;
@@ -416,7 +416,7 @@ VEC *diag, *c, *sc;
 	    for ( j = 0; j < i; j++ )
 		s += A->me[j][i]*sc->ve[j];
 	    if ( A->me[i][i] == 0.0 )
-		error(E_SING,"QRTsolve");
+		m_error(E_SING,"QRTsolve");
 	    sc->ve[i]=(c->ve[i]-s)/A->me[i][i];
 	}
     }
@@ -453,7 +453,7 @@ MAT	*QR;
     int		i, j, limit;
 
     if ( QR == MNULL )
-	error(E_NULL,"QRcondest");
+	m_error(E_NULL,"QRcondest");
 
     limit = min(QR->m,QR->n);
     for ( i = 0; i < limit; i++ )

@@ -27,7 +27,7 @@
 #include	<stdio.h>
 #include	"matrix.h"
 #include	"zmatrix.h"
-static	char	rcsid[] = "$Id: zvecop.c,v 1.1 2001/03/01 17:19:26 rfranke Exp $";
+static	char	rcsid[] = "$Id: zvecop.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
@@ -41,10 +41,10 @@ u_int	i0, flag;
 	u_int	limit;
 
 	if ( a==ZVNULL || b==ZVNULL )
-		error(E_NULL,"_zin_prod");
+		m_error(E_NULL,"_zin_prod");
 	limit = min(a->dim,b->dim);
 	if ( i0 > limit )
-		error(E_BOUNDS,"_zin_prod");
+		m_error(E_BOUNDS,"_zin_prod");
 
 	return __zip__(&(a->ve[i0]),&(b->ve[i0]),(int)(limit-i0),flag);
 }
@@ -58,7 +58,7 @@ ZVEC	*vector,*out;
 	/* complex	*out_ve, *vec_ve; */
 
 	if ( vector==ZVNULL )
-		error(E_NULL,"zv_mlt");
+		m_error(E_NULL,"zv_mlt");
 	if ( out==ZVNULL || out->dim != vector->dim )
 		out = zv_resize(out,vector->dim);
 	if ( scalar.re == 0.0 && scalar.im == 0.0 )
@@ -78,9 +78,9 @@ ZVEC	*vec1,*vec2,*out;
 	u_int	dim;
 
 	if ( vec1==ZVNULL || vec2==ZVNULL )
-		error(E_NULL,"zv_add");
+		m_error(E_NULL,"zv_add");
 	if ( vec1->dim != vec2->dim )
-		error(E_SIZES,"zv_add");
+		m_error(E_SIZES,"zv_add");
 	if ( out==ZVNULL || out->dim != vec1->dim )
 		out = zv_resize(out,vec1->dim);
 	dim = vec1->dim;
@@ -99,9 +99,9 @@ complex	scale;
 	/* complex	*out_ve, *v1_ve, *v2_ve; */
 
 	if ( v1==ZVNULL || v2==ZVNULL )
-		error(E_NULL,"zv_mltadd");
+		m_error(E_NULL,"zv_mltadd");
 	if ( v1->dim != v2->dim )
-		error(E_SIZES,"zv_mltadd");
+		m_error(E_SIZES,"zv_mltadd");
 	if ( scale.re == 0.0 && scale.im == 0.0 )
 		return zv_copy(v1,out);
 	if ( scale.re == 1.0 && scale.im == 0.0 )
@@ -109,14 +109,14 @@ complex	scale;
 
 	if ( v2 != out )
 	{
-	    tracecatch(out = zv_copy(v1,out),"zv_mltadd");
+	    m_tracecatch(out = zv_copy(v1,out),"zv_mltadd");
 
 	    /* dim = v1->dim; */
 	    __zmltadd__(out->ve,v2->ve,scale,(int)(v1->dim),0);
 	}
 	else
 	{
-	    tracecatch(out = zv_mlt(scale,v2,out),"zv_mltadd");
+	    m_tracecatch(out = zv_mlt(scale,v2,out),"zv_mltadd");
 	    out = zv_add(v1,out,out);
 	}
 
@@ -131,9 +131,9 @@ ZVEC	*vec1,*vec2,*out;
 	/* complex	*out_ve, *vec1_ve, *vec2_ve; */
 
 	if ( vec1==ZVNULL || vec2==ZVNULL )
-		error(E_NULL,"zv_sub");
+		m_error(E_NULL,"zv_sub");
 	if ( vec1->dim != vec2->dim )
-		error(E_SIZES,"zv_sub");
+		m_error(E_SIZES,"zv_sub");
 	if ( out==ZVNULL || out->dim != vec1->dim )
 		out = zv_resize(out,vec1->dim);
 
@@ -156,7 +156,7 @@ ZVEC	*x, *out;
 	int	i, dim;
 
 	if ( ! x || ! f )
-		error(E_NULL,"zv_map");
+		m_error(E_NULL,"zv_map");
 	if ( ! out || out->dim != x->dim )
 		out = zv_resize(out,x->dim);
 
@@ -180,7 +180,7 @@ void	*params;
 	int	i, dim;
 
 	if ( ! x || ! f )
-		error(E_NULL,"_zv_map");
+		m_error(E_NULL,"_zv_map");
 	if ( ! out || out->dim != x->dim )
 		out = zv_resize(out,x->dim);
 
@@ -200,30 +200,26 @@ ZVEC	*v[], *out;
 	int	i;
 
 	if ( ! a || ! v )
-		error(E_NULL,"zv_lincomb");
+		m_error(E_NULL,"zv_lincomb");
 	if ( n <= 0 )
 		return ZVNULL;
 
 	for ( i = 1; i < n; i++ )
 		if ( out == v[i] )
-		    error(E_INSITU,"zv_lincomb");
+		    m_error(E_INSITU,"zv_lincomb");
 
 	out = zv_mlt(a[0],v[0],out);
 	for ( i = 1; i < n; i++ )
 	{
 		if ( ! v[i] )
-			error(E_NULL,"zv_lincomb");
+			m_error(E_NULL,"zv_lincomb");
 		if ( v[i]->dim != out->dim )
-			error(E_SIZES,"zv_lincomb");
+			m_error(E_SIZES,"zv_lincomb");
 		out = zv_mltadd(out,v[i],a[i],out);
 	}
 
 	return out;
 }
-
-
-#ifdef ANSI_C
-
 
 /* zv_linlist -- linear combinations taken from a list of arguments;
    calling:
@@ -247,9 +243,9 @@ ZVEC	*zv_linlist(ZVEC *out,ZVEC *v1,complex a1,...)
       a_par = va_arg(ap,complex);
       if (a_par.re == 0.0 && a_par.im == 0.0) continue;
       if ( out == par )		
-	error(E_INSITU,"zv_linlist");
+	m_error(E_INSITU,"zv_linlist");
       if ( out->dim != par->dim )	
-	error(E_SIZES,"zv_linlist");
+	m_error(E_SIZES,"zv_linlist");
 
       if (a_par.re == 1.0 && a_par.im == 0.0)
 	out = zv_add(out,par,out);
@@ -262,56 +258,6 @@ ZVEC	*zv_linlist(ZVEC *out,ZVEC *v1,complex a1,...)
    va_end(ap);
    return out;
 }
-
-
-#elif VARARGS
-
-/* zv_linlist -- linear combinations taken from a list of arguments;
-   calling:
-      zv_linlist(out,v1,a1,v2,a2,...,vn,an,NULL);
-   where vi are vectors (ZVEC *) and ai are numbers (complex)
-*/
-ZVEC  *zv_linlist(va_alist) va_dcl
-{
-   va_list ap;
-   ZVEC *par, *out;
-   complex a_par;
-
-   va_start(ap);
-   out = va_arg(ap,ZVEC *);
-   par = va_arg(ap,ZVEC *);
-   if ( ! par ) {
-      va_end(ap);
-      return ZVNULL;
-   }
-   
-   a_par = va_arg(ap,complex);
-   out = zv_mlt(a_par,par,out);
-   
-   while (par = va_arg(ap,ZVEC *)) {   /* NULL ends the list*/
-      a_par = va_arg(ap,complex);
-      if (a_par.re == 0.0 && a_par.im == 0.0) continue;
-      if ( out == par )		
-	error(E_INSITU,"zv_linlist");
-      if ( out->dim != par->dim )	
-	error(E_SIZES,"zv_linlist");
-
-      if (a_par.re == 1.0 && a_par.im == 0.0)
-	out = zv_add(out,par,out);
-      else if (a_par.re == -1.0 && a_par.im == 0.0)
-	out = zv_sub(out,par,out);
-      else
-	out = zv_mltadd(out,par,a_par,out); 
-   } 
-   
-   va_end(ap);
-   return out;
-}
-
-
-#endif
-
-
 
 /* zv_star -- computes componentwise (Hadamard) product of x1 and x2
 	-- result out is returned */
@@ -322,9 +268,9 @@ ZVEC	*x1, *x2, *out;
     Real	t_re, t_im;
 
     if ( ! x1 || ! x2 )
-	error(E_NULL,"zv_star");
+	m_error(E_NULL,"zv_star");
     if ( x1->dim != x2->dim )
-	error(E_SIZES,"zv_star");
+	m_error(E_SIZES,"zv_star");
     out = zv_resize(out,x1->dim);
 
     for ( i = 0; i < x1->dim; i++ )
@@ -341,7 +287,7 @@ ZVEC	*x1, *x2, *out;
 
 /* zv_slash -- computes componentwise ratio of x2 and x1
 	-- out[i] = x2[i] / x1[i]
-	-- if x1[i] == 0 for some i, then raise E_SING error
+	-- if x1[i] == 0 for some i, then raise E_SING m_error
 	-- result out is returned */
 ZVEC	*zv_slash(x1, x2, out)
 ZVEC	*x1, *x2, *out;
@@ -351,16 +297,16 @@ ZVEC	*x1, *x2, *out;
     complex	tmp;
 
     if ( ! x1 || ! x2 )
-	error(E_NULL,"zv_slash");
+	m_error(E_NULL,"zv_slash");
     if ( x1->dim != x2->dim )
-	error(E_SIZES,"zv_slash");
+	m_error(E_SIZES,"zv_slash");
     out = zv_resize(out,x1->dim);
 
     for ( i = 0; i < x1->dim; i++ )
     {
 	r2 = x1->ve[i].re*x1->ve[i].re + x1->ve[i].im*x1->ve[i].im;
 	if ( r2 == 0.0 )
-	    error(E_SING,"zv_slash");
+	    m_error(E_SING,"zv_slash");
 	tmp.re =   x1->ve[i].re / r2;
 	tmp.im = - x1->ve[i].im / r2;
 	t_re = tmp.re*x2->ve[i].re - tmp.im*x2->ve[i].im;
@@ -380,7 +326,7 @@ ZVEC	*x;
     complex	sum;
 
     if ( ! x )
-	error(E_NULL,"zv_sum");
+	m_error(E_NULL,"zv_sum");
 
     sum.re = sum.im = 0.0;
     for ( i = 0; i < x->dim; i++ )
@@ -401,9 +347,9 @@ ZVEC	*vector,*out;
     complex	tmp;
     
     if ( px==PNULL || vector==ZVNULL )
-	error(E_NULL,"px_zvec");
+	m_error(E_NULL,"px_zvec");
     if ( px->size > vector->dim )
-	error(E_SIZES,"px_zvec");
+	m_error(E_SIZES,"px_zvec");
     if ( out==ZVNULL || out->dim < vector->dim )
 	out = zv_resize(out,vector->dim);
     
@@ -415,7 +361,7 @@ ZVEC	*vector,*out;
     {
 	for ( i=0; i<size; i++ )
 	    if ( px->pe[i] >= size )
-		error(E_BOUNDS,"px_vec");
+		m_error(E_BOUNDS,"px_vec");
 	    else
 		out->ve[i] = vector->ve[px->pe[i]];
     }
@@ -452,7 +398,7 @@ ZVEC	*vector,*out;
 	
 	for ( i = 0; i < size; i++ )
 	    if ( px->pe[i] < size )
-		error(E_BOUNDS,"px_vec");
+		m_error(E_BOUNDS,"px_vec");
 	    else
 		px->pe[i] = px->pe[i]-size;
     }
@@ -469,9 +415,9 @@ ZVEC	*x, *out;
     u_int	i, size;
     
     if ( ! px || ! x )
-	error(E_NULL,"pxinv_zvec");
+	m_error(E_NULL,"pxinv_zvec");
     if ( px->size > x->dim )
-	error(E_SIZES,"pxinv_zvec");
+	m_error(E_SIZES,"pxinv_zvec");
     if ( ! out || out->dim < x->dim )
 	out = zv_resize(out,x->dim);
     
@@ -482,7 +428,7 @@ ZVEC	*x, *out;
     {
 	for ( i=0; i<size; i++ )
 	    if ( px->pe[i] >= size )
-		error(E_BOUNDS,"pxinv_vec");
+		m_error(E_BOUNDS,"pxinv_vec");
 	    else
 		out->ve[px->pe[i]] = x->ve[i];
     }
@@ -502,7 +448,7 @@ ZVEC	*zv_rand(x)
 ZVEC	*x;
 {
     if ( ! x )
-	error(E_NULL,"zv_rand");
+	m_error(E_NULL,"zv_rand");
 
     mrandlist((Real *)(x->ve),2*x->dim);
 

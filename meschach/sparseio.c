@@ -32,7 +32,7 @@
 #include        <stdio.h>
 #include        "sparse.h"
 
-static char rcsid[] = "$Id: sparseio.c,v 1.1 2001/03/01 17:19:03 rfranke Exp $";
+static char rcsid[] = "$Id: sparseio.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
@@ -41,8 +41,8 @@ static char line[MAXLINE];
 
 /* sp_foutput -- output sparse matrix A to file/stream fp */
 void    sp_foutput(fp,A)
-FILE    *fp;
-SPMAT  *A;
+FILE        *fp;
+const SPMAT *A;
 {
 	int     i, j_idx, m /* , n */;
 	SPROW  *rows;
@@ -52,14 +52,14 @@ SPMAT  *A;
 	if ( A == SMNULL )
 	{
 		fprintf(fp,"*** NULL ***\n");
-		error(E_NULL,"sp_foutput");    return;
+		m_error(E_NULL,"sp_foutput");    return;
 	}
 	fprintf(fp,"%d by %d\n",A->m,A->n);
 	m = A->m;       /* n = A->n; */
 	if ( ! (rows=A->row) )
 	{
 		fprintf(fp,"*** NULL rows ***\n");
-		error(E_NULL,"sp_foutput");    return;
+		m_error(E_NULL,"sp_foutput");    return;
 	}
 
 	for ( i = 0; i < m; i++ )
@@ -86,8 +86,8 @@ SPMAT  *A;
 	-- see output format used in matrix.h etc */
 /******************************************************************
 void    sp_foutput2(fp,A)
-FILE    *fp;
-SPMAT  *A;
+FILE        *fp;
+const SPMAT *A;
 {
 	int     cnt, i, j, j_idx;
 	SPROW  *r;
@@ -124,8 +124,8 @@ SPMAT  *A;
 
 /* sp_dump -- prints ALL relevant information about the sparse matrix A */
 void    sp_dump(fp,A)
-FILE    *fp;
-SPMAT  *A;
+FILE        *fp;
+const SPMAT *A;
 {
 	int     i, j, j_idx;
 	SPROW  *rows;
@@ -209,7 +209,7 @@ FILE    *fp;
 		do {
 			fprintf(stderr,"input rows cols: ");
 			if ( ! fgets(line,MAXLINE,fp) )
-			    error(E_INPUT,"sp_finput");
+			    m_error(E_INPUT,"sp_finput");
 		} while ( sscanf(line,"%u %u",&m,&n) != 2 );
 		A = sp_get(m,n,5);
 		rows = A->row;
@@ -224,7 +224,7 @@ FILE    *fp;
 			do {
 			    fprintf(stderr,"Entry %d: ",len);
 			    if ( ! fgets(line,MAXLINE,fp) )
-				error(E_INPUT,"sp_finput");
+				m_error(E_INPUT,"sp_finput");
 			    if ( *line == 'e' || *line == 'E' )
 				break;
 #if REAL == DOUBLE
@@ -267,7 +267,7 @@ FILE    *fp;
 		fscanf(fp,"SparseMatrix:");
 		skipjunk(fp);
 		if ( (ret_val=fscanf(fp,"%u by %u",&m,&n)) != 2 )
-		    error((ret_val == EOF) ? E_EOF : E_FORMAT,"sp_finput");
+		    m_error((ret_val == EOF) ? E_EOF : E_FORMAT,"sp_finput");
 		A = sp_get(m,n,5);
 
 		/* initialise start_row */
@@ -282,7 +282,7 @@ FILE    *fp;
 		    skipjunk(fp);
 		    if ( (ret_val=fscanf(fp,"row %d :",&tmp)) != 1 ||
 			 tmp != i )
-			error((ret_val == EOF) ? E_EOF : E_FORMAT,
+			m_error((ret_val == EOF) ? E_EOF : E_FORMAT,
 			      "sp_finput");
 		    curr_col = -1;
 		    for ( len = 0; len < MAXSCRATCH; len++ )
@@ -294,12 +294,12 @@ FILE    *fp;
 #endif
 			    break;
 			if ( col <= curr_col || col >= n )
-			    error(E_FORMAT,"sp_finput");
+			    m_error(E_FORMAT,"sp_finput");
 			scratch[len].col = col;
 			scratch[len].val = val;
 		    }
 		    if ( ret_val == EOF )
-			error(E_EOF,"sp_finput");
+			m_error(E_EOF,"sp_finput");
 
 		    if ( len > rows[i].maxlen )
 		    {

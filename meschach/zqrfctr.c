@@ -38,7 +38,7 @@
   
 */
 
-static	char	rcsid[] = "$Id: zqrfctr.c,v 1.1 2001/03/01 17:19:23 rfranke Exp $";
+static	char	rcsid[] = "$Id: zqrfctr.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -70,10 +70,10 @@ ZVEC	*diag;
     static	ZVEC	*tmp1=ZVNULL;
     
     if ( ! A || ! diag )
-	error(E_NULL,"zQRfactor");
+	m_error(E_NULL,"zQRfactor");
     limit = min(A->m,A->n);
     if ( diag->dim < limit )
-	error(E_SIZES,"zQRfactor");
+	m_error(E_SIZES,"zQRfactor");
     
     tmp1 = zv_resize(tmp1,A->m);
     MEM_STAT_REG(tmp1,TYPE_ZVEC);
@@ -88,7 +88,7 @@ ZVEC	*diag;
 	
 	/* apply H/holder vector to remaining columns */
 	/* hhtrcols(A,k,k+1,tmp1,beta->ve[k]); */
-	tracecatch(zhhtrcols(A,k,k+1,tmp1,beta),"zQRfactor");
+	m_tracecatch(zhhtrcols(A,k,k+1,tmp1,beta),"zQRfactor");
     }
 
     return (A);
@@ -110,10 +110,10 @@ PERM	*px;
     complex	ztmp;
     
     if ( ! A || ! diag || ! px )
-	error(E_NULL,"QRCPfactor");
+	m_error(E_NULL,"QRCPfactor");
     limit = min(A->m,A->n);
     if ( diag->dim < limit || px->size != A->n )
-	error(E_SIZES,"QRCPfactor");
+	m_error(E_SIZES,"QRCPfactor");
     
     tmp1 = zv_resize(tmp1,A->m);
     tmp2 = zv_resize(tmp2,A->m);
@@ -194,9 +194,9 @@ ZVEC	*diag, *b, *x, *tmp;
     limit = min(QR->m,QR->n);
     dynamic = FALSE;
     if ( ! QR || ! diag || ! b )
-	error(E_NULL,"_zQsolve");
+	m_error(E_NULL,"_zQsolve");
     if ( diag->dim < limit || b->dim != QR->m )
-	error(E_SIZES,"_zQsolve");
+	m_error(E_SIZES,"_zQsolve");
     x = zv_resize(x,QR->m);
     if ( tmp == ZVNULL )
 	dynamic = TRUE;
@@ -234,9 +234,9 @@ ZVEC	*diag;
 
     limit = min(QR->m,QR->n);
     if ( ! QR || ! diag )
-	error(E_NULL,"zmakeQ");
+	m_error(E_NULL,"zmakeQ");
     if ( diag->dim < limit )
-	error(E_SIZES,"zmakeQ");
+	m_error(E_SIZES,"zmakeQ");
     Qout = zm_resize(Qout,QR->m,QR->m);
 
     tmp1 = zv_resize(tmp1,QR->m);	/* contains basis vec & columns of Q */
@@ -278,7 +278,7 @@ ZMAT	*QR,*Rout;
     u_int	i,j;
     
     if ( QR==ZMNULL )
-	error(E_NULL,"zmakeR");
+	m_error(E_NULL,"zmakeR");
     Rout = zm_copy(QR,Rout);
     
     for ( i=1; i<QR->m; i++ )
@@ -298,10 +298,10 @@ ZVEC	*diag, *b, *x;
     static	ZVEC	*tmp = ZVNULL;
     
     if ( ! QR || ! diag || ! b )
-	error(E_NULL,"zQRsolve");
+	m_error(E_NULL,"zQRsolve");
     limit = min(QR->m,QR->n);
     if ( diag->dim < limit || b->dim != QR->m )
-	error(E_SIZES,"zQRsolve");
+	m_error(E_SIZES,"zQRsolve");
     tmp = zv_resize(tmp,limit);
     MEM_STAT_REG(tmp,TYPE_ZVEC);
 
@@ -325,10 +325,10 @@ ZVEC	*diag, *b, *x;
     static	ZVEC	*tmp = ZVNULL;
     
     if ( ! QR || ! diag || ! b )
-	error(E_NULL,"zQRAsolve");
+	m_error(E_NULL,"zQRAsolve");
     limit = min(QR->m,QR->n);
     if ( diag->dim < limit || b->dim != QR->n )
-	error(E_SIZES,"zQRAsolve");
+	m_error(E_SIZES,"zQRAsolve");
 
     x = zv_resize(x,QR->m);
     x = zUAsolve(QR,b,x,0.0);
@@ -363,9 +363,9 @@ PERM	*pivot;
 ZVEC	*b, *x;
 {
     if ( ! QR || ! diag || ! pivot || ! b )
-	error(E_NULL,"zQRCPsolve");
+	m_error(E_NULL,"zQRCPsolve");
     if ( (QR->m > diag->dim && QR->n > diag->dim) || QR->n != pivot->size )
-	error(E_SIZES,"zQRCPsolve");
+	m_error(E_SIZES,"zQRCPsolve");
     
     x = zQRsolve(QR,diag,b,x);
     x = pxinv_zvec(pivot,x,x);
@@ -382,10 +382,10 @@ ZVEC	*x, *out;
     int		i, limit;
 
     if ( U == ZMNULL || x == ZVNULL )
-	error(E_NULL,"zUmlt");
+	m_error(E_NULL,"zUmlt");
     limit = min(U->m,U->n);
     if ( limit != x->dim )
-	error(E_SIZES,"zUmlt");
+	m_error(E_SIZES,"zUmlt");
     if ( out == ZVNULL || out->dim < limit )
 	out = zv_resize(out,limit);
 
@@ -404,7 +404,7 @@ ZVEC	*x, *out;
     int		i, limit;
 
     if ( U == ZMNULL || x == ZVNULL )
-	error(E_NULL,"zUAmlt");
+	m_error(E_NULL,"zUAmlt");
     limit = min(U->m,U->n);
     if ( out == ZVNULL || out->dim < limit )
 	out = zv_resize(out,limit);
@@ -437,7 +437,7 @@ ZMAT	*QR;
     int		i, j, limit;
 
     if ( QR == ZMNULL )
-	error(E_NULL,"zQRcondest");
+	m_error(E_NULL,"zQRcondest");
 
     limit = min(QR->m,QR->n);
     for ( i = 0; i < limit; i++ )

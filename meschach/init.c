@@ -30,7 +30,7 @@
 	This is to be included in the matrix.a library
 */
 
-static	char	rcsid[] = "$Id: init.c,v 1.1 2001/03/01 17:18:36 rfranke Exp $";
+static	char	rcsid[] = "$Id: init.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	"matrix.h"
@@ -40,7 +40,7 @@ VEC	*v_zero(x)
 VEC	*x;
 {
 	if ( x == VNULL )
-		error(E_NULL,"v_zero");
+		m_error(E_NULL,"v_zero");
 
 	__zero__(x->ve,x->dim);
 	/* for ( i = 0; i < x->dim; i++ )
@@ -57,7 +57,7 @@ IVEC	*ix;
    int i;
    
    if ( ix == IVNULL )
-     error(E_NULL,"iv_zero");
+     m_error(E_NULL,"iv_zero");
    
    for ( i = 0; i < ix->dim; i++ )
      ix->ive[i] = 0; 
@@ -74,7 +74,7 @@ MAT	*A;
 	Real	**A_me;
 
 	if ( A == MNULL )
-		error(E_NULL,"m_zero");
+		m_error(E_NULL,"m_zero");
 
 	A_m = A->m;	A_n = A->n;	A_me = A->me;
 	for ( i = 0; i < A_m; i++ )
@@ -93,7 +93,7 @@ MAT	*A;
 	int	i, size;
 
 	if ( A == MNULL )
-		error(E_NULL,"m_ident");
+		m_error(E_NULL,"m_ident");
 
 	m_zero(A);
 	size = min(A->m,A->n);
@@ -111,7 +111,7 @@ PERM	*px;
 	u_int	*px_pe;
 
 	if ( px == PNULL )
-		error(E_NULL,"px_ident");
+		m_error(E_NULL,"px_ident");
 
 	px_size = px->size;	px_pe = px->pe;
 	for ( i = 0; i < px_size; i++ )
@@ -124,10 +124,8 @@ PERM	*px;
 /* Knuth's lagged Fibonacci-based generator: See "Seminumerical Algorithms:
    The Art of Computer Programming" sections 3.2-3.3 */
 
-#ifdef ANSI_C
 #ifndef LONG_MAX
 #include	<limits.h>
-#endif
 #endif
 
 #ifdef LONG_MAX
@@ -143,11 +141,7 @@ static int  inext = 0, inextp = 31;
 
 
 /* mrand -- pseudo-random number generator */
-#ifdef ANSI_C
 double mrand(void)
-#else
-double mrand()
-#endif
 {
     long	lval;
     static Real  factor = 1.0/((Real)MODULUS);
@@ -222,7 +216,7 @@ VEC	*x;
 	/* int	i; */
 
 	if ( ! x )
-		error(E_NULL,"v_rand");
+		m_error(E_NULL,"v_rand");
 
 	/* for ( i = 0; i < x->dim; i++ ) */
 	    /* x->ve[i] = rand()/((Real)MAX_RAND); */
@@ -240,7 +234,7 @@ MAT	*A;
 	int	i /* , j */;
 
 	if ( ! A )
-		error(E_NULL,"m_rand");
+		m_error(E_NULL,"m_rand");
 
 	for ( i = 0; i < A->m; i++ )
 		/* for ( j = 0; j < A->n; j++ ) */
@@ -258,7 +252,7 @@ VEC	*x;
 	int	i;
 
 	if ( ! x )
-		error(E_NULL,"v_ones");
+		m_error(E_NULL,"v_ones");
 
 	for ( i = 0; i < x->dim; i++ )
 		x->ve[i] = 1.0;
@@ -273,7 +267,7 @@ MAT	*A;
 	int	i, j;
 
 	if ( ! A )
-		error(E_NULL,"m_ones");
+		m_error(E_NULL,"m_ones");
 
 	for ( i = 0; i < A->m; i++ )
 		for ( j = 0; j < A->n; j++ )
@@ -289,7 +283,7 @@ VEC	*x;
 	int	i;
 
 	if ( ! x )
-	    error(E_NULL,"v_count");
+	    m_error(E_NULL,"v_count");
 
 	for ( i = 0; i < x->dim; i++ )
 	    x->ve[i] = (Real)i;

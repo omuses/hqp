@@ -1,14 +1,14 @@
 /*
- * meschext_ea.h
- *   - some Meschach add-ons and extensions
+ * addon_hqp.h
+ *   - some Meschach dense matrix add-ons and extensions
+ *     developed for the Hqp project
  *
  * E. Arnold  03/07/97
- *            2001-08-16 sprow_norm1
  *
  */
 
 /*
-    Copyright (C) 1997--2001  Eckhard Arnold
+    Copyright (C) 1997--2002  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,13 +26,13 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MESCHEXT_EA_H
-#define MESCHEXT_EA_H
+#ifndef ADDON_HQP_H
+#define ADDON_HQP_H
 
-extern "C" {
-#include <meschach/matrix.h>
-#include <meschach/sparse.h>
-}
+#include "matrix.h"
+#include "sparse.h"
+
+MESCH__BEGIN_DECLS
 
 /* Entry level access to data structures                  */
 /* Redefine some macros from matrix.h with typecast (int) */
@@ -126,94 +126,118 @@ extern "C" {
 
 #endif
 
-//----------   Meschach extensions   ----------
+/*----------   Meschach extensions   ----------*/
 
-//   Prints internal parameters of MAT * data structure.
-extern void m_output_g(MAT *A);
+/*
+ * m_output_g -- Prints internal parameters of MAT * data structure
+ */
+MESCH_API void m_output_g(const MAT *A);
 
-//   Prints internal parameters of VEC * data structure.
-extern void v_output_g(const VEC *A);
+/*
+ * v_output_g -- Prints internal parameters of VEC * data structure
+ */
+MESCH_API void v_output_g(const VEC *A);
 
-//   m_copy1 -- copies matrix into new area, resizes out to correct size.
-extern MAT *m_copy1(const MAT *in, MAT *out);
+/*
+ * m_copy1 -- copies matrix into new area, resizes out to correct size
+ */
+MESCH_API MAT *m_copy1(const MAT *in, MAT *out);
 
-//   v_copy1 -- copies vector into new area, resizes out to correct size.
-extern VEC *v_copy1(const VEC *in, VEC *out);
+/*
+ * v_copy1 -- copies vector into new area, resizes out to correct size
+ */
+MESCH_API VEC *v_copy1(const VEC *in, VEC *out);
 
-//   v_diag -- get diagonal entries of a matrix
-extern VEC *v_diag(MAT *A, VEC *C);
+/*
+ * v_diag -- get diagonal entries of a matrix
+ */
+MESCH_API VEC *v_diag(MAT *A, VEC *C);
 
-//   dm_mlt -- diagonal matrix matrix multiplication
-extern MAT *dm_mlt(MAT *A, VEC *B, MAT *C);
+/*
+ * dm_mlt -- diagonal matrix matrix multiplication
+ */
+MESCH_API MAT *dm_mlt(MAT *A, VEC *B, MAT *C);
 
-//   md_mlt -- matrix diagonal matrix multiplication
-extern MAT *md_mlt(MAT *A, VEC *B, MAT *C);
+/*
+ * md_mlt -- matrix diagonal matrix multiplication
+ */
+MESCH_API MAT *md_mlt(MAT *A, VEC *B, MAT *C);
 
-//   m_symm -- make square matrix symmetric,
-extern MAT *m_symm(const MAT *in, MAT *out);
+/*
+ * m_symm -- make square matrix symmetric
+ */
+MESCH_API MAT *m_symm(const MAT *in, MAT *out);
 
-//   rel_symm -- check square matrix for symmetry.
-extern double rel_symm(const MAT *in);
+/*
+ * rel_symm -- check square matrix for symmetry
+ */
+MESCH_API double rel_symm(const MAT *in);
 
-//   CHsolve with matrix right hand side.
-extern MAT *CHsolveM(MAT *A, MAT *B, MAT *C);
+/*
+ * CHsolveM -- CHsolve with matrix right hand side
+ */
+MESCH_API MAT *CHsolveM(MAT *A, MAT *B, MAT *C);
 
-//   CHsolve with transposed matrix right hand side.
-extern MAT *CHsolveMT(MAT *A, MAT *B, MAT *C);
+/*
+ * CHsolveMT -- CHsolve with transposed matrix right hand side
+ */
+MESCH_API MAT *CHsolveMT(MAT *A, MAT *B, MAT *C);
 
-//   BKPsolve with matrix right hand side.
-extern MAT *BKPsolveM(MAT *A, PERM *pivot, PERM *blocks, MAT *B, MAT *C);
+/*
+ * BKPsolveM -- BKPsolve with matrix right hand side
+ */
+MESCH_API MAT *BKPsolveM(MAT *A, PERM *pivot, PERM *blocks, MAT *B, MAT *C);
 
-//   BKPsolve with transposed matrix right hand side.
-extern MAT *BKPsolveMT(MAT *A, PERM *pivot, PERM *blocks, MAT *B, MAT *C);
+/*
+ * BKPsolveMT -- BKPsolve with transposed matrix right hand side
+ */
+MESCH_API MAT *BKPsolveMT(MAT *A, PERM *pivot, PERM *blocks, MAT *B, MAT *C);
 
-//   LUsolve with matrix right hand side.
-extern MAT *LUsolveM(MAT *A, PERM *pivot, MAT *B, MAT *C);
+/*
+ * LUsolveM -- LUsolve with matrix right hand side
+ */
+MESCH_API MAT *LUsolveM(MAT *A, PERM *pivot, MAT *B, MAT *C);
 
-//   LUsolve with transposed matrix right hand side.
-extern MAT *LUsolveMT(MAT *A, PERM *pivot, MAT *B, MAT *C);
+/*
+ * LUsolveMT -- LUsolve with transposed matrix right hand side
+ */
+MESCH_API MAT *LUsolveMT(MAT *A, PERM *pivot, MAT *B, MAT *C);
 
-//   GE_QP -- Generalized elimination for quadratic programming
-extern void GE_QP(MAT *A, MAT *S, MAT *Z, MAT *PQ, double eps);
+/*
+ * GE_QP -- Generalized elimination for quadratic programming
+ */
+MESCH_API void GE_QP(MAT *A, MAT *S, MAT *Z, MAT *PQ, double eps);
 
-//   Matrix concatenation by rows C = [A; B].
-extern MAT *m_concatc(MAT *A, MAT *B, MAT *C);
+/*
+ * m_concatc -- Matrix concatenation by rows C = [A; B]
+ */
+MESCH_API MAT *m_concatc(MAT *A, MAT *B, MAT *C);
 
-//   Vector concatenation C = [A; B]
-extern VEC *v_concat(VEC *A, VEC *B, VEC *C);
+/*
+ * v_concat -- Vector concatenation C = [A; B]
+ */
+MESCH_API VEC *v_concat(VEC *A, VEC *B, VEC *C);
 
-//   C(i) = A(iv(i))
-extern VEC *v_move_iv(const VEC *A, const IVEC *iv, VEC *C);
+/*
+ * v_move_iv -- C(i) = A(iv(i))
+ */
+MESCH_API VEC *v_move_iv(const VEC *A, const IVEC *iv, VEC *C);
 
-//   C(iv(i)) = A(i)
-extern VEC *v_set_iv(VEC *A, IVEC *iv, VEC *C);
+/*
+ * v_set_iv -- C(iv(i)) = A(i)
+ */
+MESCH_API VEC *v_set_iv(VEC *A, IVEC *iv, VEC *C);
 
-//   Euclidean norm of a SPROW.
-extern Real sprow_norm2(const SPROW *r);
+/* 
+ * v_dist2 -- 2-norm (Euclidean norm) of vector difference 
+ */
+double v_dist2(const VEC *x, const VEC *y);
 
-//   L1 norm of a SPROW.
-extern Real sprow_norm1(const SPROW *r);
+/* 
+ * v_dist_inf -- infinity-norm (supremum norm) of vector difference 
+ */
+double v_dist_inf(const VEC *x, const VEC *y);
 
-//   Copy a block from sparse matrix src to dense matrix dst
-extern void sp_extract_mat_iv(const SPMAT *src, const IVEC *iv, int j_offs, 
-			      MAT *dst);
-
-//   Block from sparse matrix - dense matrix multiplication
-extern MAT *bspm_mlt(const SPMAT *A, int i0, int j0, int m0, 
-		     const MAT *B, MAT *C);
-
-//   Dense matrix - block from transposed sparse matrix multiplication
-extern MAT *mbsptr_mlt(const MAT *B, const SPMAT *A, int i0, int j0, int n0, 
-		       MAT *C);
-
-//   Block from sparse matrix - vector multiplication.
-extern VEC *bspv_mlt(const SPMAT *A, int i0, int j0, int m0, const VEC *B, 
-		     VEC *C)  ;
-
-//   Check column indices of a sparse matrix
-extern void check_sparse(SPMAT *C);
-
-//   Transpose of a sparse matrix
-extern SPMAT *sp_transp_ea(const SPMAT *A, SPMAT *T);
+MESCH__END_DECLS
 
 #endif

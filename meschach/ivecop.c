@@ -29,7 +29,7 @@
 #include	<stdio.h>
 #include 	"matrix.h"
 
-static	char	rcsid[] = "$Id: ivecop.c,v 1.1 2001/03/01 17:18:42 rfranke Exp $";
+static	char	rcsid[] = "$Id: ivecop.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 static char    line[MAXLINE];
 
@@ -43,10 +43,10 @@ int	dim;
    /* u_int	i; */
    
    if (dim < 0)
-     error(E_NEG,"iv_get");
+     m_error(E_NEG,"iv_get");
 
    if ((iv=NEW(IVEC)) == IVNULL )
-     error(E_MEM,"iv_get");
+     m_error(E_MEM,"iv_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_IVEC,0,sizeof(IVEC));
       mem_numvar(TYPE_IVEC,1);
@@ -54,7 +54,7 @@ int	dim;
    
    iv->dim = iv->max_dim = dim;
    if ((iv->ive = NEW_A(dim,int)) == (int *)NULL )
-     error(E_MEM,"iv_get");
+     m_error(E_MEM,"iv_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_IVEC,0,dim*sizeof(int));
    }
@@ -99,7 +99,7 @@ int	new_dim;
    int	i;
    
    if (new_dim < 0)
-     error(E_NEG,"iv_resize");
+     m_error(E_NEG,"iv_resize");
 
    if ( ! iv )
      return iv_get(new_dim);
@@ -115,7 +115,7 @@ int	new_dim;
       }
       iv->ive = RENEW(iv->ive,new_dim,int);
       if ( ! iv->ive )
-	error(E_MEM,"iv_resize");
+	m_error(E_MEM,"iv_resize");
       iv->max_dim = new_dim;
    }
    if ( iv->dim <= new_dim )
@@ -129,12 +129,13 @@ int	new_dim;
 /* iv_copy -- copy integer vector in to out
    -- out created/resized if necessary */
 IVEC	*iv_copy(in,out)
-IVEC	*in, *out;
+const IVEC *in;
+IVEC       *out;
 {
    int		i;
    
    if ( ! in )
-     error(E_NULL,"iv_copy");
+     m_error(E_NULL,"iv_copy");
    out = iv_resize(out,in->dim);
    for ( i = 0; i < in->dim; i++ )
      out->ive[i] = in->ive[i];
@@ -147,14 +148,15 @@ IVEC	*in, *out;
 	   to the corresponding subvector of out with initial index i1
 	-- out is resized if necessary */
 IVEC	*iv_move(in,i0,dim0,out,i1)
-IVEC	*in, *out;
-int	i0, dim0, i1;
+const IVEC *in;
+IVEC       *out;
+int	   i0, dim0, i1;
 {
     if ( ! in )
-	error(E_NULL,"iv_move");
+	m_error(E_NULL,"iv_move");
     if ( i0 < 0 || dim0 < 0 || i1 < 0 ||
 	 i0+dim0 > in->dim )
-	error(E_BOUNDS,"iv_move");
+	m_error(E_BOUNDS,"iv_move");
 
     if ( (! out) || i1+dim0 > out->dim )
 	out = iv_resize(out,i1+dim0);
@@ -166,15 +168,16 @@ int	i0, dim0, i1;
 
 /* iv_add -- integer vector addition -- may be in-situ */
 IVEC	*iv_add(iv1,iv2,out)
-IVEC	*iv1,*iv2,*out;
+const IVEC *iv1,*iv2;
+IVEC       *out;
 {
    u_int	i;
    int	*out_ive, *iv1_ive, *iv2_ive;
    
    if ( iv1==IVNULL || iv2==IVNULL )
-     error(E_NULL,"iv_add");
+     m_error(E_NULL,"iv_add");
    if ( iv1->dim != iv2->dim )
-     error(E_SIZES,"iv_add");
+     m_error(E_SIZES,"iv_add");
    if ( out==IVNULL || out->dim != iv1->dim )
      out = iv_resize(out,iv1->dim);
    
@@ -192,15 +195,16 @@ IVEC	*iv1,*iv2,*out;
 
 /* iv_sub -- integer vector addition -- may be in-situ */
 IVEC	*iv_sub(iv1,iv2,out)
-IVEC	*iv1,*iv2,*out;
+const IVEC *iv1,*iv2;
+IVEC       *out;
 {
    u_int	i;
    int	*out_ive, *iv1_ive, *iv2_ive;
    
    if ( iv1==IVNULL || iv2==IVNULL )
-     error(E_NULL,"iv_sub");
+     m_error(E_NULL,"iv_sub");
    if ( iv1->dim != iv2->dim )
-     error(E_SIZES,"iv_sub");
+     m_error(E_SIZES,"iv_sub");
    if ( out==IVNULL || out->dim != iv1->dim )
      out = iv_resize(out,iv1->dim);
    
@@ -216,8 +220,8 @@ IVEC	*iv1,*iv2,*out;
 
 /* iv_foutput -- print a representation of iv on stream fp */
 void	iv_foutput(fp,iv)
-FILE	*fp;
-IVEC	*iv;
+FILE	   *fp;
+const IVEC *iv;
 {
    int	i;
    
@@ -270,7 +274,7 @@ IVEC	*iv;
       {
 	 fprintf(stderr,"IntVector: dim: ");
 	 if ( fgets(line,MAXLINE,fp)==NULL )
-	   error(E_INPUT,"iiv_finput");
+	   m_error(E_INPUT,"iiv_finput");
       } while ( sscanf(line,"%u",&dim)<1 || dim>MAXDIM );
       iv = iv_get(dim);
    }
@@ -284,7 +288,7 @@ IVEC	*iv;
 	if ( !dynamic )
 	  fprintf(stderr,"old: %-9d  new: ",iv->ive[i]);
 	if ( fgets(line,MAXLINE,fp)==NULL )
-	  error(E_INPUT,"iiv_finput");
+	  m_error(E_INPUT,"iiv_finput");
 	if ( (*line == 'b' || *line == 'B') && i > 0 )
 	{	i--;	dynamic = FALSE;	goto redo;	   }
 	if ( (*line == 'f' || *line == 'F') && i < dim-1 )
@@ -306,7 +310,7 @@ IVEC	*iv;
    skipjunk(fp);
    if ((io_code=fscanf(fp," IntVector: dim:%u",&dim)) < 1 ||
        dim>MAXDIM )
-     error(io_code==EOF ? 7 : 6,"biv_finput");
+     m_error(io_code==EOF ? 7 : 6,"biv_finput");
    
    /* allocate memory if necessary */
    if ( iv==(IVEC *)NULL || iv->dim<dim )
@@ -316,15 +320,15 @@ IVEC	*iv;
    skipjunk(fp);
    for ( i=0; i<dim; i++ )
      if ((io_code=fscanf(fp,"%d",&iv->ive[i])) < 1 )
-       error(io_code==EOF ? 7 : 6,"biv_finput");
+       m_error(io_code==EOF ? 7 : 6,"biv_finput");
    
    return (iv);
 }
 
 /* iv_dump -- dumps all the contents of IVEC iv onto stream fp */
 void	iv_dump(fp,iv)
-FILE*fp;
-IVEC*iv;
+FILE       *fp;
+const IVEC *iv;
 {
    int		i;
    
@@ -365,7 +369,7 @@ PERM	*order;
    int		stack[MAX_STACK], sp;
    
    if ( ! x )
-     error(E_NULL,"v_sort");
+     m_error(E_NULL,"v_sort");
    if ( order != PNULL && order->size != x->dim )
      order = px_resize(order, x->dim);
    

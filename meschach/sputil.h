@@ -15,7 +15,7 @@
 	  if ( ! (A)->flag_col )	sp_col_access((A));		\
 	  col_num = (col);						\
 	  if ( col_num < 0 || col_num >= A->n )				\
-	      error(E_BOUNDS,"loop_cols");				\
+	      m_error(E_BOUNDS,"loop_cols");				\
           _r_num = (A)->start_row[_c]; _r_idx = (A)->start_idx[_c];	\
 	  while ( _r_num >= 0 )  {					\
 	      _r = &((A)->row[_r_num]);					\

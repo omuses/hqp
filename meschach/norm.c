@@ -27,7 +27,7 @@
 /*
 	A collection of functions for computing norms: scaled and unscaled
 */
-static	char	rcsid[] = "$Id: norm.c,v 1.2 2002/05/13 18:07:38 rfranke Exp $";
+static	char	rcsid[] = "$Id: norm.c,v 1.3 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -36,13 +36,13 @@ static	char	rcsid[] = "$Id: norm.c,v 1.2 2002/05/13 18:07:38 rfranke Exp $";
 
 /* _v_norm1 -- computes (scaled) 1-norms of vectors */
 double	_v_norm1(x,scale)
-VEC	*x, *scale;
+const VEC *x, *scale;
 {
 	int	i, dim;
 	Real	s, sum;
 
 	if ( x == (VEC *)NULL )
-		error(E_NULL,"_v_norm1");
+		m_error(E_NULL,"_v_norm1");
 	dim = x->dim;
 
 	sum = 0.0;
@@ -50,7 +50,7 @@ VEC	*x, *scale;
 		for ( i = 0; i < dim; i++ )
 			sum += fabs(x->ve[i]);
 	else if ( scale->dim < dim )
-		error(E_SIZES,"_v_norm1");
+		m_error(E_SIZES,"_v_norm1");
 	else
 		for ( i = 0; i < dim; i++ )
 		{	s = scale->ve[i];
@@ -74,13 +74,13 @@ double x;
 
 /* _v_norm2 -- computes (scaled) 2-norm (Euclidean norm) of vectors */
 double	_v_norm2(x,scale)
-VEC	*x, *scale;
+const VEC *x, *scale;
 {
 	int	i, dim;
 	Real	s, sum;
 
 	if ( x == (VEC *)NULL )
-		error(E_NULL,"_v_norm2");
+		m_error(E_NULL,"_v_norm2");
 	dim = x->dim;
 
 	sum = 0.0;
@@ -88,7 +88,7 @@ VEC	*x, *scale;
 		for ( i = 0; i < dim; i++ )
 			sum += square(x->ve[i]);
 	else if ( scale->dim < dim )
-		error(E_SIZES,"_v_norm2");
+		m_error(E_SIZES,"_v_norm2");
 	else
 		for ( i = 0; i < dim; i++ )
 		{	s = scale->ve[i];
@@ -101,13 +101,13 @@ VEC	*x, *scale;
 
 /* _v_norm_inf -- computes (scaled) infinity-norm (supremum norm) of vectors */
 double	_v_norm_inf(x,scale)
-VEC	*x, *scale;
+const VEC *x, *scale;
 {
 	int	i, dim;
 	Real	s, maxval, tmp;
 
 	if ( x == (VEC *)NULL )
-		error(E_NULL,"_v_norm_inf");
+		m_error(E_NULL,"_v_norm_inf");
 	dim = x->dim;
 
 	maxval = 0.0;
@@ -117,7 +117,7 @@ VEC	*x, *scale;
 			maxval = max(maxval,tmp);
 		}
 	else if ( scale->dim < dim )
-		error(E_SIZES,"_v_norm_inf");
+		m_error(E_SIZES,"_v_norm_inf");
 	else
 		for ( i = 0; i < dim; i++ )
 		{	s = scale->ve[i];
@@ -130,13 +130,13 @@ VEC	*x, *scale;
 
 /* m_norm1 -- compute matrix 1-norm -- unscaled */
 double	m_norm1(A)
-MAT	*A;
+const MAT *A;
 {
 	int	i, j, m, n;
 	Real	maxval, sum;
 
 	if ( A == (MAT *)NULL )
-		error(E_NULL,"m_norm1");
+		m_error(E_NULL,"m_norm1");
 
 	m = A->m;	n = A->n;
 	maxval = 0.0;
@@ -154,13 +154,13 @@ MAT	*A;
 
 /* m_norm_inf -- compute matrix infinity-norm -- unscaled */
 double	m_norm_inf(A)
-MAT	*A;
+const MAT *A;
 {
 	int	i, j, m, n;
 	Real	maxval, sum;
 
 	if ( A == (MAT *)NULL )
-		error(E_NULL,"m_norm_inf");
+		m_error(E_NULL,"m_norm_inf");
 
 	m = A->m;	n = A->n;
 	maxval = 0.0;
@@ -178,13 +178,13 @@ MAT	*A;
 
 /* m_norm_frob -- compute matrix frobenius-norm -- unscaled */
 double	m_norm_frob(A)
-MAT	*A;
+const MAT *A;
 {
 	int	i, j, m, n;
 	Real	sum;
 
 	if ( A == (MAT *)NULL )
-		error(E_NULL,"m_norm_frob");
+		m_error(E_NULL,"m_norm_frob");
 
 	m = A->m;	n = A->n;
 	sum = 0.0;

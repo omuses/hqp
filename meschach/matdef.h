@@ -1,7 +1,7 @@
 /*
 		Type definitions for general purpose maths package
 */
-/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.4 2002/05/13 18:10:26 rfranke Exp $ */
+/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.5 2002/12/09 10:57:47 e_arnold Exp $ */
 
 #include "machine.h"
 
@@ -42,13 +42,9 @@ typedef struct	{
 #define	MAXDIM	2001
 
 #ifndef MALLOCDECL
-#ifndef ANSI_C
-extern	char	*malloc(), *calloc(), *realloc();
-#else
-extern	void	*malloc(size_t),
-		*calloc(size_t,size_t),
-		*realloc(void *,size_t);
-#endif
+MESCH_API void	*malloc(size_t),
+    *calloc(size_t,size_t),
+    *realloc(void *,size_t);
 #endif
 
 #define	NEW(type)		((type *)calloc(1,sizeof(type)))
@@ -75,11 +71,7 @@ char	line[MAXLINE];
 #include	<setjmp.h>
 MESCH__BEGIN_DECLS
 extern	jmp_buf	restart;
-#ifdef ANSI_C
-extern int	ev_err(char *, int, int, char *);
-#else
-/* extern int	ev_err(); */
-#endif
+MESCH_API int	ev_err(char *, int, int, char *);
 MESCH__END_DECLS
 #define	m_error(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name)
 #define	E_UNKNOWN	0
@@ -117,19 +109,13 @@ MESCH__END_DECLS
 		else \
 		{	set_err_flag(_old_flag);  \
 			mem_copy(_save,restart,sizeof(jmp_buf)); \
-			error(_err_num,function);	} \
+			m_error(_err_num,function);	} \
 	}
 
-#ifdef ANSI_C
-extern double	__ip__(double *, double *, int);
-extern void	__mltadd__(double *, double *, double, int);
-extern void	__smlt__(double *, double, double *, int);
-extern void	__add__(double *, double *, double *, int);
-extern void	__sub__(double *, double *, double *, int);
-extern void	__zero__(double *, int);
-extern int	set_err_flag(int);
-#else
-extern double	__ip__();
-extern void	__mltadd__(), __smlt__(), __add__(), __sub__(), __zero__();
-extern int	set_err_flag();
-#endif
+MESCH_API double	__ip__(double *, double *, int);
+MESCH_API void	__mltadd__(double *, double *, double, int);
+MESCH_API void	__smlt__(double *, double, double *, int);
+MESCH_API void	__add__(double *, double *, double *, int);
+MESCH_API void	__sub__(double *, double *, double *, int);
+MESCH_API void	__zero__(double *, int);
+MESCH_API int	set_err_flag(int);

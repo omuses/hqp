@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.7 2002/05/13 20:22:25 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.8 2002/12/09 10:57:47 e_arnold Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -86,54 +86,61 @@ void	m_version()
 	/* rf, 05/13/02 */
 	printf("\tnorm.c, znorm.c: take out definition of max\n");
 	printf("\t*.h: use MESCH__BEGIN/END_DECLS (extern \"C\") for declarations\n");
+	/* E. Arnold, 2002-11-26 */
+	printf("\tFurther adaptations to ANSI C; remove TRADITIONAL; prepend m_ to macros error, warning, catchall, tracecatch\n");
+	/* E. Arnold, 2002-12-06 */
+	printf("\tMeschach add-ons from the Hqp project: addon_hqp, spaddon_hqp\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
-/* Revision 1.7  2002/05/13 20:22:25  rfranke
-/* fix change log
+/* Revision 1.8  2002/12/09 10:57:47  e_arnold
+/* Meschach modifications (ANSI_C)
 /*
-/* Revision 1.6  2002/05/13 18:10:26  rfranke
-/* use MESCH__BEGIN/END_DECLS, i.e. extern "C", inside the includes
-/*
-/* Revision 1.5  2002/05/01 17:50:39  rfranke
-/* add prefix m_ to Meschach error macros
-/*
-/* Revision 1.4  2002/04/23 15:23:31  rfranke
-/* include additional factorization routines
-/*
-/* Revision 1.3  2002/04/23 14:17:35  rfranke
-/* include additional factorization routines
-/*
-/* Revision 1.2  2001/04/02 08:18:27  rfranke
-/* 	- meschach/{matrix, matdef}.h: allocate at least 1 element in NEW_A,
-/* 	  as some malloc implementations return NULL pointer for 0 elements
-/* 	  (braught up again by Christan Schulz)
-/*
-/* Revision 1.1.1.1  2001/03/01 17:19:15  rfranke
-/* Import of version 1.7b1 taken from odoaker.
-/*
-/* Revision 1.4  2000/12/05 09:42:57  rf
-/* 12/05/00: rf: resolve meschach/err.h, catch conflict
-/* 	- configure.in: change version to 1.7a5
-/* 	- rename meschach/err.h to meschach/m_err.h
-/* 	- m_err.h: rename macro catch to m_catch
-/* 	- adapt meschach/{matrix.h, err.c, torture.c, ztorture.c, makefile,
-/* 	  version.c}
-/* 	- hqp/Meschach.h: don't need to redefine catch anymore
-/* 	- hqp/Hqp_IpsMehrotra.C, hqp/HqpIpsFranke.C: use m_catch
-/*
-/* Revision 1.3  2000/11/01 21:39:02  rf
-/* 11/01/00: rf:
-/* 	- bug fix in meschach/hessen.c after call to hhvec in hsehldr.c
-/* 	  to avoid infinite loop in symmeig()
-/* 	- hqp/Hqp_HL_BFGS.C: change default _eigen_control to true
-/* 	- omu/Omu_IntDASPK.C (realloc): more sensible allocation of memory
-/* 	  when using direct solver
-/*
-/* Revision 1.2  2000/04/11 18:45:23  rf
-/* removed nested comments at end of file
-/*
+ * Revision 1.7  2002/05/13 20:22:25  rfranke
+ * fix change log
+ *
+ * Revision 1.6  2002/05/13 18:10:26  rfranke
+ * use MESCH__BEGIN/END_DECLS, i.e. extern "C", inside the includes
+ *
+ * Revision 1.5  2002/05/01 17:50:39  rfranke
+ * add prefix m_ to Meschach error macros
+ *
+ * Revision 1.4  2002/04/23 15:23:31  rfranke
+ * include additional factorization routines
+ *
+ * Revision 1.3  2002/04/23 14:17:35  rfranke
+ * include additional factorization routines
+ *
+ * Revision 1.2  2001/04/02 08:18:27  rfranke
+ * 	- meschach/{matrix, matdef}.h: allocate at least 1 element in NEW_A,
+ * 	  as some malloc implementations return NULL pointer for 0 elements
+ * 	  (braught up again by Christan Schulz)
+ *
+ * Revision 1.1.1.1  2001/03/01 17:19:15  rfranke
+ * Import of version 1.7b1 taken from odoaker.
+ *
+ * Revision 1.4  2000/12/05 09:42:57  rf
+ * 12/05/00: rf: resolve meschach/err.h, catch conflict
+ * 	- configure.in: change version to 1.7a5
+ * 	- rename meschach/err.h to meschach/m_err.h
+ * 	- m_err.h: rename macro catch to m_catch
+ * 	- adapt meschach/{matrix.h, err.c, torture.c, ztorture.c, makefile,
+ * 	  version.c}
+ * 	- hqp/Meschach.h: don't need to redefine catch anymore
+ * 	- hqp/Hqp_IpsMehrotra.C, hqp/HqpIpsFranke.C: use m_catch
+ *
+ * Revision 1.3  2000/11/01 21:39:02  rf
+ * 11/01/00: rf:
+ * 	- bug fix in meschach/hessen.c after call to hhvec in hsehldr.c
+ * 	  to avoid infinite loop in symmeig()
+ * 	- hqp/Hqp_HL_BFGS.C: change default _eigen_control to true
+ * 	- omu/Omu_IntDASPK.C (realloc): more sensible allocation of memory
+ * 	  when using direct solver
+ *
+ * Revision 1.2  2000/04/11 18:45:23  rf
+ * removed nested comments at end of file
+ *
  * Revision 1.1.1.1  2000/04/04 07:25:42  ea
  * CVS initial version 1.6a4
  *

@@ -31,7 +31,7 @@
 	Complex version
 */
 
-static	char	rcsid[] = "$Id: zhessen.c,v 1.1 2001/03/01 17:19:16 rfranke Exp $";
+static	char	rcsid[] = "$Id: zhessen.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	"zmatrix.h"
@@ -50,11 +50,11 @@ ZVEC	*diag;
 	int	k, limit;
 
 	if ( ! A || ! diag )
-		error(E_NULL,"zHfactor");
+		m_error(E_NULL,"zHfactor");
 	if ( diag->dim < A->m - 1 )
-		error(E_SIZES,"zHfactor");
+		m_error(E_SIZES,"zHfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"zHfactor");
+		m_error(E_SQUARE,"zHfactor");
 	limit = A->m - 1;
 
 	tmp1 = zv_resize(tmp1,A->m);
@@ -91,14 +91,14 @@ ZVEC	*diag;
 	static	ZVEC	*tmp1 = ZVNULL, *tmp2 = ZVNULL;
 
 	if ( HQ==ZMNULL || diag==ZVNULL )
-		error(E_NULL,"zHQunpack");
+		m_error(E_NULL,"zHQunpack");
 	if ( HQ == Q || H == Q )
-	    error(E_INSITU,"zHQunpack");
+	    m_error(E_INSITU,"zHQunpack");
 	limit = HQ->m - 1;
 	if ( diag->dim < limit )
-		error(E_SIZES,"zHQunpack");
+		m_error(E_SIZES,"zHQunpack");
 	if ( HQ->m != HQ->n )
-		error(E_SQUARE,"zHQunpack");
+		m_error(E_SQUARE,"zHQunpack");
 
 
 	if ( Q != ZMNULL )

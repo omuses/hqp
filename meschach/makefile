@@ -4,10 +4,19 @@
 #
 # Copyright (C) David Stewart & Zbigniew Leyk 1993
 #
-# $Id: makefile,v 1.3 2002/05/01 17:50:39 rfranke Exp $
+# $Id: makefile,v 1.4 2002/12/09 10:57:47 e_arnold Exp $
 #
 
 include ../makedefs
+
+#OBJ_SUFFIX = .o
+#MES_CC = gcc
+
+#MES_CFLAGS = -O2 -fPIC -Wall -pedantic
+#MES_DEFS = -DU_INT_DEF=1
+
+#MES_CFLAGS = -O2 -fPIC -Wall -ansi -pedantic
+#MES_DEFS = 
 
 O = $(OBJ_SUFFIX)
 
@@ -18,7 +27,7 @@ CC = $(MES_CC)
 
 DEFS = $(MES_DEFS)
 LIBS =  -lm
-#RANLIB = ranlib
+RANLIB = ranlib
 
 
 CFLAGS = $(MES_CFLAGS)
@@ -43,13 +52,15 @@ LIST2 = lufactor$O bkpfacto$O chfactor$O qrfactor$O solve$O hsehldr$O \
 	givens$O update$O norm$O hessen$O symmeig$O schur$O svd$O fft$O \
 	mfunc$O bdfactor$O
 LIST3 = sparse$O sprow$O sparseio$O \
-	iter0$O splufctr$O 
-#       itersym$O iternsym$O
-#	spchfctr$O spbkp$O spswap$O 
+	iter0$O splufctr$O \
+	itersym$O iternsym$O \
+	spchfctr$O spbkp$O spswap$O 
 ZLIST1 = zmachine$O zcopy$O zmatio$O zmemory$O zvecop$O zmatop$O znorm$O \
 	 zfunc$O 
 ZLIST2 = zlufctr$O zsolve$O zmatlab$O zhsehldr$O zqrfctr$O \
          zgivens$O  zhessen$O zschur$O
+LISTHQP = $(LIST1) $(LIST2) sparse$O sprow$O sparseio$O iter0$O splufctr$O \
+	addon_hqp$O spaddon_hqp$O
 
 # they are no longer supported
 # if you use them add oldpart to all and sparse
@@ -71,6 +82,10 @@ OTHERS = dmacheps.c extras.c fmacheps.c maxint.c  makefile.in \
 
 
 # Different configurations
+# default: Hqp configuration
+hqp:	$(LISTHQP)
+$(LISTHQP): $(HBASE) matrix2.h sparse.h sparse2.h 
+
 # the dependencies **between** the parts are for dmake
 all:  part1 part2 part3 zpart1 zpart2 
 part2: part1
@@ -83,29 +98,33 @@ complex: part1 part2 zpart1 zpart2
 
 $(LIST1): $(HBASE)
 part1: $(LIST1)
-#	ar ru meschach.a $(LIST1); $(RANLIB) meschach.a
+	ar ru meschach.a $(LIST1); $(RANLIB) meschach.a
+	$(RANLIB) meschach.a
 
 $(LIST2): $(HBASE) matrix2.h
 part2: $(LIST2)
-#	ar ru meschach.a $(LIST2); $(RANLIB) meschach.a
+	ar ru meschach.a $(LIST2); $(RANLIB) meschach.a
+	$(RANLIB) meschach.a
 
 $(LIST3): $(HBASE) sparse.h sparse2.h
 part3: $(LIST3)
-#	ar ru meschach.a $(LIST3); $(RANLIB) meschach.a
+	ar ru meschach.a $(LIST3); $(RANLIB) meschach.a
+	$(RANLIB) meschach.a
 
-$(ZLIST1): $(HBASDE) zmatrix.h
+$(ZLIST1): $(HBASE) zmatrix.h
 zpart1: $(ZLIST1)
-#	ar ru meschach.a $(ZLIST1); $(RANLIB) meschach.a
+	ar ru meschach.a $(ZLIST1); $(RANLIB) meschach.a
+	$(RANLIB) meschach.a
 
 $(ZLIST2): $(HBASE) zmatrix.h zmatrix2.h 
 zpart2: $(ZLIST2)
-#	ar ru meschach.a $(ZLIST2); $(RANLIB) meschach.a
+	ar ru meschach.a $(ZLIST2); $(RANLIB) meschach.a
+	$(RANLIB) meschach.a
 
 $(OLDLIST): $(HBASE) sparse.h sparse2.h 
 oldpart: $(OLDLIST)
-#	ar ru meschach.a $(OLDLIST); $(RANLIB) meschach.a
-
-
+	ar ru meschach.a $(OLDLIST); $(RANLIB) meschach.a
+	$(RANLIB) meschach.a
 
 #######################################
 
@@ -180,8 +199,8 @@ cleanup:
 realclean:
 	/bin/rm -f *$O core asx5213a.mat iotort.dat *.a
 	/bin/rm -f torture sptort ztorture memtort itertort mfuntort iotort
-	/bin/rm -f makefile machine.h config.status maxint macheps
- 
+#	/bin/rm -f makefile machine.h config.status maxint macheps
+
 alltorture: torture sptort ztorture memtort itertort mfuntort iotort
 
 torture:torture$O meschach.a

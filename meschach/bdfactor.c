@@ -29,7 +29,7 @@
   */
 
 /* bdfactor.c  18/11/93 */
-static	char	rcsid[] = "$Id: bdfactor.c,v 1.1 2001/03/01 17:18:31 rfranke Exp $";
+static	char	rcsid[] = "$Id: bdfactor.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -54,10 +54,10 @@ int lb, ub, n;
    BAND *A;
 
    if (lb < 0 || ub < 0 || n <= 0)
-     error(E_NEG,"bd_get");
+     m_error(E_NEG,"bd_get");
 
    if ((A = NEW(BAND)) == (BAND *)NULL)
-     error(E_MEM,"bd_get");
+     m_error(E_MEM,"bd_get");
    else if (mem_info_is_on()) {
       mem_bytes(TYPE_BAND,0,sizeof(BAND));
       mem_numvar(TYPE_BAND,1);
@@ -98,11 +98,11 @@ int new_lb,new_ub,new_n;
    Real **Av;
 
    if (new_lb < 0 || new_ub < 0 || new_n <= 0)
-     error(E_NEG,"bd_resize");
+     m_error(E_NEG,"bd_resize");
    if ( ! A )
      return bd_get(new_lb,new_ub,new_n);
     if ( A->lb+A->ub+1 > A->mat->m )
-	error(E_INTERN,"bd_resize");
+	m_error(E_INTERN,"bd_resize");
 
    if ( A->lb == new_lb && A->ub == new_ub && A->mat->n == new_n )
 	return A;
@@ -152,12 +152,13 @@ int new_lb,new_ub,new_n;
 
 
 BAND *bd_copy(A,B)
-BAND *A,*B;
+const BAND *A;
+BAND       *B;
 {
    int lb,ub,i,j,n;
    
    if ( !A )
-     error(E_NULL,"bd_copy");
+     m_error(E_NULL,"bd_copy");
 
    if (A == B) return B;
    
@@ -183,17 +184,17 @@ BAND *A,*B;
 
 /* copy band matrix to a square matrix */
 MAT *band2mat(bA,A)
-BAND *bA;
-MAT *A;
+const BAND *bA;
+MAT        *A;
 {
    int i,j,l,n,n1;
    int lb, ub;
    Real **bmat;
 
    if ( !bA || !A)
-     error(E_NULL,"band2mat");
+     m_error(E_NULL,"band2mat");
    if ( bA->mat == A )
-     error(E_INSITU,"band2mat");
+     m_error(E_INSITU,"band2mat");
 
    ub = bA->ub;
    lb = bA->lb;
@@ -214,19 +215,19 @@ MAT *A;
 /* copy a square matrix to a band matrix with 
    lb subdiagonals and ub superdiagonals */
 BAND *mat2band(A,lb,ub,bA)
-BAND *bA;
-MAT *A;
-int lb, ub;
+BAND      *bA;
+const MAT *A;
+int       lb, ub;
 {
    int i, j, l, n1;
    Real **bmat;
    
    if (! A || ! bA)
-     error(E_NULL,"mat2band");
+     m_error(E_NULL,"mat2band");
    if (ub < 0 || lb < 0)
-     error(E_SIZES,"mat2band");
+     m_error(E_SIZES,"mat2band");
    if (bA->mat == A)
-     error(E_INSITU,"mat2band");
+     m_error(E_INSITU,"mat2band");
 
    n1 = A->n-1;
    lb = min(n1,lb);
@@ -249,14 +250,15 @@ int lb, ub;
 */
 
 BAND *bd_transp(in,out)
-BAND *in, *out;
+const BAND *in;
+BAND       *out;
 {
    int i, j, jj, l, k, lb, ub, lub, n, n1;
    int in_situ;
    Real  **in_v, **out_v;
    
    if ( in == (BAND *)NULL || in->mat == (MAT *)NULL )
-     error(E_NULL,"bd_transp");
+     m_error(E_NULL,"bd_transp");
 
    lb = in->lb;
    ub = in->ub;
@@ -370,7 +372,7 @@ PERM	*pivot;
    Real max1, temp;
    
    if ( bA==(BAND *)NULL || pivot==(PERM *)NULL )
-     error(E_NULL,"bdLUfactor");
+     m_error(E_NULL,"bdLUfactor");
 
    lb = bA->lb;
    ub = bA->ub;
@@ -380,7 +382,7 @@ PERM	*pivot;
    lub = lb+ub;
 
    if ( pivot->size != n )
-     error(E_SIZES,"bdLUfactor");
+     m_error(E_SIZES,"bdLUfactor");
 
    
    /* initialise pivot with identity permutation */
@@ -453,9 +455,9 @@ VEC	*b,*x;
    Real **bA_v;
 
    if ( bA==(BAND *)NULL || b==(VEC *)NULL || pivot==(PERM *)NULL )
-     error(E_NULL,"bdLUsolve");
+     m_error(E_NULL,"bdLUsolve");
    if ( bA->mat->n != b->dim || bA->mat->n != pivot->size)
-     error(E_SIZES,"bdLUsolve");
+     m_error(E_SIZES,"bdLUsolve");
  
    lb = bA->lb;
    ub = bA->ub;
@@ -509,7 +511,7 @@ BAND *A;
    Real c, cc;
 
    if ( ! A )
-     error(E_NULL,"bdLDLfactor");
+     m_error(E_NULL,"bdLDLfactor");
 
    if (A->lb == 0) return A;
 
@@ -529,7 +531,7 @@ BAND *A;
 	 c -= Av[lb][j]*cc*cc;
       }
       if (c == 0.0)
-	error(E_SING,"bdLDLfactor");
+	m_error(E_SING,"bdLDLfactor");
       Av[lb][k] = c;
 
       /* matrix L */
@@ -557,9 +559,9 @@ VEC    *b, *x;
    Real c;
 
    if ( ! A || ! b )
-     error(E_NULL,"bdLDLsolve");
+     m_error(E_NULL,"bdLDLsolve");
    if ( A->mat->n != b->dim )
-     error(E_SIZES,"bdLDLsolve");
+     m_error(E_SIZES,"bdLDLsolve");
 
    n = A->mat->n;
    n1 = n-1;

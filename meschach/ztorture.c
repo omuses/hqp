@@ -29,7 +29,7 @@
 	library, complex routines
 */
 
-static char rcsid[] = "$Id: ztorture.c,v 1.1 2001/03/01 17:19:25 rfranke Exp $";
+static char rcsid[] = "$Id: ztorture.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -53,7 +53,7 @@ PERM	*pi1, *pi2;
     int		i;
 
     if ( ! pi1 || ! pi2 )
-	error(E_NULL,"cmp_perm");
+	m_error(E_NULL,"cmp_perm");
     if ( pi1->size != pi2->size )
 	return 0;
     for ( i = 0; i < pi1->size; i++ )
@@ -69,7 +69,7 @@ PERM	*pi;
     int		i, j, k;
 
     if ( ! pi )
-	error(E_NULL,"px_rand");
+	m_error(E_NULL,"px_rand");
 
     for ( i = 0; i < 3*pi->size; i++ )
     {
@@ -85,7 +85,7 @@ PERM	*pi;
 #define	MATLAB_NAME	"alpha"
 char	name[81] = MATLAB_NAME;
 
-void	main(argc, argv)
+int	main(argc, argv)
 int	argc;
 char	*argv[];
 {
@@ -226,12 +226,12 @@ char	*argv[];
     /* testing m_catch() etc */
     notice("error handling routines");
     m_catch(E_NULL,
-	  catchall(zv_add(ZVNULL,ZVNULL,ZVNULL);
-		     errmesg("tracecatch() failure"),
-		     printf("# tracecatch() caught error\n");
-		     error(E_NULL,"main"));
-	             errmesg("m_catch() failure"),
-	  printf("# m_catch() caught E_NULL error\n"));
+	    m_catchall(zv_add(ZVNULL,ZVNULL,ZVNULL);
+		       errmesg("tracecatch() failure"),
+		       printf("# tracecatch() caught error\n");
+		       m_error(E_NULL,"main"));
+	    errmesg("m_catch() failure"),
+	    printf("# m_catch() caught E_NULL error\n"));
 
     /* testing inner products and v_mltadd() etc */
     notice("inner products and linear combinations");
@@ -253,16 +253,9 @@ char	*argv[];
 	printf("# error norm = %g\n", zv_norm2(u));
     }
 
-#ifdef ANSI_C
     zv_linlist(u,x,z1,y,ONE,VNULL);
     if ( zv_norm2(zv_sub(u,z,u)) >= MACHEPS*x->dim )
 	errmesg("zv_linlist()");
-#endif
-#ifdef VARARGS
-    zv_linlist(u,x,z1,y,ONE,VNULL);
-    if ( zv_norm2(zv_sub(u,z,u)) >= MACHEPS*x->dim )
-	errmesg("zv_linlist()");
-#endif
 
     MEMCHK();
 
@@ -455,8 +448,8 @@ char	*argv[];
     notice("LU factor/solve");
     pivot = px_get(A->m);
     zLUfactor(A,pivot);
-    tracecatch(zLUsolve(A,pivot,y,x),"main");
-    tracecatch(cond_est = zLUcondest(A,pivot),"main");
+    m_tracecatch(zLUsolve(A,pivot,y,x),"main");
+    m_tracecatch(cond_est = zLUcondest(A,pivot),"main");
     printf("# cond(A) approx= %g\n", cond_est);
     if ( zv_norm2(zv_sub(x,z,u)) >= MACHEPS*zv_norm2(x)*cond_est)
     {
@@ -467,8 +460,8 @@ char	*argv[];
 
 
     zv_copy(y,x);
-    tracecatch(zLUsolve(A,pivot,x,x),"main");
-    tracecatch(cond_est = zLUcondest(A,pivot),"main");
+    m_tracecatch(zLUsolve(A,pivot,x,x),"main");
+    m_tracecatch(cond_est = zLUcondest(A,pivot),"main");
     if ( zv_norm2(zv_sub(x,z,u)) >= MACHEPS*zv_norm2(x)*cond_est)
     {
 	errmesg("zLUfactor()/zLUsolve()");
@@ -478,7 +471,7 @@ char	*argv[];
 
     zvm_mlt(B,z,y);
     zv_copy(y,x);
-    tracecatch(zLUAsolve(A,pivot,x,x),"main");
+    m_tracecatch(zLUAsolve(A,pivot,x,x),"main");
     if ( zv_norm2(zv_sub(x,z,u)) >= MACHEPS*zv_norm2(x)*cond_est)
     {
 	errmesg("zLUfactor()/zLUAsolve()");
@@ -711,5 +704,7 @@ char	*argv[];
     MEMCHK();
     printf("# Finished torture test for complex numbers/vectors/matrices\n");
     mem_info();
+
+    return 0;
 }
 

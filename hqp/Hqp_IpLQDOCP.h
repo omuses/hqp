@@ -36,7 +36,10 @@
 #include "Meschach.h"
 
 #include "t_mesch.h"
-#include "meschext_ea.h"
+extern "C" {
+#include <meschach/addon_hqp.h>
+#include <meschach/spaddon_hqp.h>
+}
 
 //----------   Hqp_IpLQDOCP   ----------
 

@@ -34,7 +34,7 @@
 */
 
 /* givens.c 1.2 11/25/87 */
-static	char	rcsid[] = "$Id: givens.c,v 1.1 2001/03/01 17:18:35 rfranke Exp $";
+static	char	rcsid[] = "$Id: givens.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -65,9 +65,9 @@ double	c,s;
 	Real	temp;
 
 	if ( x==VNULL )
-		error(E_NULL,"rot_vec");
+		m_error(E_NULL,"rot_vec");
 	if ( i >= x->dim || k >= x->dim )
-		error(E_RANGE,"rot_vec");
+		m_error(E_RANGE,"rot_vec");
 	out = v_copy(x,out);
 
 	/* temp = c*out->ve[i] + s*out->ve[k]; */
@@ -90,9 +90,9 @@ double	c,s;
 	Real	temp;
 
 	if ( mat==(MAT *)NULL )
-		error(E_NULL,"rot_rows");
+		m_error(E_NULL,"rot_rows");
 	if ( i >= mat->m || k >= mat->m )
-		error(E_RANGE,"rot_rows");
+		m_error(E_RANGE,"rot_rows");
 	out = m_copy(mat,out);
 
 	for ( j=0; j<mat->n; j++ )
@@ -118,9 +118,9 @@ double	c,s;
 	Real	temp;
 
 	if ( mat==(MAT *)NULL )
-		error(E_NULL,"rot_cols");
+		m_error(E_NULL,"rot_cols");
 	if ( i >= mat->n || k >= mat->n )
-		error(E_RANGE,"rot_cols");
+		m_error(E_RANGE,"rot_cols");
 	out = m_copy(mat,out);
 
 	for ( j=0; j<mat->m; j++ )

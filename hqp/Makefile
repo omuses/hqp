@@ -27,7 +27,6 @@ SRCS = 	Hqp_Init.C \
 	Hqp_IpRedSpBKP.C \
 	Hqp_IpLQDOCP.C \
 	t_mesch.C \
-	meschext_ea.C \
 	Hqp_IpSpSC.C \
 	meschext_hl.C \
 	Hqp_SqpSolver.C \

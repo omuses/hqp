@@ -30,7 +30,7 @@
 	to use Karen George's suggestion to use unordered rows
 */
 
-static	char	rcsid[] = "$Id: spswap.c,v 1.1 2001/03/01 17:19:09 rfranke Exp $";
+static	char	rcsid[] = "$Id: spswap.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -53,9 +53,9 @@ int	max_row;
     row_elt	*e;
 
     if ( ! A || ! scan_row || ! scan_idx || ! col_list )
-	error(E_NULL,"scan_to");
+	m_error(E_NULL,"scan_to");
     if ( scan_row->dim != scan_idx->dim || scan_idx->dim != col_list->dim )
-	error(E_SIZES,"scan_to");
+	m_error(E_SIZES,"scan_to");
 
     if ( max_row < 0 )
 	return;
@@ -70,7 +70,7 @@ int	max_row;
 	col = col_list->ive[j_idx];
 
 	if ( col < 0 || col >= A->n )
-	    error(E_BOUNDS,"scan_to");
+	    m_error(E_BOUNDS,"scan_to");
 	if ( row_num < 0 )
 	{
 	    idx = col;
@@ -78,15 +78,15 @@ int	max_row;
 	}
 	r = &(A->row[row_num]);
 	if ( idx < 0 )
-	    error(E_INTERN,"scan_to");
+	    m_error(E_INTERN,"scan_to");
 	e = &(r->elt[idx]);
 	if ( e->col != col )
-	    error(E_INTERN,"scan_to");
+	    m_error(E_INTERN,"scan_to");
 	if ( idx < 0 )
 	{
 	    printf("scan_to: row_num = %d, idx = %d, col = %d\n",
 		   row_num, idx, col);
-	    error(E_INTERN,"scan_to");
+	    m_error(E_INTERN,"scan_to");
 	}
 	/* if ( e->nxt_row <= max_row )
 	    chase_col(A, col, &row_num, &idx, max_row); */
@@ -141,7 +141,7 @@ int	col, *row_num, *idx, max_row;
     row_elt	*e;
     
     if ( col < 0 || col >= A->n )
-	error(E_BOUNDS,"chase_col");
+	m_error(E_BOUNDS,"chase_col");
     tmp_row = *row_num;
     if ( tmp_row < 0 )
     {
@@ -177,7 +177,7 @@ int	col, *row_num, *idx, max_row;
 	    printf("chase_col:error: A =\n");
 	    sp_dump(stdout,A);
 #endif
-	    error(E_INTERN,"chase_col");
+	    m_error(E_INTERN,"chase_col");
 	}
 	e = &(r->elt[tmp_idx]);
 	old_row = tmp_row;
@@ -234,7 +234,7 @@ int	col, *row_num, *idx, min_row;
 	r = &(A->row[tmp_row]);
 	if ( tmp_idx < 0 || tmp_idx >= r->len ||
 	     r->elt[tmp_idx].col != col )
-	    error(E_INTERN,"chase_past");
+	    m_error(E_INTERN,"chase_past");
 	tmp_row = r->elt[tmp_idx].nxt_row;
 	tmp_idx = r->elt[tmp_idx].nxt_idx;
     }
@@ -247,7 +247,7 @@ int	col, *row_num, *idx, min_row;
     {
 	if ( tmp_idx < 0 || tmp_idx >= A->row[tmp_row].len ||
 	     A->row[tmp_row].elt[tmp_idx].col != col )
-	    error(E_INTERN,"bump_col");
+	    m_error(E_INTERN,"bump_col");
 	e = &(A->row[tmp_row].elt[tmp_idx]);
     }
 
@@ -278,7 +278,7 @@ int	col, *row_num, *idx;
 	r = &(A->row[tmp_row]);
 	if ( tmp_idx < 0 || tmp_idx >= r->len ||
 	     r->elt[tmp_idx].col != col )
-	    error(E_INTERN,"bump_col");
+	    m_error(E_INTERN,"bump_col");
 	e = &(r->elt[tmp_idx]);
 	tmp_row = e->nxt_row;
 	tmp_idx = e->nxt_idx;
@@ -292,7 +292,7 @@ int	col, *row_num, *idx;
     {
 	if ( tmp_idx < 0 || tmp_idx >= A->row[tmp_row].len ||
 	     A->row[tmp_row].elt[tmp_idx].col != col )
-	    error(E_INTERN,"bump_col");
+	    m_error(E_INTERN,"bump_col");
 	e = &(A->row[tmp_row].elt[tmp_idx]);
     }
     *row_num = tmp_row;

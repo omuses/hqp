@@ -27,7 +27,7 @@
 /* test of I/O functions */
 
 
-static char rcsid[] = "$Id: iotort.c,v 1.1 2001/03/01 17:18:36 rfranke Exp $";
+static char rcsid[] = "$Id: iotort.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include "sparse.h"
 #include "zmatrix.h"
@@ -37,7 +37,7 @@ static char rcsid[] = "$Id: iotort.c,v 1.1 2001/03/01 17:18:36 rfranke Exp $";
 #define notice(mesg)	printf("# Testing %s...\n",mesg);
 
 
-void main()
+int main()
 {
    VEC *x;
    MAT *A;
@@ -138,4 +138,6 @@ void main()
    fclose(fp);
 
    mem_info();
+
+   return 0;
 }

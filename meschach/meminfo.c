@@ -42,7 +42,7 @@
 #include  "iter.h"
 #endif
 
-static char rcsid[] = "$Id: meminfo.c,v 1.1 2001/03/01 17:18:50 rfranke Exp $";
+static char rcsid[] = "$Id: meminfo.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 /* this array is defined further in this file */
 extern MEM_CONNECT mem_connect[MEM_CONNECT_MAX_LISTS];
@@ -119,7 +119,7 @@ MEM_ARRAY info_sum[];    /* local table */
    
    /* if a list exists do not overwrite */
    if ( mem_connect[list].ntypes != 0 )
-     error(E_OVERWRITE,"mem_attach_list");
+     m_error(E_OVERWRITE,"mem_attach_list");
    
    mem_connect[list].ntypes = ntypes;
    mem_connect[list].type_names = type_names;
@@ -216,11 +216,7 @@ int sw;
    return old;
 }
 
-#ifdef ANSI_C
 int mem_info_is_on(void)
-#else
-int mem_info_is_on()
-#endif
 {
    return mem_switched_on;
 }
@@ -328,7 +324,7 @@ if (list != 0)
      return;
 
    if ( old_size < 0 || new_size < 0 )
-     error(E_NEG,"mem_bytes_list");
+     m_error(E_NEG,"mem_bytes_list");
 
    mlist->info_sum[type].bytes += new_size - old_size;
    

@@ -641,6 +641,9 @@ SPMAT *pxinv_sprows(const PERM *px, const SPMAT *src, SPMAT *dst)
   return dst;
 }
 
+/* pxinv_vex moved to meschach/pxop.c */
+#undef _PX
+#ifdef _PX
 /*
  * pxinv_vec:
  *   -- permute a vector
@@ -699,3 +702,4 @@ VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst)
 
   return dst;
 }
+#endif

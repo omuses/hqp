@@ -29,7 +29,7 @@
 */
 
 /* LUfactor.c 1.5 11/25/87 */
-static	char	rcsid[] = "$Id: lufactor.c,v 1.1 2001/03/01 17:18:43 rfranke Exp $";
+static	char	rcsid[] = "$Id: lufactor.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -53,9 +53,9 @@ PERM	*pivot;
 	static	VEC	*scale = VNULL;
 
 	if ( A==(MAT *)NULL || pivot==(PERM *)NULL )
-		error(E_NULL,"LUfactor");
+		m_error(E_NULL,"LUfactor");
 	if ( pivot->size != A->m )
-		error(E_SIZES,"LUfactor");
+		m_error(E_SIZES,"LUfactor");
 	m = A->m;	n = A->n;
 	scale = v_resize(scale,A->m);
 	MEM_STAT_REG(scale,TYPE_VEC);
@@ -135,9 +135,9 @@ PERM	*pivot;
 VEC	*b,*x;
 {
 	if ( A==(MAT *)NULL || b==(VEC *)NULL || pivot==(PERM *)NULL )
-		error(E_NULL,"LUsolve");
+		m_error(E_NULL,"LUsolve");
 	if ( A->m != A->n || A->n != b->dim )
-		error(E_SIZES,"LUsolve");
+		m_error(E_SIZES,"LUsolve");
 
 	x = v_resize(x,b->dim);
 	px_vec(pivot,b,x);	/* x := P.b */
@@ -154,9 +154,9 @@ PERM	*pivot;
 VEC	*b,*x;
 {
 	if ( ! LU || ! b || ! pivot )
-		error(E_NULL,"LUTsolve");
+		m_error(E_NULL,"LUTsolve");
 	if ( LU->m != LU->n || LU->n != b->dim )
-		error(E_SIZES,"LUTsolve");
+		m_error(E_SIZES,"LUTsolve");
 
 	x = v_copy(b,x);
 	UTsolve(LU,x,x,0.0);	/* explicit diagonal */
@@ -177,9 +177,9 @@ MAT	*A, *out;
 	static PERM	*pivot = PNULL;
 
 	if ( ! A )
-	    error(E_NULL,"m_inverse");
+	    m_error(E_NULL,"m_inverse");
 	if ( A->m != A->n )
-	    error(E_SQUARE,"m_inverse");
+	    m_error(E_SQUARE,"m_inverse");
 	if ( ! out || out->m < A->m || out->n < A->n )
 	    out = m_resize(out,A->m,A->n);
 
@@ -191,12 +191,12 @@ MAT	*A, *out;
 	MEM_STAT_REG(tmp, TYPE_VEC);
 	MEM_STAT_REG(tmp2,TYPE_VEC);
 	MEM_STAT_REG(pivot,TYPE_PERM);
-	tracecatch(LUfactor(A_cp,pivot),"m_inverse");
+	m_tracecatch(LUfactor(A_cp,pivot),"m_inverse");
 	for ( i = 0; i < A->n; i++ )
 	{
 	    v_zero(tmp);
 	    tmp->ve[i] = 1.0;
-	    tracecatch(LUsolve(A_cp,pivot,tmp,tmp2),"m_inverse");
+	    m_tracecatch(LUsolve(A_cp,pivot,tmp,tmp2),"m_inverse");
 	    set_col(out,i,tmp2);
 	}
 
@@ -214,11 +214,11 @@ PERM	*pivot;
     int		i, j, n;
 
     if ( ! LU || ! pivot )
-	error(E_NULL,"LUcondest");
+	m_error(E_NULL,"LUcondest");
     if ( LU->m != LU->n )
-	error(E_SQUARE,"LUcondest");
+	m_error(E_SQUARE,"LUcondest");
     if ( LU->n != pivot->size )
-	error(E_SIZES,"LUcondest");
+	m_error(E_SIZES,"LUcondest");
 
     n = LU->n;
     y = v_resize(y,n);
@@ -261,7 +261,7 @@ PERM	*pivot;
 	    L_norm = sum;
     }
 
-    tracecatch(cond_est = U_norm*L_norm*v_norm_inf(z)/v_norm_inf(y),
+    m_tracecatch(cond_est = U_norm*L_norm*v_norm_inf(z)/v_norm_inf(y),
 	       "LUcondest");
 
     return cond_est;

@@ -31,7 +31,7 @@
 #include	<math.h>
 #include	"zmatrix.h"
 
-static char rcsid[] = "$Id: zfunc.c,v 1.1 2001/03/01 17:19:15 rfranke Exp $";
+static char rcsid[] = "$Id: zfunc.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #ifndef COMPLEX_H
 
@@ -136,7 +136,7 @@ complex	z;
     int		x_expt, y_expt;
 
     if ( z.re == 0.0 && z.im == 0.0 )
-	error(E_SING,"zinv");
+	m_error(E_SING,"zinv");
     /* Note: we must ensure that overflow does not occur! */
     x = ( z.re >= 0.0 ) ? z.re : -z.re;
     y = ( z.im >= 0.0 ) ? z.im : -z.im;

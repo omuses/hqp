@@ -30,7 +30,7 @@
 	factorisations.
 */
 
-static	char	rcsid[] = "$Id: hessen.c,v 1.1 2001/03/01 17:18:35 rfranke Exp $";
+static	char	rcsid[] = "$Id: hessen.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	"matrix.h"
@@ -49,11 +49,11 @@ VEC	*diag, *beta;
 	int	k, limit;
 
 	if ( ! A || ! diag || ! beta )
-		error(E_NULL,"Hfactor");
+		m_error(E_NULL,"Hfactor");
 	if ( diag->dim < A->m - 1 || beta->dim < A->m - 1 )
-		error(E_SIZES,"Hfactor");
+		m_error(E_SIZES,"Hfactor");
 	if ( A->m != A->n )
-		error(E_SQUARE,"Hfactor");
+		m_error(E_SQUARE,"Hfactor");
 	limit = A->m - 1;
 
 	tmp1 = v_resize(tmp1,A->m);
@@ -99,12 +99,12 @@ VEC	*diag, *beta;
 	static	VEC	*tmp1 = VNULL, *tmp2 = VNULL;
 
 	if ( H==(MAT *)NULL || diag==(VEC *)NULL || beta==(VEC *)NULL )
-		error(E_NULL,"makeHQ");
+		m_error(E_NULL,"makeHQ");
 	limit = H->m - 1;
 	if ( diag->dim < limit || beta->dim < limit )
-		error(E_SIZES,"makeHQ");
+		m_error(E_SIZES,"makeHQ");
 	if ( H->m != H->n )
-		error(E_SQUARE,"makeHQ");
+		m_error(E_SQUARE,"makeHQ");
 	Qout = m_resize(Qout,H->m,H->m);
 
 	tmp1 = v_resize(tmp1,H->m);
@@ -144,9 +144,9 @@ MAT	*H, *Hout;
 	int	i, j, limit;
 
 	if ( H==(MAT *)NULL )
-		error(E_NULL,"makeH");
+		m_error(E_NULL,"makeH");
 	if ( H->m != H->n )
-		error(E_SQUARE,"makeH");
+		m_error(E_SQUARE,"makeH");
 	Hout = m_resize(Hout,H->m,H->m);
 	Hout = m_copy(H,Hout);
 

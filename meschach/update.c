@@ -29,7 +29,7 @@
 */
 
 /* update.c 1.3 11/25/87 */
-static	char	rcsid[] = "$Id: update.c,v 1.1 2001/03/01 17:19:13 rfranke Exp $";
+static	char	rcsid[] = "$Id: update.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -53,9 +53,9 @@ double	alpha;
 	Real	diag,new_diag,beta,p;
 
 	if ( CHmat==(MAT *)NULL || w==(VEC *)NULL )
-		error(E_NULL,"LDLupdate");
+		m_error(E_NULL,"LDLupdate");
 	if ( CHmat->m != CHmat->n || w->dim != CHmat->m )
-		error(E_SIZES,"LDLupdate");
+		m_error(E_SIZES,"LDLupdate");
 
 	for ( j=0; j < w->dim; j++ )
 	{
@@ -63,7 +63,7 @@ double	alpha;
 		diag = CHmat->me[j][j];
 		new_diag = CHmat->me[j][j] = diag + alpha*p*p;
 		if ( new_diag <= 0.0 )
-			error(E_POSDEF,"LDLupdate");
+			m_error(E_POSDEF,"LDLupdate");
 		beta = p*alpha/new_diag;
 		alpha *= diag/new_diag;
 
@@ -91,10 +91,10 @@ VEC	*u,*v;
 	Real	c,s,temp;
 
 	if ( ! R || ! u || ! v )
-		error(E_NULL,"QRupdate");
+		m_error(E_NULL,"QRupdate");
 	if ( ( Q && ( Q->m != Q->n || R->m != Q->n ) ) ||
 					u->dim != R->m || v->dim != R->n )
-		error(E_SIZES,"QRupdate");
+		m_error(E_SIZES,"QRupdate");
 
 	/* find largest k s.t. u[k] != 0 */
 	for ( k=R->m-1; k>=0; k-- )

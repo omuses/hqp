@@ -58,7 +58,8 @@ PERM *sp_kktrcm(const SPMAT *Q, const SPMAT *A, const SPMAT *C,
 SPMAT *pxinv_sprows(const PERM *px, const SPMAT *src, SPMAT *dst);
 SPMAT *pxinv_spcols(const PERM *px, const SPMAT *src, SPMAT *dst);
 
-VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst);
+/* pxinv_vec moved to meschach/pxop.c */
+/* VEC *pxinv_vec(const PERM *px, const VEC *src, VEC *dst); */
 
 IVEC *sp_rcm_scan(const SPMAT *Q, const SPMAT *A, const SPMAT *C,
 		  IVEC *degree, IVEC *neigh_start, IVEC *neighs);

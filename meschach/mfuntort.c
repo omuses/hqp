@@ -26,7 +26,7 @@
 
 /* mfuntort.c,  10/11/93 */
 
-static char rcsid[] = "$Id: mfuntort.c,v 1.1 2001/03/01 17:18:54 rfranke Exp $";
+static char rcsid[] = "$Id: mfuntort.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 #include        <stdio.h>
 #include        <math.h>
@@ -39,7 +39,7 @@ static char rcsid[] = "$Id: mfuntort.c,v 1.1 2001/03/01 17:18:54 rfranke Exp $";
 
 #define DIM  10
 
-void main()
+int main()
 {
 
    MAT *A, *B, *C, *OUTA, *OUTB, *TMP;
@@ -177,5 +177,7 @@ void main()
    V_FREE(x);
 
    mem_info();
+
+   return 0;
 }
 
