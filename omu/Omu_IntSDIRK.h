@@ -1,7 +1,7 @@
 /*
  * Omu_IntSDIRK.h --
  *   -- class for integrating an Ode over a stage
- *   -- using implicit Runge Kutta method (Radau IIa - 3. order)
+ *   -- using implicit Runge Kutta method
  *
  * hl, 03/08/00
  */
@@ -27,6 +27,8 @@
 
 #ifndef Omu_IntSDIRK_H
 #define Omu_IntSDIRK_H
+
+#define OMU_WITH_ADOLC 1
 
 #include "Omu_Integrator.h"
 
@@ -54,7 +56,9 @@ class Omu_IntSDIRK: public Omu_Integrator {
   void jac(int ,double ,const VECP ,const VECP , const VECP , VECP );
   void res(double ,const VECP ,const VECP , const VECP , VECP);
   void resize();
-  void init_method();
+  void init_method2();
+  void init_method4();
+  void init_method5();
   void init_yprime_pred(MATP );
   void solve_stage(int , VECP , VECP );
   void solve_stage_lsqr(int , VECP , VECP );
@@ -106,6 +110,7 @@ class Omu_IntSDIRK: public Omu_Integrator {
   int		_mu;	     // upper semi-bandwidth
   int		_ml;	     // lower semi-bandwidth
   int           _na;         // number of algebraic states
+  int           _nv;         // number of expansion variables
   int           _nod;        // number of over determining equations
 
   double        _t;
@@ -141,6 +146,9 @@ class Omu_IntSDIRK: public Omu_Integrator {
   MATP          _yprime;
 
   // parameters of irk method
+
+  bool          _init_method;
+  int           _method;
 
   double        _gamma0;
   VECP          _b;
@@ -183,3 +191,10 @@ class Omu_IntSDIRK: public Omu_Integrator {
 };
 
 #endif
+
+
+
+
+
+
+
