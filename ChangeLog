@@ -1,3 +1,7 @@
+2001-05-22    <rfranke@sourcefoge.net>
+
+	* hxi/Hxi_SimStruct.h: add support for dwork data vectors 
+
 2001-05-11    <rfranke@sourcefoge.net>
 
 	* configure.in: change version to 1.7.8

@@ -36,12 +36,17 @@
 #include "Hxi_mxArray.h"
 
 // definitions expected in S-functions (only a subset is supported)
-#define SS_OPTION_EXCEPTION_FREE_CODE 	0x0001
-#define SS_STDIO_AVAILABLE 		true
+#define SS_OPTION_EXCEPTION_FREE_CODE 		0x0001
+#define SS_OPTION_RUNTIME_EXCEPTION_FREE_CODE 	0x0002
+#define SS_OPTION_PORT_SAMPLE_TIMES_ASSIGNED 	0x0004
+#define SS_REUSABLE_AND_LOCAL 			0x0100
+#define SS_NOT_REUSABLE_AND_GLOBAL 		0x0200
 
-#define CONTINUOUS_SAMPLE_TIME 		0.0
+#define SS_STDIO_AVAILABLE 			true
+#define CONTINUOUS_SAMPLE_TIME 			0.0
 
 // Macros to access SimStruct (only a subset is supported)
+#define HXI_NOT_IMPLEMENTED
 #define ssSetNumSFcnParams(S, np) 	(S)->setNumSFcnParams(np)
 #define ssGetNumSFcnParams(S) 		(S)->getNumSFcnParams()
 #define ssSetSFcnParamsCount(S, num) 	(S)->setSFcnParamsCount(num)
@@ -59,10 +64,14 @@
 #define ssSetNumInputPorts(S, nports) 	(S)->setNumInputPorts(nports)
 #define ssGetNumInputPorts(S) 		(S)->getNumInputPorts()
 #define ssSetInputPortWidth(S, port, nu) (S)->setInputPortWidth(port, nu)
+#define ssSetInputPortVectorDimension(S, port, ny) \
+  ssSetInputPortWidth(S, port, ny)
 #define ssGetInputPortWidth(S, port) 	(S)->getInputPortWidth(port)
 #define ssGetInputPortRealSignal(S, port) (S)->getInputPortRealSignal(port)
 #define ssGetInputPortRealSignalPtrs(S, port) \
   (S)->getInputPortRealSignalPtrs(port)
+#define ssGetInputPortSignalPtrs(S, port) \
+  ssGetInputPortRealSignalPtrs(S, port) 
 #define ssSetInputPortDirectFeedThrough(S, port, dft) \
   (S)->setInputPortDirectFeedThrough(port, dft)
 #define ssGetInputPortDirectFeedThrough(S, port) \
@@ -71,13 +80,23 @@
   (S)->setInputPortRequiredContiguous(port)
 #define ssGetInputPortRequiredContiguous(S, port) \
   (S)->getInputPortRequiredContiguous(port)
+#define ssSetInputPortOverWritable(S, port, val) HXI_NOT_IMPLEMENTED
+#define ssSetInputPortSampleTime(S, port, val)   HXI_NOT_IMPLEMENTED
+#define ssSetInputPortOffsetTime(S, port, val)   HXI_NOT_IMPLEMENTED
+#define ssSetInputPortOptimOpts(S, port, val)    HXI_NOT_IMPLEMENTED
 #define ssSetNumOutputPorts(S, nports) 	(S)->setNumOutputPorts(nports)
 #define ssGetNumOutputPorts(S) 		(S)->getNumOutputPorts()
 #define ssSetOutputPortWidth(S, port, ny) (S)->setOutputPortWidth(port, ny)
+#define ssSetOutputPortVectorDimension(S, port, ny) \
+  ssSetOutputPortWidth(S, port, ny)
 #define ssGetOutputPortWidth(S, port) 	(S)->getOutputPortWidth(port)
 #define ssGetOutputPortRealSignal(S, port) (S)->getOutputPortRealSignal(port)
+#define ssGetOutputPortSignal(S, port)  ssGetOutputPortRealSignal(S, port)
 #define ssGetOutputPortRealSignalPtrs(S, port) \
   (S)->getOutputPortRealSignalPtrs(port)
+#define ssSetOutputPortSampleTime(S, port, val) HXI_NOT_IMPLEMENTED
+#define ssSetOutputPortOffsetTime(S, port, val) HXI_NOT_IMPLEMENTED
+#define ssSetOutputPortOptimOpts(S, port, val)  HXI_NOT_IMPLEMENTED
 #define ssSetNumSampleTimes(S, ns) 	(S)->setNumSampleTimes(ns)
 #define ssGetNumSampleTimes(S) 		(S)->getNumSampleTimes()
 #define ssSetSampleTime(S, idx, val) 	(S)->setSampleTime(idx, val)
@@ -93,9 +112,21 @@
 #define ssSetNumPWork(S, npw) 		(S)->setNumPWork(npw)
 #define ssGetNumPWork(S) 		(S)->getNumPWork()
 #define ssGetPWork(S) 			(S)->getPWork()
+#define ssSetNumDWork(S, ndw) 		(S)->setNumDWork(ndw)
+#define ssGetNumDWork(S) 		(S)->getNumDWork()
+#define ssSetDWorkWidth(S, idx, width) 	(S)->setDWorkWidth(idx, width)
+#define ssGetDWorkWidth(S, idx) 	(S)->getDWorkWidth(idx)
+#define ssSetDWorkName(S, idx, name) 	HXI_NOT_IMPLEMENTED
+#define ssGetDWorkName(S, idx) 		HXI_NOT_IMPLEMENTED
+#define ssSetDWorkUsedAsDState(S, idx, usage) \
+  (S)->setDWorkUsedAsDState(idx, usage)
+#define ssGetDWorkUsedAsDState(S, idx)  (S)->getDWorkUsedAsDState(idx)
+#define ssGetDWork(S, idx) 		(S)->getDWork(idx)
 #define ssSetNumModes(S, nm)		(S)->setNumModes(nm)
 #define ssGetNumModes(S)		(S)->getNumModes()
 #define ssGetModeVector(S)		(S)->getModeVector()
+#define ssSetUserData(S, ptr) 		(S)->setUserData(ptr)
+#define ssGetUserData(S) 		(S)->getUserData()
 #define ssSetNumNonsampledZCs(S, nzcs) 	(S)->setNumNonsampledZCs(nzcs)
 #define ssGetNumNonsampledZCs(S) 	(S)->getNumNonsampledZCs()
 #define ssSetOptions(S, opts) 		(S)->setOptions(opts)
@@ -113,6 +144,11 @@
 #define ssWarning(S, msg) \
   printf("Warning: S-function \"%s\": %s\n", ssGetPath(S), msg)
 #define ssPrintf 			printf
+#define ssSetRTWGeneratedSFcn(S, val)  	HXI_NOT_IMPLEMENTED
+#define ssSetChecksum0(S, val)  	HXI_NOT_IMPLEMENTED
+#define ssSetChecksum1(S, val)  	HXI_NOT_IMPLEMENTED
+#define ssSetChecksum2(S, val)  	HXI_NOT_IMPLEMENTED
+#define ssSetChecksum3(S, val)  	HXI_NOT_IMPLEMENTED
 
 /**
  * SimStruct for HQP.
@@ -133,6 +169,8 @@ protected:
   int_T 	 _xd_size;	// number of discrete states
   vector<int_T>  _u_width;	// number of inputs per port
   vector<int_T>  _y_width;	// number of outputs per port
+  vector<int_T>  _dwork_width;	// number of elements per dwork vector
+  vector<int_T>  _dwork_usage;	// usage of each data work vector
 
   vector<mxArray> _p; 		// parameters provided by calling program
   vector<real_T> _xc; 		// continuous states
@@ -143,6 +181,7 @@ protected:
   vector<int_T>  _u_dft;	// mark if input port is accessed in mdlOutputs
   vector< vector<real_T> > _y; 	// outputs
   vector< vector<real_T *> > _yPtrs; // pointers to outputs
+  vector< vector<real_T> > _dwork; // data work vectors
 
   int_T 	 _st_size;	// number of sample times
   real_T 	 _st_period;	// sample time period 
@@ -153,6 +192,7 @@ protected:
   vector<int_T>  _iwork; 	// int work array
   vector<void *> _pwork; 	// pointer work array
   vector<int_T>  _modes;	// modes array
+  void 		*_userData; 	// pointer to user data
 
   uint_T 	_options; 	// option flags
 
@@ -161,6 +201,7 @@ protected:
   real_T	*_xd_ext;	// externally provided memory for disc. states
   real_T	*_u_ext;	// externally provided memory for inputs
   real_T	*_y_ext;	// externally provided memory for outputs
+  real_T	*_dwork_ext;	// externally provided memory for dwork vectors
   real_T	*_rwork_ext;	// externally provided memory for work array
 
   const char_T 	*_model_name; 	// relative name of this model
@@ -183,6 +224,7 @@ public:
     _xd_size = 0;
     _st_size = 0;
     _rwork_size = 0;
+    _userData = NULL;
 
     _options = 0;
 
@@ -191,6 +233,7 @@ public:
     _xd_ext = NULL;
     _u_ext = NULL;
     _y_ext = NULL;
+    _dwork_ext = NULL;
     _rwork_ext = NULL;
 
     _model_name = "Hxi_SimStruct";
@@ -232,6 +275,11 @@ public:
 	  _yPtrs[j][0] = NULL;
       }
     }
+  }
+  /** Set external memory for data work vectors.
+      (currently all elements must be of real_T) */
+  void set_dwork_ext(real_T *rp) {
+    _dwork_ext = rp;
   }
   /** Set external memory for work array */
   void set_rwork_ext(real_T *rp) {
@@ -337,7 +385,7 @@ public:
       // externally provided inputs have linear memory layout
       rp = _u_ext;
       for (int_T j = 0; j < port; ++j)
-	rp += _u[j].size();
+	rp += _u_width[j];
     }
     else {
       if ((int_T)_u[port].size() != _u_width[port])
@@ -405,7 +453,7 @@ public:
       // externally provided outputs have linear memory layout
       rp = _y_ext;
       for (int_T j = 0; j < port; ++j)
-	rp += _y[j].size();
+	rp += _y_width[j];
     }
     else {
       if ((int_T)_y[port].size() != _y_width[port])
@@ -423,6 +471,50 @@ public:
 	_yPtrs[port][i] = rp++;
     }
     return &_yPtrs[port][0];
+  }
+
+  /** Set number of data vectors. */
+  int_T setNumDWork(int_T num) {
+    _dwork.resize(num);
+    _dwork_width.resize(num);
+    _dwork_usage.resize(num);
+    return _dwork.size();
+  }
+  /** Get number of data work vectors. */
+  int_T getNumDWork() {
+    return _dwork.size();
+  }
+  /** Set number elements of a data work vector. */
+  int_T setDWorkWidth(int_T idx, int_T num) {
+    return _dwork_width[idx] = num;
+  }
+  /** Get number of elements of a data work vector. */
+  int_T getDWorkWidth(int_T idx) {
+    return _dwork_width[idx];
+  }
+  /** Specify that a data work vector is used for discrete states. */
+  int_T setDWorkUsedAsDState(int_T idx, int_T usage) {
+    return _dwork_usage[idx] = usage;
+  }
+  /** Determine whether a data work vector is used for discrete states. */
+  int_T getDWorkUsedAsDState(int_T idx) {
+    return _dwork_usage[idx];
+  }
+  /** Get pointer to a data work vector. */
+  real_T *getDWork(int_T idx) {
+    real_T *rp;
+    if (_dwork_ext) {
+      // externally provided data has linear memory layout
+      rp = _dwork_ext;
+      for (int_T j = 0; j < idx; ++j)
+	rp += _dwork_width[j];
+    }
+    else {
+      if ((int_T)_dwork[idx].size() != _dwork_width[idx])
+	_dwork[idx].resize(_dwork_width[idx]);
+      rp = &_dwork[idx][0];
+    }
+    return rp;
   }
 
   /** Set number of sample times. Currently at most one is supported. */
@@ -516,6 +608,15 @@ public:
   /** Get pointer to first element of modes vector. */
   int_T *getModeVector() {
     return &_modes[0];
+  }
+
+  /** Set pointer to user data. */
+  void *setUserData(void *ptr) {
+    return _userData = ptr;
+  }
+  /** Get pointer to user data. */
+  void *getUserData() {
+    return _userData;
   }
 
   /** Set number of states for which zero crossings may occur.
