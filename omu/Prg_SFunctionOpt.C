@@ -497,18 +497,6 @@ void Prg_SFunctionOpt::update(int kk,
     *mdl_u[idx] = _mdl_us[kk][idx];
   }
 
-  // initialize model (this might be required by the S-function
-  // as time steps back, compared to the previous call from continuous)
-  if (ssGetmdlInitializeConditions(_S) != NULL) {
-    mdlInitializeConditions(_S);
-    if (ssGetErrorStatus(_S)) {
-      fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
-	      ssGetErrorStatus(_S));
-      ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlInitializeConditions");
-    }
-  }
-
   // pass current states to model
   real_T *mdl_x = ssGetContStates(_S);
   for (i = 0; i < _mdl_nx; i++)

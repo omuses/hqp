@@ -515,9 +515,8 @@ void Prg_SFunctionEst::update(int kk,
   for (idx = 0; idx < _mdl_nu; idx++)
     *mdl_u[idx] = _mdl_us[kk][idx];
 
-  // initialize model (this is required as parameters change
-  // and as time steps back, compared to previous continous call)
-  if (ssGetmdlInitializeConditions(_S) != NULL) {
+  // initialize model (this is required here as parameters change)
+  if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
     mdlInitializeConditions(_S);
     if (ssGetErrorStatus(_S)) {
       fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
@@ -770,7 +769,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   for (i = 0; i < _mdl_nu; i++)
     *mdl_u[i] = _mdl_us[kk][i] * (1 - rt) + _mdl_us[kk+1][i] * rt;
 
-  if (_mdl_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
+  if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
     // initialize model (this is required as parameters change)
     mdlInitializeConditions(_S);
     if (ssGetErrorStatus(_S)) {

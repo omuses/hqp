@@ -183,6 +183,11 @@ void Prg_SFunction::setup_sfun()
   for (i = 0; i < _mdl_nargs; i++)
     ssSetSFcnParam(_S, i, _mx_args[i]);
 
+  // initialize solver
+  // (note: variable step size is indicated as the model must allow
+  //  simulation time stepping back)
+  ssSetVariableStepSolver(_S, 1);
+
   // initialize model
   mdlInitializeSizes(_S);
   if (ssGetErrorStatus(_S)) {

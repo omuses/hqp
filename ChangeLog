@@ -1,3 +1,11 @@
+2002-11-12    <rfranke>
+
+	* omu/Prg_SFunction.C (setup_sfun):
+	  set flag for variable step size solver in SimStruct _S, to prevent
+	  models from assuming fixed step size
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  do not re-initialize models anymore if time steps back
+
 2002-11-01    <rfranke>
 
 	* configure.in: define USE_COMPAT_CONST for iftcl, in order to
