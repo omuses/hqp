@@ -27,7 +27,7 @@
 #define Hxi_MEX_SFunction_C
 #include "Hxi_MEX_SFunction.h"
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -168,7 +168,7 @@ void Hxi_SimStruct_destroy(SimStruct *S)
     return;
 
   // obtain handle and release MEX S-function
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
   HMODULE handle = GetModuleHandle(ssGetPath(S));
   if (handle)
     FreeLibrary(handle);
@@ -197,7 +197,7 @@ void mdlInitializeSizes(SimStruct *S)
   int i, ip;
 
   // get handle to MEX S-function
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
   HMODULE handle = LoadLibrary(ssGetPath(S));
   if (!handle) {
     ssSetErrorStatus(S, "LoadLibrary failed");
@@ -213,7 +213,7 @@ void mdlInitializeSizes(SimStruct *S)
 
   // get pointer to entry point mexFunction
   mexFunction_t *mexFunction_p;
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
   mexFunction_p = (mexFunction_t *)GetProcAddress(handle, "mexFunction");
   if (!mexFunction_p) {
     ssSetErrorStatus(S, "GetProcAddress failed for mexFunction");
