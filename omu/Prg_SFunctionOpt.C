@@ -198,24 +198,10 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
+void Prg_SFunctionOpt::setup_model()
 {
-  // setup optimization problem
-  if (_multistage) {
-    _K = _KK/_sps;
-    stages_alloc(ks, ts, _K, _sps);
-  }
-  else {
-    if (_sps > 1) {
-      m_error(E_FORMAT, "Prg_SFunctionOpt::setup_stages: "
-	      "prg_sps>1 requires prg_multistage=true");
-    }
-    _K = 1;
-    stages_alloc(ks, ts, 1, _KK);
-  }
-
-  // setup S-function
-  setup_sfun();
+  // load S-function
+  Prg_SFunction::setup_model();
 
   // check for optional S-function methods that are required
   assert(ssGetmdlDerivatives(_S) != NULL);
@@ -244,6 +230,28 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
   v_set(_mdl_y_bias, 0.0);
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
+{
+  // setup S-function
+  if (_mdl_needs_setup)
+    setup_model();
+
+  // setup optimization problem
+  if (_multistage) {
+    _K = _KK/_sps;
+    stages_alloc(ks, ts, _K, _sps);
+  }
+  else {
+    if (_sps > 1) {
+      m_error(E_FORMAT, "Prg_SFunctionOpt::setup_stages: "
+	      "prg_sps>1 requires prg_multistage=true");
+    }
+    _K = 1;
+    stages_alloc(ks, ts, 1, _KK);
+  }
 
   m_resize(_mdl_us, _KK+1, _mdl_nu);
   m_resize(_mdl_xs, _KK+1, _mdl_nx);
@@ -667,8 +675,13 @@ void Prg_SFunctionOpt::update(int kk,
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
   if (kk == 0) {
-    dt = 0.5*(ts(kk+1) - ts(kk));
-    dt0 = ts(kk+1) - ts(kk);
+    if (_KK > 0) {
+      dt = 0.5*(ts(kk+1) - ts(kk));
+      dt0 = ts(kk+1) - ts(kk);
+    } else {
+      // steady-state problem
+      dt = dt0 = 1.0;
+    }
   } else if (kk == _KK) {
     dt = 0.5*(ts(kk) - ts(kk-1));
     dt0 = 0.0;
@@ -1003,8 +1016,13 @@ void Prg_SFunctionOpt::update_grds(int kk,
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
   if (kk == 0) {
-    dt = 0.5*(ts(kk+1) - ts(kk));
-    dt0 = ts(kk+1) - ts(kk);
+    if (_KK > 0) {
+      dt = 0.5*(ts(kk+1) - ts(kk));
+      dt0 = ts(kk+1) - ts(kk);
+    } else {
+      // steady-state problem
+      dt = dt0 = 1.0;
+    }
   } else if (kk == _KK) {
     dt = 0.5*(ts(kk) - ts(kk-1));
     dt0 = 0.0;

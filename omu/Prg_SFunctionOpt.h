@@ -296,6 +296,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @see Omu_Program
    */
   //@{
+  void setup_model();
+
   void setup_stages(IVECP ks, VECP ts);
 
   void setup(int k,

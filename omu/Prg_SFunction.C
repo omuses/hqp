@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -52,6 +52,8 @@ Prg_SFunction::Prg_SFunction()
   _mdl_nargs = 0;
   _mx_args = NULL;
 
+  _mdl_needs_setup = true;
+
   _S = NULL;
 
   _mdl_nx = 0;
@@ -89,6 +91,7 @@ void Prg_SFunction::set_mdl_name(const char *str)
 {
   free(_mdl_name);
   _mdl_name = strdup(str);
+  _mdl_needs_setup = true;
 }
 
 //--------------------------------------------------------------------------
@@ -96,6 +99,7 @@ void Prg_SFunction::set_mdl_path(const char *str)
 {
   free(_mdl_path);
   _mdl_path = strdup(str);
+  _mdl_needs_setup = true;
 }
 
 //--------------------------------------------------------------------------
@@ -129,6 +133,8 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
   _mx_args = args;
   _mdl_nargs = nargs;
   _mdl_args = strdup(arg_str);
+
+  _mdl_needs_setup = true;
 }
 
 //--------------------------------------------------------------------------
@@ -138,7 +144,7 @@ void Prg_SFunction::set_mdl_x0(const VECP value)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::setup_sfun()
+void Prg_SFunction::setup_model()
 {
   int i;
 
@@ -192,7 +198,7 @@ void Prg_SFunction::setup_sfun()
       _mdl_nu += ssGetInputPortWidth(_S, i);
     else {
       m_warning(WARN_UNKNOWN,
-		"Prg_SFunction::setup_sfun: ignoring non-contiguous inputs");
+		"Prg_SFunction::setup_model: ignoring non-contiguous inputs");
       break;
     }
   }
@@ -205,7 +211,7 @@ void Prg_SFunction::setup_sfun()
       _mdl_ny += ssGetOutputPortWidth(_S, i);
     else {
       m_warning(WARN_UNKNOWN,
-		"Prg_SFunction::setup_sfun: ignoring non-contiguous outputs");
+		"Prg_SFunction::setup_model: ignoring non-contiguous outputs");
       break;
     }
   }
@@ -216,7 +222,7 @@ void Prg_SFunction::setup_sfun()
   assert(value(ssGetSampleTime(_S, 0)) == CONTINUOUS_SAMPLE_TIME);
   if (ssGetNumSampleTimes(_S) > 1)
     m_warning(WARN_UNKNOWN,
-	      "Prg_SFunction::setup_sfun: ignoring multiple sample times");
+	      "Prg_SFunction::setup_model: ignoring multiple sample times");
 
   // start using S-function
   if (ssGetmdlStart(_S) != NULL)
@@ -236,6 +242,8 @@ void Prg_SFunction::setup_sfun()
   v_resize(_mdl_x0, _mdl_nx);
   for (i = 0; i < _mdl_nx; i++)
     _mdl_x0[i] = mdl_x[i];
+
+  _mdl_needs_setup = false;
 }
 
 

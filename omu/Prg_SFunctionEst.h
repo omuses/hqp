@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -221,6 +221,8 @@ class Prg_SFunctionEst: public Prg_SFunction {
    * @see Omu_Program
    */
   //@{
+  void setup_model();
+
   void setup_stages(IVECP ks, VECP ts);
 
   void setup(int k,

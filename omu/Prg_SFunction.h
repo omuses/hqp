@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -56,8 +56,12 @@ class Prg_SFunction: public Omu_Program {
 
   VECP		_mdl_x0;	///< initial states
 
+  /// indicate that setup_model needs to be called
+  /// as _mdl_name, _mdl_path, or _mdl_args changed
+  bool 		_mdl_needs_setup;
+
   // methods
-  virtual void setup_sfun(); 	///< load S-function
+  virtual void setup_model(); 	///< load S-function
 
  public:
 

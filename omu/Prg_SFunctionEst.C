@@ -212,28 +212,10 @@ void Prg_SFunctionEst::write_active_mx_args(VECP p)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
+void Prg_SFunctionEst::setup_model()
 {
-  int i, j;
-
-  // setup optimization problem
-  if (_multistage) {
-    _K = max(_K, _KK); // assume that one of both has been specified
-    _KK = _K;
-    stages_alloc(ks, ts, _K, 1);
-  }
-  else {
-    if (_nex > 1) {
-      m_error(E_FORMAT, "Prg_SFunctionEst::setup_stages: "
-	      "prg_nex>1 requires prg_multistage=true");
-    }
-    _KK = max(_K, _KK); // assume that one of both has been specified
-    _K = 1;
-    stages_alloc(ks, ts, 1, _KK);
-  }
-
-  // setup S-function
-  setup_sfun();
+  // load S-function
+  Prg_SFunction::setup_model();
 
   // check for optional S-function methods that are required
   assert(ssGetmdlDerivatives(_S) != NULL);
@@ -241,7 +223,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   // determine number of parameters
   mxArray *arg;
   _mdl_np = 0;
-  for (j = 0; j < _mdl_nargs; j++) {
+  for (int j = 0; j < _mdl_nargs; j++) {
     arg = _mx_args[j];
     // only consider parameters in double format for accessing via mxGetPr()
     if (mxIsDouble(arg))
@@ -273,6 +255,32 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   v_ones(_mdl_p_nominal);
   v_ones(_mdl_x_nominal);
   v_ones(_mdl_y_nominal);
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
+{
+  int i, j;
+
+  // setup S-function
+  if (_mdl_needs_setup)
+    setup_model();
+
+  // setup optimization problem
+  if (_multistage) {
+    _K = max(_K, _KK); // assume that one of both has been specified
+    _KK = _K;
+    stages_alloc(ks, ts, _K, 1);
+  }
+  else {
+    if (_nex > 1) {
+      m_error(E_FORMAT, "Prg_SFunctionEst::setup_stages: "
+	      "prg_nex>1 requires prg_multistage=true");
+    }
+    _KK = max(_K, _KK); // assume that one of both has been specified
+    _K = 1;
+    stages_alloc(ks, ts, 1, _KK);
+  }
 
   // initialize all _x0s with _x0
   m_resize(_mdl_x0s, _nex, _mdl_nx);
