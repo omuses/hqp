@@ -248,7 +248,7 @@ void Prg_SFunctionOpt::setup_model()
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
-  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
+  v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
@@ -291,6 +291,7 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
   // setup _mdl_xs with initial states from model
+  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];

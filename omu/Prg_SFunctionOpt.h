@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -649,10 +649,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   void set_mdl_xs(const MATP v) {
     m_copy_elements(v, _mdl_xs);
     // also set additionally treated mdl_x0
-    if (_KK > 0) {
-      for (int i = 0; i < _mdl_nx; i++)
-	_mdl_x0[i] = _mdl_xs[0][i];
-    }
+    for (int i = 0; i < _mdl_nx; i++)
+      _mdl_x0[i] = _mdl_xs[0][i];
   }
 
   /// model outputs are read only

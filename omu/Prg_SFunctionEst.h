@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -488,6 +488,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
   /// set model states
   void set_mdl_xs(const MATP v) {
     m_copy_elements(v, _mdl_xs);
+    // also set additionally treated mdl_x0
+    for (int i = 0; i < _mdl_nx; i++)
+      _mdl_x0[i] = _mdl_xs[0][i];
     // also set additionally treated mdl_x0s
     int ex = 0;
     for (int kk = 0; kk <= _KK; kk++) {

@@ -197,9 +197,6 @@ void Prg_SFunction::setup_model()
   //  minor time steps would require support for events and zero crossings)
   ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
-  // set simulation time
-  ssSetT(_S, _t0);
-
   // initialize model
   SMETHOD_CALL(mdlInitializeSizes, _S);
   if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
@@ -236,6 +233,9 @@ void Prg_SFunction::setup_model()
       break;
     }
   }
+
+  // set simulation time
+  ssSetT(_S, _t0);
 
   // initialize and check sample times of model
   mdlInitializeSampleTimes(_S);

@@ -274,7 +274,7 @@ void Prg_SFunctionEst::setup_model()
   v_zero(_mdl_p.min);
 
   _mdl_x0.alloc(_mdl_nx);
-  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
+  v_zero(_mdl_x0);
 
   _mdl_x.alloc(_mdl_nx);
 
@@ -341,6 +341,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
   // setup _mdl_xs with initial states from model
+  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];

@@ -1,3 +1,9 @@
+2004-04-08    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]: 
+	  - correct initialization of x0
+	* omu/Prg_SFunction.C (setup_model): bug fix for change on 2004-04-06
+
 2004-04-06    <rfranke>
 
 	* omu/Prg_SFunction.C (setup_model): initialize simulation time
