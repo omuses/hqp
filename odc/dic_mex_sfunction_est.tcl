@@ -121,6 +121,7 @@ puts ""
 puts "Plotting resulting signals..."
 if {[catch {package require Tk}] || [catch {package require BLT}]} {
     puts "Skipping plot as no blt::graph available."
+    exit
 } else {
 
     # read results and form vector of cumulative times
