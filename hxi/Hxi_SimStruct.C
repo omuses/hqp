@@ -108,11 +108,6 @@ inline bool isHxiSimStruct(const SimStruct *S) {
   return (value(*((real_T*)S)) == HQP_MAGIC_CODE);
 }
 
-// check for Hxi::mxArray
-inline bool isHximxArray(const mxArray *a) {
-  return (value(*((real_T*)a)) == HQP_MAGIC_CODE);
-}
-
 namespace Hxi {
 
 /**
@@ -717,7 +712,6 @@ protected:
 public:
   /** Constuctor for real array. */
   mxArray(int_T m, int_T n, int_T) : _realData(m*n, _dummy) {
-    _dummy = HQP_MAGIC_CODE; 
     _isNumeric = true;
     _m = m;
     _n = n;
@@ -727,7 +721,6 @@ public:
 
   /** Constuctor for char array. */
   mxArray(const char *s) : _charData(s) {
-    _dummy = HQP_MAGIC_CODE; 
     _isNumeric = false;
   }
 
@@ -911,45 +904,27 @@ public:
   }
 #define HXI_MX_DESTROY(WHAT) \
   HXI_EXTERN void hmxDestroy##WHAT(mxArray *a) { \
-    if (isHximxArray(a)) \
-      delete (Hxi::mxArray*)a; \
-    else \
-      mxDestroy##WHAT(a); \
+    mxDestroy##WHAT(a); \
   }
 #define HXI_MX_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN void hmxSet##ITEM(mxArray *a, TYPE ARG) { \
-    if (isHximxArray(a)) \
-      ((Hxi::mxArray*)a)->set##ITEM(ARG); \
-    else \
-      mxSet##ITEM(a, ARG); \
+    mxSet##ITEM(a, ARG); \
   } \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
-    if (isHximxArray(a)) \
-      return ((Hxi::mxArray*)a)->get##ITEM(); \
-    else \
-      return mxGet##ITEM(a); \
+    return mxGet##ITEM(a); \
   }
 #define HXI_MX_NOSET1(ITEM, TYPE, ARG)
 #define HXI_MX_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
-    if (isHximxArray(a)) \
-      return ((Hxi::mxArray*)a)->get##ITEM(); \
-    else \
-      return mxGet##ITEM(a); \
+    return mxGet##ITEM(a); \
   }
 #define HXI_MX_IS1(ITEM) \
   HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
-    if (isHximxArray(a)) \
-      return ((Hxi::mxArray*)a)->is##ITEM(); \
-    else \
-      return mxIs##ITEM(a); \
+    return mxIs##ITEM(a); \
   }
 #define HXI_MX_TO1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxArrayTo##ITEM(const mxArray *a) { \
-    if (isHximxArray(a)) \
-      return ((Hxi::mxArray*)a)->to##ITEM(); \
-    else \
-      return mxArrayTo##ITEM(a); \
+    return mxArrayTo##ITEM(a); \
   }
 //@}
 
