@@ -115,10 +115,14 @@ static int_T setOutputPortDimensionInfo(SimStruct *S, int_T port,
 //-------------------------------------------------------------------
 // callback for allocating data work records
 //-------------------------------------------------------------------
+#if MATLAB_VERSION >= 65
+static int_T setNumDWork(SimStruct *S, int_T nDWork)
+{
+#else
 static int_T setNumDWork(void *arg, int_T nDWork)
 {
   SimStruct *S = (SimStruct *)arg;
-
+#endif
   if (nDWork < 0) {
     return 0;
   }

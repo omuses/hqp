@@ -48,10 +48,17 @@
 
 /** Redefine ssSetSFcnParamsCount to allocate memory for mxArray pointers */
 #undef ssSetSFcnParamsCount
-#define ssSetSFcnParamsCount(S,n) \
+#if MATLAB_VERSION >= 61
+# define ssSetSFcnParamsCount(S,n) \
+  _ssSetSFcnParamsCount(S,n); \
+  mxFree(ssGetSFcnParamsPtr(S)); \
+  ssSetSFcnParamsPtr(S, (mxArray **)mxCalloc(sizeof(mxArray *), n))
+#else
+# define ssSetSFcnParamsCount(S,n) \
   _ssSetSFcnParamsCount(S,n); \
   mxFree(ssGetSFcnParamsPtr(S)); \
   ssSetSFcnParamsPtr(S, (const mxArray **)mxCalloc(sizeof(mxArray *), n))
+#endif
 
 /** @name Unsupported macros
   Disable macros that are critical for memory management and must

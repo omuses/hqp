@@ -1,3 +1,8 @@
+2002-11-22    <rfranke>
+
+	* hxi/simstruc.h, hxi/Hxi_MEX_SFunction.[hC]:
+	  adapt to Matlab versions 6.5 and 6.1, besides 6.0
+
 2002-11-20    <rfranke>
 
 	* iftcl/If_Element.[hC]: add treatment of Tcl command 

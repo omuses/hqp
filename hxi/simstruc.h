@@ -26,7 +26,31 @@
 // The S-function is being compiled as Matlab MEX file;
 // we include the simstruc.h found under simulink/include.
 
+// Note: define MathWorks_h to get in simulink/include/simstruc.h the 
+// use SS_SL_INTERNAL. This enables macros for setting up the SimStruct 
+// passed to model methods (introduced with Matlab 6.5).
+#undef MATLAB_MEX_FILE
+#define MathWorks_h
 #include <simulink/include/simstruc.h>
+#undef MathWorks_h
+#define MATLAB_MEX_FILE
+
+# if !defined(ssGetNumInputPorts)
+# define ssGetNumInputPorts(S) _ssGetNumInputPorts(S)
+# endif
+
+# if !defined(ssGetNumOutputPorts)
+# define ssGetNumOutputPorts(S) _ssGetNumOutputPorts(S)
+# endif
+
+// guess MATLAB version (times 10 to avoid decimal point)
+#if defined(SS_OPTION_ASYNCHRONOUS_INTERRUPT)
+#define MATLAB_VERSION 65
+#elif defined(SS_OPTION_ASYNCHRONOUS_CUSTOM)
+#define MATLAB_VERSION 61
+#else
+#define MATLAB_VERSION 60
+#endif
 
 /** ADOL-C's value function for double. It may be needed to compile
     code written for real_T adouble with real_T double. */
