@@ -276,10 +276,6 @@ if test $uname_found = "yes" ; then
       else
         LD="link -lib -nologo -nodefaultlib:msvcrt"
       fi
-      if test "$hqp_symbols" = "yes"; then
-	LD="$LD -debug"
-      fi
-      LD="$LD -out:"
       AC_DEFINE(IF_CLASS_STATIC)
       LDFLAGS_START="-link -nodefaultlib:msvcrt"
       OBJ_SUFFIX=".obj"
@@ -291,6 +287,11 @@ if test $uname_found = "yes" ; then
       PICFLAG=""
       LFLAG="-LIBPATH:"
       RFLAG="-LIBPATH:"
+      if test "$hqp_symbols" = "yes"; then
+	LD="$LD -debug"
+	LDFLAGS_START="$LDFLAGS_START -debug"
+      fi
+      LD="$LD -out:"
       ;;
   esac
 fi
@@ -411,11 +412,26 @@ IF_DEFS="-DUSE_COMPAT_CONST=1 $IF_DEFS"
 # 	Configure ADOL-C
 # -----------------------------------------------------------------------
 
+AC_MSG_CHECKING([--disable-adolc])
+AC_ARG_ENABLE(adolc,
+    [  --disable-adolc     disable ADOL-C for automatic differentiation],
+    [omu_adolc=$enableval], [omu_adolc=yes])
 if test "$target" = CL; then
-  ASRCS=""
+  # disable ADOL-C for cl due to incompatibility
+  omu_adolc=no
+fi
+if test "$omu_adolc" = yes; then
+  AC_MSG_RESULT(no)
 else
-  OMU_DEFS="$OMU_DEFS -DOMU_WITH_ADOLC=1"
+  AC_MSG_RESULT(yes)
+fi
+
+if test "$omu_adolc" = yes; then
   ASRCS="\$(ASRCS)"
+  OMU_DEFS="$OMU_DEFS -DOMU_WITH_ADOLC=1"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/SRC/*\$O ../adol-c/SRC/*/*\$O"
+else
+  ASRCS=""
 fi
 
 AC_SUBST(ASRCS)

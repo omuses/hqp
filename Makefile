@@ -4,8 +4,9 @@ all:
 	$(MAKE) -f Makefile.hqp
 	$(MAKE) omuses
 
+ASRCS = any
 omuses:
-	if test ! "$(CXX)" = "cl -nologo"; then $(MAKE) adolc; fi
+	if test -n "$(ADOLC_SRCS)"; then $(MAKE) adolc; fi
 	cd omu; $(MAKE); cd ..
 	mv omu/$(LIB_PREFIX)omu.* lib/
 	if test -f lib/omu.dll; then cp lib/omu.dll odc/; fi
@@ -17,18 +18,18 @@ adolc:
 	cd adol-c/SRC; $(MAKE); cd ../..
 
 test:
-	@if test ! "$(CXX)" = "cl -nologo"; then \
+	@if test -n "$(ADOLC_SRCS)"; then \
 	  echo "Testing Crane example..."; \
 	  cd odc; ./run Crane; cd ..; \
 	fi
-	@if test ! -z "$(MEX_SRCS)"; then \
+	@if test -n "$(MEX_SRCS)"; then \
 	  echo "Testing MEX..."; \
 	  cd odc; ./run dic_mex_sfunction_est; cd ..; \
 	fi
 
 doc::
 	cd doc; doxygen; cd ..
-	cd doc/latex; $(MAKE) pdf; mv refman.pdf ..; cd ../..
+	cd doc/latex; $(MAKE) refman.pdf; mv refman.pdf ..; cd ../..
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
