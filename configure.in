@@ -5,7 +5,7 @@ AC_INIT(hqp/Hqp.h)
 
 MAJOR_VERSION=1
 MINOR_VERSION=8
-PATCHLEVEL=0
+PATCHLEVEL=1d
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL}
 
@@ -589,6 +589,20 @@ AC_SUBST(ASCEND_SRCS)
 
 AC_SUBST(HQP_DEFS)
 AC_SUBST(IF_DEFS)
+
+# -----------------------------------------------------------------------
+# 	Configure documentation generator
+# -----------------------------------------------------------------------
+
+# use dot tool from AT&T and Lucent Bell Labs for diagrams & graphs
+# if installed (see www.graphviz.org)
+AC_PATH_PROG(DOT, dot)
+if test ! -z "$DOT"; then
+  HAVE_DOT="YES"
+else
+  HAVE_DOT="NO"
+fi
+AC_SUBST(HAVE_DOT)
 
 # -----------------------------------------------------------------------
 # 	Produce outputs

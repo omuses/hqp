@@ -1,3 +1,12 @@
+2002-05-10    <rfranke>
+
+	* configure.in: change version to 1.8.1d
+
+	* doc/Doxyfile.in, configure.in:
+	  optionally use dot drawing tool (see www.graphviz.org)
+
+	* hxi/Hxi_MEX_SFunction.C: add support for MinGW
+
 2002-05-06    <h_linke>
 
 	* omu/Omu_IntSDIRK.[hC]: adapt to new integrator interface
@@ -6,7 +15,7 @@
 	
 2002-05-05    <rfranke>
 
-	* configure.in: change version to 1.8.0
+	* configure.in: change version to 1.8.0, add tag release-1-8-0
 
 	* omu/Prg_SFunctionEst.h, omu/Prg_SFunctionOpt.h, configure.in:
 	  update documentation
