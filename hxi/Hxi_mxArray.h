@@ -30,12 +30,21 @@
 #define Hxi_mxArray_H
 
 #include "Hxi_sfun_types.h"
+#include <vector>
+
+// data types
+#define mxREAL		0x0001
 
 // Macros to access an mxArray (required for parameters)
-#define mxSetPr(a, pr) 			(a)->setPr(pr)
+#define mxCreateDoubleMatrix(m, n, ty) 	new mxArray(m, n, ty)
+#define mxDestroyArray(a) 		delete (a)
 #define mxGetPr(a) 			(a)->getPr()
 #define mxSetNumberOfElements(a, num) 	(a)->setNumberOfElements(num)
 #define mxGetNumberOfElements(a) 	(a)->getNumberOfElements()
+#define mxSetM(a, m) 			(a)->setM(m)
+#define mxGetM(a) 			(a)->getM()
+#define mxSetN(a, n) 			(a)->setN(n)
+#define mxGetN(a) 			(a)->getN()
 #define mxIsEmpty(a) 			(a)->isEmpty()
 #define mxIsSparse(a) 			(a)->isSparse()
 #define mxIsComplex(a) 			(a)->isComplex()
@@ -44,37 +53,56 @@
 /** mxArray for HQP. */
 class mxArray {
 protected:
-  real_T 	*_data;
-  int_T 	_size;
+  vector<real_T> 	_data; 	// data vector
+  int_T 		_m;	// number of rows (more generally first dim)
+  int_T 		_n;	// number of cols (more generally resting dims)
 
 public:
   /** Constuctor. */
-  mxArray() {
-    _data = NULL;
-    _size = 0;
+  mxArray(int_T m, int_T n, int_T) : _data(m*n) {
+    _m = m;
+    _n = n;
+    for (int i = 0; i < (int)_data.size(); i++)
+      _data[i] = 0.0;
   }
 
-  /** Set address of first element of real data. */
-  real_T *setPr(real_T *pr) {
-    return _data = pr;
-  }
   /** Get address of first element of real data. */
-  real_T *getPr() const {
-    return _data;
+  real_T *getPr() {
+    return _data.size() > 0? &_data[0]: NULL;
+  }
+  const real_T *getPr() const {
+    return _data.size() > 0? &_data[0]: NULL;
   }
 
   /** Set number of data elements. */
   int_T setNumberOfElements(int_T num) {
-    return _size = num;
+    _data.resize(num);
+    return _data.size();
   }
   /** Get number of data elements. */
   int_T getNumberOfElements() const {
-    return _size;
+    return _data.size();
+  }
+  /** Set number of rows. */
+  int_T setM(int_T m) {
+    return _m = m;
+  }
+  /** Get number of rows. */
+  int_T getM() const {
+    return _m;
+  }
+  /** Set number of columns. */
+  int_T setN(int_T n) {
+    return _n = n;
+  }
+  /** Get number of columns. */
+  int_T getN() const {
+    return _n;
   }
 
   /** Check if data object is empty. */
   bool isEmpty() const {
-    return (_data == NULL || _size == 0);
+    return (_data.size() == 0);
   }
   /** Check if data object is sparse. */
   bool isSparse() const {

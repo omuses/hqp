@@ -33,8 +33,9 @@ class Prg_DID_SFunction: public Omu_Program {
   int _nu;	// number of control parameters
   int _mdl_ny;	// number of model outputs
   double _dt; 	// sample time
-  adouble _adt;	// active sample time parameter
   bool _with_cns;// treat overshoot with additional constraint
+
+  mxArray *_mx_dt; // dt parameter for model
 
  public:
 

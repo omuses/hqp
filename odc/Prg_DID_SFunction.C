@@ -25,10 +25,12 @@ Prg_DID_SFunction::Prg_DID_SFunction()
   _mdl_ny = 2;
   _dt = 1.0/_K;
 
+  _mx_dt = mxCreateDoubleMatrix(1, 1, mxREAL);
+
  _with_cns = true;
 
   // create SimStruct for communication with S-function
-  _S = new SimStruct;
+  _S = Hxi_SimStruct_create();
 
   // interface elements
   _ifList.append(new If_Bool("prg_with_cns", &_with_cns));
@@ -38,21 +40,19 @@ Prg_DID_SFunction::Prg_DID_SFunction()
 //--------------------------------------------------------------------------
 Prg_DID_SFunction::~Prg_DID_SFunction()
 {
-  delete _S;
+  Hxi_SimStruct_destroy(_S);
+  mxDestroyArray(_mx_dt);
 }
 
 //--------------------------------------------------------------------------
 void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
 {
   // initialize model parameters
-  mxArray a;
-  _adt = _dt;
-  mxSetPr(&a, &_adt);
-  mxSetNumberOfElements(&a, 1);
+  mxGetPr(_mx_dt)[0] = _dt;
 
   // pass model parameters to SimStruct
   ssSetSFcnParamsCount(_S, 1);
-  ssSetSFcnParam(_S, 0, &a);
+  ssSetSFcnParam(_S, 0, _mx_dt);
 
   // initialize model sizes
   mdlInitializeSizes(_S);
@@ -138,7 +138,7 @@ void Prg_DID_SFunction::update(int kk,
 			       adoublev &f, adouble &f0, adoublev &c)
 {
   int i;
-  adouble dt = ssGetSampleTime(_S, 0);
+  real_T dt = ssGetSampleTime(_S, 0);
 
   // update constraints and objective for given x and u
   if (kk < _KK) {

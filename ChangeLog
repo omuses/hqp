@@ -1,3 +1,16 @@
+2001-07-18    <rfranke>
+
+	* configure.in: change to version 1.7.8d (d for development)
+
+	* hxi/Hxi_mxArray.h: introduce own memory management
+	* hxi/Hxi_SimStruct.h: 
+	  - store pointers to mxArrays for parameters instead of copies
+	  - introduce constructor/destructor Hxi_SimStruct_create/destroy
+	* odc/Prg_DIC_SFunction.C, odc/Prg_DID_SFunction.[hC]: adapt to changes
+
+	* adol-c/SRC/adouble.C: introduce local variables for comparison
+	  operator functions to avoid code optimization problem with gcc 2.9??
+
 2001-07-12    <rfranke>
 
 	* hxi/Hxi_SimStruct.h: remove ssGetOutputPortRealSignalPtrs and 

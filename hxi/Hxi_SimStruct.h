@@ -162,7 +162,7 @@ protected:
   int_T 	 _p_sfun_size;	// number of parameters expected in S-function
   vector<int_T>  _dwork_usage;	// usage of each data work vector
 
-  vector<mxArray> _p; 		// parameters provided by calling program
+  vector<const mxArray *> _p; 	// parameters provided by calling program
   vector<real_T> _xc; 		// continuous states
   vector<real_T> _dxc; 		// derivatives of continuous states
   vector<real_T> _xd; 		// discrete states
@@ -233,14 +233,13 @@ public:
   int_T getNumSFcnParams() {
     return _p_sfun_size;
   }
-  /** Set mxArray pointing to parameter. A copy of the passed mxArray
-      is stored to avoid memory problems and side effects. */
+  /** Set mxArray pointing to a parameter. */
   const mxArray *setSFcnParam(int_T idx, const mxArray *val) {
-    return &(_p[idx] = *val);
+    return (_p[idx] = val);
   }
-  /** Get mxArray pointing to parameter. */
+  /** Get mxArray pointing to a parameter. */
   const mxArray *getSFcnParam(int_T idx) {
-    return &_p[idx];
+    return _p[idx];
   }
 
   /** Set number of continuous states. */
@@ -385,9 +384,9 @@ public:
   }
 
   /** Set number of sample times. Currently at most one is supported. */
-  int_T setNumSampleTimes(int_T ns) {
-    assert(ns <= 1);
-    return _st_size = ns;
+  int_T setNumSampleTimes(int_T nst) {
+    assert(nst <= 1);
+    return _st_size = nst;
   }
   /** Get number of sample times. */
   int_T getNumSampleTimes() {
@@ -549,5 +548,15 @@ public:
     return _error_msg;
   }
 };
+
+/** Construct a SimStruct. */
+static SimStruct *Hxi_SimStruct_create() {
+  return new SimStruct();
+}
+
+/** Delete a SimStruct. */
+static void Hxi_SimStruct_destroy(SimStruct *S) {
+  delete S;
+}
 
 #endif
