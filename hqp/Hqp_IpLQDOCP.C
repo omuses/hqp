@@ -5,11 +5,12 @@
  *           06/30/97  copy _A_ori, _C_ori        
  *           07/08/97  bugs in resize(), free()
  *           08/20/99  Hqp_IpLQDOCP::Get_Dim()
+ *           2002-04-17 free() replaced by myfree()
  *
  */
 
 /*
-    Copyright (C) 1996--1999  Eckhard Arnold
+    Copyright (C) 1996--2002  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -180,7 +181,7 @@ Hqp_IpLQDOCP::Hqp_IpLQDOCP()
 //--------------------------------------------------------------------------
 Hqp_IpLQDOCP::~Hqp_IpLQDOCP()
 {
-  free();
+  myfree();
   pr_("\nLQDOCP::~Hqp_IpLQDOCP");
 }
 
@@ -433,8 +434,8 @@ void Hqp_IpLQDOCP::resize()
   f.resize(_kmax1);
   Ru.resize(_kmax1);
   if ( _a_sparse ) {
-    fx.free();
-    fu.free();
+    fx.tfree();
+    fu.tfree();
   } else {
     fx.resize(_kmax1);  
     fu.resize(_kmax1);
@@ -491,36 +492,36 @@ void Hqp_IpLQDOCP::resize()
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpLQDOCP::free()
+void Hqp_IpLQDOCP::myfree()
 {
-  Vxx.free();
-  Gxu.free();
-  Guu.free();
-  CH_Guu.free();
-  CH_Guu_p.free();
-  CH_Guu_b.free();
-  Vx.free();
-  cb.free();
-  S.free();
-  cbx.free();
-  ctx.free();
-  x.free();
-  u.free();
-  p.free();
-  gx.free();
-  gu.free();
-  f.free();
-  Ru.free();
-  fx.free();  
-  fu.free();
-  Rux.free();
+  Vxx.tfree();
+  Gxu.tfree();
+  Guu.tfree();
+  CH_Guu.tfree();
+  CH_Guu_p.tfree();
+  CH_Guu_b.tfree();
+  Vx.tfree();
+  cb.tfree();
+  S.tfree();
+  cbx.tfree();
+  ctx.tfree();
+  x.tfree();
+  u.tfree();
+  p.tfree();
+  gx.tfree();
+  gu.tfree();
+  f.tfree();
+  Ru.tfree();
+  fx.tfree();  
+  fu.tfree();
+  Rux.tfree();
   M_FREE(ax);
   M_FREE(au);
-  a.free();
-  y.free();
-  Ryx.free();
-  Ry.free();
-  PQ.free();
+  a.tfree();
+  y.tfree();
+  Ryx.tfree();
+  Ry.tfree();
+  PQ.tfree();
 
   M_FREE(m1);
   M_FREE(m2);
@@ -541,9 +542,9 @@ void Hqp_IpLQDOCP::free()
   IV_FREE(_rck);
   IV_FREE(_rcka);
   IV_FREE(_rca);
-  _raki.free();
-  _rcki.free();
-  _rckai.free();
+  _raki.tfree();
+  _rcki.tfree();
+  _rckai.tfree();
 
   //   _Q_ori is a reference!
   _Q_ori = SMNULL;
@@ -561,13 +562,13 @@ void Hqp_IpLQDOCP::free()
 
   V_FREE(yny);
   M_FREE(db);
-  d11.free();
-  d12.free();
+  d11.tfree();
+  d12.tfree();
   M_FREE(d22);
-  Ruyb.free();
-  Ryyb.free();
-  CD.free();
-  CD_p.free();
+  Ruyb.tfree();
+  Ryyb.tfree();
+  CD.tfree();
+  CD_p.tfree();
 
   //   residuum  02/21/97
   V_FREE(_res1);
@@ -584,7 +585,7 @@ void Hqp_IpLQDOCP::free()
 
   //   diagonal scaling
   V_FREE(scx0);
-  sc.free();
+  sc.tfree();
 }
 
 //--------------------------------------------------------------------------

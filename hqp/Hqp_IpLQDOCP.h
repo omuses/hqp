@@ -7,10 +7,11 @@
  *
  * E. Arnold  09/18/96
  *            03/04/97  iterative improvement in base class
+ *            2002-04-17 free() replaced by myfree()
  */
 
 /*
-    Copyright (C) 1996--1998  Eckhard Arnold
+    Copyright (C) 1996--2002  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -154,7 +155,7 @@ class Hqp_IpLQDOCP: public Hqp_IpMatrix {
   int Check_Structure(const Hqp_Program *);
   void Get_Constr_Dim(const Hqp_Program *);
   void resize();
-  void free();
+  void myfree();
   void dump(char *);
   void dump() { dump("dump.dat"); }
   void init(const Hqp_Program *);

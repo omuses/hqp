@@ -1,3 +1,8 @@
+2002-04-22    <e_arnold>
+
+	* hqp/t_mesch.[hC]: rename free(); replace delete by delete[]
+	* hqp/Hqp_IpLQDOCP.[hC]: rename free(), adapt to changes	
+	
 2002-04-21    <rfranke>
 
 	* omu/Prg_SFunction*.[hC]: add predefined optimization and

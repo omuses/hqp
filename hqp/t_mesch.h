@@ -9,11 +9,12 @@
  *        TMATP   - vector of MATP
  *
  * E. Arnold  07/03/97
+ *            2002-04-17 free() replaced by tfree()
  *            
  */
 
 /*
-    Copyright (C) 1997--1998  Eckhard Arnold
+    Copyright (C) 1997--2002  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -48,7 +49,7 @@ class TVECP {
  public:
   TVECP();
   ~TVECP();
-  void free();
+  void tfree();
   void resize(int, int = 0);
   void resize(const IVECP);
   VECP & operator [] (int k)
@@ -74,7 +75,7 @@ class TIVECP {
  public:
   TIVECP();
   ~TIVECP();
-  void free();
+  void tfree();
   void resize(int, int = 0);
   IVECP & operator [] (int k)
     {
@@ -99,7 +100,7 @@ class TPERMP {
  public:
   TPERMP();
   ~TPERMP();
-  void free();
+  void tfree();
   void resize(int, int = 0);
   PERMP & operator [] (int k)
     {
@@ -124,7 +125,7 @@ class TMATP {
  public:
   TMATP();
   ~TMATP();
-  void free();
+  void tfree();
   void resize(int, int = 0, int = 0);
   MATP & operator [] (int k)
     {

@@ -10,11 +10,13 @@
  *
  * E. Arnold  03/07/97
  *            07/03/97: _x[k] = VNULL etc
+ *            2002-04-17 free() replaced by tfree()
+ *                       delete[]
  *
  */
 
 /*
-    Copyright (C) 1997--1998  Eckhard Arnold
+    Copyright (C) 1997--2002  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -44,16 +46,16 @@ TVECP::TVECP()
 
 TVECP::~TVECP()
 {
-  free();
+  tfree();
 }
 
-void TVECP::free()
+void TVECP::tfree()
 {
   int k;
   for (k = 0; k <= _kmax; k++)
     V_FREE(_x[k]);
   if ( _x ) {
-    delete _x;
+    delete[] _x;
     _x = NULL;
   }
   _kmax = -1;
@@ -65,7 +67,7 @@ void TVECP::resize(int kmax, int n)
   if ( ( kmax <= 0 ) || ( n < 0 ) )
     error(E_BOUNDS,"TVECP::resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
-    free();
+    tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new VECP[_kmax+1];
@@ -100,16 +102,16 @@ TIVECP::TIVECP()
 
 TIVECP::~TIVECP()
 {
-  free();
+  tfree();
 }
 
-void TIVECP::free()
+void TIVECP::tfree()
 {
   int k;
   for (k = 0; k <= _kmax; k++)
     IV_FREE(_x[k]);
   if ( _x ) {
-    delete _x;
+    delete[] _x;
     _x = NULL;
   }
   _kmax = -1;
@@ -121,7 +123,7 @@ void TIVECP::resize(int kmax, int n)
   if ( ( kmax <= 0 ) || ( n < 0 ) )
     error(E_BOUNDS,"TIVECP::resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
-    free();
+    tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new IVECP[_kmax+1];
@@ -156,16 +158,16 @@ TPERMP::TPERMP()
 
 TPERMP::~TPERMP()
 {
-  free();
+  tfree();
 }
 
-void TPERMP::free()
+void TPERMP::tfree()
 {
   int k;
   for (k = 0; k <= _kmax; k++)
     PX_FREE(_x[k]);
   if ( _x ) {
-    delete _x;
+    delete[] _x;
     _x = NULL;
   }
   _kmax = -1;
@@ -177,7 +179,7 @@ void TPERMP::resize(int kmax, int n)
   if ( ( kmax <= 0 ) || ( n < 0 ) )
     error(E_BOUNDS,"TPERMP::resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
-    free();
+    tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new PERMP[_kmax+1];
@@ -212,16 +214,16 @@ TMATP::TMATP()
 
 TMATP::~TMATP()
 {
-  free();
+  tfree();
 }
 
-void TMATP::free()
+void TMATP::tfree()
 {
   int k;
   for (k = 0; k <= _kmax; k++)
     M_FREE(_x[k]);
   if ( _x ) {
-    delete _x;
+    delete[] _x;
     _x = NULL;
   }
   _kmax = -1;
@@ -233,7 +235,7 @@ void TMATP::resize(int kmax, int m, int n)
   if ( ( kmax <= 0 ) || ( n < 0 )  || ( m < 0 ) )
     error(E_BOUNDS,"TMATP:resize");
   if ( ( _kmax != -1 ) && ( _kmax != kmax ) ) 
-    free();
+    tfree();
   if ( _kmax == -1 ) {
     _kmax = kmax;
     _x = new MATP[_kmax+1];
