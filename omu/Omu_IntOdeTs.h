@@ -58,11 +58,11 @@ class Omu_IntOdeTs: public Omu_Integrator {
 
   void init_stage(int k, const Omu_VariableVec &x, 
 		  const Omu_VariableVec &u,
-		  const Omu_DependentVec &Fc, bool sa);
+		  const Omu_DependentVec &Ft, bool sa);
 
   void solve(int kk, double tstart, double tend,
 	     const Omu_VariableVec &x, const Omu_VariableVec &u,
-	     Omu_Program *sys, Omu_DependentVec &cF, Omu_StateVec &cx);
+	     Omu_Program *sys, Omu_DependentVec &Ft, Omu_StateVec &xt);
 
   //@}
 

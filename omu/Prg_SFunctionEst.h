@@ -87,22 +87,22 @@
    @f[
    \begin{array}{rcccll}
     \displaystyle \left\{ \frac{p_{min}}{p_{nominal}} \right. 
-        &<& \displaystyle \frac{p}{p_{nominal}}
-        &<& \left. \displaystyle \frac{p_{max}}{p_{nominal}} \right\}_i,
+        &\le& \displaystyle \frac{p}{p_{nominal}}
+        &\le& \left. \displaystyle \frac{p_{max}}{p_{nominal}} \right\}_i,
         \quad & i \in \mbox{find}(p_{active}), \\[3ex]
-    \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right. &<& x(t^{0,l}) 
-        &<& \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i, 
+    \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right. &\le& x(t^{0,l}) 
+        &\le& \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i, 
         \quad & i \in \mbox{find}(x^0_{active}),
         \quad l=1,\ldots,N_{ex},  \\[3ex]
     && \{ x(t^{0,l}) &=& \displaystyle \frac{x0s^l}{x_{nominal}}
        \}_i, \quad & i \notin \mbox{find}(x^0_{active}),
         \quad l=1,\ldots,N_{ex},  \\[3ex]
     \displaystyle \frac{der\_x^0_{min}}{x_{nominal}} 
-        &<& \dot{x}(t^{0,l}) 
-        &<& \displaystyle \frac{der\_x^0_{max}}{x_{nominal}},
+        &\le& \dot{x}(t^{0,l}) 
+        &\le& \displaystyle \frac{der\_x^0_{max}}{x_{nominal}},
 	\quad & l=1,\ldots,N_{ex},  \\[3ex]
-    \displaystyle \frac{x_{min}}{x_{nominal}} &<& x(t^{k_l}) 
-        &<& \displaystyle \frac{x_{max}}{x_{nominal}}, 
+    \displaystyle \frac{x_{min}}{x_{nominal}} &\le& x(t^{k_l}) 
+        &\le& \displaystyle \frac{x_{max}}{x_{nominal}}, 
         \quad & k_l=k_{l,0},\ldots,K_l,
         \quad l=1,\ldots,N_{ex}.
    \end{array}

@@ -49,7 +49,7 @@ FORTRAN_LIBS = @FORTRAN_LIBS@
 #
 # If
 #
-IF_DEFS = @DEFS@ @IF_DEFS@
+IF_DEFS = @ALL_DEFS@ @IF_DEFS@
 
 #
 # Tcl
@@ -63,7 +63,7 @@ TCL_STUB_LIB = @TCL_STUB_LIB@
 #   HQP_WITH_CUTE    -- include CUTE interface with Hqp
 #   HQP_WITH_ASCEND  -- include Ascend interface with Hqp
 #
-HQP_DEFS = @DEFS@ @HQP_DEFS@
+HQP_DEFS = @ALL_DEFS@ @HQP_DEFS@
 HQP_MACH_OBJS = @HQP_MACH_OBJS@
 
 #
@@ -79,7 +79,7 @@ MEX_LIBS = @MEX_LIBS@
 #   OMU_WITH_FORTRAN -- include DASPK and RKsuite (requires f77 or g77)
 #   OMU_WITH_MEX     -- include MEX S-function interface (requires Matlab)
 #
-OMU_DEFS = @DEFS@ @OMU_DEFS@
+OMU_DEFS = @ALL_DEFS@ @OMU_DEFS@
 OMU_MACH_OBJS = @OMU_MACH_OBJS@
 
 OMU_INTDASPK_C = @OMU_INTDASPK_C@

@@ -1,54 +1,107 @@
-The software can be installed as follows:
+* Overview
 
-(basically two libraries, libhqp and libomu, 
- as well as an example in ./hqp_docp and a demo collection in ./odc are built)
+This source code distribution uses the GNU autoconf/make mechanism and
+Doxygen for extracting the documentation. 
 
-0)
-You need to have Tcl version 8.0 (or higher) and a C++ compiler;
-gcc is assumed per default (see below for using an other compiler).
+HQP can be compiled and tested by invoking:
+$ ./configure
+$ make
+Basically two libraries: libhqp and libomu, 
+as well as an example in ./hqp_docp, tesing HQP alone
+and a demo collection in ./odc, testing HQP and Omuses are built.
+
+An up-to-date reference documentation can be created from the sources with
+$ make doc
+
+The results of make (object codes, lib, executables) can be removed with
+$ make clean
+The results of make and configure (makefiles) can removed with
+$ make distclean
+
+* Installation details
+
+** Required software
+
+The compilation of HQP relies on the following software:
+- a Unix shell
+- GNU make
+- a compiler for C, C++ and optionally Fortran 77
+
+Furthermore HQP uses the Tool Command Language
+- Tcl version 8.1 or higher
+
+The required software is normally there under Linux. 
+
+*** Hints for Windows
+
+The freely available Cygwin is an easy way to get the required software 
+under Windows all at once (see http://sources.redhat.com/cygwin/). 
+When using the Net installation wizard setup.exe, 
+make sure to select the following packages for installation:
+  Libs/tcltk
+  Devel/gcc
+  Devel/gcc-g++
+  Devel/gcc-g77         (only to use additional integrators, e.g. DASPK)
+  Devel/gcc-mingw       (only to compile a non-cygwin version)
+  Devel/gcc-mingw-g++   (only to compile a non-cygwin version)
+  Devel/gcc-mingw-g77   (only to compile a non-cygwin version)
+  Devel/doxygen         (only to re-generate reference documentation)
+
+Note: Tcl is not installed properly under Cygwin (<=1.5.5), causing Hqp not 
+to find the Tcl library (init.tcl). See section "Known Problems" below.
+
+** Detailed installation steps
 
 1)
 Unpack the distribution file by invoking
  tar -xzf hqp<version>.tar.gz
-This creates a new directory hqp containing everything.
+This creates the new directory hqp containing everything.
 
 2)
 cd to the created directory and invoke
  ./configure
-to create the files ./makedirs, ./makedefs 
-   ./odc/Makefile, ./hqp_docp/Makefile, and ./doc/Doxyfile.
+This creates the files ./makedirs, ./makedefs 
+   ./odc/Makefile, ./hqp_docp/Makefile, lib/pkgIndex.tcl, and ./doc/Doxyfile.
 Following options can be specified:
- --prefix=PATH
-     Path where you'd like to install the libraries and include files
-     (default is /usr/local).
-Build options:
+Feature options:
  --enable-fortran
      Include the numerical integration routines RKsuite and 
      optionally DASPK with libomu (see also daspk/README).
      This requires an f77 compiler on your machine.
      Note: The automatic settings done by ./configure are only guesses. 
-     Please check the variables FORTRAN_* in ./makedefs manually.
- --enable-cute
-     Include CUTE interface with HQP.
- --enable-gmalloc
-     Use GNU malloc instead of the system routines. Gmalloc will be enabled
-     automatically if your system malloc doesn't work properly (e.g. under
-     DEC OSF). According to the authors experience gmalloc doesn't work on 
-     all machines, but fortunately it does where it's needed :-)
- --enable-ascend
-     Include current preliminary version of an interface to Ascend4.
-     This requires that this distribution is unpacked in the directory of
-     the Ascend distribution, e.g. in /home/myname/ascendiv-0.9
-     (for Ascend see http://www.cs.cmu.edu/~ascend/Home.html)
+     Please check the variables FORTRAN_* in ./makedefs.
  --enable-mex
-     Include MEX S-function interface with Omuses. This option requires
-     MATLAB(R) and two paths have to be specified:
+     Include MEX S-function interface with Omuses. 
+     Additionally you may specify:
     --with-matlab
        Root directory of MATLAB(R) installation, e.g.
        --with-matlab=/usr/local/matlab
     --with-matlab-libs
        Directory containing MATLAB(R) runtime libraries, e.g.
        --with-matlab-libs=/usr/local/matlab/extern/lib/glnx86
+ --enable-cute
+     Include CUTE interface with HQP.
+ --enable-ascend
+     Include current preliminary version of an interface to Ascend4.
+     This requires that this distribution is unpacked in the directory of
+     the Ascend distribution, e.g. in /home/myname/ascendiv-0.9
+     (for Ascend see http://www.cs.cmu.edu/~ascend/Home.html)
+Installation options:
+ --prefix=PATH
+     Path where you'd like to install the libraries and include files
+     (default is /usr/local).
+Build options:
+ --enable-shared (--disable-shared)
+     Build shared (static) libraries. Shared is default, except for Windows,
+     where building a DLL is somewhat tricky. Shared libraries are required
+     if Hqp/Omuses shall be used as package extending a Tcl application.
+ --enable-symbols
+     build debug version, including symbolic information
+ --enable-gmalloc
+     Use GNU malloc instead of the system routines. Gmalloc will be enabled
+     automatically if your system malloc doesn't work properly (e.g. under
+     DEC OSF). According to the authors experience gmalloc doesn't work on 
+     all machines, but fortunately it does where it's needed :-)
 Use a specific Tcl installation, which is not found automatically:
  --with-tcl
      Directory containing Tcl configuration file tclConfig.sh, e.g.
@@ -61,7 +114,7 @@ Compile the distribution by invoking
   make
 (or
   make -f Makefile.hqp
- to avoid building ADOL-C, Omuses, and Odc)
+ to skip building Omuses and Odc)
 
 4)
 Directly after compilation, a test run of an example in ./odc is performed 
@@ -73,7 +126,8 @@ Install the libraries and includes if you want by invoking
   make install
 The following files are created:
 
-     $prefix / lib     / libhqp-<version>.so
+     $prefix / lib     / Hqp<version> / pkgIndex.tcl
+                       / libhqp-<version>.so
                        / libomu-<version>.so
                        / libhqp.so -> libhqp-<version>.so
                        / libomu.so -> libomu-<version>.so
@@ -82,22 +136,22 @@ The following files are created:
 
 6)
 See ./hqp_docp/README if you want to apply HQP directly to multistage 
-problems without using ADOL-C and differential equations.  
+problems, without using ADOL-C or differential equations.  
 
 7)
 See ./hqp_cute/README if you want to use HQP in the testing environment
 CUTE.
 
 8)
-Send correspondence to: hqp@rz.tu-ilmenau.de
+Send correspondence to the developers listed at http://hqp.sf.net
 
 
-Using an other compiler than gcc
-================================
-for using an other compiler, say cl, invoke
+** Using alternative compilers
+
+Gernerally for using an other compiler, say cl, invoke
   CC=cl ./configure
 
-Hints for using cl, i.e. the "native" compiler under Windows:
+*** Hints for using cl, i.e. the "native" compiler under Windows
  - you still need Cygwin (see http://www.cygwin.com)
    or MinGW (see http://www.mingw.org)
    in order to run the automatic configuration and make
@@ -105,28 +159,61 @@ Hints for using cl, i.e. the "native" compiler under Windows:
  - the automatically generated file makedirs
    may need to be customized manually with drive names for absolute paths
    (e.g. insead of "/Programs/Tcl/lib" write "c:/Programs/Tcl/lib"
- - cl does work for HQP, but not for ADOL-C used in the front-end Omuses
-   You can use cl to greate a DLL for HQP and compile Omuses with gcc.
+ - cl does work for ADOL-C used in the front-end Omuses.
+   That is why --disable-adolc must be specfied for configure.
  - dynamic link libraries are not yet installed automatically
 
-Alternative for Windows:
- - compile everything under Cygwin and install it under /usr/local
-   (i.e. c:\cygwin\usr\local), or
+*** Alternative for Windows
  - compile everything under MinGW/MSYS
    (tested with MinGW 1.1, MSYS 1.0.7 prerelease 1, Tcl 8.4a3)
 
-Known Problems
-==============
-1) Problems with specific gcc versions:
+*** Yet another alternative for Windows
+
+Cygwin can also be used to compile libraries and programs that run 
+natively under Windows not relying on the Posix emulation layer 
+provided by cygwin1.dll. 
+- install a Windows version of Tcl and make sure it is found in the PATH 
+  before the version coming with cygwin (or uninstall the cygwin package tcltk)
+- invoke
+  CC="gcc -mno-cygwin" ./configure
+
+* Known Problems
+
+** Problems with Tcl
+application-specific initialization failed: Can't find a usable init.tcl in the
+following directories:
+    C:/cygwin/share/tcl8.4 ...
+
+This error is caused by an unproper installation of Tcl. Two work-arounds are possible:
+
+a) set the environment variable TCL_LIBRARY to the directory containing init.tcl, e.g. to c:/cygwin/usr/share/tcl8.4 
+
+b) create a link
+$ ln -s /usr/share /share
+
+** Fail to link Omuses with Matlab(R) runtime library (--enable-mex)
+
+Message: Cannot export libmx_NULL_THUNK_DATA: symbol not found
+
+This problem can be solved by generating a gcc compatible library stub
+from libmx.lib coming with Matlab(R). Generate liblibmx.a
+with the following commands in the directory MATLAB_LIBDIR:
+$ echo EXPORTS > libmx.def
+$ nm libmx.lib | grep ' T _' | sed 's/.* T _//' >> libmx.def
+$ dlltool --def libmx.def --dllname libmx.dll --output-lib liblibmx.a
+
+** Problems with specific gcc versions:
 - gcc 2.8.0 and egcs 1.0.3 can't compile a method "resize"
   (tested and rejected by automatic configuration)
 - gcc 2.7 does not work under DEC OSF with code optimization
   (Please edit the automatically generated file makedefs.
    The optimization is not disabled automatically as the generated
    code will be rather slow)
-2) Problems with Cygwin
+
+** Problems with Cygwin
 - some early version of Cygwin 1.1 did setup HUGE_VAL wrong
-3) Problems with MinGW/MSYS
+
+** Problems with MinGW/MSYS
 - "TCL_LIB_SPEC" isn't set correctly in tclConfig.sh for Tcl 8.4a3;
   "@TCL_LIB_SPEC@" must be replaced by "-ltcl84" 
   in hqp_docp/Makefile and odc/Makefile

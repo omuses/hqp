@@ -5,14 +5,15 @@ AC_INIT(hqp/Hqp.h)
 
 MAJOR_VERSION=1
 MINOR_VERSION=8
-PATCHLEVEL=3d
+PATCHLEVEL_BASE=3
+DEVELOPMENT_VERSION=yes
+# note: PATCHLEVEL is formed by appending to PATCHLEVEL_BASE the
+# modification date of CVS if DEVELOPMENT_VERSION = yes
 
-VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL}
-
-AC_SUBST(VERSION)
-AC_DEFINE_UNQUOTED(VERSION, "${VERSION}")
-
-# collect defines for compiling
+# collect defines for compilation
+# Note: don't use AC_DEFINE(_UNQUOTED) to avoid default DEFS,
+# like PACKAGE_TAR, etc.
+ALL_DEFS=""
 HQP_DEFS=""
 OMU_DEFS=""
 IF_DEFS=""
@@ -54,6 +55,8 @@ if test ! -z "${with_tcl}"; then
   eval TCL_LIB_FILE=${TCL_LIB_FILE}
   # TCL_LIB_SPEC overrides TCL_LIBS as defined below
   eval TCL_LIB_SPEC='${TCL_LIB_SPEC}'
+  
+  TCLSH=${TCL_EXEC_PREFIX}/bin/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}
 
 else
   # check for tclsh in PATH (only if no --with-tcl given)
@@ -65,7 +68,7 @@ else
   TCL_VERSION=`echo 'puts -nonewline $tcl_version' | $TCLSH`
   AC_MSG_RESULT([$TCL_VERSION])
   if test -z "$TCL_VERSION"; then
-    AC_MSG_ERROR([Require Tcl 8.0 or greater. Specify --with-tcl.])
+    AC_MSG_ERROR([Require Tcl 8.1 or greater. Specify --with-tcl.])
   fi
   TCL_MAJOR_VERSION=`echo 'scan $tcl_version %d.%d ma mi; puts -nonewline $ma' | $TCLSH`
   TCL_MINOR_VERSION=`echo 'scan $tcl_version %d.%d ma mi; puts -nonewline $mi' | $TCLSH`
@@ -83,6 +86,21 @@ if test $TCL_MAJOR_VERSION$TCL_MINOR_VERSION -lt 81; then
 fi
 
 # -----------------------------------------------------------------------
+# 	Define version
+# -----------------------------------------------------------------------
+
+if test "${DEVELOPMENT_VERSION}" = yes; then
+  PATCHLEVEL_EXT=`echo 'puts -nonewline [[clock format [file mtime CVS] -format .%y.%m.%d]]' | $TCLSH`
+else
+  PATCHLEVEL_EXT=""
+fi
+VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL_BASE}${PATCHLEVEL_EXT}
+
+ALL_DEFS="${ALL_DEFS} -DVERSION=\\\"${VERSION}\\\""
+
+AC_SUBST(VERSION)
+
+# -----------------------------------------------------------------------
 # 	Compiler and flags
 # -----------------------------------------------------------------------
 
@@ -94,6 +112,9 @@ AC_MSG_RESULT($hqp_symbols)
 
 AC_PROG_CC
 AC_PROG_CXX
+if test "$CC" = "gcc -mno-cygwin"; then
+  CXX="$CXX -mno-cygwin"
+fi
 WFLAG="-W"
 CFLAGS="-O2"
 CXXFLAGS="-O2"
@@ -203,7 +224,6 @@ LDLIB_SUFFIX=""
 EXE_SUFFIX=""
 LD="$CXX -shared -o "
 LDFLAGS_START=""
-LIB_SUFFIX=".so"
 LFLAG="-L"
 RFLAG="-Wl,-rpath,"
 
@@ -245,7 +265,7 @@ if test $uname_found = "yes" ; then
         PICFLAG=""
         LD="ar -cr "
         LIB_SUFFIX=".a"
-        AC_DEFINE(IF_CLASS_STATIC)
+        ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
         RFLAG="-L"
         AC_PROG_RANLIB
       fi
@@ -268,7 +288,7 @@ if test $uname_found = "yes" ; then
       PICFLAG=""
       LD="ar -cr "
       LIB_SUFFIX=".a"
-      AC_DEFINE(IF_CLASS_STATIC)
+      ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
       RFLAG="-Wl,+b,"
       AC_PROG_RANLIB
       ;;
@@ -288,7 +308,7 @@ if test $uname_found = "yes" ; then
       else
         LD="ar -cr "
         LIB_SUFFIX=".a"
-        AC_DEFINE(IF_CLASS_STATIC)
+        ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
         RFLAG="-L"
         AC_PROG_RANLIB
       fi
@@ -305,11 +325,11 @@ if test $uname_found = "yes" ; then
       else
         LD="link -lib -nologo -nodefaultlib:msvcrt"
       fi
-      AC_DEFINE(IF_CLASS_STATIC)
+      ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
       LDFLAGS_START="-link -nodefaultlib:msvcrt"
       OBJ_SUFFIX=".obj"
       LIB_PREFIX=""
-      LIB_SUFFIX=".lib"
+      LIB_SUFFIX=".dll"
       LDLIB_PREFIX=""
       LDLIB_SUFFIX=".lib"
       EXE_SUFFIX=".exe"
@@ -370,18 +390,139 @@ AC_SUBST(RANLIB)
 AC_SUBST(MES_CC)
 AC_SUBST(MES_CFLAGS)
 
-# add Hqp to Omuses machine objects
+# HQP/Omuses libs as required for a stand-alone application
+HQP_LIBS="${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+OMU_LIBS="${LDLIB_PREFIX}omu${LDLIB_SUFFIX}"
+# add Hqp to Omuses machine objects or to libs required for using Omuses
 if test "$hqp_libs_resolved" = "yes"; then
-#  OMU_MACH_OBJS="$OMU_MACH_OBJS ${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+#  OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
   # for now directly link Hqp objects into an Omuses DLL
   OMU_MACH_OBJS="../hqp/*\$O ../iftcl/*\$O ../meschach/*\$O"
+else
+  OMU_LIBS="${OMU_LIBS} ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
 fi
+
+AC_SUBST(HQP_LIBS)
+AC_SUBST(OMU_LIBS)
 
 # -----------------------------------------------------------------------
 # 	Check for existence of install programs
 # -----------------------------------------------------------------------
 
 AC_PROG_INSTALL
+
+# -----------------------------------------------------------------------
+# 	Configure support for MEX
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--enable-mex])
+AC_ARG_ENABLE(mex,
+    [  --enable-mex     include MEX S-function interface with Omuses],
+    [omu_mex=$enableval], [omu_mex=no])
+AC_MSG_RESULT($omu_mex)
+
+
+MEX_SRCS=""
+MEX_INCDIR1=""
+MEX_INCDIR2=""
+MEX_LIBDIR=""
+MEX_LIBS=""
+
+if test "$omu_mex" != no; then
+  
+  AC_MSG_CHECKING([--with-matlab])
+  AC_ARG_WITH(matlab,
+      [  --with-matlab       directory containing Matlab installation],
+      [with_matlab=$withval])
+  AC_MSG_RESULT([$with_matlab])
+
+  AC_MSG_CHECKING([--with-matlab-libs])
+  AC_ARG_WITH(matlab-libs,
+      [  --with-matlab-libs  directory containing Matlab run-time libraries],
+      [with_matlab_libs=$withval])
+  AC_MSG_RESULT([$with_matlab_libs])
+
+  # try to find Matlab automatically if nothing else was specified
+  if test -z "${with_matlab}"; then
+    AC_PATH_PROG(with_matlab, matlab)
+    with_matlab=`dirname "${with_matlab}"`
+    with_matlab=`dirname "${with_matlab}"`
+    with_matlab=`dirname "${with_matlab}"`
+  fi
+
+  if test -z "${with_matlab}"; then
+    AC_MSG_ERROR([can't find Matlab, specify --with-matlab])
+  else
+    MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
+    MEX_INCDIR1="$with_matlab"
+    MEX_INCDIR2="$with_matlab/extern/include"
+    MEX_LIBDIR=""
+    MEX_LIBS="-lmx"
+    MEX_SCRIPT="$with_matlab/bin/mex"
+    MEX_EXTENSION=""
+    case "$target" in 
+      Linux*)
+        MEX_LIBDIR="$with_matlab/extern/lib/glnx86"
+        MEX_EXTENSION=".mexglx"
+        ;;
+      SunOS*) 
+        MEX_LIBDIR="$with_matlab/extern/lib/sol2"
+        MEX_EXTENSION=".mexsol"
+        ;;
+      OSF1*) 
+        MEX_LIBDIR="$with_matlab/extern/lib/alpha"
+        MEX_EXTENSION=".mexaxp"
+        ;;
+      IRIX*)
+        MEX_LIBDIR="$with_matlab/extern/lib/sgi"
+        MEX_EXTENSION=".mexsg"
+        ;;
+      HP-UX*)
+        MEX_LIBDIR="$with_matlab/extern/lib/hpux"
+        MEX_EXTENSION=".mexhpux"
+        ;;
+      CYGWIN*|MSYS*|MINGW*)
+        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        MEX_LIBS="-llibmx"
+        # note: might need to generate liblibmx.a from libmx.lib
+        #  if libmx.lib does not link (e.g. older cygwin or when making a DLL)
+        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
+        MEX_EXTENSION=".dll"
+        ;;
+      CL)
+        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        MEX_LIBS="libmx.lib"
+        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
+        MEX_EXTENSION=".dll"
+        ;;
+    esac
+    # overwrite MEX_LIBDIR if set explicitly
+    if test ! -z "${with_matlab_libs}"; then
+      MEX_LIBDIR="$with_matlab_libs"
+    fi
+    OMU_DEFS="${OMU_DEFS} -DOMU_WITH_MEX=1"
+  fi
+  if test -z "${MEX_LIBDIR}"; then
+    AC_MSG_ERROR([can't find Matlab libs, specify --with-matlab and --with-matlab-libs])
+  fi
+fi
+
+AC_SUBST(MEX_SRCS)
+AC_SUBST(MEX_INCDIR1)
+AC_SUBST(MEX_INCDIR2)
+AC_SUBST(MEX_LIBDIR)
+AC_SUBST(MEX_LIBS)
+AC_SUBST(MEX_SCRIPT)
+AC_SUBST(MEX_EXTENSION)
+
+AC_SUBST(OMU_DEFS)
+
+# add MEX libs to machine objects
+if test "$hqp_libs_resolved" = "yes"; then
+  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
+else
+  ODC_MACH_OBJS="$ODC_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
+fi
 
 # -----------------------------------------------------------------------
 # 	Check for location of Tcl includes and libraries
@@ -432,7 +573,7 @@ else
 fi
 
 # compile using stubs mechanism
-AC_DEFINE(USE_TCL_STUBS)
+ALL_DEFS="${ALL_DEFS} -DUSE_TCL_STUBS=1"
 
 # only use new const's by Tcl 8.4 that are backwards compatible to Tcl 8.1
 IF_DEFS="-DUSE_COMPAT_CONST=1 $IF_DEFS"
@@ -502,6 +643,9 @@ if test "$omu_fortran" != no; then
       AC_MSG_ERROR("Require f77 or g77 to enable RKsuite.")
     fi
   fi
+  if test "$CC" = "gcc -mno-cygwin"; then
+    fortran_ftn="$fortran_ftn -mno-cygwin"
+  fi
 
   # default settings to enable Fortran
   # (MES_CFLAGS are assumed to be valid for machine Fortran)
@@ -562,107 +706,6 @@ if test "$hqp_libs_resolved" = "yes"; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(FORTRAN_LIBS)"
 else
   ODC_MACH_OBJS="$ODC_MACH_OBJS \$(FORTRAN_LIBS)"
-fi
-
-# -----------------------------------------------------------------------
-# 	Configure support for MEX
-# -----------------------------------------------------------------------
-
-AC_MSG_CHECKING([--enable-mex])
-AC_ARG_ENABLE(mex,
-    [  --enable-mex     include MEX S-function interface with Omuses],
-    [omu_mex=$enableval], [omu_mex=no])
-AC_MSG_RESULT($omu_mex)
-
-
-MEX_SRCS=""
-MEX_INCDIR1=""
-MEX_INCDIR2=""
-MEX_LIBDIR=""
-MEX_LIBS=""
-
-if test "$omu_mex" != no; then
-  
-  AC_MSG_CHECKING([--with-matlab])
-  AC_ARG_WITH(matlab,
-      [  --with-matlab       directory containing Matlab installation],
-      [with_matlab=$withval])
-  AC_MSG_RESULT([$with_matlab])
-
-  AC_MSG_CHECKING([--with-matlab-libs])
-  AC_ARG_WITH(matlab-libs,
-      [  --with-matlab-libs  directory containing Matlab run-time libraries],
-      [with_matlab_libs=$withval])
-  AC_MSG_RESULT([$with_matlab_libs])
-
-  if test ! -z "${with_matlab}"; then
-    MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
-    MEX_INCDIR1="$with_matlab"
-    MEX_INCDIR2="$with_matlab/extern/include"
-    MEX_LIBDIR=""
-    MEX_LIBS="-lmx"
-    MEX_SCRIPT="$with_matlab/bin/mex"
-    MEX_EXTENSION=""
-    case "$target" in 
-      Linux*)
-        MEX_LIBDIR="$with_matlab/extern/lib/glnx86"
-        MEX_EXTENSION=".mexglx"
-        ;;
-      SunOS*) 
-        MEX_LIBDIR="$with_matlab/extern/lib/sol2"
-        MEX_EXTENSION=".mexsol"
-        ;;
-      OSF1*) 
-        MEX_LIBDIR="$with_matlab/extern/lib/alpha"
-        MEX_EXTENSION=".mexaxp"
-        ;;
-      IRIX*)
-        MEX_LIBDIR="$with_matlab/extern/lib/sgi"
-        MEX_EXTENSION=".mexsg"
-        ;;
-      HP-UX*)
-        MEX_LIBDIR="$with_matlab/extern/lib/hpux"
-        MEX_EXTENSION=".mexhpux"
-        ;;
-      CYGWIN*|MSYS*|MINGW*)
-        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
-        # need to generate libmx.a from libmx.lib as libmx.lib does not link
-        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
-        MEX_EXTENSION=".dll"
-        ;;
-      CL)
-        MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
-        MEX_LIBS="libmx.lib"
-        MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
-        MEX_EXTENSION=".dll"
-        ;;
-    esac
-    # overwrite MEX_LIBDIR if set explicitly
-    if test ! -z "${with_matlab_libs}"; then
-      MEX_LIBDIR="$with_matlab_libs"
-    fi
-    OMU_DEFS="$OMU_DEFS -DOMU_WITH_MEX=1"
-  fi
-  if test -z "${MEX_LIBDIR}"; then
-    AC_MSG_ERROR([for --enable-mex need --with-matlab and --with-matlab-libs])
-  fi
-fi
-
-AC_SUBST(MEX_SRCS)
-AC_SUBST(MEX_INCDIR1)
-AC_SUBST(MEX_INCDIR2)
-AC_SUBST(MEX_LIBDIR)
-AC_SUBST(MEX_LIBS)
-AC_SUBST(MEX_SCRIPT)
-AC_SUBST(MEX_EXTENSION)
-
-AC_SUBST(OMU_DEFS)
-
-# add MEX libs to machine objects
-if test "$hqp_libs_resolved" = "yes"; then
-  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
-else
-  ODC_MACH_OBJS="$ODC_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
 fi
 
 # -----------------------------------------------------------------------
@@ -772,5 +815,7 @@ AC_SUBST(HAVE_DOT)
 # 	Produce outputs
 # -----------------------------------------------------------------------
 
+AC_SUBST(ALL_DEFS)
+
 AC_OUTPUT(makedefs makedirs hqp_docp/Makefile odc/Makefile odc/mex.tcl
-          doc/Doxyfile)
+          lib/pkgIndex.tcl doc/Doxyfile)

@@ -16,10 +16,10 @@ clean:
 	cd hqp; $(MAKE) clean; cd ..
 	cd iftcl; $(MAKE) clean; cd ..
 	rm -f meschach/*.o meschach/*.obj meschach/*.[pi]db meschach/*~
-	rm -f lib/*.* config.* *.[pi]db *~
+	rm -f lib/*.*[^n] config.* *.[pi]db *~
 
 distclean: clean
-	rm -f makedefs makedirs hqp_docp/Makefile
+	rm -f makedefs makedirs hqp_docp/Makefile lib/pkgIndex.tcl
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include
@@ -36,6 +36,11 @@ install::
 	ln -s $(LIB_PREFIX)hqp-$(VERSION)$(LIB_SUFFIX) \
 	  $(LIB_PREFIX)hqp$(LIB_SUFFIX); \
 	cd $(PWD)
+# install pkgIndex.tcl
+	rm -rf $(LIB_DIR_ROOT)/Hqp$(VERSION)
+	mkdir $(LIB_DIR_ROOT)/Hqp$(VERSION)
+	$(INSTALL) lib/pkgIndex.tcl \
+          $(LIB_DIR_ROOT)/Hqp$(VERSION)
 # make directory structure for includes
 	@if test ! -d $(INC_DIR_ROOT); then mkdir $(INC_DIR_ROOT); fi
 	rm -rf $(INC_DIR)-$(VERSION)

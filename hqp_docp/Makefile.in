@@ -19,6 +19,9 @@ O = @OBJ_SUFFIX@
 TCL_LIBS = @TCL_LIBS@
 MACH_OBJS = $(TCL_LIBS) @HQP_DOCP_MACH_OBJS@
 
+# libraries required for an application using HQP
+HQP_LIBS = @HQP_LIBS@
+
 LFLAG = @LFLAG@
 #
 # flag to add a path for the run-time loader
@@ -65,9 +68,8 @@ OBJS = $(SRCS:.C=$O) $(GMALLOC_O)
 RESULT = docp
 
 all: $(OBJS) Makefile
-	$(CXX) -o $(RESULT)  $(OBJS) \
-	@LDFLAGS_START@ $(LDFLAGS) @LDLIB_PREFIX@hqp@LDLIB_SUFFIX@ \
-	$(MACH_OBJS)
+	$(CXX) -o $(RESULT) $(OBJS) \
+	@LDFLAGS_START@ $(LDFLAGS) $(HQP_LIBS) $(MACH_OBJS)
 
 gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
 	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \

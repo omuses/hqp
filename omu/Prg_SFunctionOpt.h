@@ -144,31 +144,31 @@ public:
    \begin{array}{rcccll}
     \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
         \quad & i\notin\mbox{find}(x_{0\_active}), \\[3ex]
-    \displaystyle \frac{y_{0,min}}{y_{nominal}} &<& y(t^{0})
-        &<& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
+    \displaystyle \frac{y_{0,min}}{y_{nominal}} &\le& y(t^{0})
+        &\le& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
     \displaystyle && \{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
         \quad & i \in \mbox{find}(u_{0,nfixed}>1-u_{order}), \\[3ex]
-    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &<& u(t^0)
-        &<& \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
+    \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &\le& u(t^0)
+        &\le& \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
         \ & i \in \mbox{find}(u_{0,nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
-    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &<& u(t^{k})
-        &<& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
+    \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &\le& u(t^{k})
+        &\le& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
         i \in \mbox{find}(k \ge u_{0,nfixed} + u_{order} - 1), \\[1ex]
 	&& && & k=0,\ldots,K, \\[2ex]
-    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
-        &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
+    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &\le& du^{k}
+        &\le& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
 	k=0,\ldots,K-1, \\[3ex]
-    \displaystyle \frac{x_{min}}{x_{nominal}} &<& x(t^{k})
-        &<& \displaystyle \frac{x_{max}}{x_{nominal}}, \quad &
+    \displaystyle \frac{x_{min}}{x_{nominal}} &\le& x(t^{k})
+        &\le& \displaystyle \frac{x_{max}}{x_{nominal}}, \quad &
         k=0,\ldots,K, \\[3ex]
-    \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
-        &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
+    \displaystyle \frac{y_{min}}{y_{nominal}} &\le& y(t^{kk})
+        &\le& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
-    \displaystyle \frac{y_{soft\_min}}{y_{nominal}} - s^{kk} &<& y(t^{kk})
-        &<& \displaystyle \frac{y_{soft\_max}}{y_{nominal}} + s^{kk}, \\[3ex]
-    \displaystyle && s^{kk} &>& 0, \quad & kk=0,\ldots,KK, \\[3ex]
-    \displaystyle \frac{y_{f\_min}}{y_{nominal}} &<& y(t_f)
-        &<& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
+    \displaystyle \frac{y_{soft\_min}}{y_{nominal}} - s^{kk} &\le& y(t^{kk})
+        &\le& \displaystyle \frac{y_{soft\_max}}{y_{nominal}} + s^{kk}, \\[3ex]
+    \displaystyle && s^{kk} &\ge& 0, \quad & kk=0,\ldots,KK, \\[3ex]
+    \displaystyle \frac{y_{f\_min}}{y_{nominal}} &\le& y(t_f)
+        &\le& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
    \end{array}
    @f]
    The actually optimized rates of changes @f$du^k, k=0,\ldots,K-1@f$ for

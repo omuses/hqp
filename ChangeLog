@@ -1,3 +1,24 @@
+2003-11-08    <rfranke>
+
+	* configure.in, hqp_docp/Makefile.in, odc/Makefile.in:
+	  - support for gcc -mno-cygwin (native Windows version using Cygwin)
+	  - base patchlevel on modification date of CVS
+	  - use default Matlab libmex.lib under Windows 
+	    (as it works for the static libs built per default with gcc3.3.1)
+          - use default --with-matlab
+	
+	* lib/pkgIndex.tcl: add 
+	* Makefile.hqp: install Tcl package handling, together with libs
+
+	* INSTALL: update installation instructions
+
+	* omu/Prg_SFunctionOpt/Est.h: update documentation:
+	  replace strict <(>) with \le(\ge)
+
+	* omu/Omu_IntDASPK.h, omu/Omu_IntOdeTs.h, omu/Omu_IntSDIRK.h:
+	  rename call arguments of overloaded methods according to 
+	  base class to prevent warnings from doxygen 1.2.18
+
 2003-11-04    <rfranke>
 
 	* omu/Prg_SFunction.C (setup_model): preselect MAJOR_TIME_STEP

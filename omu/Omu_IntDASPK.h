@@ -66,7 +66,7 @@ class Omu_IntDASPK: public Omu_Integrator {
   char *name() {return "DASPK";}
 
   virtual void init(int k,
-		    const Omu_StateVec &x, const Omu_Vec &u,
+		    const Omu_StateVec &xc, const Omu_Vec &q,
 		    const Omu_DependentVec &Fc, bool sa);
 
   virtual void solve(int kk, double tstart, double tend,

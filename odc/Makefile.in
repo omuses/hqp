@@ -21,6 +21,9 @@ FORTRAN_LIBS = @FORTRAN_LIBS@
 MEX_LIBS = @MEX_LIBS@
 MACH_OBJS = $(TCL_LIBS) @ODC_MACH_OBJS@ -lm
 
+# libraries required for an application using HQP/Omuses
+OMU_LIBS = @OMU_LIBS@
+
 LFLAG = @LFLAG@
 #
 # flag to add a path for the run-time loader
@@ -79,8 +82,7 @@ RESULT = odc
 
 all: $(OBJS) Makefile
 	$(CXX) -o $(RESULT) $(OBJS) \
-	@LDFLAGS_START@ $(LDFLAGS) @LDLIB_PREFIX@omu@LDLIB_SUFFIX@ \
-	@LDLIB_PREFIX@hqp@LDLIB_SUFFIX@ $(MACH_OBJS)
+	@LDFLAGS_START@ $(LDFLAGS) $(OMU_LIBS) $(MACH_OBJS)
 
 gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
 	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \
