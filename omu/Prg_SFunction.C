@@ -134,7 +134,7 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
 //--------------------------------------------------------------------------
 void Prg_SFunction::set_mdl_x0(const VECP value)
 {
-  v_copy(value, _mdl_x0);
+  v_copy_elements(value, _mdl_x0);
 }
 
 //--------------------------------------------------------------------------

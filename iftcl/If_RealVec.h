@@ -70,8 +70,8 @@ class IF_API If_RealVec: public If_Variable<If_RealVec_t> {
    public:
     /** constructor */
     SetVEC(VEC **varPtr): _varPtr(varPtr) {}
-    /** set method */
-    void set(If_RealVec_t value) {*_varPtr = v_copy(value, *_varPtr);}
+    /** set method ensuring that size of vector does not change */
+    void set(If_RealVec_t value) {v_copy_elements(value, *_varPtr);}
   };
 };
 

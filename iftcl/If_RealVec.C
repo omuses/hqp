@@ -43,13 +43,6 @@ int If_RealVec::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
     return TCL_ERROR;
   }
 
-  // check dimension
-  //----------------
-  if (curVec == VNULL || ncols != (int)(curVec)->dim) {
-    Tcl_AppendResult(interp, "wrong dimension for ", ifName(), NULL);
-    return TCL_ERROR;
-  }
-
   // create and fill a new vector
   //-----------------------------
   VEC *newVec = v_get(ncols);

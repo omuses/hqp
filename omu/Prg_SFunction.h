@@ -65,7 +65,7 @@ class Prg_SFunction: public Omu_Program {
   ~Prg_SFunction();		///< destructor
 
   /**
-   * @name Member access methods.
+   * @name Member access methods (no If prefix)
    */
   //@{
 

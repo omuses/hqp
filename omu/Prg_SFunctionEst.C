@@ -40,8 +40,12 @@
 #undef assert
 #define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
 
-#define GET_CB(vartype, name) \
-  #name, \
+#define GET_SET_CB(vartype, prefix, name) \
+  GET_CB(vartype, prefix, name), \
+  IF_SET_CB(vartype, Prg_SFunctionEst, set_##name)
+
+#define GET_CB(vartype, prefix, name) \
+  prefix#name, \
   IF_GET_CB(vartype, Prg_SFunctionEst, name)
 
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
@@ -93,34 +97,33 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _dxfdx = m_resize(m_get(1, 1), _nx, _nx);
   _dxfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
 
-  _ifList.append(new If_IntVec("mdl_p_active", &_mdl_p_active));
-  _ifList.append(new If_IntVec("mdl_x0_active", &_mdl_x0_active));
-  _ifList.append(new If_RealVec("mdl_der_x0_min", &_mdl_der_x0_min));
-  _ifList.append(new If_RealVec("mdl_der_x0_max", &_mdl_der_x0_max));
-  _ifList.append(new If_IntVec("mdl_y_active", &_mdl_y_active));
-  _ifList.append(new If_RealVec("mdl_p_nominal", &_mdl_p_nominal));
-  _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
-  _ifList.append(new If_RealVec("mdl_y_nominal", &_mdl_y_nominal));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_max)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_p_active)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_nominal)));
 
-  _ifList.append(new If_RealVec("mdl_p", &_mdl_p));
-  _ifList.append(new If_RealVec("mdl_p_min", &_mdl_p.min));
-  _ifList.append(new If_RealVec("mdl_p_max", &_mdl_p.max));
   // make mdl_x0 read only as mdl_x0s should be used
   // (mdl_x0s is needed to cover multiple experiments)
-  _ifList.append(new If_RealVec(GET_CB(const VECP, mdl_x0)));
-  _ifList.append(new If_RealVec("mdl_x0_min", &_mdl_x0.min));
-  _ifList.append(new If_RealVec("mdl_x0_max", &_mdl_x0.max));
+  _ifList.append(new If_RealVec(GET_CB(const VECP, "", mdl_x0)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0_max)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x0_active)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
 
-  _ifList.append(new If_Int("prg_nex", &_nex));
-  _ifList.append(new If_RealMat("mdl_x0s", &_mdl_x0s));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_active)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
 
-  _ifList.append(new If_RealMat("mdl_us", &_mdl_us));
-  _ifList.append(new If_RealMat("mdl_ys", &_mdl_ys));
-  _ifList.append(new If_Bool("prg_multistage", &_multistage));
+  _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_x0s)));
+  _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_us)));
+  _ifList.append(new If_RealMat(GET_CB(const MATP, "", mdl_ys)));
 
-  _ifList.append(new If_RealMat("prg_ys_ref", &_ys_ref));
-
-  _ifList.append(new If_RealMat("prg_M", &_M));
+  _ifList.append(new If_Int(GET_SET_CB(int, "prg_", nex)));
+  _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
+  _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "prg_", ys_ref)));
+  _ifList.append(new If_RealMat(GET_CB(const MATP, "prg_", M)));
 }
 
 //--------------------------------------------------------------------------

@@ -1,7 +1,7 @@
-/*
- * Omu_Program.h --
- *   -- declare an interface for a multistage optimization problem
- *      described by differential and algebraic equations
+/**
+ *  @file Omu_Program.h
+ *     interface for a multistage optimization problem
+ *     described by algebraic and differential equations
  *
  * rf, 16/1/97
  */
@@ -176,7 +176,7 @@ class Omu_Program {
   //@}
 
   /**
-   * @name Member access routines
+   * @name Member access methods
    */
   //@{
 
@@ -185,11 +185,15 @@ class Omu_Program {
   int		KK() const {return _KK;}///< get number of sample periods
   void		set_KK(int KK) {_KK = KK;}///< set number of sample periods
 
-  /// get vector of start indices for sample periods in each stage
+  /// vector of start indices for sample periods in each stage
   const IVECP 	ks() const {return _ks;}
+  /// set vector of start indices
+  void 		set_ks(const IVECP n_ks) {iv_copy_elements(n_ks, _ks);}
 
-  /// get vector of start time points in each sample period
+  /// vector of start time points in each sample period
   const VECP 	ts() const {return _ts;}
+  /// set vector of start times
+  void 		set_ts(const VECP n_ts) {v_copy_elements(n_ts, _ts);}	
 
   /// get start index of sample periods in stage k
   int	 	ks(int k) const {return _ks[k];}

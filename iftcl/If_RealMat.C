@@ -50,14 +50,6 @@ int If_RealMat::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
       return TCL_ERROR;
     }
 
-  // check dimension
-  //----------------
-  if (curMat == MNULL
-      || nrows != (int)(curMat)->m || ncols != (int)(curMat)->n) {
-    Tcl_AppendResult(interp, "wrong dimension for ", ifName(), NULL);
-    return TCL_ERROR;
-  }
-
   // create and fill a new matrix
   //-----------------------------
   MAT *newMat = m_get(nrows, ncols);

@@ -70,8 +70,8 @@ class IF_API If_IntVec: public If_Variable<If_IntVec_t> {
    public:
     /** constructor */
     SetIVEC(IVEC **varPtr): _varPtr(varPtr) {}
-    /** set method */
-    void set(If_IntVec_t value) {*_varPtr = iv_copy(value, *_varPtr);}
+    /** set method ensuring that size of vector does not change */
+    void set(If_IntVec_t value) {iv_copy_elements(value, *_varPtr);}
   };
 };
 

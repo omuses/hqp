@@ -47,13 +47,6 @@ int If_IntVec::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
     return TCL_ERROR;
   }
 
-  // check dimension
-  //----------------
-  if (curIVec == IVNULL || ncols != (int)(curIVec)->dim) {
-    Tcl_AppendResult(interp, "wrong dimension for ", ifName(), NULL);
-    return TCL_ERROR;
-  }
-
   // create and fill a new vector
   //-----------------------------
   IVEC *newIVec = iv_get(ncols);

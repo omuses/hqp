@@ -70,8 +70,8 @@ class IF_API If_RealMat: public If_Variable<If_RealMat_t> {
    public:
     /** constructor */
     SetMAT(MAT **varPtr): _varPtr(varPtr) {}
-    /** set method */
-    void set(If_RealMat_t value) {*_varPtr = m_copy(value, *_varPtr);}
+    /** set method ensuring that size of matrix does not change */
+    void set(If_RealMat_t value) {m_copy_elements(value, *_varPtr);}
   };
 };
 

@@ -40,6 +40,11 @@
 
 IF_BASE_DEFINE(Omu_Program);
 
+#define GET_SET_CB(vartype, name) \
+  "prg_"#name, \
+  IF_GET_CB(vartype, Omu_Program, name), \
+  IF_SET_CB(vartype, Omu_Program, set_##name)
+
 #ifdef OMU_WITH_ADOLC
 //--------------------------------------------------------------------------
 static short** myalloc_short(int m, int n)
@@ -71,10 +76,10 @@ Omu_Program::Omu_Program()
 
   _has_low_level_continuous = true;	// assume it was overloaded
 
-  _ifList.append(new If_Int("prg_K", &_K));
-  _ifList.append(new If_Int("prg_KK", &_KK));
-  _ifList.append(new If_IntVec("prg_ks", &_ks));
-  _ifList.append(new If_RealVec("prg_ts", &_ts));
+  _ifList.append(new If_Int(GET_SET_CB(int, K)));
+  _ifList.append(new If_Int(GET_SET_CB(int, KK)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, ks)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, ts)));
 }
 
 //--------------------------------------------------------------------------

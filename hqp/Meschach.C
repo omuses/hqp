@@ -275,6 +275,39 @@ VEC *v_expand(VEC *v, int nel, int granul)
 }
 
 //-------------------------------------------------------------------------
+VEC *v_copy_elements(const VEC *src, VEC *dst)
+{
+  if (!src || !dst)
+    m_error(E_NULL, "v_copy_elements");
+  if (src->dim != dst->dim)
+    m_error(E_SIZES, "v_copy_elements");
+
+  return v_copy(src, dst);
+}
+
+//-------------------------------------------------------------------------
+IVEC *iv_copy_elements(const IVEC *src, IVEC *dst)
+{
+  if (!src || !dst)
+    m_error(E_NULL, "iv_copy_elements");
+  if (src->dim != dst->dim)
+    m_error(E_SIZES, "iv_copy_elements");
+
+  return iv_copy(src, dst);
+}
+
+//-------------------------------------------------------------------------
+MAT *m_copy_elements(const MAT *src, MAT *dst)
+{
+  if (!src || !dst)
+    m_error(E_NULL, "m_copy_elements");
+  if (src->m != dst->m || src->n != dst->n)
+    m_error(E_SIZES, "m_copy_elements");
+
+  return m_copy(src, dst);
+}
+
+//-------------------------------------------------------------------------
 IVEC *iv_part(IVEC *iv, int offs, int dim, IVEC *head)
 {
   if (!iv)

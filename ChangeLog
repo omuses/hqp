@@ -1,3 +1,13 @@
+2002-12-02    <rfranke>
+
+	* iftcl/If_IntVec.[hC], iftcl/If_RealVec.[hC], iftcl/If_RealVec.[hC]:
+	  move check for dimension of written array into set method, allowing
+	  an implementation of callback methods with changing dimensions
+	* hqp/Meschach.[hC]: add copy functions {iv, v, m}_copy_elements
+	  not touching size of destination, but raising an error
+	* omu/Omu_Program.[hC], omu/Prg_SFunctionEst.[hC]:
+	  add member access methods
+
 2002-11-28    <rfranke>
 
 	* omu/Prg_SFunction.C (setup_sfun): instead of raising an error,

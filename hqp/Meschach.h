@@ -38,13 +38,16 @@
 extern IVEC *iv_set(IVEC *, int);
 extern IVEC *iv_part(IVEC *iv, int offs, int dim, IVEC *header);
 extern IVEC *iv_expand(IVEC *iv, int nel, int granul);
+extern IVEC *iv_copy_elements(const IVEC *, IVEC *);
 
 extern VEC *v_set(VEC *, Real);
 extern VEC *v_part(VEC *v, int offs, int dim, VEC *header);
 extern VEC *v_expand(VEC *v, int nel, int granul);
+extern VEC *v_copy_elements(const VEC *, VEC *);
 extern VEC *bd_mv_mlt(const BAND *, const VEC *, VEC *);
 
 extern MAT *m_mltadd(const MAT *, const MAT *, const MAT *, MAT *);
+extern MAT *m_copy_elements(const MAT *, MAT *);
 
 extern Real sp_norm_inf(SPMAT *);
 extern SPMAT *sp_copy3(const SPMAT *, SPMAT *);

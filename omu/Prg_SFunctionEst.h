@@ -217,13 +217,11 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   /**
    * @name Helper methods for reading and writing S-function arguments.
-   * The arguments are read from / written to the vector p.
-   * The method write_active_mx_args assumes a vector packed with actually
-   * estimated (active) parameters scaled with nominal values.
    */
   //@{
-  void read_mx_args(VECP p);
-  void write_mx_args(VECP p);
+  void read_mx_args(VECP p); ///< read _mx_args into vector p
+  void write_mx_args(VECP p); ///< write vector p to _mx_args
+  /// write active parameters that are packed in p to _mx_args
   void write_active_mx_args(VECP p);
   //@}
 
@@ -233,6 +231,121 @@ class Prg_SFunctionEst: public Prg_SFunction {
   ~Prg_SFunctionEst();		///< destructor
 
   char *name() {return "SFunctionEst";} ///< name SFunctionEst
+
+  /**
+   * @name Access methods for program specific members (If prefix: prg_)
+   */
+  //@{
+
+  /// number of experiments used for estimation
+  int nex() const {return _nex;}
+  /// set number of experiments
+  void set_nex(int val) {_nex = val;}
+
+  /// indicate if problem is treated with one stage per time interval
+  bool multistage() const {return _multistage;}
+  /// set multistage flag
+  void set_multistage(bool val) {_multistage = val;}
+
+  /// reference values for active model outputs (size: KK+1 . ny)
+  const MATP ys_ref() const {return _ys_ref;}
+  /// set reference outputs
+  void set_ys_ref(const MATP val) {m_copy_elements(val, _ys_ref);}
+
+  /// measurement matrix M=dy/d(p,x0) (size: (KK+1)*ny . np+nx0)
+  const MATP M() const {return _M;}
+
+  //@}
+
+  /**
+   * @name Access methods for model specific members (no If prefix).
+   * Note that the prefix mdl_ is omitted in the detailed mathematical
+   * problem description.
+   */
+  //@{
+  /// model parameters 
+  const VECP mdl_p() const {return _mdl_p;}
+  /// set values of model parameter
+  void set_mdl_p(const VECP v) {v_copy_elements(v, _mdl_p);}
+
+  /// lower bounds for model parameters (note: default is 0)
+  const VECP mdl_p_min() const {return _mdl_p.min;}
+  /// set lower bounds for model parameters
+  void set_mdl_p_min(const VECP v) {v_copy_elements(v, _mdl_p.min);}
+
+  /// upper bounds for model parameters
+  const VECP mdl_p_max() const {return _mdl_p.max;}
+  /// set upper bounds for model parameters
+  void set_mdl_p_max(const VECP v) {v_copy_elements(v, _mdl_p.max);}
+
+  /// indicate estimated parameters
+  const IVECP mdl_p_active() const {return _mdl_p_active;}
+  /// set estimated parameters
+  void set_mdl_p_active(const IVECP v) {iv_copy_elements(v, _mdl_p_active);}
+
+  /// nominal parameter values (for scaling)
+  const VECP mdl_p_nominal() const {return _mdl_p_nominal;}
+  /// set nominal parameters
+  void set_mdl_p_nominal(const VECP v) {v_copy_elements(v, _mdl_p_nominal);}
+
+  /// model initial states
+  /// (read only, note: write initial states of experiments via mdl_x0s)
+  const VECP mdl_x0() const {return _mdl_x0;}
+
+  /// lower bounds for model parameters (note: default is 0)
+  const VECP mdl_x0_min() const {return _mdl_x0.min;}
+  /// set lower bounds for initial states
+  void set_mdl_x0_min(const VECP v) {v_copy_elements(v, _mdl_x0.min);}
+
+  /// upper bounds for model parameters
+  const VECP mdl_x0_max() const {return _mdl_x0.max;}
+  /// set upper bounds for initial states
+  void set_mdl_x0_max(const VECP v) {v_copy_elements(v, _mdl_x0.max);}
+
+  /// indicate estimated initial states
+  const IVECP mdl_x0_active() const {return _mdl_x0_active;}
+  /// set estimated initial states
+  void set_mdl_x0_active(const IVECP v) {iv_copy_elements(v, _mdl_x0_active);}
+
+  /// minimum for time derivative of x0  
+  const VECP mdl_der_x0_min() const {return _mdl_der_x0_min;}
+  /// set minimum for dx0dt
+  void set_mdl_der_x0_min(const VECP v) {v_copy_elements(v, _mdl_der_x0_min);}
+
+  /// maximum for time derivative of x0  
+  const VECP mdl_der_x0_max() const {return _mdl_der_x0_max;}
+  /// set maximum for dx0dt
+  void set_mdl_der_x0_max(const VECP v) {v_copy_elements(v, _mdl_der_x0_max);}
+
+  /// nominal state values (for scaling)
+  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
+  /// set nominal states
+  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
+
+  /// indicate measured outputs
+  const IVECP	mdl_y_active() const {return _mdl_y_active;}
+  /// set measured outputs
+  void set_mdl_y_active(const IVECP v) {iv_copy_elements(v, _mdl_y_active);}
+
+  /// nominal output values (for scaling)
+  const VECP mdl_y_nominal() const {return _mdl_y_nominal;}
+  /// set nominal outputs
+  void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
+
+  /// initial states for each experiment (size: nex . mdl_nx)
+  const MATP mdl_x0s() const {return _mdl_x0s;}
+  /// set initial states
+  void set_mdl_x0s(const MATP v) {m_copy_elements(v, _mdl_x0s);}
+
+  /// model inputs (size: KK+1 . mdl_nu)
+  const MATP mdl_us() const {return _mdl_us;}
+  /// set model inputs
+  void set_mdl_us(const MATP v) {m_copy_elements(v, _mdl_us);}
+
+  /// model outputs (read only, size: KK+1 . mdl_ny)
+  const MATP mdl_ys() const {return _mdl_ys;}
+
+  //@}
 };  
 
 #endif
