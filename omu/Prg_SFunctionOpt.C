@@ -315,7 +315,7 @@ void Prg_SFunctionOpt::setup(int k,
 			     Omu_VariableVec &x, Omu_VariableVec &u,
 			     Omu_VariableVec &c)
 {
-  int i, idx, isc, j, kk;
+  int i, idx, isc, j;
 
   // complete general setup
   if (k == 0) {

@@ -64,9 +64,9 @@
 #define mxFree(p)	free(p)
 /*@}*/
 
-/* declare SimStruct and mxArray as anonymous types */
-typedef void SimStruct;
-typedef void mxArray;
+/* forward declare SimStruct and mxArray */
+typedef struct SimStruct SimStruct;
+typedef struct mxArray mxArray;
 
 #if defined(_MSC_VER)
   /** define inline for Microsoft C compiler */
@@ -79,7 +79,7 @@ typedef void mxArray;
 #  if defined(__cplusplus)
 #    define HXI_EXTERN extern "C"
 #  else
-#    define HXI_EXTERN 
+#    define HXI_EXTERN extern
 #  endif
 #endif
 
@@ -94,6 +94,7 @@ HXI_EXTERN SimStruct *Hxi_SimStruct_create(const char *path);
 /** Delete a SimStruct. */
 HXI_EXTERN void Hxi_SimStruct_destroy(SimStruct *S);
 
+#if !defined(HXI_INLINE_S_FUNCTION)
 /** @name Supported S-function methods. */
 /*@{*/
 /** Initialize sizes of data vectors in %SimStruct. 
@@ -128,8 +129,9 @@ HXI_EXTERN void Hxi_mdlJacobian(SimStruct *S);
 /** Release resources allocated for simulation. */
 HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
 /*@}*/
+#endif //!defined(HXI_INLINE_S_FUNCTION)
 
-/** @name Declarations of S-function methods. */ 
+/** @name Declaration of S-function methods. */ 
 /*@{*/
 #define HXI_SS_NOSET0(ITEM) \
   inline void ssSet##ITEM(SimStruct *S) { \
@@ -150,6 +152,7 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   }
 #define HXI_SS_NOSET1(ITEM, TYPE, ARG) \
   inline TYPE ssSet##ITEM(SimStruct *S, TYPE ARG) { \
+    return (TYPE)0; \
   }
 #define HXI_SS_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S); \
@@ -173,8 +176,10 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   }
 #define HXI_SS_NOSETGET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   inline TYPE ssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG) { \
+    return (TYPE)0; \
   } \
   inline TYPE ssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
+    return (TYPE)0; \
   }
 #define HXI_SS_SET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG); \
@@ -183,6 +188,7 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   }
 #define HXI_SS_NOSET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
   inline TYPE ssSet##ITEM(SimStruct *S, TYPE1 ARG1, TYPE ARG) { \
+    return (TYPE)0; \
   }
 #define HXI_SS_GET2(ITEM, TYPE1, ARG1, TYPE) \
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S, TYPE1 ARG1); \

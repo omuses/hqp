@@ -47,36 +47,39 @@ using namespace std;
 #if defined(HXI_WITH_MEX)
 // support MEX SimStruct and Hxi::SimStruct
 
-// first include MEX SimStruct, in addition to Hxi::SimStruct defined below
+// first include MEX SimStruct
 #include "Hxi_MEX_SFunction.h"
 
-// additionally include Hxi types for Hxi::SimStruct below
+// additionally include Hxi types for Hxi::SimStruct defined below
 namespace Hxi {
 #include "Hxi_sfun_types.h"
 }
 using Hxi::value;
 
-#else
+#else // defined(HXI_WITH_MEX)
 // only support Hxi::SimStruct
 
+// include Hxi types in global namespace
 #include "Hxi_sfun_types.h"
 
-struct SimStruct;
-struct mxArray;
+// forward declare SimStruct and mxArray
+// Note: no implementation is needed as only pointers are used
+typedef struct SimStruct SimStruct;
+typedef struct mxArray mxArray;
 
-#endif
+#endif // defined(HXI_WITH_MEX)
 
-// define S-function method types if this hasn't been done already
+// define types for S-function methods
 /** S-function method type. */
 typedef void (SFunctionMethod1_type)(SimStruct *S);
 /** S-function method type with additional task id argument. */
 typedef void (SFunctionMethod2_type)(SimStruct *S, int_T tid);
 
+#endif // !defined(Hxi_SimStruct_H)
+
 // forward declaration of default S-function methods (implementation below)
 static void defaultSFunctionMethod1(SimStruct *S);
 static void defaultSFunctionMethod2(SimStruct *S, int_T);
-
-#endif // !defined(Hxi_SimStruct_H)
 
 // check for Hxi::SimStruct
 inline bool isHxiSimStruct(const SimStruct *S) {
@@ -789,17 +792,9 @@ public:
 
 #if !defined(HXI_INLINE_S_FUNCTION)
 #if !defined(_MSC_VER)
-#  if defined(__cplusplus)
-#    define HXI_EXTERN extern "C"
-#  else
-#    define HXI_EXTERN extern
-#  endif
+#  define HXI_EXTERN extern "C"
 #else
-#  if defined(__cplusplus)
-#    define HXI_EXTERN extern "C" __declspec(dllexport)
-#  else
-#    define HXI_EXTERN extern __declspec(dllexport)
-#  endif
+#  define HXI_EXTERN extern "C" __declspec(dllexport)
 #endif
 #endif
 
@@ -1065,6 +1060,8 @@ HXI_EXTERN void Hxi_SimStruct_destroy(SimStruct *S) {
     delete (Hxi::SimStruct<real_T>*)S;
 }
 
+#if !defined(HXI_INLINE_S_FUNCTION)
+
 /** Initialize SimStruct for specific model. */
 HXI_EXTERN void Hxi_mdlInitializeSizes(SimStruct *S) {
 #if defined(HXI_WITH_MEX)
@@ -1188,6 +1185,8 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S)
 #endif
     (*((Hxi::SimStruct<real_T>*)S)->getmdlTerminate())(S);
 }
+
+#endif //!defined(HXI_INLINE_S_FUNCTION)
 
 
 //===================================================================

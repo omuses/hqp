@@ -43,9 +43,8 @@
 #if defined(HXI_INLINE_S_FUNCTION)
 static
 #else
-extern
 #  if defined(__cplusplus)
-   "C"
+   extern "C"
 #  endif
 #  if defined(_MSC_VER)
    __declspec(dllexport)

@@ -766,7 +766,7 @@ void Prg_SFunctionEst::update(int kk,
       else if (n >= tn[sizeof(tn)/sizeof(double)-1])
 	t_f2_95 = tv[sizeof(tv)/sizeof(double)-1];
       else {
-	for (i = 0; i < sizeof(tn)/sizeof(double)-1; i++) {
+	for (i = 0; i < (int)(sizeof(tn)/sizeof(double)-1); i++) {
 	  if (tn[i] <= n && n <= tn[i+1])
 	    break;
 	}
