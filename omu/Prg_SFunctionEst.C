@@ -95,7 +95,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_us = m_get(_KK+1, _mdl_nu);
   _mdl_xs = m_get(_KK+1, _mdl_nx);
   _mdl_ys = m_get(_KK+1, _mdl_ny);
-  _ys_ref = m_get(_KK+1, 1);
+  _ys_ref = m_get(_KK+1, _ny);
 
   _ssr = 0.0;
   _M = m_resize(m_get(1, 1), (_KK+1)*_ny, _np+_nx0);
@@ -581,8 +581,9 @@ void Prg_SFunctionEst::update(int kk,
   int ex = _exs[kk];
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
 
-  // set simulation time
+  // set simulation time and mode
   ssSetT(_S, ts(kk));
+  ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
   // pass estimated parameters to model
   write_active_mx_args(x);
@@ -603,7 +604,7 @@ void Prg_SFunctionEst::update(int kk,
       fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 	      ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlInitializeConditions");
+      m_error(E_CONV, "mdlInitializeConditions");
     }
   }
 
@@ -624,7 +625,7 @@ void Prg_SFunctionEst::update(int kk,
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    m_error(E_RANGE, "mdlOutputs");
+    m_error(E_CONV, "mdlOutputs");
   }
 
   // store outputs in constraints
@@ -655,7 +656,7 @@ void Prg_SFunctionEst::update(int kk,
       fprintf(stderr, "Error from mdlDerivatives: %s\n",
 	      ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlDerivatives");
+      m_error(E_CONV, "mdlDerivatives");
     }
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)
@@ -839,8 +840,9 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   // initialize model in first stage
   if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
 
-    // set simulation time
+    // set simulation time and mode
     ssSetT(_S, t);
+    ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
     // pass estimated parameters to model
     write_active_mx_args(x);
@@ -860,7 +862,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
       fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 	      ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlInitializeConditions");
+      m_error(E_CONV, "mdlInitializeConditions");
     }
   }
 
@@ -882,8 +884,9 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 {
   int i;
 
-  // set simulation time
+  // set simulation time and mode
   ssSetT(_S, t);
+  ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
   // pass estimated parameters to model
   write_active_mx_args(x);
@@ -909,7 +912,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
       fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 	      ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlInitializeConditions");
+      m_error(E_CONV, "mdlInitializeConditions");
     }
   }
 
@@ -924,7 +927,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    m_error(E_RANGE, "mdlOutputs");
+    m_error(E_CONV, "mdlOutputs");
   }
 
   // evaluate continuous model equations
@@ -932,7 +935,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlDerivatives: %s\n", ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    m_error(E_RANGE, "mdlDerivatives");
+    m_error(E_CONV, "mdlDerivatives");
   }
 
   // get model derivatives and change to residual form

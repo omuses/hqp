@@ -643,8 +643,9 @@ void Prg_SFunctionOpt::update(int kk,
     }
   }
 
-  // set simulation time
+  // set simulation time and mode
   ssSetT(_S, ts(kk));
+  ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
   // initialize model inputs
   real_T *mdl_u;
@@ -668,7 +669,7 @@ void Prg_SFunctionOpt::update(int kk,
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    m_error(E_RANGE, "mdlOutputs");
+    m_error(E_CONV, "mdlOutputs");
   }
 
   // obtain model outputs
@@ -1140,8 +1141,9 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   // initialize model in first stage
   if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
 
-    // set simulation time
+    // set simulation time and mode
     ssSetT(_S, t);
+    ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
     // initialize model inputs using linear interpolation over time
     double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
@@ -1163,7 +1165,7 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
       fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
 	      ssGetErrorStatus(_S));
       ssSetErrorStatus(_S, NULL);
-      m_error(E_RANGE, "mdlInitializeConditions");
+      m_error(E_CONV, "mdlInitializeConditions");
     }
   }
 
@@ -1179,8 +1181,9 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   int i, idx;
   int upsk = _multistage? 1: _KK;
 
-  // set simulation time
+  // set simulation time and mode
   ssSetT(_S, t);
+  ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
@@ -1211,7 +1214,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    m_error(E_RANGE, "mdlOutputs");
+    m_error(E_CONV, "mdlOutputs");
   }
 
   // evaluate continuous model equations
@@ -1219,7 +1222,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlDerivatives: %s\n", ssGetErrorStatus(_S));
     ssSetErrorStatus(_S, NULL);
-    m_error(E_RANGE, "mdlDerivatives");
+    m_error(E_CONV, "mdlDerivatives");
   }
 
   // get model derivatives and change to residual form

@@ -1,6 +1,20 @@
+2003-10-16    <rfranke>
+
+	* omu/Prg_SFunctionOpt/Est.C: 
+	  introduce treatment of simulation time step mode
+	  (otherwise mdlOutputs of an S-function might not work)
+
+	* omu/Prg_SFunctionOpt/Est.C: 
+	  raise error E_CONV if model evaluation fails, not E_RANGE
+	  (see change of Hqp_Omuses on 2003-09-09)
+
+	* omu/Prg_SFunctionEst.C (Prg_SFunctionEst): 
+	  correct initialization of ys_ref
+
 2003-09-22    <h_linke>
 	* /omu/Omu_IntSDIRK.C:
 	  bug fix for step size seletion
+
 2003-09-18    <h_linke>
 	* /omu/Omu_IntOdeTs.[hC]:
 	  adapt to new integrator interface, check for autonomous
