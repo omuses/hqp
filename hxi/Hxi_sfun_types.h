@@ -1,6 +1,6 @@
 /** 
  * @file Hxi_sfun_types.h
- *   Alternative native type definitions required to compile
+ *   Native type definitions required to compile
  *   a Simulink(R) S-function with Hqp.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)

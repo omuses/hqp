@@ -1,7 +1,6 @@
 /**
  * @file Hxi_SimStruct.h
- *   Alternative native %SimStruct for compiling a Simulink(R) S-function
- *   with Hqp.
+ *    Native %SimStruct for compiling a Simulink(R) S-function with Hqp.
  *
  * (Simulink is a registered trademark of The MathWorks, Inc.)
  *
@@ -161,7 +160,7 @@
 namespace Hxi {
 
 /**
- * Alternative native %SimStruct for Hqp.
+ *  Native %SimStruct for Hqp.
  */
 class SimStruct {
 protected:

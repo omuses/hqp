@@ -1,6 +1,6 @@
 /**
  * @file Hxi_mxArray.h
- *   Alternative native %mxArray for compiling a Simulink(R) S-function
+ *   Native %mxArray for compiling a Simulink(R) S-function
  *   with Hqp. mxArray is used for passing parameters to an S-function.
  *
  * (Simulink is a registered trademarks of The MathWorks, Inc.)
@@ -58,7 +58,7 @@
 
 namespace Hxi {
 
-/** Alternative native %mxArray for Hqp. */
+/** Native %mxArray for Hqp. */
 class mxArray {
 protected:
   real_T 	 	_dummy; ///< argument for ADOL-C memory management

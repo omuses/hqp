@@ -37,8 +37,8 @@ inline double value(double a) {return a;}
 // ADOL-C is used for automatic differentiation per default.
 
 /**
- * Hqp eXternal Interfaces: namespace for alternative native
- * implementations of types that are defined by external packages.
+ * Hqp eXternal Interfaces: native implementations of types that are 
+ * defined by external packages.
  * For example an S-function can be accessed via a MEX interface using
  * the MEX %SimStruct or it can be inlined with Hqp using Hxi::SimStruct.
  */

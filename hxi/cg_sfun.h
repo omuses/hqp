@@ -1,6 +1,6 @@
 /**
  * @file cg_sfun.h
- * S-function code generation include file for Hqp.
+ * Native S-function code generation include file for Hqp.
  * Currently macros for checking optional S-function methods are defined.
  * This allows to write the same code for an inlined S-function and for 
  * an external MEX S-function.
