@@ -147,7 +147,7 @@ fi
 # via iostream.h. Note that the solution of generating a local iostream.h
 # is not ultimate as all <iostream.h> should be replaced with <iostream>.
 # Additionally check if algobase.h included via iostream.h undefs min/max.
-AC_MSG_CHECKING([for conflicting _S, _U, _X defined in ctype.h])
+AC_MSG_CHECKING([for conflicting _P, _S, _U, _X defined in ctype.h])
 rm -f adol-c/SRC/iostream.h
 AC_LANG_CPLUSPLUS
 AC_TRY_COMPILE([
@@ -155,15 +155,16 @@ AC_TRY_COMPILE([
 #define max(a,b) (a)>(b)? (a): (b)
 #include <iostream.h>
                ], [
-               int _S, _U, _X;
+               int _P, _S, _U, _X;
                int i = min(3, 4);
                int j = max(3, 4);
-               ], have_S_U_X=no, have_S_U_X=yes)
-AC_MSG_RESULT(${have_S_U_X})
-if test $have_S_U_X = yes; then
+               ], have_P_S_U_X=no, have_P_S_U_X=yes)
+AC_MSG_RESULT(${have_P_S_U_X})
+if test $have_P_S_U_X = yes; then
   echo "/* generated automatically by configure */" > adol-c/SRC/iostream.h
   echo "#include <iostream>" >> adol-c/SRC/iostream.h
   echo "using namespace std;" >> adol-c/SRC/iostream.h
+  echo "#undef _P" >> adol-c/SRC/iostream.h
   echo "#undef _S" >> adol-c/SRC/iostream.h
   echo "#undef _U" >> adol-c/SRC/iostream.h
   echo "#undef _X" >> adol-c/SRC/iostream.h

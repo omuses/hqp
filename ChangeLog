@@ -1,3 +1,8 @@
+2003-09-13    <rfranke>
+
+	* configure.in: extend check for conflicting names defined for
+	  gcc 3.2 in ctype.h with _P, which is used by Prg_SFunctionEst
+
 2003-09-12    <e_arnold>
 	* meschach/matop.c, meschach/version.c:
 	  in-situ bug fix in ms_mltadd()
