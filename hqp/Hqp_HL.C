@@ -4,8 +4,8 @@
  *
  * rf, 7/19/94
  *
- * E. Arnold, 2001-08-16 
- *   - different variants of initial scaling (_varscale)
+ * E. Arnold, 2001-08-28
+ *   - different variants of initial scaling (_scale, _init_multipliers)
  *
  */
 
@@ -55,12 +55,13 @@ Hqp_HL::Hqp_HL()
 
   _rowsum = v_resize(v_get(1), 0);
 
-  _varscale = 1;
+  _scale = 1;
+  _init_multipliers = false;
 
-  _ifList.append(new If_Bool("sqp_hela_scale", &_scale));
+  _ifList.append(new If_Int("sqp_hela_scale", &_scale));
+  _ifList.append(new If_Bool("sqp_hela_init_multipliers", &_init_multipliers));
   _ifList.append(new If_Bool("sqp_hela_logging", &_logging));
   _ifList.append(new If_Real("sqp_hela_eps", &_eps));
-  _ifList.append(new If_Int("sqp_hela_varscale", &_varscale));
 }
 
 //--------------------------------------------------------------------------
@@ -94,10 +95,9 @@ void Hqp_HL::init(const VEC *y, const VEC *z, Hqp_SqpProgram *prg)
   Real		val;
   VEC		*y_appr=VNULL;
 
-  if ( !_scale || _varscale <= 0 ) {
+  if ( _scale <= 0 ) {
     sp_ident(prg->qp()->Q);
-  }
-  else {
+  } else {
     f_bak = prg->f();
     x_bak = v_copy(prg->x(), x_bak);
     b_bak = v_copy(qp->b, b_bak);
@@ -115,7 +115,7 @@ void Hqp_HL::init(const VEC *y, const VEC *z, Hqp_SqpProgram *prg)
     gL = v_get(n);
 
     // if ||y||==0, estimate multipliers of equality constraints 
-    if ( _varscale > 1 && v_norm2(y) <= max(_eps, 0.0) )
+    if ( _init_multipliers && v_norm2(y) <= max(_eps, 0.0) )
 	est_y(prg, y_appr);
 
     // gradient of Lagrangian
@@ -132,13 +132,13 @@ void Hqp_HL::init(const VEC *y, const VEC *z, Hqp_SqpProgram *prg)
     dgL = v_sub(dgL, gL, dgL);
     
     // initial Hessian approximation
-    if ( _varscale == 2 )
+    if ( _scale == 2 )
 	val = max(0.5*v_norm2(dgL)/v_norm2(dx), _eps);
-    else if ( _varscale >= 3 )
+    else if ( _scale >= 3 )
 	val = max(fabs(in_prod(dgL, dx)/in_prod(dx, dx)), _eps);
     sp_zero(qp->Q);
     for ( i = 0; i < n; i++ ) {
-	if ( _varscale == 1 )
+	if ( _scale == 1 )
 	    val = max(dgL->ve[i] / dx->ve[i], _eps);
       sp_set_val(qp->Q, i, i, val);
     }
