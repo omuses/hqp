@@ -389,13 +389,17 @@ if test "$omu_fortran" != no; then
   FORTRAN_FLAGS="${MES_CFLAGS}"
 
   # default settings for DASPK
-  OMU_INTDASPK_C="Omu_IntDASPK.C"
-  DASPK="daspk"
-  DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
+  if test -f daspk/ddaspk30.tar.gz; then
+    OMU_INTDASPK_C="Omu_IntDASPK.C"
+    DASPK="daspk"
+    DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
+    AC_MSG_RESULT("enabling DASPK")
+  fi
 
   # default settings with RKsuite
   OMU_INTRKSUITE_C="Omu_IntRKsuite.C"
   RKSUITE_O="`pwd`/rksuite/rksuite.o"
+  AC_MSG_RESULT("enabling RKsuite")
 
   # try to figure out Fortran environment
   AC_CHECK_LIB(f2c, pow_dd, fortran_lib=f2c, fortran_lib="")
@@ -419,10 +423,6 @@ if test "$omu_fortran" != no; then
       FORTRAN_LIBS="-lf2c"
       ;;
   esac
-fi
-
-if test "$RKSUITE_O" != ""; then
-  AC_MSG_RESULT("enabling DASPK and RKsuite")
 fi
 
 AC_SUBST(OMU_DEFS)

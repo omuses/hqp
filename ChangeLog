@@ -1,4 +1,7 @@
 03/19/01: rf
+	- remove DASPK3 from distribution
+   
+03/19/01: rf
 	- hqp/Hqp_Docp.C: don't store intermediate results on prg_f anymore
 
 03/18/01: rf: change version to 1.7b2

@@ -1,0 +1,13 @@
+This directory is a placeholder for DASPK3. Due to license restrictions 
+we can not include it anymore with the HQP/Omuses distribution.
+
+DASPK3 can be integrated with Omuses as follows:
+
+1)
+Check out the site
+http://www.engineering.ucsb.edu/~cse/software.html
+and download the distribution file ddaspk30.tar.gz
+into this directory.
+
+2)
+Configure Hqp/Omuses with the --enable-fortran option and compile it.

@@ -35,7 +35,7 @@ lib: $(OBJS) $(DASPK) Makefile
 	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
 
 daspk:
-	PWD=`pwd`; cd ../daspk/examples/DM; make heat heatilu; cd $(PWD)
+	PWD=`pwd`; cd ../daspk; $(MAKE); cd $(PWD)
 
 $(RKSUITE_O): $(RKSUITE_O:.o=.f)
 	PWD=`pwd`; cd `dirname $(RKSUITE_O)`; \
@@ -46,6 +46,8 @@ $(RKSUITE_O): $(RKSUITE_O:.o=.f)
 
 clean:
 	rm -f *.o *.obj $(LIB_PREFIX)omu.* *~
+	PWD=`pwd`; cd ../daspk; $(MAKE) clean; cd $(PWD)
+	PWD=`pwd`; cd ../rksuite; rm -f *.o *~; cd $(PWD)
 
 depend:
 	makedepend -- $(CCFLAGS) -- $(SRCS)

@@ -1,0 +1,8 @@
+7,8c7,10
+< COMP = f77
+< FFLAGS = -O 
+---
+> include ../../../makedefs
+> 
+> COMP = $(FORTRAN_COMP)
+> FFLAGS = $(FORTRAN_FLAGS)

@@ -1790,17 +1790,21 @@ fi
   FORTRAN_FLAGS="${MES_CFLAGS}"
 
   # default settings for DASPK
-  OMU_INTDASPK_C="Omu_IntDASPK.C"
-  DASPK="daspk"
-  DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
+  if test -f daspk/ddaspk30.tar.gz; then
+    OMU_INTDASPK_C="Omu_IntDASPK.C"
+    DASPK="daspk"
+    DASPK_OBJS="../daspk/solver/*.o ../daspk/preconds/*.o"
+    echo "$ac_t"""enabling DASPK"" 1>&6
+  fi
 
   # default settings with RKsuite
   OMU_INTRKSUITE_C="Omu_IntRKsuite.C"
   RKSUITE_O="`pwd`/rksuite/rksuite.o"
+  echo "$ac_t"""enabling RKsuite"" 1>&6
 
   # try to figure out Fortran environment
   echo $ac_n "checking for pow_dd in -lf2c""... $ac_c" 1>&6
-echo "configure:1804: checking for pow_dd in -lf2c" >&5
+echo "configure:1808: checking for pow_dd in -lf2c" >&5
 ac_lib_var=`echo f2c'_'pow_dd | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1808,7 +1812,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lf2c  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1812 "configure"
+#line 1816 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 #ifdef __cplusplus
@@ -1822,7 +1826,7 @@ int main() {
 pow_dd()
 ; return 0; }
 EOF
-if { (eval echo configure:1826: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1830: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1844,7 +1848,7 @@ fortran_lib=""
 fi
 
   echo $ac_n "checking for pow_dd in -lg2c""... $ac_c" 1>&6
-echo "configure:1848: checking for pow_dd in -lg2c" >&5
+echo "configure:1852: checking for pow_dd in -lg2c" >&5
 ac_lib_var=`echo g2c'_'pow_dd | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1852,7 +1856,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lg2c  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1856 "configure"
+#line 1860 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 #ifdef __cplusplus
@@ -1866,7 +1870,7 @@ int main() {
 pow_dd()
 ; return 0; }
 EOF
-if { (eval echo configure:1870: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1874: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1888,7 +1892,7 @@ fi
 
   if test "${fortran_f77}" = "f77"; then
     echo $ac_n "checking for pow_dd in -lftn""... $ac_c" 1>&6
-echo "configure:1892: checking for pow_dd in -lftn" >&5
+echo "configure:1896: checking for pow_dd in -lftn" >&5
 ac_lib_var=`echo ftn'_'pow_dd | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1896,7 +1900,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lftn  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1900 "configure"
+#line 1904 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 #ifdef __cplusplus
@@ -1910,7 +1914,7 @@ int main() {
 pow_dd()
 ; return 0; }
 EOF
-if { (eval echo configure:1914: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1918: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1947,10 +1951,6 @@ fi
       FORTRAN_LIBS="-lf2c"
       ;;
   esac
-fi
-
-if test "$RKSUITE_O" != ""; then
-  echo "$ac_t"""enabling DASPK and RKsuite"" 1>&6
 fi
 
 

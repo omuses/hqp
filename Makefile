@@ -8,16 +8,12 @@ omuses:
 	cd adol-c/INS; $(MAKE) xxxinstall; cd ../..
 	cd adol-c/SRC; $(MAKE); cd ../..
 	cd omu; $(MAKE); cd ..
-	mv omu/$(LIB_PREFIX)omu$(LIB_SUFFIX) lib
+	mv omu/$(LIB_PREFIX)omu$(LIB_SUFFIX) lib/
 	cd odc; $(MAKE); ./run Crane; cd ..
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
 	cd malloc; $(MAKE) clean; cd ..
-	cd rksuite; rm -f *.o *~; cd ..
-	cd daspk; rm -f */*.o */*/*.o */*~ */*/*~ \
-          examples/DM/heat examples/DM/heat.exe \
-          examples/DM/heatilu examples/DM/heatilu.exe; cd ..
 	cd omu; $(MAKE) clean; cd ..
 	cd adol-c/SRC; $(MAKE) cleanall; rm -f makefile; cd ../..
 	$(MAKE) -f Makefile.hqp clean
