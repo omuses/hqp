@@ -26,7 +26,9 @@
 
 #include <assert.h>
 
+#ifdef OMU_WITH_ADOLC
 #include <adutils.h>
+#endif
 
 #include <If_Class.h>
 
@@ -174,11 +176,13 @@ void Omu_IntODE::solve(int kk, Real tstart, Real tend,
 void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
 		       VECP f)
 {
+#ifdef OMU_WITH_ADOLC
   if (!_sys->has_low_level_continuous()) {
     // call faster version if no user defined low-level continuous
     syseq_forward(t, y, u, f);
     return;
   }
+#endif
 
   int i, j;
   Omu_SVec &xc = *_xc_ptr;
@@ -247,6 +251,7 @@ void Omu_IntODE::syseq(Real t, const VECP y, const VECP u,
 void Omu_IntODE::syseq_forward(Real t, const VECP y, const VECP u,
 			       VECP f)
 {
+#ifdef OMU_WITH_ADOLC
   int i, j;
   Omu_DepVec &Fc = *_Fc_ptr;
 
@@ -326,6 +331,9 @@ void Omu_IntODE::syseq_forward(Real t, const VECP y, const VECP u,
   _res_evals++;
   if (_sa)
     _sen_evals++;
+#else
+  m_error(E_NULL, "Omu_IntODE::syseq_forward: was compiled without ADOL-C");
+#endif
 }
 
 

@@ -10,6 +10,8 @@ CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
           $(HQP_INCDIR) $(ADOL_INCDIR) $(HXI_INCDIR) $(MEX_INCDIR) \
           $(OMU_DEFS)
 
+ASRCS =	Omu_IntOdeTs.C
+
 SRCS =	Omu_Init.C \
 	Hqp_DocpStub.C \
 	Hqp_Omuses.C \
@@ -22,13 +24,12 @@ SRCS =	Omu_Init.C \
 	Omu_IntODE.C \
 	Omu_IntEuler.C \
 	Omu_IntRK4.C \
-	Omu_IntOdeTs.C \
 	Omu_IntDopri5.C \
 	Omu_IntIMP.C \
 	Omu_IntSDIRK.C \
         $(OMU_INTRKSUITE_C) \
         $(OMU_INTDASPK_C) \
-	$(MEX_SRCS)
+	$(ADOLC_SRCS) $(MEX_SRCS)
 
 OBJS = $(SRCS:.C=$O) $(RKSUITE_O)
 

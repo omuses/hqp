@@ -26,8 +26,6 @@
 
 #include <assert.h>
 
-#include <adutils.h>
-
 #include <If_Class.h>
 
 #include "Omu_IntRK4.h"

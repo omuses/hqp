@@ -31,13 +31,20 @@
 
 #include "Hqp_Omuses.h"
 
+/** define OMU_API when compiling a Dynamic Link Library (DLL) */
+#ifndef OMU_API
+#define OMU_API 
+#endif
+
 #ifdef IF_CLASS_STATIC
 //--------------------------------------------------------------------------
 // ensure linkage of modules
 //--------------------------------------------------------------------------
 #include "Omu_IntEuler.h"
 #include "Omu_IntRK4.h"
+#ifdef OMU_WITH_ADOLC
 #include "Omu_IntOdeTs.h"
+#endif
 #include "Omu_IntDopri5.h"
 #include "Omu_IntIMP.h"
 #include "Omu_IntSDIRK.h"
@@ -54,7 +61,9 @@ static void Omu_ClassAlloc()
 {
   IF_CLASS_ALLOC("Euler", Omu_IntEuler, Omu_Integrator);
   IF_CLASS_ALLOC("RK4", Omu_IntRK4, Omu_Integrator);
+#ifdef OMU_WITH_ADOLC
   IF_CLASS_ALLOC("OdeTs", Omu_IntOdeTs, Omu_Integrator);
+#endif
   IF_CLASS_ALLOC("Dopri5", Omu_IntDopri5, Omu_Integrator);
   IF_CLASS_ALLOC("IMP", Omu_IntIMP, Omu_Integrator);
   IF_CLASS_ALLOC("SDIRK", Omu_IntSDIRK, Omu_Integrator);
@@ -80,7 +89,7 @@ static int Omu_VersionCmd(int, char *[], char **result)
 
 //--------------------------------------------------------------------------
 extern "C" int Hqp_Init(Tcl_Interp *interp);
-extern "C" int Omu_Init(Tcl_Interp *interp)
+extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
 {
   // check if Hqp is present and initialize it if not
   // (for now do the initialization directly by calling Hqp_Init,

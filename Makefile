@@ -2,15 +2,22 @@ include makedefs
 
 all:
 	$(MAKE) -f Makefile.hqp
-	if test ! "$(CXX)" = "cl -nologo"; then $(MAKE) omuses; fi
+	$(MAKE) omuses
 
 omuses:
-	cd adol-c/INS; $(MAKE) xxxinstall; cd ../..
-	cd adol-c/SRC; $(MAKE); cd ../..
+	if test ! "$(CXX)" = "cl -nologo"; then $(MAKE) adolc; fi
 	cd omu; $(MAKE); cd ..
 	mv omu/$(LIB_PREFIX)omu.* lib/
-	if test -f lib/omu.dll; then cp lib/*.dll odc/; fi
-	cd odc; $(MAKE); ./run Crane; cd ..
+	if test -f lib/omu.dll; then cp lib/omu.dll odc/; fi
+	cd odc; $(MAKE); cd ..
+	if test ! "$(CXX)" = "cl -nologo"; then $(MAKE) test; fi
+
+adolc:
+	cd adol-c/INS; $(MAKE) xxxinstall; cd ../..
+	cd adol-c/SRC; $(MAKE); cd ../..
+
+test:
+	cd odc; ./run Crane; cd ..
 
 doc::
 	cd doc; doxygen; cd ..
@@ -29,7 +36,7 @@ clean:
 	rm -f doc/*~
 
 distclean: clean
-	rm -f makedefs makedirs odc/Makefile hqp_docp/Makefile
+	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
 	rm -rf doc/Doxyfile doc/latex
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib

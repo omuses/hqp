@@ -28,7 +28,11 @@
 #include "Hqp_Omuses.h"
 
 #include <assert.h>
+
+#ifdef OMU_WITH_ADOLC
 #include <adutils.h>
+#endif
+
 #include <If_Bool.h>
 #include <If_Real.h>
 #include <If_Method.h>
@@ -43,6 +47,7 @@
 
 typedef If_Method<Hqp_Omuses> If_Cmd;
 
+#ifdef OMU_WITH_ADOLC
 //--------------------------------------------------------------------------
 static short** myalloc_short(int m, int n)
 {
@@ -59,6 +64,7 @@ static short** myalloc_short(int m, int n)
   /* To deallocate an array set up by   A = myalloc2(m,n)   */
   /*   use  free((char*)*A); free((char*)A); in that order  */
 }
+#endif
 
 //--------------------------------------------------------------------------
 Hqp_Omuses::Hqp_Omuses()
@@ -158,6 +164,7 @@ Hqp_Omuses::~Hqp_Omuses()
 //--------------------------------------------------------------------------
 void Hqp_Omuses::ad_alloc(int m, int n, int p)
 {
+#ifdef OMU_WITH_ADOLC
   _Z3 = myalloc(m, n, 1);
   _nz = myalloc_short(m, n);
 
@@ -171,11 +178,26 @@ void Hqp_Omuses::ad_alloc(int m, int n, int p)
   _max_ndep = m;
   _max_nindep = n;
   _max_npar = p;
+#else
+  _Z3 = NULL;
+  _nz = NULL;
+
+  _x = NULL;
+  _y = NULL;
+  _X = NULL;
+  _Y = NULL;
+  _U = NULL;
+
+  _max_ndep = 0;
+  _max_nindep = 0;
+  _max_npar = 0;
+#endif
 }
 
 //--------------------------------------------------------------------------
 void Hqp_Omuses::ad_free()
 {
+#ifdef OMU_WITH_ADOLC
   free(**_Z3);
   free(*_Z3);
   free(_Z3);
@@ -186,17 +208,20 @@ void Hqp_Omuses::ad_free()
   m_free(_X);
   v_free(_y);
   v_free(_x);
+#endif
 }
 
 //--------------------------------------------------------------------------
 void Hqp_Omuses::ad_realloc(int ndep, int nindep, int npar)
 {
+#ifdef OMU_WITH_ADOLC
   if (ndep > _max_ndep
       || nindep > _max_nindep
       || npar > _max_npar) {
     ad_free();
     ad_alloc(ndep, nindep, npar);
   }
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -497,6 +522,7 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
 void Hqp_Omuses::obtain_structure(int k,
 				  Omu_DynVarVec &xk, const Omu_VarVec &uk)
 {
+#ifdef OMU_WITH_ADOLC
   if (!_prg) {
     m_error(E_NULL, "Hqp_Omuses::obtain_structure");
   }
@@ -609,6 +635,9 @@ void Hqp_Omuses::obtain_structure(int k,
     }
     xk.sbw_u = max(sbw, xk.sbw_u);
   }
+#else
+  m_error(E_NULL, "Hqp_Omuses::obtain_structure: was compiled without ADOL-C");
+#endif
 }
 
 //--------------------------------------------------------------------------

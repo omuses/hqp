@@ -1,3 +1,17 @@
+2002-06-03    <rfranke>
+
+	* omu/Prg_SFunction.[hC], odc/dic_mex_sfunction.tcl: add mdl_path
+	* odc/mex.tcl.in: add MEX utility routines
+
+	* configure.in, configure: improve support for MEX
+
+	* Makefile, Makefile.hqp, makedefs.in, omu/Makefile, odc/Makefile.in,
+	  omu/Omu_Init.C, omu/Omu_IntDopri5.C, omu/Omu_IntEuler.C,
+	  omu/Omu_IntIMP.C, omu/Omu_IntODE.C, omu/Omu_IntRK4.C,
+	  omu/Hqp_Omuses.C, omu/Omu_Program.C:
+	    - introduce conditional compilation of ADOL-C with Omuses
+	    - add support for cl that does not compile ADOL-C 1.8.7
+
 2002-06-01    <e_arnold>
 
 	* omu/Omu_IntIMP.[hC]: fix bug in sensitivities
@@ -28,8 +42,6 @@
 	* meschach/machine.h: take away definition of __STDC__
 	* meschach/*.h: use MESCH__BEGIN/END_DECLS so that Meschach
 	  includes can be used from C++ without extern "C"
-
-	
 
 	* configure.in, configure, makedefs.in, hqp_docp/Makefile.in,
 	  odc/Makefile.in, omu/Omu_Init.C: add preliminary support for

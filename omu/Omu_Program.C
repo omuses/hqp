@@ -26,7 +26,9 @@
 
 #include <assert.h>
 
+#ifdef OMU_WITH_ADOLC
 #include <adutils.h>
+#endif
 
 #include "Omu_Program.h"
 
@@ -38,6 +40,7 @@
 
 IF_BASE_DEFINE(Omu_Program);
 
+#ifdef OMU_WITH_ADOLC
 //--------------------------------------------------------------------------
 static short** myalloc_short(int m, int n)
 {
@@ -54,6 +57,7 @@ static short** myalloc_short(int m, int n)
   /* To deallocate an array set up by   A = myalloc2(m,n)   */
   /*   use  free((char*)*A); free((char*)A); in that order  */
 }
+#endif
 
 //--------------------------------------------------------------------------
 Omu_Program::Omu_Program()
@@ -64,6 +68,7 @@ Omu_Program::Omu_Program()
   _ts = v_get(1);
 
   ad_alloc(1, 1);
+
   _has_low_level_continuous = true;	// assume it was overloaded
 
   _ifList.append(new If_Int("prg_K", &_K));
@@ -89,6 +94,7 @@ bool Omu_Program::has_low_level_continuous()
 //--------------------------------------------------------------------------
 void Omu_Program::ad_alloc(int m, int n)
 {
+#ifdef OMU_WITH_ADOLC
   _U = m_get(m, m);
   m_ident(_U);
   _Z = m_get(m, n);
@@ -97,20 +103,32 @@ void Omu_Program::ad_alloc(int m, int n)
 
   _max_ndep = m;
   _max_nindep = n;
+#else
+  _U = NULL;
+  _Z = NULL;
+  _Z3 = NULL;
+  _nz = NULL;
+
+  _max_ndep = 0;
+  _max_nindep = 0;
+#endif
 }
 
 //--------------------------------------------------------------------------
 void Omu_Program::ad_realloc(int ndep, int nindep)
 {
+#ifdef OMU_WITH_ADOLC
   if (ndep > _max_ndep || nindep > _max_nindep) {
     ad_free();
     ad_alloc(ndep, nindep);
   }
+#endif
 }
 
 //--------------------------------------------------------------------------
 void Omu_Program::ad_free()
 {
+#ifdef OMU_WITH_ADOLC
   free(*_nz);
   free(_nz);
   free(**_Z3);
@@ -118,6 +136,7 @@ void Omu_Program::ad_free()
   free(_Z3);
   m_free(_Z);
   m_free(_U);
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -180,6 +199,7 @@ void Omu_Program::setup_struct(int k,
 			       Omu_DependentVec &f,
 			       Omu_Dependent &f0, Omu_DependentVec &c)
 {
+#ifdef OMU_WITH_ADOLC
   int i;
   int kk, kkend = k < K()? ks(k+1): ks(k) + 1;
   int nxt = x->dim;
@@ -317,6 +337,9 @@ void Omu_Program::setup_struct(int k,
     setup_Jacobian(_Z3, _nz, c, c.Jxf, Omu_Dependent::WRT_xf,
 		   nf + 1, nxt + nu);
   }
+#else
+  m_error(E_NULL, "Omu_Program::setup_struct: was compiled without ADOL-C");
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -334,6 +357,7 @@ void Omu_Program::update(int kk,
 			 Omu_DependentVec &f, Omu_Dependent &f0,
 			 Omu_DependentVec  &c)
 {
+#ifdef OMU_WITH_ADOLC
   int nx = x->dim;
   int nu = u->dim;
   int nxf = xf->dim;
@@ -444,6 +468,9 @@ void Omu_Program::update(int kk,
       }
     }
   }
+#else
+  m_error(E_NULL, "Omu_Program::update: was compiled without ADOL-C");
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -451,7 +478,11 @@ void Omu_Program::consistic(int kk, double t,
 			    const adoublev &x, const adoublev &u,
 			    adoublev &xt)
 {
+#ifdef OMU_WITH_ADOLC
   xt = x;
+#else
+  m_error(E_NULL, "Omu_Program::consistic: was compiled without ADOL-C");
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -459,6 +490,7 @@ void Omu_Program::consistic(int kk, double t,
 			    const Omu_StateVec &x, const Omu_Vec &u,
 			    Omu_DependentVec &xt)
 {
+#ifdef OMU_WITH_ADOLC
   int i, j;
   int nxt = x->dim;
   int nu = u->dim;
@@ -511,6 +543,9 @@ void Omu_Program::consistic(int kk, double t,
       }
     }
   }
+#else
+  m_error(E_NULL, "Omu_Program::consistic: was compiled without ADOL-C");
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -518,6 +553,7 @@ void Omu_Program::consistic(int kk, double t,
 			    const Omu_Vector &x, const Omu_Vector &u,
 			    VECP xt, MATP xtx, MATP xtu)
 {
+#ifdef OMU_WITH_ADOLC
   int i, j;
   int nxt = x->dim;
   int nu = u->dim;
@@ -564,6 +600,9 @@ void Omu_Program::consistic(int kk, double t,
 	xtu[i][j] = Zi[nxt+j];
     }
   }
+#else
+  m_error(E_NULL, "Omu_Program::consistic: was compiled without ADOL-C");
+#endif
 }
 
 //--------------------------------------------------------------------------
@@ -597,6 +636,7 @@ void Omu_Program::continuous(int kk, double t,
 			     const VECP xp, VECP F,
 			     MATP Fx, MATP Fu, MATP Fxp)
 {
+#ifdef OMU_WITH_ADOLC
   _has_low_level_continuous = false;	// i.e. not overloaded
 
   int i, j;
@@ -659,6 +699,9 @@ void Omu_Program::continuous(int kk, double t,
       }
     }
   }
+#else
+  m_error(E_NULL, "Omu_Program::continuous: was compiled without ADOL-C");
+#endif
 }
 #else
 //--------------------------------------------------------------------------
@@ -667,6 +710,7 @@ void Omu_Program::continuous(int kk, double t,
 			     const VECP xp, VECP F,
 			     MATP Fx, MATP Fu, MATP Fxp)
 {
+#ifdef OMU_WITH_ADOLC
   _has_low_level_continuous = false;	// i.e. not overloaded
 
   int i, j;
@@ -729,6 +773,9 @@ void Omu_Program::continuous(int kk, double t,
       }
     }
   }
+#else
+  m_error(E_NULL, "Omu_Program::continuous: was compiled without ADOL-C");
+#endif
 }
 #endif
 

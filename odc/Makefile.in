@@ -7,7 +7,7 @@ include ../makedirs
 
 O = @OBJ_SUFFIX@
 
-.SUFFIXES: .c .C @OBJ_SUFFIX@ @LIB_SUFFIX@
+.SUFFIXES: .c .C $O @LIB_SUFFIX@
 
 #
 # machine dependencies
@@ -38,8 +38,8 @@ HQP_PREFIX = @prefix@
 HQP_INCDIR = -I.. -I../iftcl -I../hqp -I../adol-c/SRC -I../omu \
              -I../hxi -I${HQP_PREFIX}/include/hqp
 
-HQP_LIBDIR = -L../lib $(RFLAG)../lib \
-             -L${HQP_PREFIX}/lib $(RFLAG)${HQP_PREFIX}/lib
+HQP_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
+             $(LFLAG)${HQP_PREFIX}/lib $(RFLAG)${HQP_PREFIX}/lib
 
 #
 # compiler and flags
@@ -59,8 +59,7 @@ LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR}
 
 GMALLOC_O = @GMALLOC_O@
 
-SRCS = 	Odc_Init.C \
-	Prg_Crane.C \
+ASRCS = Prg_Crane.C \
 	Prg_CranePar.C \
 	Prg_Maratos.C \
 	Prg_HS99omu.C \
@@ -71,20 +70,23 @@ SRCS = 	Odc_Init.C \
 	Prg_DID_SFunction.C \
 	Prg_DIC_SFunction.C
 
+SRCS = 	Odc_Init.C @ASRCS@
+
 OBJS = $(SRCS:.C=$O) Odc_Main$O $(GMALLOC_O)
 
 RESULT = odc
 
 all: $(OBJS) Makefile
-	$(CXX) -o $(RESULT) $(LDFLAGS) $(OBJS) \
-	-lomu -lhqp $(MACH_OBJS)
+	$(CXX) -o $(RESULT) $(OBJS) \
+	@LDFLAGS_START@ $(LDFLAGS) @LDLIB_PREFIX@omu@LDLIB_SUFFIX@ \
+	@LDLIB_PREFIX@hqp@LDLIB_SUFFIX@ $(MACH_OBJS)
 
 gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
 	PWD=`pwd`; cd `dirname $(GMALLOC_O)`; \
 	make `basename $(GMALLOC_O)`; cd $(PWD)
 
 .C$O:
-	$(CXX) -c $(CFLAGS) $<
+	$(CXX) -c @CXXFLAGS@ $(CFLAGS) $<
 
 .c$O:
 	$(CC) -c $(CFLAGS) $<
