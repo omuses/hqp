@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.1 2001/03/01 17:19:15 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.2 2001/04/02 08:18:27 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -74,12 +74,19 @@ void	m_version()
 	/* rf, 12/05/00 */
 	printf("\tmove err.h to m_err.h (name conflict with /usr/include/err.h)\n");
 	printf("\tm_err.h: rename macro \"catch\" to \"m_catch\" (conflict with C++ keyword)\n");
+	/* rf, 04/02/01 */
+	printf("\tmatrix.h, matdef.h: allocate at least 1 element in NEW_A (as some c/malloc's return NULL for 0 elements)\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
-/* Revision 1.1  2001/03/01 17:19:15  rfranke
-/* Initial revision
+/* Revision 1.2  2001/04/02 08:18:27  rfranke
+/* 	- meschach/{matrix, matdef}.h: allocate at least 1 element in NEW_A,
+/* 	  as some malloc implementations return NULL pointer for 0 elements
+/* 	  (braught up again by Christan Schulz)
+/*
+/* Revision 1.1.1.1  2001/03/01 17:19:15  rfranke
+/* Import of version 1.7b1 taken from odoaker.
 /*
 /* Revision 1.4  2000/12/05 09:42:57  rf
 /* 12/05/00: rf: resolve meschach/err.h, catch conflict

@@ -30,7 +30,7 @@
 
 #ifndef	MATRIXH
 
-/* RCS id: $Id: matrix.h,v 1.1 2001/03/01 17:18:47 rfranke Exp $ */
+/* RCS id: $Id: matrix.h,v 1.2 2001/04/02 08:18:27 rfranke Exp $ */
 
 #define	MATRIXH	
 
@@ -85,7 +85,7 @@ void	m_version MESCH__P((void));
 #define	NEW(type)	((type *)calloc(1,sizeof(type)))
 
 /* allocate num objects of given type */
-#define	NEW_A(num,type)	((type *)calloc((unsigned)(num),sizeof(type)))
+#define	NEW_A(num,type)	((type *)calloc((unsigned)((num)>1?(num):1),sizeof(type)))
 
 /* re-allocate arry to have num objects of the given type */
 #define	RENEW(var,num,type) \
@@ -101,7 +101,7 @@ void	m_version MESCH__P((void));
 #define	NEW(type)	((type *)calloc((size_t)1,(size_t)sizeof(type)))
 
 /* allocate num objects of given type */
-#define	NEW_A(num,type)	((type *)calloc((size_t)(num),(size_t)sizeof(type)))
+#define	NEW_A(num,type)	((type *)calloc((size_t)((num)>1?(num):1),(size_t)sizeof(type)))
 
 /* re-allocate arry to have num objects of the given type */
 #define	RENEW(var,num,type) \

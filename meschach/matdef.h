@@ -1,7 +1,7 @@
 /*
 		Type definitions for general purpose maths package
 */
-/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.1 2001/03/01 17:18:44 rfranke Exp $ */
+/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.2 2001/04/02 08:18:27 rfranke Exp $ */
 
 #include "machine.h"
 
@@ -52,7 +52,7 @@ extern	void	*malloc(size_t),
 #endif
 
 #define	NEW(type)		((type *)calloc(1,sizeof(type)))
-#define	NEW_A(size,type)	((type *)calloc(size,sizeof(type)))
+#define	NEW_A(size,type)	((type *)calloc((size)>1?(size):1,sizeof(type)))
 #define	RENEW(var,num,type) \
 	((var)=(type *)((var) ? realloc((var),(num)*sizeof(type)) : \
 				calloc((num),sizeof(type))))
