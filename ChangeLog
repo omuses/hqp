@@ -2,8 +2,8 @@
 2002-04-23    <rfranke>
 
 	* meschach/makefile: add splufctr to list of compiled objects
-	* meschach/splufctr.c: disable spLUTsolve and spILUfactor via
-	  SPARSE_COL_ACCESS
+	* meschach/splufctr.c: disable spLUfactor, spLUTsolve, and
+	  spILUfactor via SPARSE_COL_ACCESS
 	* meschach/version.c: document change to Meschach library
 
 	* hqp/Makefile, hqp/matBKP.C: add matBKP.C and bdBKP.C to SRCS

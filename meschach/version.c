@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.3 2002/04/23 14:17:35 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.4 2002/04/23 15:23:31 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -78,11 +78,14 @@ void	m_version()
 	printf("\tmatrix.h, matdef.h: allocate at least 1 element in NEW_A (as some c/malloc's return NULL for 0 elements)\n");
 	/* rf, 04/23/02 */
 	printf("\tmakefile: add add splufctr to list of compiled objects\n");
-	printf("\tsplufctr.c: disable spLUTsolve and spILUfactor via SPARSE_COL_ACCESS\n");
+	printf("\tsplufctr.c: disable spLUfactor, spLUTsolve and spILUfactor via SPARSE_COL_ACCESS\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.4  2002/04/23 15:23:31  rfranke
+/* include additional factorization routines
+/*
 /* Revision 1.3  2002/04/23 14:17:35  rfranke
 /* include additional factorization routines
 /*

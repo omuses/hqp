@@ -39,6 +39,7 @@
 /* #define	sprow_idx2(r,c,hint)	\
    ( ( (hint) >= 0 && (r)->elt[hint].col == (c)) ? hint : sprow_idx((r),(c)) ) */
 
+#ifdef SPARSE_COL_ACCESS
 
 /* spLUfactor -- sparse LU factorisation with pivoting
 	-- uses partial pivoting and Markowitz criterion
@@ -157,6 +158,8 @@ double	alpha;
 
 	return A;
 }
+
+#endif
 
 /* spLUsolve -- solve A.x = b using factored matrix A from spLUfactor()
 	-- returns x
