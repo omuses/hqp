@@ -11,7 +11,9 @@
 
 #include <Omu_Program.h>
 
-#include <simstruc.h>
+#define HXI_INLINE_S_FUNCTION 1
+#define HXI_REAL_T adouble
+#include "sfun_dic.c"
 
 //--------------------------------------------------------------------------
 class Prg_DIC_SFunction: public Omu_Program {

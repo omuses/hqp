@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,35 +29,58 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/** @name Access S-function methods.
-    Get pointers to S-function methods or NULL if they are not implemented.
-    These macros shall be used to check if an S-function implements
-    optional methods.
-*/
-//@{
+#define HXI_STRINGIFY(token) #token
+
+#if !defined(S_FUNCTION_LEVEL) || S_FUNCTION_LEVEL < 2
+#error "Hxi requires S_FUNCTION_LEVEL 2"
+#endif
+
+/**
+ * Entry function into Hxi S-function. It initializes a
+ * %SimStruct with S-function name, version, and with
+ * pointers to S-function methods.
+ */
+#if defined(HXI_INLINE_S_FUNCTION)
+static
+#else
+extern "C"
+#if defined(OMU_API)
+OMU_API
+#endif
+#endif
+void Hxi_SimStruct_init(Hxi::SimStruct *S) {
+  // S-function name and level
+  ssSetModelName(S, HXI_STRINGIFY(S_FUNCTION_NAME));
+  ssSetVersion(S, S_FUNCTION_LEVEL);
+
+  // required S-function methods
+  ssSetmdlInitializeSizes(S, &::mdlInitializeSizes);
+  ssSetmdlInitializeSampleTimes(S, &::mdlInitializeSampleTimes);
+  ssSetmdlOutputs(S, &::mdlOutputs);
+  ssSetmdlTerminate(S, &::mdlTerminate);
+
+  // optional S-function methods
+#if defined(MDL_CHECK_PARAMETERS)
+  ssSetmdlStart(S, &::mdlCheckParameters);
+#endif
 
 #if defined(MDL_START)
-#define ssGetmdlStart(S) mdlStart
-#else
-#define ssGetmdlStart(S) NULL
+  ssSetmdlStart(S, &::mdlStart);
 #endif
 
 #if defined(MDL_INITIALIZE_CONDITIONS)
-#define ssGetmdlInitializeConditions(S) mdlInitializeConditions
-#else
-#define ssGetmdlInitializeConditions(S) NULL
+  ssSetmdlInitializeConditions(S, &::mdlInitializeConditions);
 #endif
 
 #if defined(MDL_UPDATE)
-#define ssGetmdlUpdate(S) mdlUpdate
-#else
-#define ssGetmdlUpdate(S) NULL
+  ssSetmdlUpdate(S, &::mdlUpdate);
 #endif
 
 #if defined(MDL_DERIVATIVES)
-#define ssGetmdlDerivatives(S) mdlDerivatives
-#else
-#define ssGetmdlDerivatives(S) NULL
+  ssSetmdlDerivatives(S, &::mdlDerivatives);
 #endif
 
-//@}
+#if defined(MDL_JACOBIAN)
+  ssSetmdlJacobian(S, &::mdlJacobian);
+#endif
+}

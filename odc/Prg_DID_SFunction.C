@@ -11,9 +11,6 @@
 #include <If_Bool.h>
 #include <If_Real.h>
 
-// include model definition
-#include "sfun_did.c"
-
 IF_CLASS_DEFINE("DID_SFunction", Prg_DID_SFunction, Omu_Program);
 
 //--------------------------------------------------------------------------

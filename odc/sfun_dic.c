@@ -84,11 +84,8 @@ static void mdlInitializeSizes(SimStruct *S)
     ssSetNumModes(S, 0);
     ssSetNumNonsampledZCs(S, 0);
 
-    /* Setup Jacobian if not used with Hxi::SimStruct as
-       Hxi::SimStruct does not support mdlJacobian, but works with ADOL-C. */
-#if !defined(Hxi_SimStruct_H)
+    /* Setup Jacobian */
     ssSetJacobianNzMax(S, 4);
-#endif
 
     /* Take care when specifying exception free code - see sfuntmpl_doc.c */
     ssSetOptions(S, SS_OPTION_EXCEPTION_FREE_CODE);
@@ -164,7 +161,6 @@ static void mdlDerivatives(SimStruct *S)
 
 
 
-#if !defined(Hxi_SimStruct_H)
 #define MDL_JACOBIAN
 /* Function: mdlJacobian =================================================
  * Abstract:
@@ -201,7 +197,6 @@ static void mdlJacobian(SimStruct *S)
   /* end marker */
   jc[j] = idx;
 }
-#endif
 
 
 

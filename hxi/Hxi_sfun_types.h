@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -34,10 +34,9 @@
 /** Use this macro to avoid compiler warning about unused function args. */
 #define UNUSED_ARG(arg) 		(arg)=(arg)
 
-/** HXI_REAL_T can be defined before including this file (default: adouble). */
+/** HXI_REAL_T can be defined before including this file (default: double). */
 #if !defined(HXI_REAL_T)
-#include <adolc/adouble.h>
-#define HXI_REAL_T adouble
+#define HXI_REAL_T double
 #endif
 
 namespace Hxi {

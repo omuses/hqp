@@ -1,3 +1,39 @@
+2005-01-11  <rfranke>
+
+	Add support for native external S-functions,
+	in addition to external MEX S-functions and inlined S-functions
+
+	* hxi/Hxi_SimStruct.h, hxi/cg_sfun.h:
+	  - add pointers to S-function methods
+	  - add some ss-macros, in particular for Jacobian
+	  - add entry point Hxi_SimStruct_init
+
+	* hxi/Hxi_SFunction.[hC]:
+	  - new calling wrapper for native external S-functions
+	    (cf. Hxi_MEX_SFunction.[hC] for MEX S-functions)
+
+	* hxi/Hxi_mxArray.h:
+	  - add support for strings
+
+	* hxi/Hxi_sfun_types.h, hxi/simstruc.h:
+	  - change default HXI_REAL_T from adouble to double
+
+	* odc/Prg_DIC_SFunction.[hC], odc/Prg_DID_SFunction.[hC]:
+	  - adapt examples inlining S-function code
+
+	* odc/sfun_dic.c:
+	  - enable mdlJacobian for all builds
+	
+	* odc/mex.tcl.in:
+	  - extend with building of native binary S-function
+
+	* omu/Prg_SFunction*.[hC], omu/Omu_Init.C, omu/Makefile:
+	  - SFunctionOpt and SFunctionEst now always get built with omu,
+	    either supporting MEX or native binary S-function
+	    (configure option --enable-mex switches from native to MEX)
+
+	* configure.in, Makefile: adapt to new S-function feature
+
 2004-12-03	<e_arnold>
 
 	* omu/Omu_Program.h, omu/Omu_IntOdeTs.C, hqp/Hqp_DocpAdol.h,

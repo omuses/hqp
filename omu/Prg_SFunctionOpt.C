@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2004  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,8 +25,6 @@
 #include "Prg_SFunctionOpt.h"
 
 #include <stdlib.h>
-
-#include <Hxi_MEX_SFunction.h>
 
 #include <If_Int.h>
 #include <If_Bool.h>
@@ -937,10 +935,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
 
   if (ssGetmdlJacobian(_S) == NULL) {
     // call predefined update for numerical differentiation
-    // (indicate Jacobian mode to S-function via reservedForFutureInt[0])
-    _S->mdlInfo->reservedForFutureInt[0] = 1;
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
-    _S->mdlInfo->reservedForFutureInt[0] = 0;
   }
   else {
     // exploit mdlJacobian to obtain c.Jx
@@ -1415,10 +1410,7 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 {
   if (ssGetmdlJacobian(_S) == NULL) {
     // call predefined continuous_grds for numerical differentiation
-    // (indicate Jacobian mode to S-function via reservedForFutureInt[0])
-    _S->mdlInfo->reservedForFutureInt[0] = 1;
     Omu_Program::continuous_grds(kk, t, x, u, dx, F);
-    _S->mdlInfo->reservedForFutureInt[0] = 0;
   }
   else {
     // exploit mdlJacobian

@@ -15,7 +15,7 @@ omuses:
 
 adolc:
 	cd adol-c; \
-	$(MAKE) CC=$(ADOL_MCC) CXX=$(ADOL_CC) CFLAGS="$(ADOL_CFLAGS)"; \
+	$(MAKE) CC="$(ADOL_MCC)" CXX="$(ADOL_CC)" CFLAGS="$(ADOL_CFLAGS)"; \
 	cd ..
 
 test:
@@ -23,8 +23,8 @@ test:
 	  echo "Testing Crane example..."; \
 	  cd odc; ./run Crane; cd ..; \
 	fi
-	@if test -n "$(MEX_SRCS)"; then \
-	  echo "Testing MEX..."; \
+	@if test -n "yes"; then \
+	  echo "Testing external S-function..."; \
 	  cd odc; ./run dic_mex_sfunction_est; cd ..; \
 	fi
 

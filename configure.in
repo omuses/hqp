@@ -17,6 +17,7 @@ ALL_DEFS=""
 HQP_DEFS=""
 OMU_DEFS=""
 IF_DEFS=""
+HXI_DEFS=""
 
 # collect machine objects required for linking
 HQP_MACH_OBJS=""
@@ -191,11 +192,13 @@ hqp_libs_resolved="no"
 PICFLAG="-fPIC"
 OBJ_SUFFIX=".o"
 LIB_PREFIX="lib"
-LIB_SUFFIX=".so"
+SHLIB_SUFFIX=".so"
+LIB_SUFFIX="$SHLIB_SUFFIX"
 LDLIB_PREFIX="-l"
 LDLIB_SUFFIX=""
 EXE_SUFFIX=""
-LD="$CXX -shared -o "
+SHLD="$CXX -shared -o "
+LD="$SHLD"
 LDFLAGS_START=""
 LFLAG="-L"
 RFLAG="-Wl,-rpath,"
@@ -234,6 +237,7 @@ if test $uname_found = "yes" ; then
               TCL_LIBS="$TCL_LIBS -ldld"])
           fi
         fi
+        SHLD="$LD"
       else
         PICFLAG=""
         LD="ar -cr "
@@ -248,6 +252,7 @@ if test $uname_found = "yes" ; then
       ;;
     OSF1*) 
       LD="$CC -shared -Wl,-expect_unresolved,\"*\" -o "
+      SHLD="$LD"
       MES_CC="cc"
       MES_CFLAGS="-O"
       # no automatic concatenation of multiple rflags
@@ -282,21 +287,25 @@ if test $uname_found = "yes" ; then
       ;;
     CL)
       # note: -nodefaultlib:msvcrt is required when using Tcl stubs
+      SHLD="link -dll -nologo -nodefaultlib:msvcrt"
+      HXI_DEFS="$HXI_DEFS -DOMU_API=__declspec\(dllexport\)"
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         MKLIB_SUFFIX=".dll"
-        LD="link -dll -nologo -nodefaultlib:msvcrt"
+        LD="$SHLD"
+        LIB_SUFFIX=".dll"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
 	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
 	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
       else
         LD="link -lib -nologo -nodefaultlib:msvcrt"
+        LIB_SUFFIX=".lib"
       fi
       ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
       LDFLAGS_START="-link -nodefaultlib:msvcrt"
       OBJ_SUFFIX=".obj"
       LIB_PREFIX=""
-      LIB_SUFFIX=".dll"
+      SHLIB_SUFFIX=".dll"
       LDLIB_PREFIX=""
       LDLIB_SUFFIX=".lib"
       EXE_SUFFIX=".exe"
@@ -342,11 +351,13 @@ fi
 AC_SUBST(OBJ_SUFFIX)
 AC_SUBST(LIB_PREFIX)
 AC_SUBST(LIB_SUFFIX)
+AC_SUBST(SHLIB_SUFFIX)
 AC_SUBST(MKLIB_SUFFIX)
 AC_SUBST(LDLIB_PREFIX)
 AC_SUBST(LDLIB_SUFFIX)
 AC_SUBST(EXE_SUFFIX)
 AC_SUBST(LD)
+AC_SUBST(SHLD)
 AC_SUBST(LDFLAGS_START)
 AC_SUBST(LFLAG)
 AC_SUBST(RFLAG)
@@ -392,7 +403,8 @@ AC_MSG_RESULT($omu_mex)
 MEX_SRCS=""
 MEX_INCDIR1=""
 MEX_INCDIR2=""
-MEX_LIBDIR=""
+MEX_LIBDIR="."
+MEX_RLIBDIR="."
 MEX_LIBS=""
 
 if test "$omu_mex" != no; then
@@ -428,11 +440,9 @@ if test "$omu_mex" != no; then
   if test -z "${with_matlab}"; then
     AC_MSG_ERROR([can't find Matlab, specify --with-matlab])
   else
-    MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
+    MEX_SRCS="Hxi_MEX_SFunction.C"
     MEX_INCDIR1="$with_matlab"
     MEX_INCDIR2="$with_matlab/extern/include"
-    MEX_LIBDIR=""
-    MEX_RLIBDIR=""
     MEX_LIBS="-lmx"
     MEX_SCRIPT="$with_matlab/bin/mex"
     MEX_EXTENSION=""
@@ -787,6 +797,7 @@ AC_SUBST(ASCEND_SRCS)
 
 AC_SUBST(HQP_DEFS)
 AC_SUBST(IF_DEFS)
+AC_SUBST(HXI_DEFS)
 
 AC_SUBST(HQP_MACH_OBJS)
 AC_SUBST(HQP_DOCP_MACH_OBJS)

@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -48,6 +48,8 @@ using namespace std;
 
 #define SS_STDIO_AVAILABLE 			true
 #define CONTINUOUS_SAMPLE_TIME 			0.0
+#define MINOR_TIME_STEP				0
+#define MAJOR_TIME_STEP				1
 //@}
 
 /// Empty implementation for some macros.
@@ -84,8 +86,8 @@ using namespace std;
   (S)->setInputPortDirectFeedThrough(port, dft)
 #define ssGetInputPortDirectFeedThrough(S, port) \
   (S)->getInputPortDirectFeedThrough(port)
-#define ssSetInputPortRequiredContiguous(S, port) \
-  (S)->setInputPortRequiredContiguous(port)
+#define ssSetInputPortRequiredContiguous(S, port, flag) \
+  (S)->setInputPortRequiredContiguous(port, flag)
 #define ssGetInputPortRequiredContiguous(S, port) \
   (S)->getInputPortRequiredContiguous(port)
 #define ssSetInputPortOverWritable(S, port, val) HXI_NOT_IMPLEMENTED
@@ -109,6 +111,14 @@ using namespace std;
 #define ssGetSampleTime(S, idx) 	(S)->getSampleTime(idx)
 #define ssSetOffsetTime(S, idx, val) 	(S)->setOffsetTime(idx, val)
 #define ssGetOffsetTime(S, idx) 	(S)->getOffsetTime(idx)
+#define ssSetNumNonsampledZCs(S, nzcs) 	(S)->setNumNonsampledZCs(nzcs)
+#define ssGetNumNonsampledZCs(S) 	(S)->getNumNonsampledZCs()
+#define ssGetNonsampledZCs(S) 		(S)->getNumNonsampledZCs()
+#define ssSetJacobianNzMax(S, nnz) 	(S)->setJacobianNzMax(nnz)
+#define ssGetJacobianNzMax(S) 		(S)->getJacobianNzMax()
+#define ssGetJacobianPr(S) 		(S)->getJacobianPr()
+#define ssGetJacobianIr(S) 		(S)->getJacobianIr()
+#define ssGetJacobianJc(S) 		(S)->getJacobianJc()
 #define ssIsContinuousTask(S, tid) \
   (ssGetSampleTime(S, tid) == 0.0 && ssGetOffsetTime(S, tid) == 0.0)
 #define ssSetNumRWork(S, nrw) 		(S)->setNumRWork(nrw)
@@ -135,8 +145,6 @@ using namespace std;
 #define ssGetModeVector(S)		(S)->getModeVector()
 #define ssSetUserData(S, ptr) 		(S)->setUserData(ptr)
 #define ssGetUserData(S) 		(S)->getUserData()
-#define ssSetNumNonsampledZCs(S, nzcs) 	(S)->setNumNonsampledZCs(nzcs)
-#define ssGetNumNonsampledZCs(S) 	(S)->getNumNonsampledZCs()
 #define ssSetOptions(S, opts) 		(S)->setOptions(opts)
 #define ssGetOptions(S) 		(S)->getOptions()
 #define ssSetT(S, t)			(S)->setT(t)
@@ -157,6 +165,41 @@ using namespace std;
 #define ssSetChecksum1(S, val)  	HXI_NOT_IMPLEMENTED
 #define ssSetChecksum2(S, val)  	HXI_NOT_IMPLEMENTED
 #define ssSetChecksum3(S, val)  	HXI_NOT_IMPLEMENTED
+//@}
+
+/// @name Macros for specifying solver information
+//@{
+#define ssSetSimTimeStep(S, step) 	(S)->setSimTimeStep(step)
+#define ssIsMajorTimeStep(S) \
+  ((S)->getSimTimeStep() == MAJOR_TIME_STEP)
+#define ssSetVariableStepSolver(S, val) (S)->setVariableStepSolver(val)
+#define ssIsVariableStepSolver(S) \
+  ((S)->getVariableStepSolver() != 0)
+#define ssSetSolverMaxOrder(S, order) 	(S)->setSolverMaxOrder(order)
+#define ssGetSolverMaxOrder(S) 		(S)->getSolverMaxOrder()
+#define ssSetSolverName(S, name) 	(S)->setSolverName(name)
+#define ssGetSolverName(S) 		(S)->getSolverName()
+#define ssSetSolverNeedsReset(S) 	HXI_NOT_IMPLEMENTED
+//@}
+
+/// @name Macros for accessing S-function methods
+//@{
+#define ssSetmdlInitializeSizes(S, m) 	(S)->setmdlInitializeSizes(m)
+#define ssSetmdlCheckParameters(S, m) 	(S)->setmdlCheckParameters(m)
+#define ssGetmdlCheckParameters(S) 	(S)->getmdlCheckParameters()
+#define ssSetmdlInitializeSampleTimes(S, m) (S)->setmdlInitializeSampleTimes(m)
+#define ssSetmdlStart(S, m) 		(S)->setmdlStart(m)
+#define ssGetmdlStart(S) 		(S)->getmdlStart()
+#define ssSetmdlInitializeConditions(S, m) (S)->setmdlInitializeConditions(m)
+#define ssGetmdlInitializeConditions(S) (S)->getmdlInitializeConditions()
+#define ssSetmdlOutputs(S, m) 		(S)->setmdlOutputs(m)
+#define ssSetmdlUpdate(S, m) 		(S)->setmdlUpdate(m)
+#define ssGetmdlUpdate(S) 		(S)->getmdlUpdate()
+#define ssSetmdlDerivatives(S, m) 	(S)->setmdlDerivatives(m)
+#define ssGetmdlDerivatives(S) 		(S)->getmdlDerivatives()
+#define ssSetmdlJacobian(S, m) 		(S)->setmdlJacobian(m)
+#define ssGetmdlJacobian(S) 		(S)->getmdlJacobian()
+#define ssSetmdlTerminate(S, m) 	(S)->setmdlTerminate(m)
 //@}
 
 namespace Hxi {
@@ -187,6 +230,11 @@ protected:
 
   vector<real_T> _st_period;	///< sample time period 
   vector<real_T> _st_offset;	///< sample time offset
+  vector<real_T> _zc_signals; 	///< values of zero crossings
+
+  vector<real_T> _jacobianPr; 	///< Jacobian elements
+  vector<int_T>  _jacobianIr; 	///< Jacobian row indices
+  vector<int_T>  _jacobianJc; 	///< Jacobian start indices per column
 
   vector<real_T> _rwork; 	///< real work array
   vector<int_T>  _iwork; 	///< int work array
@@ -200,6 +248,27 @@ protected:
   const char_T 	*_path; 	///< absolute name of this model
   int_T 	_version; 	///< version of this model
   const char_T 	*_error_msg;	///< used to report errors from S-function
+
+  int_T		_simTimeStep; 	///< simulation time step (major or minor)
+  int_T		_variableStepSolver; ///< indicate variable step solver
+  int_T		_solverMaxOrder; ///< indicate variable step solver
+  const char_T 	*_solverName; 	///< name of ODE solver
+
+  /// @name S-function methods
+  //@{
+  typedef void (SFunctionMethod1)(SimStruct *S);
+  typedef void (SFunctionMethod2)(SimStruct *S, int_T tid);
+  SFunctionMethod1 *_mdlInitializeSizes;
+  SFunctionMethod1 *_mdlCheckParameters;
+  SFunctionMethod1 *_mdlInitializeSampleTimes;
+  SFunctionMethod1 *_mdlStart;
+  SFunctionMethod1 *_mdlInitializeConditions;
+  SFunctionMethod2 *_mdlOutputs;
+  SFunctionMethod2 *_mdlUpdate;
+  SFunctionMethod1 *_mdlDerivatives;
+  SFunctionMethod1 *_mdlJacobian;
+  SFunctionMethod1 *_mdlTerminate;
+  //@}
 
 public:
   /*
@@ -218,8 +287,13 @@ public:
 
     _model_name = "Hxi_SimStruct";
     _path = "Hxi_SimStruct";
-    _version = 1;
+    _version = 0;
     _error_msg = NULL;
+
+    _simTimeStep = MINOR_TIME_STEP;
+    _variableStepSolver = 0;
+    _solverMaxOrder = 0;
+    _solverName = "unspecified";
   }
 
   /*
@@ -329,7 +403,7 @@ public:
   }
   /** Specify that input port vector should be layed out contiguous in memory.
       Note: here this is always fulfilled. */
-  int_T setInputPortRequiredContiguous(int_T port) {
+  int_T setInputPortRequiredContiguous(int_T port, int_T flag) {
     return 1;
   }
   /** Get specification about contiguous memory layout.
@@ -420,6 +494,49 @@ public:
     return _st_offset[st_index];
   }
 
+  /** Set number of signals for which zero crossings may occur. */
+  int_T setNumNonsampledZCs(int_T nzcs) {
+    _zc_signals.resize(nzcs);
+    return _zc_signals.size();
+  }
+  /** Get number of signals for which zero crossings may occur. */
+  int_T getNumNonsampledZCs() {
+    return _zc_signals.size();
+  }
+  /** Get vector of zero crossing signals. */
+  real_T *getNonsampledZCs(int_T ) {
+    return &_zc_signals[0];
+  }
+
+  /** Set number of non-zero elements in Jacobian. */
+  int_T setJacobianNzMax(int_T nnz) {
+    if (nnz < 0) {
+      // nnz == -1 allocates space for a full Jacobian
+      nnz = (_xc.size() + _xd.size() + _y.size())
+        * (_xc.size() + _dxc.size() + _u.size());
+    }
+    _jacobianPr.resize(nnz, _dummy);
+    _jacobianIr.resize(nnz);
+    _jacobianJc.resize(nnz);
+    return _jacobianPr.size();
+  }
+  /** Get number of non-zero elements in Jacobian. */
+  int_T getJacobianNzMax() {
+    return _jacobianPr.size();
+  }
+  /** Get pointer to first Jacobian element. */
+  real_T *getJacobianPr() {
+    return &_jacobianPr[0];
+  }
+  /** Get pointer to first Jacobian index. */
+  int_T *getJacobianIr() {
+    return &_jacobianIr[0];
+  }
+  /** Get pointer to first column start index of Jacobian. */
+  int_T *getJacobianJc() {
+    return &_jacobianJc[0];
+  }
+
   /** Set size of real work array. */
   int_T setNumRWork(int_T nrw) {
     _rwork.resize(nrw, _dummy);
@@ -487,18 +604,6 @@ public:
     return _userData;
   }
 
-  /** Set number of states for which zero crossings may occur.
-      Note: state events are not supported by Hqp. */
-  int_T setNumNonsampledZCs(int_T nzcs) {
-    assert(nzcs == 0);
-    return 0;
-  }
-  /** Get number of states for which zero crossings may occur.
-      Note: state events are not supported by Hqp. */
-  int_T getNumNonsampledZCs(int_T nzcs) {
-    return 0;
-  }
-
   /** Set option flags. */
   uint_T setOptions(uint_T opts) {
     return _options = opts;
@@ -550,18 +655,134 @@ public:
   const char_T *getErrorStatus() const {
     return _error_msg;
   }
+
+  /** Set simulation time stepping mode */
+  int_T setSimTimeStep(int_T val) {
+    return _simTimeStep = val;
+  }
+  /** Get simulation time stepping mode */
+  int_T getSimTimeStep() {
+    return _simTimeStep;
+  }
+
+  /** Set variable step solver */
+  int_T setVariableStepSolver(int_T val) {
+    return _variableStepSolver = val;
+  }
+  /* Get variable step solver */
+  int_T getVariableStepSolver() {
+    return _variableStepSolver;
+  }
+
+  /** Set solver max order */
+  int_T setSolverMaxOrder(int_T val) {
+    return _solverMaxOrder = val;
+  }
+  /* Get solver max order */
+  int_T getSolverMaxOrder() {
+    return _solverMaxOrder;
+  }
+
+  /** Set name of ODE solver. */
+  const char_T *setSolverName(const char_T *name) {
+    return _solverName = name;
+  }
+  /** Get name of ODE solver. */
+  const char_T *getSolverName() const {
+    return _solverName;
+  }
+
+  /** @name Access methods for S-function methods */
+  //@{
+  SFunctionMethod1 *setmdlInitializeSizes(SFunctionMethod1 *m) {
+    return _mdlInitializeSizes = m;
+  }
+  SFunctionMethod1 *getmdlInitializeSizes() const {
+    return _mdlInitializeSizes;
+  }
+
+  SFunctionMethod1 *setmdlCheckParameters(SFunctionMethod1 *m) {
+    return _mdlCheckParameters = m;
+  }
+  SFunctionMethod1 *getmdlCheckParameters() const {
+    return _mdlCheckParameters;
+  }
+
+  SFunctionMethod1 *setmdlInitializeSampleTimes(SFunctionMethod1 *m) {
+    return _mdlInitializeSampleTimes = m;
+  }
+  SFunctionMethod1 *getmdlInitializeSampleTimes() const {
+    return _mdlInitializeSampleTimes;
+  }
+
+  SFunctionMethod1 *setmdlStart(SFunctionMethod1 *m) {
+    return _mdlStart = m;
+  }
+  SFunctionMethod1 *getmdlStart() const {
+    return _mdlStart;
+  }
+
+  SFunctionMethod1 *setmdlInitializeConditions(SFunctionMethod1 *m) {
+    return _mdlInitializeConditions = m;
+  }
+  SFunctionMethod1 *getmdlInitializeConditions() const {
+    return _mdlInitializeConditions;
+  }
+
+  SFunctionMethod2 *setmdlOutputs(SFunctionMethod2 *m) {
+    return _mdlOutputs = m;
+  }
+  SFunctionMethod2 *getmdlOutputs() const {
+    return _mdlOutputs;
+  }
+
+  SFunctionMethod2 *setmdlUpdate(SFunctionMethod2 *m) {
+    return _mdlUpdate = m;
+  }
+  SFunctionMethod2 *getmdlUpdate() const {
+    return _mdlUpdate;
+  }
+
+  SFunctionMethod1 *setmdlDerivatives(SFunctionMethod1 *m) {
+    return _mdlDerivatives = m;
+  }
+  SFunctionMethod1 *getmdlDerivatives() const {
+    return _mdlDerivatives;
+  }
+
+  SFunctionMethod1 *setmdlJacobian(SFunctionMethod1 *m) {
+    return _mdlJacobian = m;
+  }
+  SFunctionMethod1 *getmdlJacobian() const {
+    return _mdlJacobian;
+  }
+
+  SFunctionMethod1 *setmdlTerminate(SFunctionMethod1 *m) {
+    return _mdlTerminate = m;
+  }
+  SFunctionMethod1 *getmdlTerminate() const {
+    return _mdlTerminate;
+  }
+  //@}
 };
 
 }; // namespace Hxi
 
+#if defined(HXI_INLINE_S_FUNCTION)
+
 /** Construct a SimStruct. */
 static Hxi::SimStruct *Hxi_SimStruct_create() {
-  return new Hxi::SimStruct();
+  void Hxi_SimStruct_init(Hxi::SimStruct *S);
+  Hxi::SimStruct *S = new Hxi::SimStruct();
+  Hxi_SimStruct_init(S);
+  return S;
 }
 
 /** Delete a SimStruct. */
 static void Hxi_SimStruct_destroy(Hxi::SimStruct *S) {
   delete S;
 }
+
+#endif // defined(HXI_INLINE_S_FUNCTION)
 
 #endif

@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2004  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,8 +25,6 @@
 #include "Prg_SFunctionEst.h"
 
 #include <stdlib.h>
-
-#include <Hxi_MEX_SFunction.h>
 
 #include <If_Int.h>
 #include <If_Bool.h>
@@ -670,9 +668,7 @@ void Prg_SFunctionEst::update(int kk,
     }
 
     // call predefined update for numerical differentiation
-    _S->mdlInfo->reservedForFutureInt[0] = 1;
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
-    _S->mdlInfo->reservedForFutureInt[0] = 0;
 
     // correct gradient of f0 as complete nd gives bad results
     v_zero(f0.gx);
@@ -923,9 +919,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   // obtain Jacobians if required
   if (F.is_required_J()) {
     // call predefined continuous for numerical differentiation
-    _S->mdlInfo->reservedForFutureInt[0] = 1;
     Omu_Program::continuous_grds(kk, t, x, u, dx, F);
-    _S->mdlInfo->reservedForFutureInt[0] = 0;
   }
 }
 

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,9 +32,11 @@
 
 #include <If_Command.h>
 
-/** Select MEX interface to S-function */
-#define MATLAB_MEX_FILE 1
-#include <simstruc.h>
+#if defined(OMU_WITH_MEX)
+#include <Hxi_MEX_SFunction.h>
+#else
+#include <Hxi_SFunction.h>
+#endif
 
 /**
  * Basic functionality for formulating an optimization problem for

@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TCLSH VERSION CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX WFLAG U_INT_DEF uname_found CXXCPP EGREP RANLIB ac_ct_RANLIB OBJ_SUFFIX LIB_PREFIX LIB_SUFFIX MKLIB_SUFFIX LDLIB_PREFIX LDLIB_SUFFIX EXE_SUFFIX LD LDFLAGS_START LFLAG RFLAG TCL_LIBS TCL_STUB_LIB MES_CC MES_CFLAGS HQP_LIBS OMU_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MATLAB MEX_SRCS MEX_INCDIR1 MEX_INCDIR2 MEX_LIBDIR MEX_RLIBDIR MEX_LIBS MEX_SCRIPT MEX_EXTENSION OMU_DEFS TCL_INCDIR TCL_LIBDIR ASRCS ADOLCDEF fortran_f77 fortran_g77 FORTRAN_COMP FORTRAN_FLAGS FORTRAN_LIBS OMU_INTDASPK_C DASPK DASPK_OBJS OMU_INTRKSUITE_C RKSUITE_O GMALLOC_O CUTE_SRCS ASCEND_INCDIR ASCEND_SRCS HQP_DEFS IF_DEFS HQP_MACH_OBJS HQP_DOCP_MACH_OBJS OMU_MACH_OBJS ODC_MACH_OBJS DOT HAVE_DOT ALL_DEFS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TCLSH VERSION CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX WFLAG U_INT_DEF uname_found CXXCPP EGREP RANLIB ac_ct_RANLIB OBJ_SUFFIX LIB_PREFIX LIB_SUFFIX SHLIB_SUFFIX MKLIB_SUFFIX LDLIB_PREFIX LDLIB_SUFFIX EXE_SUFFIX LD SHLD LDFLAGS_START LFLAG RFLAG TCL_LIBS TCL_STUB_LIB MES_CC MES_CFLAGS HQP_LIBS OMU_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MATLAB MEX_SRCS MEX_INCDIR1 MEX_INCDIR2 MEX_LIBDIR MEX_RLIBDIR MEX_LIBS MEX_SCRIPT MEX_EXTENSION OMU_DEFS TCL_INCDIR TCL_LIBDIR ASRCS ADOLCDEF fortran_f77 fortran_g77 FORTRAN_COMP FORTRAN_FLAGS FORTRAN_LIBS OMU_INTDASPK_C DASPK DASPK_OBJS OMU_INTRKSUITE_C RKSUITE_O GMALLOC_O CUTE_SRCS ASCEND_INCDIR ASCEND_SRCS HQP_DEFS IF_DEFS HXI_DEFS HQP_MACH_OBJS HQP_DOCP_MACH_OBJS OMU_MACH_OBJS ODC_MACH_OBJS DOT HAVE_DOT ALL_DEFS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1329,6 +1329,7 @@ ALL_DEFS=""
 HQP_DEFS=""
 OMU_DEFS=""
 IF_DEFS=""
+HXI_DEFS=""
 
 # collect machine objects required for linking
 HQP_MACH_OBJS=""
@@ -2961,11 +2962,13 @@ hqp_libs_resolved="no"
 PICFLAG="-fPIC"
 OBJ_SUFFIX=".o"
 LIB_PREFIX="lib"
-LIB_SUFFIX=".so"
+SHLIB_SUFFIX=".so"
+LIB_SUFFIX="$SHLIB_SUFFIX"
 LDLIB_PREFIX="-l"
 LDLIB_SUFFIX=""
 EXE_SUFFIX=""
-LD="$CXX -shared -o "
+SHLD="$CXX -shared -o "
+LD="$SHLD"
 LDFLAGS_START=""
 LFLAG="-L"
 RFLAG="-Wl,-rpath,"
@@ -3733,6 +3736,7 @@ fi
 
           fi
         fi
+        SHLD="$LD"
       else
         PICFLAG=""
         LD="ar -cr "
@@ -3826,6 +3830,7 @@ fi
       ;;
     OSF1*)
       LD="$CC -shared -Wl,-expect_unresolved,\"*\" -o "
+      SHLD="$LD"
       MES_CC="cc"
       MES_CFLAGS="-O"
       # no automatic concatenation of multiple rflags
@@ -4018,21 +4023,25 @@ fi
       ;;
     CL)
       # note: -nodefaultlib:msvcrt is required when using Tcl stubs
+      SHLD="link -dll -nologo -nodefaultlib:msvcrt"
+      HXI_DEFS="$HXI_DEFS -DOMU_API=__declspec\(dllexport\)"
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
         MKLIB_SUFFIX=".dll"
-        LD="link -dll -nologo -nodefaultlib:msvcrt"
+        LD="$SHLD"
+        LIB_SUFFIX=".dll"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
 	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
 	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
       else
         LD="link -lib -nologo -nodefaultlib:msvcrt"
+        LIB_SUFFIX=".lib"
       fi
       ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
       LDFLAGS_START="-link -nodefaultlib:msvcrt"
       OBJ_SUFFIX=".obj"
       LIB_PREFIX=""
-      LIB_SUFFIX=".dll"
+      SHLIB_SUFFIX=".dll"
       LDLIB_PREFIX=""
       LDLIB_SUFFIX=".lib"
       EXE_SUFFIX=".exe"
@@ -4074,6 +4083,8 @@ if test -z "$MES_CC"; then
   MES_CC="$CC"
   MES_CFLAGS="$CFLAGS"
 fi
+
+
 
 
 
@@ -4237,7 +4248,8 @@ echo "${ECHO_T}$omu_mex" >&6
 MEX_SRCS=""
 MEX_INCDIR1=""
 MEX_INCDIR2=""
-MEX_LIBDIR=""
+MEX_LIBDIR="."
+MEX_RLIBDIR="."
 MEX_LIBS=""
 
 if test "$omu_mex" != no; then
@@ -4324,11 +4336,9 @@ echo "${ECHO_T}guessing --with-matlab... $with_matlab" >&6
 echo "$as_me: error: can't find Matlab, specify --with-matlab" >&2;}
    { (exit 1); exit 1; }; }
   else
-    MEX_SRCS="Hxi_MEX_SFunction.C Prg_SFunction.C Prg_SFunctionOpt.C Prg_SFunctionEst.C"
+    MEX_SRCS="Hxi_MEX_SFunction.C"
     MEX_INCDIR1="$with_matlab"
     MEX_INCDIR2="$with_matlab/extern/include"
-    MEX_LIBDIR=""
-    MEX_RLIBDIR=""
     MEX_LIBS="-lmx"
     MEX_SCRIPT="$with_matlab/bin/mex"
     MEX_EXTENSION=""
@@ -5050,6 +5060,7 @@ fi
 # -----------------------------------------------------------------------
 # 	Substitute specific settings
 # -----------------------------------------------------------------------
+
 
 
 
@@ -5781,11 +5792,13 @@ s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@OBJ_SUFFIX@,$OBJ_SUFFIX,;t t
 s,@LIB_PREFIX@,$LIB_PREFIX,;t t
 s,@LIB_SUFFIX@,$LIB_SUFFIX,;t t
+s,@SHLIB_SUFFIX@,$SHLIB_SUFFIX,;t t
 s,@MKLIB_SUFFIX@,$MKLIB_SUFFIX,;t t
 s,@LDLIB_PREFIX@,$LDLIB_PREFIX,;t t
 s,@LDLIB_SUFFIX@,$LDLIB_SUFFIX,;t t
 s,@EXE_SUFFIX@,$EXE_SUFFIX,;t t
 s,@LD@,$LD,;t t
+s,@SHLD@,$SHLD,;t t
 s,@LDFLAGS_START@,$LDFLAGS_START,;t t
 s,@LFLAG@,$LFLAG,;t t
 s,@RFLAG@,$RFLAG,;t t
@@ -5828,6 +5841,7 @@ s,@ASCEND_INCDIR@,$ASCEND_INCDIR,;t t
 s,@ASCEND_SRCS@,$ASCEND_SRCS,;t t
 s,@HQP_DEFS@,$HQP_DEFS,;t t
 s,@IF_DEFS@,$IF_DEFS,;t t
+s,@HXI_DEFS@,$HXI_DEFS,;t t
 s,@HQP_MACH_OBJS@,$HQP_MACH_OBJS,;t t
 s,@HQP_DOCP_MACH_OBJS@,$HQP_DOCP_MACH_OBJS,;t t
 s,@OMU_MACH_OBJS@,$OMU_MACH_OBJS,;t t

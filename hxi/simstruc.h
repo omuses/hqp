@@ -53,13 +53,8 @@
 #define MATLAB_VERSION 60
 #endif
 
-/** ADOL-C's value function for double. It may be needed to compile
-    code written for real_T adouble with real_T double. */
-inline double value(double a) {return a;}
-
 #else
 // We are compiling the S-function for Hqp.
-// ADOL-C is used for automatic differentiation per default.
 
 /**
  * Hqp eXternal Interfaces: native implementations of types that are 
@@ -75,5 +70,9 @@ namespace Hxi {};
 using namespace Hxi;
 
 #endif // defined(MATLAB_MEX_FILE)
+
+/** ADOL-C's value function for double. It may be needed to compile
+    code written for real_T adouble with real_T double. */
+inline double value(double a) {return a;}
 
 #endif // !defined(HXI_SIMSTRUC_H)

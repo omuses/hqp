@@ -30,7 +30,12 @@ SRCS =	Omu_Init.C \
 	Omu_IntSDIRK.C \
         $(OMU_INTRKSUITE_C) \
         $(OMU_INTDASPK_C) \
-	$(ADOLC_SRCS) $(MEX_SRCS)
+	$(ADOLC_SRCS) \
+	Prg_SFunction.C \
+	Prg_SFunctionOpt.C \
+	Prg_SFunctionEst.C \
+	Hxi_SFunction.C \
+	$(MEX_SRCS)
 
 OBJS = $(SRCS:.C=$O) $(RKSUITE_O)
 
@@ -51,6 +56,9 @@ $(RKSUITE_O): $(RKSUITE_O:$O=.f)
 
 Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_MEX_SFunction.C
+
+Hxi_SFunction$O: ../hxi/Hxi_SFunction.C
+	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_SFunction.C
 
 .C$O:
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<

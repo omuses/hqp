@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2004  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 
-#include <Hxi_MEX_SFunction.h>
 #include <Hxi_mx_parse.h>
 
 #include <If_RealVec.h>
