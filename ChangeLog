@@ -1,3 +1,8 @@
+2003-11-12    <rfranke>
+
+	* configure*, makedirs.in: 
+	  - improved automatic configuration for MEX interface
+
 2003-11-08    <rfranke>
 
 	* configure.in, hqp_docp/Makefile.in, odc/Makefile.in:

@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TCLSH VERSION CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX WFLAG U_INT_DEF uname_found CXXCPP EGREP RANLIB ac_ct_RANLIB OBJ_SUFFIX LIB_PREFIX LIB_SUFFIX MKLIB_SUFFIX LDLIB_PREFIX LDLIB_SUFFIX EXE_SUFFIX LD LDFLAGS_START LFLAG RFLAG TCL_LIBS TCL_STUB_LIB MES_CC MES_CFLAGS HQP_LIBS OMU_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA with_matlab MEX_SRCS MEX_INCDIR1 MEX_INCDIR2 MEX_LIBDIR MEX_LIBS MEX_SCRIPT MEX_EXTENSION OMU_DEFS TCL_INCDIR TCL_LIBDIR ASRCS fortran_f77 fortran_g77 FORTRAN_COMP FORTRAN_FLAGS FORTRAN_LIBS OMU_INTDASPK_C DASPK DASPK_OBJS OMU_INTRKSUITE_C RKSUITE_O GMALLOC_O CUTE_SRCS ASCEND_INCDIR ASCEND_SRCS HQP_DEFS IF_DEFS HQP_MACH_OBJS HQP_DOCP_MACH_OBJS OMU_MACH_OBJS ODC_MACH_OBJS DOT HAVE_DOT ALL_DEFS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TCLSH VERSION CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX WFLAG U_INT_DEF uname_found CXXCPP EGREP RANLIB ac_ct_RANLIB OBJ_SUFFIX LIB_PREFIX LIB_SUFFIX MKLIB_SUFFIX LDLIB_PREFIX LDLIB_SUFFIX EXE_SUFFIX LD LDFLAGS_START LFLAG RFLAG TCL_LIBS TCL_STUB_LIB MES_CC MES_CFLAGS HQP_LIBS OMU_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MATLAB MEX_SRCS MEX_INCDIR1 MEX_INCDIR2 MEX_LIBDIR MEX_RLIBDIR MEX_LIBS MEX_SCRIPT MEX_EXTENSION OMU_DEFS TCL_INCDIR TCL_LIBDIR ASRCS fortran_f77 fortran_g77 FORTRAN_COMP FORTRAN_FLAGS FORTRAN_LIBS OMU_INTDASPK_C DASPK DASPK_OBJS OMU_INTRKSUITE_C RKSUITE_O GMALLOC_O CUTE_SRCS ASCEND_INCDIR ASCEND_SRCS HQP_DEFS IF_DEFS HQP_MACH_OBJS HQP_DOCP_MACH_OBJS OMU_MACH_OBJS ODC_MACH_OBJS DOT HAVE_DOT ALL_DEFS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -4164,17 +4164,19 @@ fi;
 echo "${ECHO_T}$with_matlab_libs" >&6
 
   # try to find Matlab automatically if nothing else was specified
+  # (assuming a path like: $with_matlab/bin/<platform>/matlab
+  #  or $with_matlab/bin/matlab)
   if test -z "${with_matlab}"; then
     # Extract the first word of "matlab", so it can be a program name with args.
 set dummy matlab; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_path_with_matlab+set}" = set; then
+if test "${ac_cv_path_MATLAB+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  case $with_matlab in
+  case $MATLAB in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_with_matlab="$with_matlab" # Let the user override the test with a path.
+  ac_cv_path_MATLAB="$MATLAB" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -4184,7 +4186,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_with_matlab="$as_dir/$ac_word$ac_exec_ext"
+    ac_cv_path_MATLAB="$as_dir/$ac_word$ac_exec_ext"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -4194,19 +4196,26 @@ done
   ;;
 esac
 fi
-with_matlab=$ac_cv_path_with_matlab
+MATLAB=$ac_cv_path_MATLAB
 
-if test -n "$with_matlab"; then
-  echo "$as_me:$LINENO: result: $with_matlab" >&5
-echo "${ECHO_T}$with_matlab" >&6
+if test -n "$MATLAB"; then
+  echo "$as_me:$LINENO: result: $MATLAB" >&5
+echo "${ECHO_T}$MATLAB" >&6
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi
 
+    # follow a possible link to the actual executable
+    MATLAB=`echo "if {[catch {file readlink \"$MATLAB\"} result]} {puts \"$MATLAB\"} {puts [set result]}" | $TCLSH`
+    with_matlab=`dirname "${MATLAB}"`
     with_matlab=`dirname "${with_matlab}"`
-    with_matlab=`dirname "${with_matlab}"`
-    with_matlab=`dirname "${with_matlab}"`
+    # need to go one more directory up of <platform> dir was there
+    if test `basename "$with_matlab"` = "bin"; then
+      with_matlab=`dirname "${with_matlab}"`
+    fi
+    echo "$as_me:$LINENO: result: guessing --with-matlab... $with_matlab" >&5
+echo "${ECHO_T}guessing --with-matlab... $with_matlab" >&6
   fi
 
   if test -z "${with_matlab}"; then
@@ -4218,32 +4227,39 @@ echo "$as_me: error: can't find Matlab, specify --with-matlab" >&2;}
     MEX_INCDIR1="$with_matlab"
     MEX_INCDIR2="$with_matlab/extern/include"
     MEX_LIBDIR=""
+    MEX_RLIBDIR=""
     MEX_LIBS="-lmx"
     MEX_SCRIPT="$with_matlab/bin/mex"
     MEX_EXTENSION=""
     case "$target" in
       Linux*)
         MEX_LIBDIR="$with_matlab/extern/lib/glnx86"
+        MEX_RLIBDIR="$with_matlab/bin/glnx86"
         MEX_EXTENSION=".mexglx"
         ;;
       SunOS*)
         MEX_LIBDIR="$with_matlab/extern/lib/sol2"
+        MEX_RLIBDIR="$with_matlab/bin/sol2"
         MEX_EXTENSION=".mexsol"
         ;;
       OSF1*)
         MEX_LIBDIR="$with_matlab/extern/lib/alpha"
+        MEX_RLIBDIR="$with_matlab/bin/alpha"
         MEX_EXTENSION=".mexaxp"
         ;;
       IRIX*)
         MEX_LIBDIR="$with_matlab/extern/lib/sgi"
+        MEX_RLIBDIR="$with_matlab/bin/sgi"
         MEX_EXTENSION=".mexsg"
         ;;
       HP-UX*)
         MEX_LIBDIR="$with_matlab/extern/lib/hpux"
+        MEX_RLIBDIR="$with_matlab/bin/hpux"
         MEX_EXTENSION=".mexhpux"
         ;;
       CYGWIN*|MSYS*|MINGW*)
         MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        MEX_RLIBDIR="$with_matlab/bin/win32"
         MEX_LIBS="-llibmx"
         # note: might need to generate liblibmx.a from libmx.lib
         #  if libmx.lib does not link (e.g. older cygwin or when making a DLL)
@@ -4252,6 +4268,7 @@ echo "$as_me: error: can't find Matlab, specify --with-matlab" >&2;}
         ;;
       CL)
         MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        MEX_RLIBDIR="$with_matlab/bin/win32"
         MEX_LIBS="libmx.lib"
         MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
         MEX_EXTENSION=".dll"
@@ -4260,6 +4277,9 @@ echo "$as_me: error: can't find Matlab, specify --with-matlab" >&2;}
     # overwrite MEX_LIBDIR if set explicitly
     if test ! -z "${with_matlab_libs}"; then
       MEX_LIBDIR="$with_matlab_libs"
+    else
+      echo "$as_me:$LINENO: result: guessing --with-matlab-libs... $MEX_LIBDIR" >&5
+echo "${ECHO_T}guessing --with-matlab-libs... $MEX_LIBDIR" >&6
     fi
     OMU_DEFS="${OMU_DEFS} -DOMU_WITH_MEX=1"
   fi
@@ -4268,7 +4288,12 @@ echo "$as_me: error: can't find Matlab, specify --with-matlab" >&2;}
 echo "$as_me: error: can't find Matlab libs, specify --with-matlab and --with-matlab-libs" >&2;}
    { (exit 1); exit 1; }; }
   fi
+  # MEX_RLIBDIR is the same as MEX_LIBDIR per default
+  if test -z "${MEX_RLIBDIR}"; then
+    MEX_RLIBDIR="$MEX_LIBDIR"
+  fi
 fi
+
 
 
 
@@ -5636,11 +5661,12 @@ s,@OMU_LIBS@,$OMU_LIBS,;t t
 s,@INSTALL_PROGRAM@,$INSTALL_PROGRAM,;t t
 s,@INSTALL_SCRIPT@,$INSTALL_SCRIPT,;t t
 s,@INSTALL_DATA@,$INSTALL_DATA,;t t
-s,@with_matlab@,$with_matlab,;t t
+s,@MATLAB@,$MATLAB,;t t
 s,@MEX_SRCS@,$MEX_SRCS,;t t
 s,@MEX_INCDIR1@,$MEX_INCDIR1,;t t
 s,@MEX_INCDIR2@,$MEX_INCDIR2,;t t
 s,@MEX_LIBDIR@,$MEX_LIBDIR,;t t
+s,@MEX_RLIBDIR@,$MEX_RLIBDIR,;t t
 s,@MEX_LIBS@,$MEX_LIBS,;t t
 s,@MEX_SCRIPT@,$MEX_SCRIPT,;t t
 s,@MEX_EXTENSION@,$MEX_EXTENSION,;t t
