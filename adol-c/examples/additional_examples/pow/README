@@ -1,9 +1,0 @@
---------------------------------------------------------------
-README          ADOL-C version 1.9.0         as of Apr/30/2004
---------------------------------------------------------------
-
-CONTENTS OF THE DIRECTORY
-
-  powexam        --> calculate x^e, both given as user input
-
-                     powexam.cpp
