@@ -30,7 +30,11 @@
 #include <iostream.h>
 #include <fstream.h>
 
+#ifdef OMU_WITH_ADOLC
+
 #include <adutils.h>
+
+#endif
 
 #include <Hqp.h>
 #include <If_Int.h>
@@ -146,8 +150,13 @@ Omu_IntSDIRK::Omu_IntSDIRK()
 
   _gamma0 = 1.0;
 
+#ifdef OMU_WITH_ADOLC
+
   _ifList.append(new If_Bool("prg_int_sensadolc", &_sens_adolc));
   _ifList.append(new If_Bool("prg_int_sensatonce", &_sens_at_once));
+
+#endif
+
   _ifList.append(new If_Bool("prg_int_lsqrsol", &_lsqr_sol));
   _ifList.append(new If_Bool("prg_int_sparsol", &_sparse_solver));
   _ifList.append(new If_Bool("prg_int_banded", &_banded));
@@ -301,7 +310,7 @@ void Omu_IntSDIRK::init_yprime_pred(MATP pred)
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntSDIRK::realloc()
+void Omu_IntSDIRK::resize()
 {
 
   if ((int)_cxp->dim == _nd + _n && (int)_cu->dim == _nu)
@@ -415,7 +424,7 @@ void Omu_IntSDIRK::init_stage(int k,
       _banded_solver = false;
   }
 
-  realloc();
+  resize();
 
 }
 
@@ -427,7 +436,7 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 {
 
   bool    ok, tend_ok;
-  int     i, j, l, steps;
+  int     i, j, l, nsteps, steps;
   double  err;
 
   _sys = sys;	// propagate to res() and jac()
@@ -436,6 +445,11 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 
   _cx_ptr = &cx;
   _cF_ptr = &cF;
+
+  // _stepsize overrides _nsteps
+  nsteps = _nsteps;
+  if (_stepsize > 0.0)
+    nsteps = (int)ceil((tend - tstart) / _stepsize);
 
   if(_output > 1) {
     cout << endl;
@@ -463,8 +477,8 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
     _yprime0[i] = 1.0e-5;
   init_yprime(kk,tstart,cx,u,_yprime0);
 
-  if(_nsteps > 0)
-    _h_new = (tend - tstart)/_nsteps;
+  if(nsteps > 0)
+    _h_new = (tend - tstart)/nsteps;
   else
     if(_hinit > 0.0)
       _h_new = min(_hinit,tend-tstart);
@@ -506,7 +520,7 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
       tend_ok = true;
     }
 
-    if(_nsteps > 0 && steps == _nsteps)
+    if(nsteps > 0 && steps == nsteps)
       tend_ok = true;
 
     v_copy(_y,_y0);
@@ -553,7 +567,7 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 
       // now we have to check the error
       
-      if(_nsteps <= 0) {
+      if(nsteps <= 0) {
 	if((int)_b_err->dim == _irk_stages) {
 	  v_copy(_y0,_err);
 	  for(j = 0; j < _irk_stages; j++)
@@ -582,7 +596,7 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 	  solve_final(_y,_yprime0);
       }
 
-      if(_nsteps <= 0) {
+      if(nsteps <= 0) {
 
 	// algebraic variables are not considered in the error evaluation
 
@@ -686,10 +700,15 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 
     if(_sa) {
       if(_sens_adolc) {
+
+#ifdef OMU_WITH_ADOLC
+
 	if(_nod == 0 && !_lsqr_sol)
 	  sensitivity_adolc();
         else
 	  sensitivity_lsqr_adolc();
+#endif
+
       }
       else {
         if(_nod == 0 && !_lsqr_sol)
@@ -1191,6 +1210,8 @@ void Omu_IntSDIRK::solve_final(VECP y, VECP yprime)
 //--------------------------------------------------------------------------
 // differentiate the whole integration scheme using adol-c
 
+#ifdef OMU_WITH_ADOLC
+
 void Omu_IntSDIRK::sensitivity_adolc()
 {
 
@@ -1524,6 +1545,8 @@ void Omu_IntSDIRK::sensitivity_adolc()
 
 }
 
+#endif
+
 //--------------------------------------------------------------------------
 
 void Omu_IntSDIRK::sensitivity()
@@ -1717,6 +1740,8 @@ void Omu_IntSDIRK::sensitivity()
 
 //--------------------------------------------------------------------------
 // differentiate the whole integration scheme using adol-c
+
+#ifdef OMU_WITH_ADOLC
 
 void Omu_IntSDIRK::sensitivity_lsqr_adolc()
 {
@@ -1958,6 +1983,8 @@ void Omu_IntSDIRK::sensitivity_lsqr_adolc()
   delete[] f;
   
 }
+
+#endif
 
 //--------------------------------------------------------------------------
 
