@@ -341,7 +341,7 @@ int Omu_IntDopri5::simulation()
   _xold = _x; 
   
   for ( j=0; j<(int)_icont->size; j++ ) 
-    cont[j] = _y[_icont->pe[j]];
+    cont[j] = _y[(int)_icont->pe[j]];
   if ( fout(_naccpt+1, _x, cont) ) {
     fprintf(stderr, format979, _x);
     return 2;

@@ -47,7 +47,7 @@ class Omu_IntODE: public Omu_Integrator {
 	     Omu_Program *sys, Omu_DepVec &Fc, Omu_SVec &xc);
 
   // routines provided by derived classes
-  virtual void ode_solve(Real tstart, VECP y, VECP u, Real tend) = 0;
+  virtual void ode_solve(Real tstart, VECP y, const VECP u, Real tend) = 0;
 
   // routines to be called by derived classes
   void syseq(Real t, const VECP y, const VECP u, VECP f);
