@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -31,7 +31,7 @@ extern "C" {
 }
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 
 #include "sprcm.h"
 #include "Hqp_Program.h"
@@ -77,7 +77,7 @@ Hqp_IpRedSpBKP::Hqp_IpRedSpBKP()
   _CTC_neighs = IVNULL;
 
   _ifList.append(new If_Int("mat_sbw", &_sbw));
-  _ifList.append(new If_Float("mat_tol", &_tol));
+  _ifList.append(new If_Real("mat_tol", &_tol));
 }
 
 //--------------------------------------------------------------------------

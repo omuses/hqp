@@ -15,7 +15,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -39,7 +39,7 @@ extern "C" {
 }
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Bool.h>
 
 #include "Hqp_HL_BFGS.h"
@@ -61,7 +61,7 @@ Hqp_HL_BFGS::Hqp_HL_BFGS()
   _bsize = -1;
   _max_bsize = -1;
   
-  _ifList.append(new If_Float("sqp_hela_gamma", &_gamma));
+  _ifList.append(new If_Real("sqp_hela_gamma", &_gamma));
   _ifList.append(new If_Bool("sqp_hela_eigen_control", &_eigen_control));
   _ifList.append(new If_Int("sqp_hela_bsize", &_bsize));
   _ifList.append(new If_Int("sqp_hela_max_bsize", &_max_bsize));

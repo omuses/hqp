@@ -28,8 +28,6 @@
 
 #include <adutils.h>
 
-#include <If_Int.h>
-#include <If_Float.h>
 #include <If_Class.h>
 
 #include "Omu_IntEuler.h"

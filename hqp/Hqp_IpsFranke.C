@@ -41,7 +41,7 @@
 #include <math.h>
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Method.h>
 #include <If_Module.h>
 
@@ -80,12 +80,12 @@ Hqp_IpsFranke::Hqp_IpsFranke()
   _fail_iters = 0;
   _max_warm_iters = 15;
 
-  _ifList.append(new If_Float("qp_gap", &_gap));
-  _ifList.append(new If_Float("qp_alpha", &_alpha));
-  _ifList.append(new If_Float("qp_beta", &_beta));
-  _ifList.append(new If_Float("qp_rhomin", &_rhomin));
-  _ifList.append(new If_Float("qp_mu0", &_mu0));
-  _ifList.append(new If_Float("qp_Ltilde", &_Ltilde));
+  _ifList.append(new If_Real("qp_gap", &_gap));
+  _ifList.append(new If_Real("qp_alpha", &_alpha));
+  _ifList.append(new If_Real("qp_beta", &_beta));
+  _ifList.append(new If_Real("qp_rhomin", &_rhomin));
+  _ifList.append(new If_Real("qp_mu0", &_mu0));
+  _ifList.append(new If_Real("qp_Ltilde", &_Ltilde));
   _ifList.append(new If_Int("qp_fail_iters", &_fail_iters));
   _ifList.append(new If_Int("qp_max_warm_iters", &_max_warm_iters));
   _ifList.append(new IF_MODULE("qp_mat_solver", &_matrix, Hqp_IpMatrix));

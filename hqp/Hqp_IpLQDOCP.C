@@ -37,7 +37,7 @@ extern "C" {
 }
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 // #include <If_Method.h>
 
 #include "Hqp_Program.h"
@@ -168,11 +168,11 @@ Hqp_IpLQDOCP::Hqp_IpLQDOCP()
 
   //  _sbw = -1;
   //  _ifList.append(new If_Int("mat_sbw", &_sbw));
-  //  _ifList.append(new If_Float("mat_tol", &_tol));
+  //  _ifList.append(new If_Real("mat_tol", &_tol));
 
   _logging = 0;
 
-  _ifList.append(new If_Float("mat_wz_tol", &_wz_tol));
+  _ifList.append(new If_Real("mat_wz_tol", &_wz_tol));
   _ifList.append(new If_Int("mat_a_sparse", &_a_sparse));
   _ifList.append(new If_Int("mat_logging", &_logging));
 }

@@ -27,6 +27,11 @@
 #ifndef If_Float_H
 #define If_Float_H
 
+#ifdef __GNUC__
+// (standard C++ does not define #warning)
+#warning "If_Float is depreciated; use If_Real instead!"
+#endif
+
 #include "If_Real.h"
 
 typedef If_Real If_Float;

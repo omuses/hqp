@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Bool.h>
 #include <If_Method.h>
 
@@ -58,8 +58,8 @@ Hqp_SqpSchittkowski::Hqp_SqpSchittkowski()
   _beta = 0.1;
   _damped_multipliers = true;
 
-  _ifList.append(new If_Float("sqp_mu", &_mu));
-  _ifList.append(new If_Float("sqp_beta", &_beta));
+  _ifList.append(new If_Real("sqp_mu", &_mu));
+  _ifList.append(new If_Real("sqp_beta", &_beta));
   _ifList.append(new If_Bool("sqp_damped_multipliers",
 			     &_damped_multipliers));
   _ifList.append(new If_Cmd("sqp_init", &Hqp_SqpSchittkowski::init, this));

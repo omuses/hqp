@@ -33,7 +33,7 @@
 #include <Hqp.h>
 #include <If_Int.h>
 #include <If_Bool.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Class.h>
 
 #include "Omu_IntOdeTs.h"
@@ -80,10 +80,10 @@ Omu_IntOdeTs::Omu_IntOdeTs()
 
   _nz = NULL;
 
-//    _ifList.append(new If_Float("prg_int_atol", &_atol));
-//    _ifList.append(new If_Float("prg_int_rtol", &_rtol));
-  _ifList.append(new If_Float("prg_int_rho", &_rho));
-  _ifList.append(new If_Float("prg_int_tau", &_tau));
+//    _ifList.append(new If_Real("prg_int_atol", &_atol));
+//    _ifList.append(new If_Real("prg_int_rtol", &_rtol));
+  _ifList.append(new If_Real("prg_int_rho", &_rho));
+  _ifList.append(new If_Real("prg_int_tau", &_tau));
   _ifList.append(new If_Int("prg_int_maxdeg", &_max_deg0));
   _ifList.append(new If_Int("prg_int_out", &_output));
   _ifList.append(new If_Bool("prg_int_multrec", &_multiple_record));
@@ -128,10 +128,10 @@ Omu_IntOdeTs::Omu_IntOdeTs(int max_deg)
 
   _nz = NULL;
 
-//    _ifList.append(new If_Float("prg_int_atol", &_atol));
-//    _ifList.append(new If_Float("prg_int_rtol", &_rtol));
-  _ifList.append(new If_Float("prg_int_rho", &_rho));
-  _ifList.append(new If_Float("prg_int_tau", &_tau));
+//    _ifList.append(new If_Real("prg_int_atol", &_atol));
+//    _ifList.append(new If_Real("prg_int_rtol", &_rtol));
+  _ifList.append(new If_Real("prg_int_rho", &_rho));
+  _ifList.append(new If_Real("prg_int_tau", &_tau));
   _ifList.append(new If_Int("prg_int_out", &_output));
   _ifList.append(new If_Bool("prg_int_multrec", &_multiple_record));
 

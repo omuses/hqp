@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,7 +32,7 @@ extern "C" {
 #include <matrix2.h>
 }
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 
 #include "Hqp_HL_AugBFGS.h"
 #include "Hqp_Program.h"
@@ -52,7 +52,7 @@ Hqp_HL_AugBFGS::Hqp_HL_AugBFGS()
   _bsize = -1;
   _max_bsize = -1;
   
-  _ifList.append(new If_Float("sqp_hela_gamma", &_gamma));
+  _ifList.append(new If_Real("sqp_hela_gamma", &_gamma));
   _ifList.append(new If_Int("sqp_hela_bsize", &_bsize));
   _ifList.append(new If_Int("sqp_hela_max_bsize", &_max_bsize));
 }

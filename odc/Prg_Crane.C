@@ -9,7 +9,7 @@
 #include "Prg_Crane.h"
 
 #include <If_Bool.h>
-#include <If_Float.h>
+#include <If_Real.h>
 
 IF_CLASS_DEFINE("Crane", Prg_Crane, Omu_Program);
 
@@ -26,9 +26,9 @@ Prg_Crane::Prg_Crane()
   _nu = 1;
   offs = 1;	// for the final time parameter
 
-  _ifList.append(new If_Float("prg_tf_guess", &_tf_guess));
-  _ifList.append(new If_Float("prg_u_bound", &_u_bound));
-  _ifList.append(new If_Float("prg_phi_bound", &_phi_bound));
+  _ifList.append(new If_Real("prg_tf_guess", &_tf_guess));
+  _ifList.append(new If_Real("prg_u_bound", &_u_bound));
+  _ifList.append(new If_Real("prg_phi_bound", &_phi_bound));
   _ifList.append(new If_Bool("prg_bound_init", &_bound_init));
 
   // default values for parameters
@@ -39,11 +39,11 @@ Prg_Crane::Prg_Crane()
   ml = 4000.0;
 
   // interface elements for unbound variables
-  _ifList.append(new If_Float("prg_Fscale", &Fscale));
-  _ifList.append(new If_Float("prg_g", &g));
-  _ifList.append(new If_Float("prg_l", &l));
-  _ifList.append(new If_Float("prg_md", &md));
-  _ifList.append(new If_Float("prg_ml", &ml));
+  _ifList.append(new If_Real("prg_Fscale", &Fscale));
+  _ifList.append(new If_Real("prg_g", &g));
+  _ifList.append(new If_Real("prg_l", &l));
+  _ifList.append(new If_Real("prg_md", &md));
+  _ifList.append(new If_Real("prg_ml", &ml));
 }
 
 //--------------------------------------------------------------------------

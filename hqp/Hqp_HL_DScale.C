@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,7 +28,7 @@
  */
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 
 #include "Hqp_HL_DScale.h"
 #include "Hqp_Program.h"
@@ -46,7 +46,7 @@ Hqp_HL_DScale::Hqp_HL_DScale()
   _gamma = 0.2;
 
   _ifList.append(new If_Int("sqp_hela_bsize", &_bsize));
-  _ifList.append(new If_Float("sqp_hela_gamma", &_gamma));
+  _ifList.append(new If_Real("sqp_hela_gamma", &_gamma));
 }
 
 //--------------------------------------------------------------------------

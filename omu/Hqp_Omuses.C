@@ -35,11 +35,8 @@
 
 #include <assert.h>
 #include <adutils.h>
-#include <If_Int.h>
 #include <If_Bool.h>
-#include <If_Float.h>
-#include <If_FloatVec.h>
-#include <If_IntVec.h>
+#include <If_Real.h>
 #include <If_Method.h>
 #include <If_Module.h>
 
@@ -95,7 +92,7 @@ Hqp_Omuses::Hqp_Omuses()
   _ifList.append(new If_Cmd("prg_setup_stages",
 			    &Hqp_Omuses::setup_stages, this));
   _ifList.append(new If_Bool("prg_ad", &_ad));
-  _ifList.append(new If_Float("prg_fscale", &_fscale));
+  _ifList.append(new If_Real("prg_fscale", &_fscale));
 }
 
 //--------------------------------------------------------------------------

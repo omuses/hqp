@@ -36,11 +36,11 @@
   ml = 4000.0;
 
   // interface elements for unbound variables
-  _ifList.append(new If_Float("prg_Fscale", &Fscale));
-  _ifList.append(new If_Float("prg_g", &g));
-  _ifList.append(new If_Float("prg_l", &l));
-  _ifList.append(new If_Float("prg_md", &md));
-  _ifList.append(new If_Float("prg_ml", &ml));
+  _ifList.append(new If_Real("prg_Fscale", &Fscale));
+  _ifList.append(new If_Real("prg_g", &g));
+  _ifList.append(new If_Real("prg_l", &l));
+  _ifList.append(new If_Real("prg_md", &md));
+  _ifList.append(new If_Real("prg_ml", &ml));
 
   // model inputs and parameters
   double Fscale;

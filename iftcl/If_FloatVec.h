@@ -27,6 +27,11 @@
 #ifndef If_FloatVec_H
 #define If_FloatVec_H
 
+#ifdef __GNUC__
+// (standard C++ does not define #warning)
+#warning "If_FloatVec is depreciated; use If_RealVec instead!"
+#endif
+
 #include "If_RealVec.h"
 
 typedef If_RealVec If_FloatVec;

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--1998  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,6 @@
 #include <adutils.h>
 
 #include <If_Int.h>
-#include <If_Float.h>
 #include <If_Class.h>
 
 #include "Omu_IntRKsuite.h"
@@ -86,14 +85,10 @@ Omu_IntRKsuite::Omu_IntRKsuite()
   _u = v_get(1);
   _work = v_get(1);
   _thres = v_get(1);
-//    _rtol = 1e-6;
-//    _atol = 1e-12;
   _hnext = 0.0;
   _tlast = 0.0;
   _method = 2;
 
-//    _ifList.append(new If_Float("prg_int_rtol", &_rtol));
-//    _ifList.append(new If_Float("prg_int_atol", &_atol));
   _ifList.append(new If_Int("prg_int_method", &_method));
 }
 

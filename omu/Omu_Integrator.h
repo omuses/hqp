@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2000  Ruediger Franke
+    Copyright (C) 1997--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,7 +29,6 @@
 #ifndef Omu_Integrator_H
 #define Omu_Integrator_H
 
-#include <If_Float.h>
 #include <If_List.h>
 #include <If_Class.h>
 

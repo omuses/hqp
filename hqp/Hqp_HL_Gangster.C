@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,7 +24,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <If_Float.h>
+#include <If_Real.h>
 
 #include "Hqp_HL_Gangster.h"
 #include "Hqp_Program.h"
@@ -41,7 +41,7 @@ Hqp_HL_Gangster::Hqp_HL_Gangster()
 
   _gamma = 0.2;
   
-  _ifList.append(new If_Float("sqp_hela_gamma", &_gamma));
+  _ifList.append(new If_Real("sqp_hela_gamma", &_gamma));
 }
 
 //--------------------------------------------------------------------------

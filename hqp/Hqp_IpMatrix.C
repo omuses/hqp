@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,7 +25,7 @@
 
 #include "Hqp_IpMatrix.h"
 #include "Hqp_Program.h"
-#include <If_Float.h>
+#include <If_Real.h>
 
 IF_BASE_DEFINE(Hqp_IpMatrix);
 
@@ -44,7 +44,7 @@ Hqp_IpMatrix::Hqp_IpMatrix()
 
   _eps = 1e-10;
 
-  _ifList.append(new If_Float("mat_eps", &_eps));
+  _ifList.append(new If_Real("mat_eps", &_eps));
 }
 
 //--------------------------------------------------------------------------

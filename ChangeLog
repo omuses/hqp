@@ -1,3 +1,13 @@
+04/02/01: rf: replace If_Float* with If_Real*
+	- hqp, omu, odc: replace names
+	- iftcl/If_Float*.h: introduce warning about being depreciated
+
+04/02/01: rf
+	- daspk/Makefile: improved build process
+	- meschach/{matrix, matdef}.h: allocate at least 1 element in NEW_A,
+	  as some malloc implementations return NULL pointer for 0 elements
+	  (braught up again by Christan Schulz)
+
 03/19/01: rf
 	- remove DASPK3 from distribution
    

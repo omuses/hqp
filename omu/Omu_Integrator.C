@@ -26,7 +26,7 @@
 
 #include "Omu_Integrator.h"
 
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Int.h>
 #include <If_Bool.h>
 
@@ -52,9 +52,9 @@ Omu_Integrator::Omu_Integrator()
   _sen_evals = 0;
   _jac_evals = 0;
   _ifList.append(new If_Bool("prg_int_serr", &_serr));
-  _ifList.append(new If_Float("prg_int_stepsize", &_stepsize));
-  _ifList.append(new If_Float("prg_int_rtol", &_rtol));
-  _ifList.append(new If_Float("prg_int_atol", &_atol));
+  _ifList.append(new If_Real("prg_int_stepsize", &_stepsize));
+  _ifList.append(new If_Real("prg_int_rtol", &_rtol));
+  _ifList.append(new If_Real("prg_int_atol", &_atol));
   _ifList.append(new If_Int("prg_int_res_evals", &_res_evals));
   _ifList.append(new If_Int("prg_int_sen_evals", &_sen_evals));
   _ifList.append(new If_Int("prg_int_jac_evals", &_jac_evals));

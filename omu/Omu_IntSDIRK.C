@@ -35,7 +35,7 @@
 #include <Hqp.h>
 #include <If_Int.h>
 #include <If_Bool.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Class.h>
 #include <Meschach.h>
 
@@ -139,7 +139,7 @@ Omu_IntSDIRK::Omu_IntSDIRK()
   _ifList.append(new If_Int("prg_int_nsplitt", &_n_splitt_tape_eval));
   _ifList.append(new If_Int("prg_int_modnewtonsteps", &_modnewtonsteps));
   _ifList.append(new If_Int("prg_int_maxiters", &_maxiters));
-  _ifList.append(new If_Float("prg_int_hinit", &_hinit));
+  _ifList.append(new If_Real("prg_int_hinit", &_hinit));
 
   init_method();
 

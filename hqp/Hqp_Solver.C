@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,7 +28,7 @@
  */
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Method.h>
 
 #include "Hqp_Solver.h"
@@ -51,7 +51,7 @@ Hqp_Solver::Hqp_Solver()
 
   _ifList.append(new If_Int("qp_iter", &_iter));
   _ifList.append(new If_Int("qp_max_iters", &_max_iters));
-  _ifList.append(new If_Float("qp_eps", &_eps));
+  _ifList.append(new If_Real("qp_eps", &_eps));
   _ifList.append(new If_Cmd("qp_result", &Hqp_Solver::result_str, this));
 }
 

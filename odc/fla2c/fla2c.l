@@ -314,11 +314,11 @@ int main()
     if (entry->attr == USED) {
       switch (entry->type) {
       case INPUT:
-	printf("  _ifList.append(new If_FloatVec(\"prg_%s\", &%s));\n",
+	printf("  _ifList.append(new If_RealVec(\"prg_%s\", &%s));\n",
 	       entry->name, entry->name);
 	break;
       default:
-	printf("  _ifList.append(new If_Float(\"prg_%s\", &%s));\n",
+	printf("  _ifList.append(new If_Real(\"prg_%s\", &%s));\n",
 	       entry->name, entry->name);
 	break;
       }

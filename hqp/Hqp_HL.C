@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,7 @@
 #include <math.h>
 
 #include <If_Bool.h>
-#include <If_Float.h>
+#include <If_Real.h>
 
 #include "Hqp_HL.h"
 #include "Hqp_Program.h"
@@ -46,7 +46,7 @@ Hqp_HL::Hqp_HL()
 
   _ifList.append(new If_Bool("sqp_hela_scale", &_scale));
   _ifList.append(new If_Bool("sqp_hela_logging", &_logging));
-  _ifList.append(new If_Float("sqp_hela_eps", &_eps));
+  _ifList.append(new If_Real("sqp_hela_eps", &_eps));
 }
 
 //--------------------------------------------------------------------------

@@ -8,8 +8,8 @@
 
 #include "Prg_CranePar.h"
 
-#include <If_FloatVec.h>
-#include <If_Float.h>
+#include <If_RealVec.h>
+#include <If_Real.h>
 #include <If_Bool.h>
 #include <If_Int.h>
 #include <If_Method.h>
@@ -30,9 +30,9 @@ Prg_CranePar::Prg_CranePar()
   _s_ref = v_get(_KK + 1);
   _multistage = true;
 
-  _ifList.append(new If_FloatVec("prg_s_ref", &_s_ref));
+  _ifList.append(new If_RealVec("prg_s_ref", &_s_ref));
   _ifList.append(new If_Int("prg_seed", &_seed));
-  _ifList.append(new If_Float("prg_maxdev", &_maxdev));
+  _ifList.append(new If_Real("prg_maxdev", &_maxdev));
   _ifList.append(new If_Bool("prg_multistage", &_multistage));
   _ifList.append(new If_Cmd("prg_disturb", &Prg_CranePar::disturb, this));
 
@@ -44,11 +44,11 @@ Prg_CranePar::Prg_CranePar()
   ml = 4000.0;
 
   // interface elements for unbound variables
-  _ifList.append(new If_Float("prg_Fscale", &Fscale));
-  _ifList.append(new If_Float("prg_g", &g));
-  _ifList.append(new If_Float("prg_l", &l));
-  _ifList.append(new If_Float("prg_md", &md));
-  _ifList.append(new If_Float("prg_ml", &ml));
+  _ifList.append(new If_Real("prg_Fscale", &Fscale));
+  _ifList.append(new If_Real("prg_g", &g));
+  _ifList.append(new If_Real("prg_l", &l));
+  _ifList.append(new If_Real("prg_md", &md));
+  _ifList.append(new If_Real("prg_ml", &ml));
 }
 
 //--------------------------------------------------------------------------

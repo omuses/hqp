@@ -12,7 +12,7 @@
  */
 
 /*
-    Copyright (C) 1994--1999  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -34,8 +34,8 @@
 
 #include <If_Int.h>
 #include <If_Bool.h>
-#include <If_Float.h>
-#include <If_FloatVec.h>
+#include <If_Real.h>
+#include <If_RealVec.h>
 #include <If_Method.h>
 #include <If_Module.h>
 
@@ -97,21 +97,21 @@ Hqp_SqpSolver::Hqp_SqpSolver()
   _ifList.append(new If_Int("sqp_inf_iters", &_inf_iters));
   _ifList.append(new If_Int("sqp_max_inf_iters", &_max_inf_iters));
   _ifList.append(new If_Bool("sqp_logging", &_logging));
-  _ifList.append(new If_Float("sqp_eps", &_eps));
-  _ifList.append(new If_Float("sqp_alpha", &_alpha));
-  _ifList.append(new If_Float("sqp_min_alpha", &_min_alpha));
-  _ifList.append(new If_Float("sqp_norm_s", &_norm_dx));
-  _ifList.append(new If_Float("sqp_norm_x", &_norm_x));
-  _ifList.append(new If_Float("sqp_norm_inf", &_norm_inf));
-  _ifList.append(new If_Float("sqp_norm_grd_L", &_norm_grd_L));
-  _ifList.append(new If_Float("sqp_norm_df", &_norm_df));
-  _ifList.append(new If_Float("sqp_dphi", &_dphi));
-  _ifList.append(new If_Float("sqp_phi", &_phi));
-  _ifList.append(new If_Float("sqp_sQs", &_sQs));
-  _ifList.append(new If_Float("sqp_xQx", &_xQx));
-  _ifList.append(new If_FloatVec("sqp_y", &_y));
-  _ifList.append(new If_FloatVec("sqp_z", &_z));
-  _ifList.append(new If_FloatVec("sqp_grd_L", &_grd_L));
+  _ifList.append(new If_Real("sqp_eps", &_eps));
+  _ifList.append(new If_Real("sqp_alpha", &_alpha));
+  _ifList.append(new If_Real("sqp_min_alpha", &_min_alpha));
+  _ifList.append(new If_Real("sqp_norm_s", &_norm_dx));
+  _ifList.append(new If_Real("sqp_norm_x", &_norm_x));
+  _ifList.append(new If_Real("sqp_norm_inf", &_norm_inf));
+  _ifList.append(new If_Real("sqp_norm_grd_L", &_norm_grd_L));
+  _ifList.append(new If_Real("sqp_norm_df", &_norm_df));
+  _ifList.append(new If_Real("sqp_dphi", &_dphi));
+  _ifList.append(new If_Real("sqp_phi", &_phi));
+  _ifList.append(new If_Real("sqp_sQs", &_sQs));
+  _ifList.append(new If_Real("sqp_xQx", &_xQx));
+  _ifList.append(new If_RealVec("sqp_y", &_y));
+  _ifList.append(new If_RealVec("sqp_z", &_z));
+  _ifList.append(new If_RealVec("sqp_grd_L", &_grd_L));
 
   _ifList.append(new IF_MODULE("sqp_qp_solver", &_solver, Hqp_Solver));
   _ifList.append(new IF_MODULE("sqp_hela", &_hela, Hqp_HL));

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,8 +30,8 @@
 #include <errno.h>
 #include <math.h>
 
-#include <If_Float.h>
-#include <If_FloatVec.h>
+#include <If_Real.h>
+#include <If_RealVec.h>
 #include <If_Method.h>
 
 #include "Hqp_SqpSolver.h"
@@ -55,8 +55,8 @@ Hqp_SqpProgram::Hqp_SqpProgram()
 
   theSqpSolver->set_prg(this);
 
-  _ifList.append(new If_Float("prg_f", &_f));
-  _ifList.append(new If_FloatVec("prg_x", &_x));
+  _ifList.append(new If_Real("prg_f", &_f));
+  _ifList.append(new If_RealVec("prg_x", &_x));
   _ifList.append(new If_Cmd("prg_setup", &Hqp_SqpProgram::setup_cmd, this));
   _ifList.append(new If_Cmd("prg_init_x", &Hqp_SqpProgram::init_x_cmd, this));
   _ifList.append(new If_Cmd("prg_test", &Hqp_SqpProgram::test_cmd, this));

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,7 +32,7 @@
 
 #include <If_Int.h>
 #include <If_Bool.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Method.h>
 #include <If_Class.h>
 
@@ -83,7 +83,7 @@ Prg_CUTE::Prg_CUTE()
 
   _hela = false;
   _hela_init = true;
-  _ifList.append(new If_Float("prg_fscale", &_fscale));
+  _ifList.append(new If_Real("prg_fscale", &_fscale));
   _ifList.append(new If_Bool("prg_hela", &_hela));
   _ifList.append(new If_Bool("prg_hela_init", &_hela_init));
   _ifList.append(new If_Int("prg_fbd_evals", &_fbd_evals));

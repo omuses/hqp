@@ -27,6 +27,11 @@
 #ifndef If_FloatMat_H
 #define If_FloatMat_H
 
+#ifdef __GNUC__
+// (standard C++ does not define #warning)
+#warning "If_FloatMat is depreciated; use If_RealMat instead!"
+#endif
+
 #include "If_RealMat.h"
 
 typedef If_RealMat If_FloatMat;

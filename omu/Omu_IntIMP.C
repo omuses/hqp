@@ -29,7 +29,7 @@
 #include <adutils.h>
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Class.h>
 
 #include "Omu_IntIMP.h"
@@ -68,7 +68,7 @@ Omu_IntIMP::Omu_IntIMP()
   _ifList.append(new If_Int("prg_int_nsteps", &_nsteps));
   _ifList.append(new If_Int("prg_int_modnewtonsteps", &_modnewtonsteps));
   _ifList.append(new If_Int("prg_int_maxiters", &_maxiters));
-  _ifList.append(new If_Float("prg_int_hinit", &_hinit));
+  _ifList.append(new If_Real("prg_int_hinit", &_hinit));
 
   _res_evals = 0;
   _jac_evals = 0;

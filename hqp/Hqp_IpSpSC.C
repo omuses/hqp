@@ -35,7 +35,7 @@ extern "C" {
 }
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 
 SPMAT *spLTMsolve(SPMAT *, SPMAT *,SPMAT *);
 SPMAT *sp_mmt_mlt(const SPMAT *, SPMAT *);
@@ -141,7 +141,7 @@ Hqp_IpSpSC::Hqp_IpSpSC()
   _CTC_neighs = IVNULL;
 
   //_ifList.append(new If_Int("mat_sbw", &_sbw)); // not supported
-  _ifList.append(new If_Float("mat_macheps", &_macheps));
+  _ifList.append(new If_Real("mat_macheps", &_macheps));
 }
 
 //--------------------------------------------------------------------------

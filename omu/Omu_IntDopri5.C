@@ -33,7 +33,7 @@
 #include <adutils.h>
 
 #include <If_Int.h>
-#include <If_Float.h>
+#include <If_Real.h>
 #include <If_Class.h>
 
 #include "Omu_IntDopri5.h"
@@ -80,10 +80,10 @@ Omu_IntDopri5::Omu_IntDopri5()
   _fac1 = 0.2;
   _fac2 = 10.0;
 
-  //  _ifList.append(new If_Float("prg_int_rtol", &_rtol));
-  //  _ifList.append(new If_Float("prg_int_atol", &_atol));
-  _ifList.append(new If_Float("prg_int_hinit", &_hinit));
-  _ifList.append(new If_Float("prg_int_hmax", &_hmaxinit));
+  //  _ifList.append(new If_Real("prg_int_rtol", &_rtol));
+  //  _ifList.append(new If_Real("prg_int_atol", &_atol));
+  _ifList.append(new If_Real("prg_int_hinit", &_hinit));
+  _ifList.append(new If_Real("prg_int_hmax", &_hmaxinit));
   // additional interfaces for _nmax, _nstiff, _uround, _safe, _beta,
   //                           _fac1, _fac2, _nfcn, _nstep, _naccpt, _nrejct
 
