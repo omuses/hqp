@@ -120,14 +120,21 @@ proc omu_plot {w sidx {tscale 1.0}} {
      -width 500 \
      -height 200
     $w.g xaxis configure \
+     -background white \
      -title $xtitle
     $w.g yaxis configure \
      -loose true \
+     -background white \
      -title $ytitle
     $w.g legend configure \
      -hide true
 
     pack $w.g -fill both -expand true
+
+    Blt_ZoomStack $w.g
+    Blt_Crosshairs $w.g
+    Blt_ActiveLegend $w.g
+    Blt_ClosestPoint $w.g
   }
 
   set vars [prg_x]

@@ -1,3 +1,7 @@
+2003-02-17    <e_arnold>
+
+	* odc/Prg_Bio.[hC], odc/bio.tcl: add example problem
+	
 2003-02-15    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEpt.[hC]:

@@ -66,6 +66,7 @@ ASRCS = Prg_Crane.C \
 	Prg_HS99.C \
 	Prg_TP383omu.C \
 	Prg_TP383.C \
+	Prg_Bio.C \
 	Prg_DID.C \
 	Prg_DID_SFunction.C \
 	Prg_DIC_SFunction.C
