@@ -1,3 +1,7 @@
+04/09/01: rf
+	- hqp/Meschach.C: memory bug fix in sprow_inprod
+	  (detected by Christian Schulz)
+	
 04/02/01: rf: replace If_Float* with If_Real*
 	- hqp, omu, odc: replace names
 	- iftcl/If_Float*.h: introduce warning about being depreciated

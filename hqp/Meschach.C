@@ -183,30 +183,24 @@ Real sprow_inprod(const SPROW *r1, const VEC *inner, const SPROW *r2)
   len2 = r2->len;
   elt1 = r1->elt;
   elt2 = r2->elt;
-  j1 = elt1->col;
-  j2 = elt2->col;
   sum = 0.0;
   while (j_idx1 < len1 && j_idx2 < len2) {
+    j1 = elt1->col;
+    j2 = elt2->col;
     if (j1 < j2) {
       j_idx1 ++;
       elt1 ++;
-      j1 = elt1->col;
     }
     else if (j1 > j2) {
       j_idx2 ++;
       elt2 ++;
-      j2 = elt2->col;
     }
     else {
       sum += elt1->val * inner->ve[j1] * elt2->val;
-
       j_idx1 ++;
       elt1 ++;
-      j1 = elt1->col;
-
       j_idx2 ++;
       elt2 ++;
-      j2 = elt2->col;
     }
   }
 
