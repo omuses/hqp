@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -61,31 +61,43 @@ int If_Variable::tclCmd(ClientData cld, Tcl_Interp *,
 {
   If_Variable *var = (If_Variable *)cld;
 
-  switch (objc) {
+  catchall(// try
+	   // use tractcatch to get error message printed to stderr
+	   tracecatch(// try
+		      switch (objc) {
 
-  case 1:
-    if (var->_mode & IF_READ)
-      return var->get();
-    else {
-      Tcl_AppendResult(theInterp, "read permission denied for ",
-		       var->_ifName, NULL);
-      return TCL_ERROR;
-    }
+		      case 1:
+			if (var->_mode & IF_READ)
+			  return var->get();
+			else {
+			  Tcl_AppendResult(theInterp,
+					   "read permission denied for ",
+					   var->_ifName, NULL);
+			  return TCL_ERROR;
+			}
 
-  case 2:
-    if (var->_mode & IF_WRITE)
-      return var->put(objv[1]);
-    else {
-      Tcl_AppendResult(theInterp, "write permission denied for ",
-		       var->_ifName, NULL);
-      return TCL_ERROR;
-    }
+		      case 2:
+			if (var->_mode & IF_WRITE)
+			  return var->put(objv[1]);
+			else {
+			  Tcl_AppendResult(theInterp,
+					   "write permission denied for ",
+					   var->_ifName, NULL);
+			  return TCL_ERROR;
+			}
 
-  default:
-    Tcl_AppendResult(theInterp, "wrong # args, should be: ",
-		     var->_ifName, " [new value]", NULL);
-    return TCL_ERROR;
-  }
+		      default:
+			Tcl_AppendResult(theInterp,
+					 "wrong # args, should be: ",
+					 var->_ifName, " [new value]", NULL);
+			return TCL_ERROR;
+		      },
+		      // catch and throw
+		      "If_Variable::tclCmd"),
+	   // catch
+	   Tcl_AppendResult(theInterp, "error accessing ",
+			    var->_ifName, NULL);
+	   return TCL_ERROR);
 }
 
 

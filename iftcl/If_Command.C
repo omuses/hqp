@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -45,5 +45,18 @@ If_Command::~If_Command()
 int If_Command::tclCmd(ClientData cld, Tcl_Interp *interp,
 		       int argc, char *argv[])
 {
-  return ((If_Command *)cld)->invoke(argc, argv, &interp->result);
+  If_Command *cmd = (If_Command *)cld;
+
+  catchall(// try
+	   // use tractcatch to get error message printed to stderr
+	   tracecatch(// try
+		      cmd->invoke(argc, argv, &interp->result),
+		      // catch and throw
+		      "If_Command::tclCmd"),
+	   // catch
+	   Tcl_AppendResult(theInterp, "error evaluating ",
+			    cmd->_ifName, NULL);
+	   return TCL_ERROR);
+
+  return TCL_OK;
 }

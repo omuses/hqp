@@ -15,7 +15,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -165,36 +165,6 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
   // disable Meschach's error counting
   // (otherwise program would exit if counter reaches 100)
   count_errs(0);
-
-#if 0 
-  // don't use error handling as this doesn't seem to work
-  // for Hqp a shared lib and loaded to an executable
-  // rf, 2/7/97
-  int code;
-  char *reason;
-
-  if ((code = setjmp(restart)) != 0) {
-
-    set_err_flag(EF_EXIT);	// avoid recursive error calls
-
-    switch (code) {
-    case E_MEM:
-      reason = "out of memory";
-      break;
-    case E_SING:
-      reason = "singular matrix";
-      break;
-    default:
-      reason = "execution error";
-    }
-
-    Tcl_VarEval(theInterp, "hqp_exit {", reason, "}", NULL);
-    fprintf(stderr, "HQP %s: %s\n", Hqp_Version, reason);
-    fprintf(stderr, "%s\n", theInterp->result);
-    exit(-1);
-  }
-  set_err_flag(EF_JUMP);
-#endif
 
   // allocate interface modules
 # ifdef IF_CLASS_STATIC

@@ -1,3 +1,12 @@
+2002-04-08    <rfranke>
+
+	* iftcl/If_Command.C (tclCmd): add catchall for Meschach errors
+
+	* iftcl/If_Variable.C (tclCmd): add catchall for Meschach errors
+
+	* hqp/Hqp_Init.C (Hqp_Init): cleanup initialization of errors 
+	  (delete code that was commented out since 1997)
+
 2001-10-10    <rfranke>
 
 	* configure.in: change to version 1.8.0d
