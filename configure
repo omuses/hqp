@@ -1288,7 +1288,7 @@ MINOR_VERSION=8
 PATCHLEVEL_BASE=3
 DEVELOPMENT_VERSION=yes
 # note: PATCHLEVEL is formed by appending to PATCHLEVEL_BASE the
-# modification date of CVS if DEVELOPMENT_VERSION = yes
+# modification date of ChangeLog if DEVELOPMENT_VERSION = yes
 
 # collect defines for compilation
 # Note: don't use AC_DEFINE(_UNQUOTED) to avoid default DEFS,
@@ -1426,7 +1426,7 @@ fi
 # -----------------------------------------------------------------------
 
 if test "${DEVELOPMENT_VERSION}" = yes; then
-  PATCHLEVEL_EXT=`echo 'puts -nonewline [clock format [file mtime CVS] -format .%y.%m.%d]' | $TCLSH`
+  PATCHLEVEL_EXT=`echo 'puts -nonewline [clock format [file mtime ChangeLog] -format .%y.%m.%d]' | $TCLSH`
 else
   PATCHLEVEL_EXT=""
 fi

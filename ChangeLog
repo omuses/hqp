@@ -2,7 +2,7 @@
 
 	* configure.in, hqp_docp/Makefile.in, odc/Makefile.in:
 	  - support for gcc -mno-cygwin (native Windows version using Cygwin)
-	  - base patchlevel on modification date of CVS
+	  - base patchlevel on modification date of ChangeLog
 	  - use default Matlab libmex.lib under Windows 
 	    (as it works for the static libs built per default with gcc3.3.1)
           - use default --with-matlab
