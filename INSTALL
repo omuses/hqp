@@ -8,7 +8,7 @@ $ ./configure
 $ make
 Basically two libraries: libhqp and libomu, 
 as well as an example in ./hqp_docp, tesing HQP alone
-and a demo collection in ./odc, testing HQP and Omuses are built.
+and a demo collection in ./odc, testing HQP and Omuses, are built.
 
 An up-to-date reference documentation can be created from the sources with
 $ make doc
@@ -23,7 +23,7 @@ $ make distclean
 ** Required software
 
 The compilation of HQP relies on the following software:
-- a Unix shell
+- an sh-compatible command interpreter (IEEE POSIX Shell and Tools spec)
 - GNU make
 - a compiler for C, C++ and optionally Fortran 77
 
@@ -81,6 +81,7 @@ Feature options:
     --with-matlab-libs
        Directory containing MATLAB(R) runtime libraries, e.g.
        --with-matlab-libs=/usr/local/matlab/extern/lib/glnx86
+    Note: see "Problems with MEX" below, if this feature does not work
  --enable-cute
      Include CUTE interface with HQP.
  --enable-ascend
@@ -193,7 +194,9 @@ a) set the environment variable TCL_LIBRARY to the directory containing init.tcl
 b) create a link
 $ ln -s /usr/share /share
 
-** Fail to link Omuses with Matlab(R) runtime library (--enable-mex)
+** Problems with MEX
+
+*** Fail to link Omuses with Matlab(R) runtime library (--enable-mex)
 
 Message: Cannot export libmx_NULL_THUNK_DATA: symbol not found
 
@@ -203,6 +206,14 @@ with the following commands in the directory MATLAB_LIBDIR:
 $ echo EXPORTS > libmx.def
 $ nm libmx.lib | grep ' T _' | sed 's/.* T _//' >> libmx.def
 $ dlltool --def libmx.def --dllname libmx.dll --output-lib liblibmx.a
+
+*** Fail to load MEX S-function (mdlInitializeSizes fails)
+
+The lcc compiler coming with Matlab(R) does not appropriately export
+the mexFunction of the DLL. That is why the dynamic load fails. Use
+an other compiler to generate the S-function with mex. For instance
+gcc (see http://gnumex.sf.net) or Microsoft Visual C++ (directly 
+supported by Matlab(R)) work.
 
 ** Problems with specific gcc versions:
 - gcc 2.8.0 and egcs 1.0.3 can't compile a method "resize"

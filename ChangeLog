@@ -1,3 +1,9 @@
+2003-11-22    <rfranke>
+
+	* configure.in: change version to 1.9.0, add tag release-1-9-0
+
+	* INSTALL: add note on gnumex
+
 2003-11-19    <rfranke>
 
 	* omu/Prg_SFunctionOpt.C:
