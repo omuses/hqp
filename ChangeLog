@@ -1,3 +1,7 @@
+2002-05-31    <h_linke>
+	* omu/Omu_IntSDIRK.[hC]:  support fixed integration stepsize
+        * introduce conditional compilation for adolc
+	
 2002-05-25    <rfranke>
 
 	* hxi/Hxi_MEX_SFunction.[hC], omu/Prg_SFunctionOpt.[hC]: 
