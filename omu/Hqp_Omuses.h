@@ -57,6 +57,7 @@ class Hqp_Omuses: public Hqp_DocpStub {
   If_List		_ifList;
   Omu_Program		*_prg;
   Omu_Integrator	*_integrator;
+  void 			*_integrator_setup;
 
   bool _stages_ok;	// setup_stages() was called separately
   VECP _xt;		// initial states of a sample period

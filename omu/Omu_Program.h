@@ -180,22 +180,22 @@ class Omu_Program {
    */
   //@{
 
-  int		K() {return _K;}	///< get number of stages
+  int		K() const {return _K;}	///< get number of stages
   void		set_K(int K) {_K = K;}	///< set number of stages
-  int		KK() {return _KK;}	///< get number of sample periods
+  int		KK() const {return _KK;}///< get number of sample periods
   void		set_KK(int KK) {_KK = KK;}///< set number of sample periods
 
   /// get vector of start indices for sample periods in each stage
-  const IVECP 	ks() {return _ks;}
+  const IVECP 	ks() const {return _ks;}
 
   /// get vector of start time points in each sample period
-  const VECP 	ts() {return _ts;}
+  const VECP 	ts() const {return _ts;}
 
   /// get start index of sample periods in stage k
-  int	 	ks(int k) {return _ks[k];}
+  int	 	ks(int k) const {return _ks[k];}
 
   /// get start time point of sample period kk
-  Real 		ts(int kk) {return _ts[kk];}
+  double 	ts(int kk) const {return _ts[kk];}
 
   //@}
 

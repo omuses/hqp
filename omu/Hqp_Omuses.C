@@ -71,6 +71,7 @@ Hqp_Omuses::Hqp_Omuses()
 {
   _prg = NULL;
   _integrator = new Omu_IntDopri5;
+  _integrator_setup = NULL;
   _xs = NULL;
   _us = NULL;
   _css = NULL;
@@ -229,11 +230,12 @@ int Hqp_Omuses::setup_stages(IF_CMD_ARGS)
 {
   assert(_prg != NULL);
 
-  int K;
+  int K, KK;
 
   _prg->setup_stages();
 
   K = _prg->ks()->dim - 1;
+  KK = _prg->ts()->dim - 1;
 
   delete [] _css;
   delete [] _us;
@@ -258,6 +260,10 @@ int Hqp_Omuses::setup_stages(IF_CMD_ARGS)
   _cs = new Omu_DepVec [K+1];
 
   _stages_ok = true;
+
+  // setup integrator
+  _integrator->setup_stages(_prg);
+  _integrator_setup = _integrator;
 
   return IF_OK;
 }
@@ -714,6 +720,11 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
   //
 
   if (nxf > 0) {
+    if (_integrator != _integrator_setup) {
+      // _integrator needs to be set up, e.g. as it was exchanged
+      _integrator->setup_stages(_prg);
+      _integrator_setup = _integrator;
+    }
     _integrator->init_stage(k, xk, uk, Fk);
   }
 
@@ -827,6 +838,11 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
   //
 
   if (nxf > 0) {
+    if (_integrator != _integrator_setup) {
+      // _integrator needs to be set up, e.g. as it was exchanged
+      _integrator->setup_stages(_prg);
+      _integrator_setup = _integrator;
+    }
     _integrator->init_stage(k, xk, uk, Fk, true);
 
     // initial states of stage
