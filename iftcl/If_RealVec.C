@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -102,8 +102,26 @@ int If_RealVec::put(Tcl_Obj *CONST objPtr)
     // parse new value
     //----------------
     if(Tcl_GetDoubleFromObj(theInterp, cols[j], &element) != TCL_OK) {
-      v_free(newVec);
-      return TCL_ERROR;
+      // in case of error check for Inf, +Inf, -Inf
+      int len;
+      const char *str = Tcl_GetStringFromObj(cols[j], &len);
+      element = 2.0;
+      if (len == 4 && str[0] == '+')
+	element = 1.0;
+      else if (len == 4 && str[0] == '-')
+	element = -1.0;
+      if (element != 2.0) {
+	len--;
+	str++;
+      }
+      if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
+	Tcl_ResetResult(theInterp);
+	element *= Inf;
+      }
+      else {
+	v_free(newVec);
+	return TCL_ERROR;
+      }
     }
     newVec->ve[j] = element;
   }

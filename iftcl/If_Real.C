@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2002  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -57,8 +57,26 @@ int If_Real::put(Tcl_Obj *CONST objPtr)
 
   // parse the new value
   //--------------------
-  if (Tcl_GetDoubleFromObj(theInterp, objPtr, &value) != TCL_OK)
-    return TCL_ERROR;
+  if (Tcl_GetDoubleFromObj(theInterp, objPtr, &value) != TCL_OK) {
+    // in case of error check for Inf, +Inf, -Inf
+    int len;
+    const char *str = Tcl_GetStringFromObj(objPtr, &len);
+    value = 2.0;
+    if (len == 4 && str[0] == '+')
+      value = 1.0;
+    else if (len == 4 && str[0] == '-')
+      value = -1.0;
+    if (value != 2.0) {
+      len--;
+      str++;
+    }
+    if (len == 3 && str[0] == 'I' && str[1] == 'n' && str[2] == 'f') {
+      Tcl_ResetResult(theInterp);
+      value *= Inf;
+    }
+    else
+      return TCL_ERROR;
+  }
 
   // use the new value
   //------------------
