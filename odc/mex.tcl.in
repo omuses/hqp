@@ -1,0 +1,23 @@
+#
+# MEX utility routines
+#
+
+set mex_script @MEX_SCRIPT@
+set mex_extension "@MEX_EXTENSION@"
+
+proc mex {c_file} {
+    global mex_script
+    exec $mex_script $c_file
+}
+
+proc mex_extension {{mdl_name {}}} {
+    global mex_extension
+    if {$mex_extension != ""} {
+        # return known MEX extension
+        return $mex_extension
+    } else {
+        # guess MEX extension
+        set mex_file [glob $mdl_name.{mex*,dll}]
+        return [file extension $mex_file]
+    }
+}

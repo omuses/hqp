@@ -44,6 +44,7 @@ class Prg_SFunction: public Omu_Program {
 
  protected:
   char 		*_mdl_name;	///< S-function name
+  char 		*_mdl_path;	///< full S-function path
   char 		*_mdl_args;	///< S-function parameters
   SimStruct 	*_S;		///< pointer to %SimStruct
   mxArray	*_mx_args;///< S-function parameters after parsing (cell array)
@@ -63,6 +64,7 @@ class Prg_SFunction: public Omu_Program {
   ~Prg_SFunction();		///< destructor
 
   int	mdl_name(IF_DEF_ARGS);	///< access S-function name
+  int	mdl_path(IF_DEF_ARGS);	///< access S-function path
   int	mdl_args(IF_DEF_ARGS);	///< access S-function parameters as string
 };  
 

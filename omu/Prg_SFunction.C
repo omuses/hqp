@@ -44,6 +44,7 @@ typedef If_Method<Prg_SFunction> If_Cmd;
 Prg_SFunction::Prg_SFunction()
 {
   _mdl_name = strdup("SFunction");
+  _mdl_path = strdup("");
 
   // initialize _mdl_args and _mx_args
   _mdl_args = strdup("");
@@ -62,6 +63,7 @@ Prg_SFunction::Prg_SFunction()
 
   _ifList.append(new If_RealVec("mdl_x0", &_mdl_x0));
   _ifList.append(new If_Cmd("mdl_name", &Prg_SFunction::mdl_name, this));
+  _ifList.append(new If_Cmd("mdl_path", &Prg_SFunction::mdl_path, this));
   _ifList.append(new If_Cmd("mdl_args", &Prg_SFunction::mdl_args, this));
 }
 
@@ -76,6 +78,7 @@ Prg_SFunction::~Prg_SFunction()
 
   v_free(_mdl_x0);
   free(_mdl_args);
+  free(_mdl_path);
   free(_mdl_name);
 }
 
@@ -91,6 +94,23 @@ int Prg_SFunction::mdl_name(int argc, char *argv[], char **result)
   }
   else {
     *result = "wrong # args, should be: mdl_name [new value]";
+    return IF_ERROR;
+  }
+  return IF_OK;
+}
+
+//--------------------------------------------------------------------------
+int Prg_SFunction::mdl_path(int argc, char *argv[], char **result)
+{
+  if (argc == 1) {
+    *result = _mdl_path;
+  }
+  else if (argc == 2) {
+    free(_mdl_path);
+    _mdl_path = strdup(argv[1]);
+  }
+  else {
+    *result = "wrong # args, should be: mdl_path [new value]";
     return IF_ERROR;
   }
   return IF_OK;
@@ -155,7 +175,10 @@ void Prg_SFunction::setup_sfun()
 
   // initialize model name and path
   ssSetModelName(_S, _mdl_name);
-  ssSetPath(_S, _mdl_name);
+  if (_mdl_path[0] != '\0')
+    ssSetPath(_S, _mdl_path);
+  else
+    ssSetPath(_S, _mdl_name);
 
   // initialize S-function parameters
   int nargs = mxGetNumberOfElements(_mx_args);

@@ -4,25 +4,22 @@
 #
 
 ## compile sfun_dic.c to a MEX S-function
-## (use platform independent file startup.m for communication)
-if 1 {
-    puts -nonewline "Calling Matlab to compile MEX S-function..."
-    flush stdout
-    set fp [open startup.m w]
-    puts $fp "mex sfun_dic.c; exit"
-    close $fp
-    exec matlab -nosplash -nodesktop
-    file delete startup.m
-    puts ""
-}
+
+puts "Compiling MEX S-function..."
+source mex.tcl
+mex sfun_dic.c
+
+## run optimization
 
 puts "Running optimization..."
+package require Omuses
 
 ## configure problem
 
 # optimization program and model name
 prg_name SFunctionOpt
 mdl_name sfun_dic
+mdl_path ./sfun_dic[mex_extension sfun_dic]
 
 # setup stages and sample periods per stage
 prg_KK 60
