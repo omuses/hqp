@@ -77,12 +77,15 @@ Prg_SFunction::Prg_SFunction()
 
   _S = NULL;
 
+  _mdl_np = 0;
   _mdl_nx = 0;
   _mdl_nu = 0;
   _mdl_ny = 0;
 
+  _mdl_p = v_get(_mdl_np);
   _mdl_x0 = v_get(_mdl_nx);
 
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x0)));
   _ifList.append(new If_String(GET_SET_CB(const char *, mdl_name)));
   _ifList.append(new If_String(GET_SET_CB(const char *, mdl_path)));
@@ -102,6 +105,7 @@ Prg_SFunction::~Prg_SFunction()
   delete [] _mx_args;
 
   v_free(_mdl_x0);
+  v_free(_mdl_p);
   free(_mdl_args);
   free(_mdl_path);
   free(_mdl_name);
@@ -159,9 +163,37 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::set_mdl_x0(const VECP value)
+void Prg_SFunction::read_mx_args(VECP p)
 {
-  v_copy_elements(value, _mdl_x0);
+  mxArray *arg;
+  int i, j, idx, nel;
+
+  for (idx = 0, j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
+    if (mxIsDouble(arg)) {
+      nel = mxGetNumberOfElements(arg);
+      for (i = 0; i < nel; i++, idx++)
+	p[idx] = mxGetPr(arg)[i];
+    }
+  }
+  assert(idx == _mdl_np); // S-function parameters must not have changed
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunction::write_mx_args(VECP p)
+{
+  mxArray *arg;
+  int i, j, idx, nel;
+
+  for (idx = 0, j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
+    if (mxIsDouble(arg)) {
+      nel = mxGetNumberOfElements(arg);
+      for (i = 0; i < nel; i++, idx++)
+	mxGetPr(arg)[i] = p[idx];
+    }
+  }
+  assert(idx == _mdl_np); // S-function parameters must not have changed
 }
 
 //--------------------------------------------------------------------------
@@ -248,6 +280,19 @@ void Prg_SFunction::setup_model()
   // start using S-function
   if (ssGetmdlStart(_S) != NULL)
     mdlStart(_S);
+
+  // get parameters
+  // determine number of parameters
+  mxArray *arg;
+  _mdl_np = 0;
+  for (int j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
+    // only consider parameters in double format for accessing via mxGetPr()
+    if (mxIsDouble(arg))
+      _mdl_np += mxGetNumberOfElements(arg);
+  }
+  v_resize(_mdl_p, _mdl_np);
+  read_mx_args(_mdl_p);
 
   // get initial states
   // (states shall be initialized with mdlInitializeConditions;

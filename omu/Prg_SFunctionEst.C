@@ -78,8 +78,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
 {
   _multistage = true;
 
-  _mdl_np = 0;
-
   _mdl_p_active = iv_get(_mdl_np);
   _mdl_p_confidence = v_get(_mdl_np);
   _mdl_x0_active = iv_get(_mdl_nx);
@@ -198,40 +196,6 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::read_mx_args(VECP p)
-{
-  mxArray *arg;
-  int i, j, idx, nel;
-
-  for (idx = 0, j = 0; j < _mdl_nargs; j++) {
-    arg = _mx_args[j];
-    if (mxIsDouble(arg)) {
-      nel = mxGetNumberOfElements(arg);
-      for (i = 0; i < nel; i++, idx++)
-	p[idx] = mxGetPr(arg)[i];
-    }
-  }
-  assert(idx == _mdl_np); // S-function parameters must not have changed
-}
-
-//--------------------------------------------------------------------------
-void Prg_SFunctionEst::write_mx_args(VECP p)
-{
-  mxArray *arg;
-  int i, j, idx, nel;
-
-  for (idx = 0, j = 0; j < _mdl_nargs; j++) {
-    arg = _mx_args[j];
-    if (mxIsDouble(arg)) {
-      nel = mxGetNumberOfElements(arg);
-      for (i = 0; i < nel; i++, idx++)
-	mxGetPr(arg)[i] = p[idx];
-    }
-  }
-  assert(idx == _mdl_np); // S-function parameters must not have changed
-}
-
-//--------------------------------------------------------------------------
 void Prg_SFunctionEst::write_active_mx_args(VECP p)
 {
   mxArray *arg;
@@ -259,16 +223,6 @@ void Prg_SFunctionEst::setup_model()
   // check for optional S-function methods that are required
   assert(ssGetmdlDerivatives(_S) != NULL);
 
-  // determine number of parameters
-  mxArray *arg;
-  _mdl_np = 0;
-  for (int j = 0; j < _mdl_nargs; j++) {
-    arg = _mx_args[j];
-    // only consider parameters in double format for accessing via mxGetPr()
-    if (mxIsDouble(arg))
-      _mdl_np += mxGetNumberOfElements(arg);
-  }
-  
   // adapt sizes of model vectors
   _mdl_p.alloc(_mdl_np);
   v_zero(_mdl_p.min);
@@ -340,15 +294,15 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
+  // store parameters in _mdl_p
+  v_copy(Prg_SFunction::_mdl_p, _mdl_p);
+
   // setup _mdl_xs with initial states from model
   v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];
   }
-
-  // store parameters in _mdl_p
-  read_mx_args(_mdl_p);
 }
 
 //--------------------------------------------------------------------------
@@ -357,9 +311,6 @@ void Prg_SFunctionEst::setup(int k,
 			     Omu_VariableVec &c)
 {
   int i, idx, kk;
-
-  // take over possibly modified _mdl_p
-  write_mx_args(_mdl_p);
 
   // initialize number of experiment
   int ex = 0;
@@ -381,6 +332,9 @@ void Prg_SFunctionEst::setup(int k,
 
   // complete general setup
   if (k == 0) {
+    // take over possibly modified _mdl_p
+    write_mx_args(_mdl_p);
+
     // obtain numbers of optimization variables (active model variables)
     _np = 0;
     for (i = 0; i < _mdl_np; i++) {
@@ -616,9 +570,6 @@ void Prg_SFunctionEst::update(int kk,
   // set simulation time
   ssSetT(_S, ts(kk));
 
-  // pass estimated parameters to model
-  write_active_mx_args(x);
-
   // initialize model inputs
   real_T *mdl_u;
   if (ssGetInputPortRequiredContiguous(_S, 0))
@@ -628,9 +579,13 @@ void Prg_SFunctionEst::update(int kk,
   for (idx = 0; idx < _mdl_nu; idx++)
     mdl_u[idx] = _mdl_us[kk][idx];
 
-  // initialize model (this is required here as parameters change)
-  if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-    SMETHOD_CALL(mdlInitializeConditions, _S);
+  // initialize model
+  // (this is required here as active parameters change,
+  //  e.g. for numerical approximation of Jacobian)
+  if (_np > 0) {
+    write_active_mx_args(x);
+    if (ssGetmdlInitializeConditions(_S) != NULL)
+      SMETHOD_CALL(mdlInitializeConditions, _S);
   }
 
   // pass current states to model
@@ -855,14 +810,6 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   // set simulation time
   ssSetT(_S, t);
 
-  // initialize model in first stage
-  if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-    // pass estimated parameters to model
-    write_active_mx_args(x);
-    // initialize model
-    SMETHOD_CALL(mdlInitializeConditions, _S);
-  }
-
   // initialize model inputs
   real_T *mdl_u;
   if (ssGetInputPortRequiredContiguous(_S, 0))
@@ -871,6 +818,14 @@ void Prg_SFunctionEst::consistic(int kk, double t,
     mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
   for (i = 0; i < _mdl_nu; i++)
     mdl_u[i] = _mdl_us[kk][i];
+
+  // initialize model in first stage
+  if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
+    // pass estimated parameters to model
+    write_active_mx_args(x);
+    // initialize model
+    SMETHOD_CALL(mdlInitializeConditions, _S);
+  }
 
   // pass states from optimizer to model
   real_T *mdl_x = ssGetContStates(_S);
@@ -889,7 +844,8 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   // mdlUpdate is not called at initial times to prevent initialization
   // of potentially estimated initial states, e.g. from parameters;
   // it is called once in Prg_SFunction::setup_model() instead.
-  if (!new_experiment && ssGetmdlUpdate(_S) != NULL) {
+  //if (!new_experiment && ssGetmdlUpdate(_S) != NULL) {
+  if (ssGetmdlUpdate(_S) != NULL) {
     // also call mdlOutputs as done by Simulink before each mdlUpdate
     SMETHOD_CALL2(mdlOutputs, _S, 0); 
     SMETHOD_CALL2(mdlUpdate, _S, 0);
@@ -899,8 +855,19 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   for (i = 0; i < _np; i++)
     xt[i] = x[i];
   // read back states from model
-  for (i = 0; i < _mdl_nx; i++)
-    xt[_np + i] = mdl_x[i] / _mdl_x_nominal[i];
+  // Note: take estimated initial states from the optimizer
+  // to prevent their overriding by the model, e.g. from parameters;
+  // they are read once in Prg_SFunction::setup_model() instead.
+  for (i = 0; i < _mdl_nx; i++) {
+    if (new_experiment && _mdl_x0_active[i]) {
+      if (kk == 0)
+        xt[_np + i] = x[_np + i];
+      else
+        xt[_np + i] = u[i];
+    }
+    else
+      xt[_np + i] = mdl_x[i] / _mdl_x_nominal[i];
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -912,9 +879,6 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   // set simulation time
   ssSetT(_S, t);
-
-  // pass estimated parameters to model
-  write_active_mx_args(x);
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
@@ -930,9 +894,13 @@ void Prg_SFunctionEst::continuous(int kk, double t,
       mdl_u[i] = _mdl_us[kk][i] * (1 - rt) + _mdl_us[kk+1][i] * rt;
   }
 
-  if (_np > 0 && ssGetmdlInitializeConditions(_S) != NULL) {
-    // initialize model (this is required as parameters change)
-    SMETHOD_CALL(mdlInitializeConditions, _S);
+  // initialize model
+  // (this is required here as active parameters change,
+  //  e.g. for numerical approximation of Jacobian)
+  if (_np > 0) {
+    write_active_mx_args(x);
+    if (ssGetmdlInitializeConditions(_S) != NULL)
+      SMETHOD_CALL(mdlInitializeConditions, _S);
   }
 
   // pass current states to model

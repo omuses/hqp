@@ -201,8 +201,6 @@
 class Prg_SFunctionEst: public Prg_SFunction {
 
  protected:
-  int		_mdl_np;	///< number of model parameters
-
   Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)
   Omu_VariableVec _mdl_x0;	///< initial states
   Omu_VariableVec _mdl_x;	///< state bounds
@@ -282,15 +280,8 @@ class Prg_SFunctionEst: public Prg_SFunction {
 		  const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
-  /**
-   * @name Helper methods for reading and writing S-function arguments.
-   */
-  //@{
-  void read_mx_args(VECP p); ///< read _mx_args into vector p
-  void write_mx_args(VECP p); ///< write vector p to _mx_args
   /// write active parameters that are packed in p to _mx_args
   void write_active_mx_args(VECP p);
-  //@}
 
  public:
 

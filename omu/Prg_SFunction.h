@@ -50,10 +50,12 @@ class Prg_SFunction: public Omu_Program {
   mxArray	**_mx_args; 	///< S-function parameters after parsing
   int 		_mdl_nargs; 	///< number of S-function arguments
 
+  int		_mdl_np;	///< number of model parameters
   int		_mdl_nx;	///< number of model states
   int		_mdl_nu;	///< number of model inputs
   int		_mdl_ny;	///< number of model outputs
 
+  VECP		_mdl_p;		///< parameters
   VECP		_mdl_x0;	///< initial states
 
   /// indicate that setup_model needs to be called
@@ -62,6 +64,14 @@ class Prg_SFunction: public Omu_Program {
 
   // methods
   virtual void setup_model(); 	///< load S-function
+
+  /**
+   * @name Helper methods for reading and writing S-function arguments.
+   */
+  //@{
+  void read_mx_args(VECP p); ///< read _mx_args into vector p
+  void write_mx_args(VECP p); ///< write vector p to _mx_args
+  //@}
 
  public:
 
@@ -85,9 +95,15 @@ class Prg_SFunction: public Omu_Program {
   const char *mdl_args() const {return _mdl_args;}
   void set_mdl_args(const char *str);	///< set S-function arguments
 
+  /** parameters */
+  const VECP mdl_p() const {return _mdl_p;}
+  /** set parameters */
+  void set_mdl_p(const VECP value) {v_copy_elements(value, _mdl_p);}
+
   /** initial states */
   const VECP mdl_x0() const {return _mdl_x0;}
-  void set_mdl_x0(const VECP value);	///< set initial states
+  /** set initial states */
+  void set_mdl_x0(const VECP value) {v_copy_elements(value, _mdl_x0);}
 
   //@}
 };  
