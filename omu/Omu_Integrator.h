@@ -1,13 +1,12 @@
-/*
- * Omu_Integrator.h --
- *   -- abstract base class
- *   -- integrate system equations over a discrete stage
+/**
+ * @file Omu_Integrator.h 
+ *    interface for integrating continuous-time system equations
  *
  * rf, 10/2/96
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public

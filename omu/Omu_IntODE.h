@@ -90,7 +90,7 @@ class Omu_IntODE: public Omu_Integrator {
   VECP		_y;
   VECP		_u;
 
-  void		realloc();
+  void		resize();
 
   // vectors and matrices for low level _sys->continuous callback
   Omu_Vec	_uc;

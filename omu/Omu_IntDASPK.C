@@ -196,12 +196,12 @@ void Omu_IntDASPK::init_stage(int k,
       _banded_solver = false;
   }
 
-  realloc();
+  resize();
   init_options(x);
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntDASPK::realloc()
+void Omu_IntDASPK::resize()
 {
   int kmp, maxl, maxord, neq, nrmax;
 
@@ -212,9 +212,9 @@ void Omu_IntDASPK::realloc()
   // realloc variables for low level _sys->continuous callback
   //
   v_resize(_uc, _nu);
-  _xcp.realloc(_nd + _n, _nx, _nu);
-  _xc_jac.realloc(_nd + _n, _nxt, 0);
-  _xcp_jac.realloc(_nd + _n, _nxt, 0);
+  _xcp.resize(_nd + _n, _nx, _nu);
+  _xc_jac.resize(_nd + _n, _nxt, 0);
+  _xcp_jac.resize(_nd + _n, _nxt, 0);
   m_resize(_Yx, _nd + _n, _nx);
   m_resize(_Yu, _nd + _n, _nu);
 

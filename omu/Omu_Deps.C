@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -40,7 +40,7 @@ Omu_DepVec::~Omu_DepVec()
 }
 
 //--------------------------------------------------------------------------
-void Omu_DepVec::alloc(int dim, int nx, int nu, int nxp, int nxf)
+void Omu_DepVec::size(int dim, int nx, int nu, int nxp, int nxf)
 {
   // should only depend on one of xp or xf
   // (Omu_Dependent::WRT_xp and Omu_Dependent::WRT_xf are equal!)
@@ -48,10 +48,10 @@ void Omu_DepVec::alloc(int dim, int nx, int nu, int nxp, int nxf)
 
   v_resize(_v, dim);
   iv_resize(_linear_flags, dim);
-  Jx.alloc(dim, nx);
-  Ju.alloc(dim, nu);
-  Jxp.alloc(dim, nxp);
-  Jxf.alloc(dim, nxf);
+  Jx.size(dim, nx);
+  Ju.size(dim, nu);
+  Jxp.size(dim, nxp);
+  Jxf.size(dim, nxf);
 
   v_zero(_v);
   iv_zero(_linear_flags);
@@ -90,11 +90,11 @@ Omu_Dep::Omu_Dep()
 }
 
 //--------------------------------------------------------------------------
-void Omu_Dep::alloc(int nx, int nu, int nxf)
+void Omu_Dep::size(int nx, int nu, int nxf)
 {
-  gx.alloc(nx);
-  gu.alloc(nu);
-  gxf.alloc(nxf);
+  gx.size(nx);
+  gu.size(nu);
+  gxf.size(nxf);
 
   _value = 0.0;
   _linear_flags = 0;

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -82,11 +82,11 @@ void Omu_IntODE::init_stage(int k,
 	    "Omu_IntODE::init_stage, which was called for algebraic states");
   }
   Omu_Integrator::init_stage(k, x, u, sa);
-  realloc();
+  resize();
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntODE::realloc()
+void Omu_IntODE::resize()
 {
   if (_xcp->dim == _nx + _nd && _uc->dim == _nu && _u->dim == _nd + _nu)
     return;
@@ -108,7 +108,7 @@ void Omu_IntODE::realloc()
   // variables for low level _sys->continuous callback
   //
   v_resize(_uc, _nu);
-  _xcp.realloc(_nd + _n, _nx, _nu);
+  _xcp.resize(_nd + _n, _nx, _nu);
   m_resize(_Yx, _nd + _n, _nx);
   m_resize(_Yu, _nd + _n, _nu);
 }

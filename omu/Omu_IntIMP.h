@@ -52,7 +52,7 @@ class Omu_IntIMP: public Omu_IntODE {
 
  private:
 
-  void realloc();
+  void resize();
   void jac(double t, VECP y);
   void step(double tstep, double dt, VECP y);
 

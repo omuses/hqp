@@ -165,7 +165,7 @@ Omu_IntOdeTs::~Omu_IntOdeTs()
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntOdeTs::realloc(int nd, int n, int nv, int m, int deg)
+void Omu_IntOdeTs::resize(int nd, int n, int nv, int m, int deg)
 {
   if (nd == _nd && n == _n && m == _m && nv == _nv && (deg+1) <= _max_deg)
     return;
@@ -256,7 +256,7 @@ void Omu_IntOdeTs::solve(int kk, Real tstart, Real tend,
   multiple_record = true;
   tag = 1;
 
-  realloc(_nd, _nxt - _nd - _nv, _nv, _nu,_max_deg0);
+  resize(_nd, _nxt - _nd - _nv, _nv, _nu,_max_deg0);
 
   adoublev ax(_nd+_n);
   adoublev axp(_nd+_n);

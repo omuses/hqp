@@ -89,7 +89,7 @@ class Omu_IntOdeTs: public Omu_Integrator {
   double        ***_aA;
   double        ***_aB;
 
-  void		realloc(int , int , int , int , int );
+  void		resize(int , int , int , int , int );
   void          free_adtaylor();
 
 };

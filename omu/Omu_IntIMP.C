@@ -98,7 +98,7 @@ Omu_IntIMP::~Omu_IntIMP()
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntIMP::realloc()
+void Omu_IntIMP::resize()
 {
 
     int nn = _n*(1+_n+_npar);
@@ -288,7 +288,7 @@ void Omu_IntIMP::init_stage(int k,
   }
 
   _npar = _nd + _nu;
-  realloc();
+  resize();
 }
 
 //--------------------------------------------------------------------------

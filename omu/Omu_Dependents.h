@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -46,7 +46,7 @@ public:
 
 protected:
   /** Allocate and initialize Gradient. */
-  void alloc(int dim);
+  void size(int dim);
 
   /** Obtain properties for current matrix. */
   void analyze_struct(bool is_constant);
@@ -59,36 +59,44 @@ protected:
 /** Single dependent variable. */
 class Omu_Dependent {
 public:
-  // flags for indicating dependencies
-  static const int WRT_x;
-  static const int WRT_u;
-  static const int WRT_xp;
-  static const int WRT_xf;
-  static const int WRT_ALL;
+  /** @name flags for indicating dependencies from independent variables */
+  //@{
+  static const int WRT_x; 	///< dependent with respect to x
+  static const int WRT_u; 	///< dependent with respect to u
+  static const int WRT_xp; 	///< dependent with respect to xp
+  static const int WRT_xf; 	///< dependent with respect to xf
+  static const int WRT_ALL; 	///< dependent with respect to all variables
+  //@}
 
-  Omu_Gradient gx;	// gradient w.r.t. x (i.e. initial states of period)
-  Omu_Gradient gu;	// gradient w.r.t. u (i.e. control parameters of stage)
-  Omu_Gradient gxf;	// gradient w.r.t. xf (i.e. final states of period)
+  Omu_Gradient gx;	///< gradient wrt x (ie initial states of period)
+  Omu_Gradient gu;	///< gradient wrt u (ie control parameters of stage)
+  Omu_Gradient gxf;	///< gradient wrt xf (ie final states of period)
 
   Omu_Dependent();
   virtual ~Omu_Dependent();
 
+  /** Assign a new value */
   const Omu_Dependent &operator = (const Real &value) {
     _value = value;
     return *this;
   }
 
+  /** Convert to ordinary Real */
   operator Real&() {
     return _value;
   }
 
+  /** Mark a linear dependency */
   virtual void set_linear(int wrt = Omu_Dependent::WRT_ALL,
 			  bool value = true) = 0;
+  /** Query if a dependency is linear */
   virtual bool is_linear(int wrt = Omu_Dependent::WRT_ALL) = 0;
 
+  /** Set flag indicating that gradients are required */
   void set_required_g(bool value = true) {
     _required_g = value;
   }
+  /** Query if gradients are required when evaluating the dependent */
   bool is_required_g() const {
     return _required_g;
   }
@@ -112,17 +120,19 @@ public:
   /** Free memory. */
   ~Omu_Jacobian();
 
-  // access methods for properties
-  bool is_zero() {return _is_zero;}
-  bool is_ident() {return _is_ident;}
-  bool is_constant() {return _is_constant;}
-  int sbw() {return max(_sbw_lower, _sbw_upper);}
-  int sbw_lower() {return _sbw_lower;}
-  int sbw_upper() {return _sbw_upper;}
+  /** @name Query properties of Jacobian matrix */
+  //@{
+  bool is_zero() {return _is_zero;}	///< zero matrix
+  bool is_ident() {return _is_ident;}	///< identity matrix
+  bool is_constant() {return _is_constant;} 	///< constant matrix
+  int sbw() {return max(_sbw_lower, _sbw_upper);}///< semi-bandwidth
+  int sbw_lower() {return _sbw_lower;} 	///< lower semi-bandwidth
+  int sbw_upper() {return _sbw_upper;} 	///< upper semi-bandwidth
+  //@}
 
 protected:
   /** Allocate and initialize Jacobian. */
-  void alloc(int nrows, int ncols);
+  void size(int nrows, int ncols);
 
   /** Resize dimension without reinitializing memory.
       Argument nrows must not be larger than allocated nrows.*/
@@ -142,24 +152,30 @@ protected:
 /** Vector of dependent variables. */
 class Omu_DependentVec: public Omu_Vec {
 public:
-  Omu_Jacobian Jx;	// Jacobian w.r.t. x (initial states of sample period)
-  Omu_Jacobian Ju;	// Jacobian w.r.t. u (control parameters of stage)
-  Omu_Jacobian Jxp;	// Jacobian w.r.t. xp (time derivative of x)
-  Omu_Jacobian Jxf;	// Jacobian w.r.t. xf (final states of sample period)
+  Omu_Jacobian Jx;	///< Jacobian wrt x (initial states of sample period)
+  Omu_Jacobian Ju;	///< Jacobian wrt u (control parameters of stage)
+  Omu_Jacobian Jxp;	///< Jacobian wrt xp (time derivative of x)
+  Omu_Jacobian Jxf;	///< Jacobian wrt xf (final states of sample period)
 
   Omu_DependentVec();
 
+  /** Mark linear dependency */
   virtual void set_linear(int wrt = Omu_Dependent::WRT_ALL,
 			  bool value = true) = 0;
+  /** Query if a dependency is linear */
   virtual bool is_linear(int wrt = Omu_Dependent::WRT_ALL) = 0;
 
+  /** Mark linear element of dependent vector */
   virtual void set_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL,
 				  bool value = true) = 0;
+  /** Query if an element of the dependent vector is linear */
   virtual bool is_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL) = 0;
 
+  /** Set flag indicating that Jacobians are required */
   void set_required_J(bool value = true) {
     _required_J = value;
   }
+  /** Query if Jacobians are required when dependent vector is evaluated */
   bool is_required_J() const {
     return _required_J;
   }

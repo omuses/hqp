@@ -1,12 +1,12 @@
-/*
- * Omu_Vars.h --
- *   -- extensions for managing independent variables
+/**
+ * @file Omu_Vars.h
+ *   extensions for managing independent variables
  *
  * rf, 2/3/97
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,8 +32,8 @@
 /** Internally used vector of optimization variables. */
 class Omu_VarVec: public Omu_VariableVec {
  public:
-  bool c_alloc;
-  bool c_expand;
+  bool c_setup; 	///< indicate allowance for allocation of variables
+  bool c_expand; 	///< indicate allowance to allocate exansion variables
 
   Omu_VarVec();
 
@@ -44,13 +44,13 @@ class Omu_VarVec: public Omu_VariableVec {
     information. */
 class Omu_DynVarVec: public Omu_VarVec {
  public:
-  int 	nd;		// number of discrete-time state variables
-  int	na;		// number of algebraic state variables
-  int	nv;		// number of expansion variables
-  VECP	D;		// diagonal of dF/dxp
-  bool	D_is_const;	// F can be treated as explicit ODE
-  int	sbw_u;		// upper semi-bandwidth of dF/dx + dF/dxp
-  int	sbw_l;		// lower semi-bandwidth of dF/dx + dF/dxp
+  int 	nd;		///< number of discrete-time state variables
+  int	na;		///< number of algebraic state variables
+  int	nv;		///< number of expansion variables
+  VECP	D;		///< diagonal of dF/dxp
+  bool	D_is_const;	///< F can be treated as explicit ODE
+  int	sbw_u;		///< upper semi-bandwidth of dF/dx + dF/dxp
+  int	sbw_l;		///< lower semi-bandwidth of dF/dx + dF/dxp
 
   /**
    * Define flagbits to characterize individual states.
@@ -82,8 +82,10 @@ typedef Omu_DynVarVec Omu_States;
 /** Internally used vector of state variables. */
 class Omu_SVec: public Omu_StateVec {
 public:
-  void alloc(int dim, int nx, int nu);
-  void realloc(int dim, int nx, int nu) {alloc(dim, nx, nu);}
+  /** Allocate variables and sensitivity matrices */
+  void size(int dim, int nx, int nu);
+  /** Reallocate variables and sensitivity matrices */
+  void resize(int dim, int nx, int nu) {size(dim, nx, nu);}
 };
 
 #endif

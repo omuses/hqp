@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,7 +30,7 @@
 //--------------------------------------------------------------------------
 Omu_VarVec::Omu_VarVec()
 {
-  c_alloc = false;
+  c_setup = false;
   c_expand = false;
 }
 
@@ -39,7 +39,7 @@ void Omu_VarVec::alloc(int n, int n_expand)
 {
   n_expand = max(n, n_expand);
 
-  if (!c_alloc)
+  if (!c_setup)
     m_error(E_OVERWRITE, "Omu_VarVec::alloc");
 
   if (!c_expand && n_expand > n)
@@ -96,7 +96,7 @@ void Omu_DynVarVec::alloc(int n, int n_expand)
 //==========================================================================
 
 //--------------------------------------------------------------------------
-void Omu_SVec::alloc(int dim, int nx, int nu)
+void Omu_SVec::size(int dim, int nx, int nu)
 {
   v_resize(_v, dim);
   m_resize(Sx, dim, nx);

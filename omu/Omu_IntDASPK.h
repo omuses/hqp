@@ -137,7 +137,7 @@ class Omu_IntDASPK: public Omu_Integrator {
 
  private:
 
-  void		realloc();
+  void		resize();
   void		init_options(const Omu_States &x);
 
   // backing store sys and vector of dependent variables for callbacks

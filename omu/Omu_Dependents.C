@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2001  Ruediger Franke
+    Copyright (C) 1997--2003  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -39,7 +39,7 @@ const int Omu_Dependent::WRT_ALL = 	0x0007;
 Omu_Gradient::Omu_Gradient()
 {
   _v = v_get(1);
-  alloc(0);
+  size(0);
 }
 
 //--------------------------------------------------------------------------
@@ -49,7 +49,7 @@ Omu_Gradient::~Omu_Gradient()
 }
 
 //--------------------------------------------------------------------------
-void Omu_Gradient::alloc(int dim) {
+void Omu_Gradient::size(int dim) {
   v_resize(_v, dim);
   v_ones(_v);	// indicate dense Jacobian
   _is_zero = false;
@@ -79,7 +79,7 @@ void Omu_Gradient::analyze_struct(bool is_constant)
 Omu_Jacobian::Omu_Jacobian()
 {
   _m = m_get(1, 1);
-  alloc(0, 0);
+  size(0, 0);
 }
 
 //--------------------------------------------------------------------------
@@ -89,7 +89,7 @@ Omu_Jacobian::~Omu_Jacobian()
 }
 
 //--------------------------------------------------------------------------
-void Omu_Jacobian::alloc(int nrows, int ncols)
+void Omu_Jacobian::size(int nrows, int ncols)
 {
   m_resize(_m, nrows, ncols);
   m_ones(_m);	// indicate dense Jacobian

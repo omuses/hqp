@@ -435,7 +435,7 @@ void Omu_IntSDIRK::resize()
   iv_resize(_x_algebraic,_n);
 
   v_resize(_cu, _nu);
- _cxp.realloc(_nd + _n, _nx, _nu);
+ _cxp.resize(_nd + _n, _nx, _nu);
 
   v_resize(_cFh, _n);
 
