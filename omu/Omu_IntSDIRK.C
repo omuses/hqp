@@ -1508,7 +1508,7 @@ double Omu_IntSDIRK::error_check()
     */
 
     err = v_norm2(_err)/(_atol+_rtol*v_norm2(_y));
-
+    err = max(err,_atol);
 
     return err;
 
