@@ -30,11 +30,12 @@
  *             2000-03-29 Real -> double
  *                        error estimation using first _n components only
  *                        _rtol, _atol -> Omu_Integrator
+ *             2002-04-09 remove static const from class declaration
  *
  */
 
 /*
-    Copyright (C) 1997--2000   Eckhard Arnold
+    Copyright (C) 1997--2002   Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -71,26 +72,12 @@ class Omu_IntDopri5: public Omu_IntODE {
   void ode_solve(double tstart, VECP y, const VECP u, double tend);
 
  private:
-
-   /*  RUNGE-KUTTA coefficients of DORMAND and PRINCE (1980) */
-  static const double c2 = 0.2, c3 = 0.3, c4 = 0.8, c5 = 8.0/9.0,
-    a21 = 0.2, a31 = 3.0/40.0, a32 = 9.0/40.0,
-    a41 = 44.0/45.0, a42 = -56.0/15.0, a43 = 32.0/9.0,
-    a51 = 19372.0/6561.0, a52 = -25360.0/2187.0, a53 = 64448.0/6561.0,
-    a54 = -212.0/729.0, a61 = 9017.0/3168.0, a62 = -355.0/33.0,
-    a63 = 46732.0/5247.0, a64 = 49.0/176.0, a65 = -5103.0/18656.0,
-    a71 = 35.0/384.0, a73 = 500.0/1113.0, a74 = 125.0/192.0,
-    a75 = -2187.0/6784.0, a76 = 11.0/84.0, e1 = 71.0/57600.0,
-    e3 = -71.0/16695.0, e4 = 71.0/1920.0, e5 = -17253.0/339200.0,
-    e6 = 22.0/525.0, e7 = -1.0/40.0,  
-  /* dense output of SHAMPINE (1986) */
-    d1 = -12715105075.0/11282082432.0,
-    d3 = 87487479700.0/32700410799.0,
-    d4 = -10690763975.0/1880347072.0,
-    d5 = 701980252875.0/199316789632.0,
-    d6 = -1453857185.0/822651844.0,
-    d7 = 69997945.0/29380423.0;
-  static const int iord = 5;
+  static const double c2, c3, c4, c5,
+      a21, a31, a32, a41, a42, a43, a51, a52, a53, a54, 
+      a61, a62, a63, a64, a65, a71, a73, a74, a75, a76, 
+      e1, e3, e4, e5, e6, e7,  
+      d1, d3, d4, d5, d6, d7;
+  static const int iord;
 
   VECP _y, k1, k2, k3, k4, k5, k6, y1, ysti;
   VECP cont, cont1, cont2, cont3, cont4, cont5;

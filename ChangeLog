@@ -1,3 +1,7 @@
+2002-04-10    <e_arnold>
+
+	* omu/Omu_IntDopri5.[hC]: remove static const from class declaration
+	
 2002-04-08    <rfranke>
 
 	* iftcl/If_Command.C (tclCmd): add catchall for Meschach errors
