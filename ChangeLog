@@ -1,3 +1,10 @@
+2003-10-29    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - bug fix for analytic Jacobian and passive inputs
+	  - change default value of mdl_u0_nfixed from 1 to 0
+	    (i.e. no constraints are present per default)
+
 2003-10-16    <rfranke>
 
 	* omu/Prg_SFunctionOpt/Est.C: 

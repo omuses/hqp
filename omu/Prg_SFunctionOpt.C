@@ -103,7 +103,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_bias = v_get(_mdl_ny);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
-  iv_set(_mdl_u0_nfixed, 1);
+  iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
@@ -225,7 +225,7 @@ void Prg_SFunctionOpt::setup_model()
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
-  iv_set(_mdl_u0_nfixed, 1);
+  iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
@@ -554,7 +554,7 @@ void Prg_SFunctionOpt::setup_struct(int k,
 				    Omu_DependentVec &f,
 				    Omu_Dependent &f0, Omu_DependentVec &c)
 {
-  int i, idx;
+  int i, idx, j;
 
   // consistic just takes states from optimizer
   m_ident(xt.Jx);
@@ -566,19 +566,38 @@ void Prg_SFunctionOpt::setup_struct(int k,
   sm_mlt(-1.0, F.Jdx, F.Jdx);
   F.set_linear(Omu_Dependent::WRT_dx);
 
-  // F.Ju is constant if not multistage
-  if (_multistage && k < _K) {
+  // setup struct of Jacobians for wrt. active inputs
+  if (k < _K) {
     m_zero(F.Ju);
-    // F.Ju is non-zero for linear interpolation
     for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx]) {
-	if (_mdl_u_order[idx] > 0) {
-	  F.Ju[i][i] = 1.0/_t_nominal;
+	// no dependency on states for active inputs
+	for (j = 0; j < _nx; j++)
+	  F.Jx[i][j] = 0.0;
+	if (_mdl_u_order[idx] == 0) {
+	  // no dependecy on time derivative for zero order hold
+	  F.Jdx[i][i] = 0.0;
+	  // F.Ju is zero for zero order hold
+	  for (j = 0; j < _nu; j++)
+	    F.Ju[i][j] = 0.0;
+	} else {
+	  if (_multistage) {
+	    // F.Ju is constant for multistage
+	    for (j = 0; j < _nu; j++)
+	      F.Ju[i][j] = 0.0;
+	    F.Ju[i][i] = 1.0/_t_nominal;
+	  }
+	  else {
+	    // just allocate dense structure
+	    for (j = 0; j < _nu; j++)
+	      F.Ju[i][j] = 1.0;
+	  }
 	}
 	i++;
       }
     }
-    F.set_linear(Omu_Dependent::WRT_u);
+    if (_multistage)
+      F.set_linear(Omu_Dependent::WRT_u);
   }
 
   // constraints c in update do not depend on xf
@@ -851,7 +870,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	     ii = _nc+_nsc, iidx = _mdl_nx,
 	     rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	if (ir[rdx] >= _mdl_nx) {
-	  j = _mdl_nu + jdx;
+	  j = _nu + jdx;
 	  mdl_y_idx = ir[rdx] - _mdl_nx;
 	  if (_mdl_y.active[mdl_y_idx]) {
 	    // need to loop through idx to obtain i considering active outputs
@@ -1282,8 +1301,8 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 	idx = ir[rdx];
 	if (idx >= _mdl_nx)
 	  break;
-	i = _mdl_nu + idx;
-	j = _mdl_nu + jdx;
+	i = _nu + idx;
+	j = _nu + jdx;
 	F.Jx[i][j] = pr[rdx] /
 	  _mdl_x_nominal[idx] * _mdl_x_nominal[mdl_x_idx];
       }
@@ -1297,9 +1316,9 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 	  idx = ir[rdx];
 	  if (idx >= _mdl_nx)
 	    break;
-	  i = _mdl_nu + idx;
+	  i = _nu + idx;
 	  F.Jx[i][j] = pr[rdx] /
-	    _mdl_x_nominal[i-_mdl_nu] * _mdl_u_nominal[mdl_u_idx];
+	    _mdl_x_nominal[i-_nu] * _mdl_u_nominal[mdl_u_idx];
 	}
 	j++;
       }

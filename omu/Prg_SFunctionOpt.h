@@ -281,7 +281,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   MATP	_mdl_ys;	///< calculated model outputs
 
   /**
-   * Numbers of fixed control inputs at begin of time horizon (default: 1).
+   * Numbers of fixed control inputs at begin of time horizon (default: 0).
    * An active input is free for _mdl_u0_fixed=0, fixed at the initial time
    * point for _mdl_u0_nfixed=1, fixed up to the last time point of the
    * first stage for _mdl_u0_nfixed=2, and so on.
