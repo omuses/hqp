@@ -589,14 +589,18 @@ fi
 if test "$omu_adolc" = yes; then
   patch -p0 -N -s < hqp_adolc.patch
   ASRCS="\$(ASRCS)"
-  OMU_DEFS="$OMU_DEFS -DOMU_WITH_ADOLC=1"
+  ADOLCDEF="-DOMU_WITH_ADOLC=1"
+  OMU_DEFS="$OMU_DEFS $ADOLCDEF"
+  HQP_DEFS="$HQP_DEFS $ADOLCDEF"
   OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adolc/*\$O ../adol-c/adolc/*/*\$O"
   cd adol-c; ./configure; cd ..
 else
   ASRCS=""
+  ADOLCDEF =""
 fi
 
 AC_SUBST(ASRCS)
+AC_SUBST(ADOLCDEF)
 
 # -----------------------------------------------------------------------
 # 	Configure DASPK and RKsuite if enabled

@@ -39,7 +39,12 @@
 
 #include "Hqp_Docp.h"
 
+#ifdef OMU_WITH_ADOLC
 #include <adolc/adolc.h>
+#else
+  typedef double adouble;
+  typedef double* adoublev;
+#endif
 
 //--------------------------------------------------------------------------
 class Hqp_DocpAdol: public Hqp_Docp {

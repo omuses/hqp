@@ -1,3 +1,9 @@
+2004-12-03	<e_arnold>
+
+	* omu/Omu_Program.h, omu/Omu_IntOdeTs.C, hqp/Hqp_DocpAdol.h,
+	  configure.in, configure, odc/Makefile.in:
+	  - check for ADOL-C
+	
 2004-12-01	<e_arnold>
 	
 	* Makefile:

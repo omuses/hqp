@@ -28,7 +28,12 @@
 #ifndef Omu_Program_H
 #define Omu_Program_H
 
+#ifdef OMU_WITH_ADOLC
 #include <adolc/adouble.h>
+#else
+  typedef double adouble;
+  typedef double* adoublev;
+#endif
 #include <Meschach.h>
 #include "Omu_Variables.h"
 #include "Omu_Dependents.h"

@@ -28,9 +28,11 @@
 
 #include <assert.h>
 
+#ifdef OMU_WITH_ADOLC
 #include <adolc/interfaces.h>
 #include <adolc/adalloc.h>
 #include <adolc/drivers/odedrivers.h>
+#endif
 #include "Omu_Program.h"
 
 #include <If_Int.h>
