@@ -52,7 +52,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = . \
+INPUT                  = ../README.html \
+                         ../INSTALL.html \
                          ../iftcl \
                          ../hqp \
                          ../hqp_docp \

@@ -1,19 +1,12 @@
-/*
- * Hqp.h -- declarations for HQP (Huge Quadratic Programming) API
+/**
+ * @file Hqp.h
+ *   declaration of external API for HQP (Huge Quadratic Programming)
  *
  * rf, 5/28/94
- *
- * rf, 2/12/97
- *   new result Hqp_Degenerate for singular matrix errors
- *   no result Hqp_Insolvable anymore as this can't be decited on QP-level
- *
- * rf, 11/01/00
- *   split into Hqp_impl.h (for internal use by implementation)
- *   and Hqp.h (for external use)
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2004  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
