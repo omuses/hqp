@@ -147,11 +147,10 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
 void Prg_SFunctionEst::read_mx_args(VECP p)
 {
   mxArray *arg;
-  int i, j, idx, nargs, nel;
+  int i, j, idx, nel;
 
-  nargs = mxGetNumberOfElements(_mx_args);
-  for (idx = 0, j = 0; j < nargs; j++) {
-    arg = mxGetCell(_mx_args, j);
+  for (idx = 0, j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
@@ -165,11 +164,10 @@ void Prg_SFunctionEst::read_mx_args(VECP p)
 void Prg_SFunctionEst::write_mx_args(VECP p)
 {
   mxArray *arg;
-  int i, j, idx, nargs, nel;
+  int i, j, idx, nel;
 
-  nargs = mxGetNumberOfElements(_mx_args);
-  for (idx = 0, j = 0; j < nargs; j++) {
-    arg = mxGetCell(_mx_args, j);
+  for (idx = 0, j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
@@ -183,11 +181,10 @@ void Prg_SFunctionEst::write_mx_args(VECP p)
 void Prg_SFunctionEst::write_active_mx_args(VECP p)
 {
   mxArray *arg;
-  int i, j, ip, idx, nargs, nel;
+  int i, j, ip, idx, nel;
 
-  nargs = mxGetNumberOfElements(_mx_args);
-  for (ip = 0, idx = 0, j = 0; j < nargs; j++) {
-    arg = mxGetCell(_mx_args, j);
+  for (ip = 0, idx = 0, j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
@@ -228,10 +225,9 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
 
   // determine number of parameters
   mxArray *arg;
-  int nargs = mxGetNumberOfElements(_mx_args);
   _mdl_np = 0;
-  for (j = 0; j < nargs; j++) {
-    arg = mxGetCell(_mx_args, j);
+  for (j = 0; j < _mdl_nargs; j++) {
+    arg = _mx_args[j];
     // only consider parameters in double format for accessing via mxGetPr()
     if (mxIsDouble(arg))
       _mdl_np += mxGetNumberOfElements(arg);

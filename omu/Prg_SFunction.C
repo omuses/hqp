@@ -26,10 +26,8 @@
 
 #include <stdlib.h>
 
-#define MLF_ENABLE_TRYCATCH 1
-#include <matlab.h>
-
 #include <Hxi_MEX_SFunction.h>
+#include <Hxi_mx_parse.h>
 
 #include <If_RealVec.h>
 #include <If_Method.h>
@@ -48,10 +46,8 @@ Prg_SFunction::Prg_SFunction()
 
   // initialize _mdl_args and _mx_args
   _mdl_args = strdup("");
+  _mdl_nargs = 0;
   _mx_args = NULL;
-  char *result;
-  char *argv[] = {"mdl_args", ""};
-  mdl_args(2, argv, &result);
 
   _S = NULL;
 
@@ -70,11 +66,14 @@ Prg_SFunction::Prg_SFunction()
 //--------------------------------------------------------------------------
 Prg_SFunction::~Prg_SFunction()
 {
+  int i;
   if (_S) {
     mdlTerminate(_S);
     Hxi_SimStruct_destroy(_S);
   }
-  mxDestroyArray(_mx_args);
+  for (i = 0; i < _mdl_nargs; i++)
+    mxDestroyArray(_mx_args[i]);
+  delete [] _mx_args;
 
   v_free(_mdl_x0);
   free(_mdl_args);
@@ -123,35 +122,34 @@ int Prg_SFunction::mdl_args(int argc, char *argv[], char **result)
     *result = _mdl_args;
   }
   else if (argc == 2) {
+    const char *str, *str1;
+    mxArray **args;
+    int i, nargs;
 
-    // parse arguments string
-    char *args_in;
-    mxArray *eval_in, *args_out;
-
-    args_in = (char *)malloc(strlen(argv[1]) + 3);
-    strcpy(args_in, "{");
-    strcpy(args_in + 1, argv[1]);
-    strcpy(args_in + 1 + strlen(argv[1]), "}");
-    eval_in = mxCreateString(args_in);
-    args_out = NULL;
-    mlfTry {
-      args_out = mlfEval(mclValueVarargout(), eval_in, NULL);
-    }
-    mlfCatch {
-    }
-    mlfEndCatch;
-    mxDestroyArray(eval_in);
-    free(args_in);
-    if (args_out == NULL) {
+    // parse args
+    str = argv[1];
+    str1 = Hxi::mx_count_columns(str, nargs);
+    if (*str1 != '\0') {
+      // we did not arrive at the end of the string
       *result = "failed to parse S-function args";
       return IF_ERROR;
     }
+    args = new mxArray* [nargs];
+    for (i = 0; i < nargs; i++) {
+      args[i] = Hxi::mx_parse_argument(str);
+      str = Hxi::mx_forward_argument(str);
+      if (*str == ',')
+	str = Hxi::mx_forward_whitespaces(++str);  // skip arg delimiter
+    }
 
-    // store succesfully parsed args
+    // take over successfully parsed args
     free(_mdl_args);
+    for (i = 0; i < _mdl_nargs; i++)
+      mxDestroyArray(_mx_args[i]);
+    delete [] _mx_args;
+    _mx_args = args;
+    _mdl_nargs = nargs;
     _mdl_args = strdup(argv[1]);
-    mxDestroyArray(_mx_args);
-    _mx_args = args_out;
   }
   else {
     *result = "wrong # args, should be: mdl_args [new value]";
@@ -181,10 +179,9 @@ void Prg_SFunction::setup_sfun()
     ssSetPath(_S, _mdl_name);
 
   // initialize S-function parameters
-  int nargs = mxGetNumberOfElements(_mx_args);
-  ssSetSFcnParamsCount(_S, nargs);
-  for (i = 0; i < nargs; i++)
-    ssSetSFcnParam(_S, i, mxGetCell(_mx_args, i));
+  ssSetSFcnParamsCount(_S, _mdl_nargs);
+  for (i = 0; i < _mdl_nargs; i++)
+    ssSetSFcnParam(_S, i, _mx_args[i]);
 
   // initialize model
   mdlInitializeSizes(_S);

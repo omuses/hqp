@@ -3517,7 +3517,7 @@ echo "${ECHO_T}$with_matlab_libs" >&6
     MEX_INCDIR1="$with_matlab"
     MEX_INCDIR2="$with_matlab/extern/include"
     MEX_LIBDIR=""
-    MEX_LIBS="-lmatlb -lmx -lmex"
+    MEX_LIBS="-lmx"
     MEX_SCRIPT="$with_matlab/bin/mex"
     MEX_EXTENSION=""
     case "$target" in
