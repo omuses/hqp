@@ -34,6 +34,8 @@
 
 #include "matrix.h"
 
+MESCH__BEGIN_DECLS
+
 /* Unless otherwise specified, factorisation routines overwrite the
    matrix that is being factorised */
 
@@ -225,5 +227,6 @@ void ifft(VEC *,VEC *);
 
 #endif
 
+MESCH__END_DECLS
 
 #endif

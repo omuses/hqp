@@ -26,7 +26,7 @@
 
 /* err.h  28/09/1993 */
 
-/*  RCS id: $Id: err.h,v 1.1 2002/05/01 17:50:39 rfranke Exp $  */
+/*  RCS id: $Id: err.h,v 1.2 2002/05/13 18:10:26 rfranke Exp $  */
 
 
 #ifndef M_ERRHEADER
@@ -36,10 +36,11 @@
 #include        <setjmp.h>
 #include        "machine.h"
 
+MESCH__BEGIN_DECLS
+
 /* Error recovery */
 
 extern	jmp_buf	restart;
-
 
 /* max. # of error lists */
 #define ERR_LIST_MAX_LEN   10
@@ -184,5 +185,7 @@ extern  int err_list_free(int list_num);   /* freeing a list of errors */
 #define	catchall(ok_part,err_part) 	m_catchall(ok_part,err_part)
 #define	tracecatch(ok_part,function) 	m_tracecatch(ok_part,function)
 #endif
+
+MESCH__END_DECLS
 
 #endif   /* ERRHEADER */

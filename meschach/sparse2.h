@@ -25,7 +25,7 @@
 
 
 /* Sparse matrix factorise/solve header */
-/* RCS id: $Id: sparse2.h,v 1.1 2001/03/01 17:19:02 rfranke Exp $ */
+/* RCS id: $Id: sparse2.h,v 1.2 2002/05/13 18:10:26 rfranke Exp $ */
 
 
 
@@ -35,6 +35,7 @@
 
 #include "sparse.h"
 
+MESCH__BEGIN_DECLS
 
 #ifdef ANSI_C
 SPMAT	*spCHfactor(SPMAT *), *spICHfactor(SPMAT *), *spCHsymb(SPMAT *);
@@ -91,5 +92,6 @@ extern  row_elt  *bump_col();
 
 #endif
 
+MESCH__END_DECLS
 
 #endif

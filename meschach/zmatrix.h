@@ -31,6 +31,7 @@
 
 #include "matrix.h"
 
+MESCH__BEGIN_DECLS
 
           /*  Type definitions for complex vectors and matrices  */
 
@@ -279,5 +280,6 @@ complex	zneg();
 #define	zv_norm2(x)	_zv_norm2(x,VNULL)
 #define	zv_norm_inf(x)	_zv_norm_inf(x,VNULL)
 
+MESCH__END_DECLS
 
 #endif

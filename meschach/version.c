@@ -36,7 +36,7 @@
 
 void	m_version()
 {
-	static char rcsid[] = "$Id: version.c,v 1.5 2002/05/01 17:50:39 rfranke Exp $";
+	static char rcsid[] = "$Id: version.c,v 1.6 2002/05/13 18:10:26 rfranke Exp $";
 
 	printf("Meshach matrix library version 1.2b\n");
 	printf("RCS id: %s\n",rcsid);
@@ -83,10 +83,16 @@ void	m_version()
 	printf("\trename m_err.h back to err.h, as includes are bundled in meschach subdir\n");
 	printf("\terr.h, matdef.h: prepend m_ to macros error, warning, catchall, tracecatch to avoid name conflicts\n");
 	printf("\tother files: adapt to new macro names\n");
+	/* rf, 05/13/02 */
+	printf("\tnorm.c, znorm.c: take out definition of max\n");
+	printf("\t*.h: use MESCH__BEGIN/END_DECLS (extern "C") for declarations\n");
 	printf("\n");
 }
 
 /* $Log: version.c,v $
+/* Revision 1.6  2002/05/13 18:10:26  rfranke
+/* use MESCH__BEGIN/END_DECLS, i.e. extern "C", inside the includes
+/*
 /* Revision 1.5  2002/05/01 17:50:39  rfranke
 /* add prefix m_ to Meschach error macros
 /*

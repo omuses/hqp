@@ -31,7 +31,7 @@
 #ifndef MEM_INFOH
 #define MEM_INFOH
 
-
+MESCH__BEGIN_DECLS
 
 /* for hash table in mem_stat.c */
 /* Note: the hash size should be a prime, or at very least odd */
@@ -151,5 +151,6 @@ typedef struct {
 /* max number of lists of types */
 #define MEM_CONNECT_MAX_LISTS    5
 
+MESCH__END_DECLS
 
 #endif

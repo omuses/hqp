@@ -36,11 +36,12 @@
 
 #define ITERHH
 
-/* RCS id: $Id: iter.h,v 1.1 2001/03/01 17:18:37 rfranke Exp $  */
+/* RCS id: $Id: iter.h,v 1.2 2002/05/13 18:10:26 rfranke Exp $  */
 
 
 #include	"sparse.h"
 
+MESCH__BEGIN_DECLS
 
 /* basic structure for iterative methods */
 
@@ -244,5 +245,6 @@ VEC  *iter_spcgne();
 
 #endif
 
+MESCH__END_DECLS
 
 #endif  /* ITERHH */

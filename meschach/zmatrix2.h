@@ -37,6 +37,8 @@
 
 #include "zmatrix.h"
 
+MESCH__BEGIN_DECLS
+
 #ifdef ANSI_C
 extern ZVEC	*zUsolve(ZMAT *matrix, ZVEC *b, ZVEC *out, double diag);
 extern ZVEC	*zLsolve(ZMAT *matrix, ZVEC *b, ZVEC *out, double diag);
@@ -113,6 +115,8 @@ extern ZVEC	*rot_zvec();
 extern ZMAT	*zschur();
 /* extern ZMAT	*schur_vecs(); */
 #endif
+
+MESCH__END_DECLS
 
 #endif
 

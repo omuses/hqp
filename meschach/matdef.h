@@ -1,7 +1,7 @@
 /*
 		Type definitions for general purpose maths package
 */
-/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.3 2002/05/01 17:50:39 rfranke Exp $ */
+/* RCS id: $Header: /home/ruediger/hqp/hqp/meschach/matdef.h,v 1.4 2002/05/13 18:10:26 rfranke Exp $ */
 
 #include "machine.h"
 
@@ -73,12 +73,14 @@ char	line[MAXLINE];
 
 /* Error recovery */
 #include	<setjmp.h>
+MESCH__BEGIN_DECLS
 extern	jmp_buf	restart;
 #ifdef ANSI_C
 extern int	ev_err(char *, int, int, char *);
 #else
 /* extern int	ev_err(); */
 #endif
+MESCH__END_DECLS
 #define	m_error(err_num,fn_name) ev_err(__FILE__,err_num,__LINE__,fn_name)
 #define	E_UNKNOWN	0
 #define	E_SIZES		1
