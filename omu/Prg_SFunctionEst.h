@@ -51,10 +51,10 @@
    @f[
    \begin{array}{l}
     \displaystyle \dot{x}(t) = 
-     \frac{f[p_{nominal}\,p,\ x_{nominal}\,x(t),\ u(t)]}
+     \frac{f[p,\ x_{nominal}\,x(t),\ u(t)]}
           {x_{nominal}}, \\[3ex]
     \displaystyle y(t) = 
-     \frac{g[p_{nominal}\,p,\ x_{nominal}\,x(t),\ u(t)]}
+     \frac{g[p,\ x_{nominal}\,x(t),\ u(t)]}
           {y_{nominal}}, \\[3ex]
     ys^{k} = y_{nominal}y(t^{k}), \quad k=0,\ldots,K,
    \end{array}
@@ -70,14 +70,15 @@
    and subject to the constraints
    @f[
    \begin{array}{rcccll}
-    \displaystyle \left\{ \frac{p_{min}}{p_{nominal}} \right. &<& p 
+    \displaystyle \left\{ \frac{p_{min}}{p_{nominal}} \right. 
+        &<& \displaystyle \frac{p}{p_{nominal}}
         &<& \left. \displaystyle \frac{p_{max}}{p_{nominal}} \right\}_i,
         \quad & i \in \mbox{find}(p_{active}), \\[3ex]
     \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right. &<& x(t^0) 
         &<& \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i, 
         \quad & i \in \mbox{find}(x^0_{active}), \\[3ex]
-    && \left\{ x(t^0) \right. &=& \left. x^0 \right\}_i, 
-        \quad & i \notin \mbox{find}(x^0_{active}), \\[3ex]
+    && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}}
+       \}_i, \quad & i \notin \mbox{find}(x^0_{active}), \\[3ex]
     && \left\{ \dot{x}(t^0) \right. &=& \left. 0 \right\}_i, 
         \quad & i \in \mbox{find}(x^0_{steady}).
    \end{array}
@@ -104,12 +105,14 @@
    @f]
    with
    @f[
-   \begin{array}{ll}
-     \displaystyle M_p^k = \frac{d\,y^k(I_y)}{d\,p(I_p)}, \quad
-     M_{x^0}^k = \frac{d\,y^k(I_y)}{d\,x^0(I_{x^0})}, \quad
-     & k=0,\ldots,K,\ I_y = \mbox{find}(y_{active}), \\[1ex]
-     & \displaystyle I_p = \mbox{find}(p_{active}),
-       \ I_{x^0} = \mbox{find}(x^0_{active}).
+   \begin{array}{r}
+     \displaystyle M_p^k = \frac{d\,\displaystyle\frac{ys^k}{y_{nominal}}(I_y)}
+                 {d\,\displaystyle\frac{p}{p_{nominal}}(I_p)}, \quad
+     M_{x^0}^k = \frac{d\,\displaystyle\frac{ys^k}{y_{nominal}}(I_y)}
+                 {d\,\displaystyle\frac{x^0}{x_{nominal}}(I_{x^0})}, \quad
+     k=0,\ldots,K, \\[7ex]
+     I_y = \mbox{find}(y_{active}),\ I_p = \mbox{find}(p_{active}),
+     \ I_{x^0} = \mbox{find}(x^0_{active}).
    \end{array}
    @f]
    The measurement matrix can be used to obtain confidences for estimation

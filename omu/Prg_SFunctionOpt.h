@@ -36,9 +36,8 @@
    stages with time points @f$t_0=t^0<t^1<\ldots<t^K=t_f@f$. Each stage may 
    be further subdivided. This leads to @f$KK=sps\ K@f$ sample periods, 
    where sps is the number of samples periods per stage, and with the sample
-   time points @f$t^{kk}, kk=0,...,KK@f$. Additional sample time points
-   within a stage are useful for treating path constraints and for 
-   better approximating an integral optimization criterion.
+   time points @f$t^{kk}, kk=0,...,KK@f$. Additional sample time points within
+   a stage are for instance useful for better treating path constraints.
 
    In the following all vector operations are defined element wise.
    The treated optimization problem reads
