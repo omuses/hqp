@@ -528,6 +528,13 @@ void Prg_SFunctionOpt::update(int kk,
     // states
     for (; i < _nx; i++)
       f[i] = xf[i];
+    // re-use slack variables of last but one sample period at final time
+    // note: this is only because no control parameters allowed at fineal time
+    // and because states need to be defined with state equations
+    if (kk == _KK-1) {
+      for (; i < _nx + _ns; i++)
+	f[i] = u[upsk*_nu + (i-_nx+1)*spsk-1];
+    }
   }
 
   // set simulation time
@@ -855,7 +862,15 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	  f.Ju[i][i*upsk + kk%upsk] = ((ts(kk+1) - ts(kk-spsk/upsk+1))
 				       /_t_nominal);
 	}
+	i++;
       }
+    }
+    if (kk == _KK-1) {
+      // slack variables at final time
+      for (i = _nx; i < _nx + _ns; i++)
+	// note: f.Jxf has only _nx columns, but _nx+_ns rows
+	// that is why don't set f.Jxf[i][i] = 0.0;
+	f.Ju[i][upsk*_nu + (i-_nx+1)*spsk-1] = 1.0;
     }
   }
 

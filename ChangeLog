@@ -1,3 +1,14 @@
+2003-03-01    <rfranke>
+
+	* omu/Prg_SFunctionOpt.C (update, update_grds): bug fix for
+	  treatment of slack variables for soft constraints at final time
+	  using states (did work in Hqp 1.8.2 by chance -- not with zero
+	  order hold for controlled inputs anymore)
+
+	* omu/Hqp_Omuses.C (update_vals, update_stage): bug fix if number
+	  of states increases in subsequent stage
+	
+
 2003-02-25    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]: correct treatment of du^k
