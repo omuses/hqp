@@ -24,8 +24,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define If_Proc_C
 #include "If_Proc.h"
-
 
 //--------------------------------------------------------------------------
 If_Proc::If_Proc(const char *ifName, If_Proc_t *proc)

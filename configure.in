@@ -111,7 +111,9 @@ if test "$CC" = "cl -nologo"; then
     CXXFLAGS="-ZI -DDEBUG"
   fi
   CXX=$CC
-  CXXFLAGS="-TP $CXXFLAGS"
+  # note: -TP to enable C++
+  #       -GX to enable exception handling for Std C++ lib, e.g. iostream
+  CXXFLAGS="-TP -GX $CXXFLAGS"
 fi
 
 AC_SUBST(WFLAG)
@@ -133,12 +135,31 @@ if test "$GXX" = yes; then
   AC_MSG_CHECKING([for g++ compiler bug])
   AC_LANG_CPLUSPLUS
   AC_TRY_COMPILE(, [
-                 class A { void realloc(); void mymethod() { realloc(); } };
+                 class A { void realloc() {} void mymethod() { realloc(); } };
                  ], gcc_bug=no, gcc_bug=yes)
   AC_MSG_RESULT(${gcc_bug})
   if test $gcc_bug = yes; then
     AC_MSG_ERROR("Your $CXX is buggy -- please install a newer version.")
   fi
+fi
+
+# Check for conflicts with symbols defined in ctype.h and íncluded
+# via iostream.h. Note that the solution of generating a local iostream.h
+# is not ultimate as all <iostream.h> should be replaced with <iostream>.
+AC_MSG_CHECKING([for conflicting _S, _U, _X defined in ctype.h])
+rm -f adol-c/SRC/iostream.h
+AC_LANG_CPLUSPLUS
+AC_TRY_COMPILE([#include <iostream.h>], [
+               int _S, _U, _X;
+               ], have_S_U_X=no, have_S_U_X=yes)
+AC_MSG_RESULT(${have_S_U_X})
+if test $have_S_U_X = yes; then
+  echo "/* generatéd automatically by configure */" > adol-c/SRC/iostream.h
+  echo "#include <iostream>" >> adol-c/SRC/iostream.h
+  echo "using namespace std;" >> adol-c/SRC/iostream.h
+  echo "#undef _S" >> adol-c/SRC/iostream.h
+  echo "#undef _U" >> adol-c/SRC/iostream.h
+  echo "#undef _X" >> adol-c/SRC/iostream.h
 fi
 
 # -----------------------------------------------------------------------
@@ -597,12 +618,13 @@ if test "$omu_mex" != no; then
         ;;
       CYGWIN*|MSYS*|MINGW*)
         MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
+        # need to generate libmx.a from libmx.lib as libmx.lib does not link
         MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
         MEX_EXTENSION=".dll"
         ;;
       CL)
         MEX_LIBDIR="$with_matlab/extern/lib/win32/microsoft/msvc60"
-        MEX_LIBS="libmatlb.lib libmx.lib libmex.lib"
+        MEX_LIBS="libmx.lib"
         MEX_SCRIPT="$with_matlab/bin/win32/mex.bat"
         MEX_EXTENSION=".dll"
         ;;

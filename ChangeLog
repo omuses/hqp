@@ -1,3 +1,13 @@
+2002-11-23    <rfranke> add support for gcc 3 (tested with 3.2 20020927)
+
+	* configure.in: generate adol-c/SRC/iostream.h to avoid name conflict
+	  for _S, _X, _Y defined in ctype.h and declared in some omu classes
+	* iftcl/If_Proc.[hC]: disable #warning if If_Proc.C is being compiled
+	* omu/Omu_IntSDIRK.C: don't include fstream.h and resolve ambigous
+	  argument type for sqrt in init_method2: sqrt(2) -> sqrt(2.0)
+	* odc/Prg_Crane.C (init_simulation): fmin->min, fmax->max
+	  due to conflict between ADOL-C and math.h coming with gcc 3
+
 2002-11-22    <rfranke>
 
 	* iftcl/If_Element.C (If_Element):

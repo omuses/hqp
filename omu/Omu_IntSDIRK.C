@@ -28,7 +28,6 @@
 #include <assert.h>
 #include <math.h>
 #include <iostream.h>
-#include <fstream.h>
 
 #ifdef OMU_WITH_ADOLC
 
@@ -377,7 +376,7 @@ void Omu_IntSDIRK::init_method2()
 
   _irk_stages = 2;
 
-  gamma = (2.0 - sqrt(2))/2.0;
+  gamma = (2.0 - sqrt(2.0))/2.0;
 
   m_resize(_a,2,2);
   m_zero(_a);

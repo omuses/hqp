@@ -143,8 +143,8 @@ void Prg_Crane::init_simulation(int k,
   // apply bounds to simulated states
   if (_bound_init) {
     for (i = 0; i < _nx; i++) {
-      x[i] = fmin(x[i], x.max[i]);
-      x[i] = fmax(x[i], x.min[i]);
+      x[i] = min(x[i], x.max[i]);
+      x[i] = max(x[i], x.min[i]);
     }
   }
 }

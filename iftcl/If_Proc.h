@@ -28,7 +28,7 @@
 #ifndef If_Proc_H
 #define If_Proc_H
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(If_Proc_C)
 // (standard C++ does not define #warning)
 #warning "If_Proc is deprecated and will be removed; use If_Procedure or If_String instead!"
 #endif
