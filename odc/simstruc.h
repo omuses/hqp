@@ -23,4 +23,4 @@
 
 #endif // defined(MATLAB_MEX_FILE)
 
-#endif // !defined(HQP_SIMSTRUC_H)
+#endif // !defined(HXI_SIMSTRUC_H)
