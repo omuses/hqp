@@ -100,7 +100,11 @@
     \displaystyle \frac{der\_x^0_{min}}{x_{nominal}} 
         &<& \dot{x}(t^{0,l}) 
         &<& \displaystyle \frac{der\_x^0_{max}}{x_{nominal}},
-	\quad & l=1,\ldots,N_{ex}.
+	\quad & l=1,\ldots,N_{ex},  \\[3ex]
+    \displaystyle \frac{x_{min}}{x_{nominal}} &<& x(t^{k_l}) 
+        &<& \displaystyle \frac{x_{max}}{x_{nominal}}, 
+        \quad & k_l=k_{l,0},\ldots,K_l,
+        \quad l=1,\ldots,N_{ex}.
    \end{array}
    @f]
    The problem is treated as multistage problem with @f$K_{N_{ex}}@f$ stages
@@ -181,6 +185,7 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)
   Omu_VariableVec _mdl_x0;	///< initial states
+  Omu_VariableVec _mdl_x;	///< state bounds
 
   IVECP		_mdl_p_active;	///< indicate estimated parameters
   IVECP		_mdl_x0_active; ///< indicate estimated states
@@ -340,6 +345,12 @@ class Prg_SFunctionEst: public Prg_SFunction {
   ///< interpolation order (0 (constant) or 1 (linear), default: 1)
   const IVECP mdl_u_order() const {return _mdl_u_order;}
 
+  /// lower bounds on states at stage boundaries (default: -Inf)
+  const VECP mdl_x_min() const {return _mdl_x.min;}
+
+  /// upper bounds on states at stage boundaries (default: Inf)
+  const VECP mdl_x_max() const {return _mdl_x.max;}
+
   /// indicate measured outputs
   const IVECP mdl_y_active() const {return _mdl_y_active;}
 
@@ -401,6 +412,14 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   /// set interpolation order for inputs
   void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
+
+  /// set lower bounds on states
+  void set_mdl_x_min(const VECP v)
+  {v_copy_elements(v, _mdl_x.min);}
+
+  /// set upper bounds on states
+  void set_mdl_x_max(const VECP v)
+  {v_copy_elements(v, _mdl_x.max);}
 
   /// set measured outputs
   void set_mdl_y_active(const IVECP v) {iv_copy_elements(v, _mdl_y_active);}

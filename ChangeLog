@@ -1,3 +1,8 @@
+2003-07-22    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]:
+	  introduce x_min and x_max for states at stage boundaries
+
 2003-06-18    <rfranke>
 
 	* omu/Prg_SFunctionOpt.C (update):

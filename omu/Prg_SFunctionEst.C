@@ -114,9 +114,12 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x0_active)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_x0_max)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
+
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_max)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_active)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
@@ -237,6 +240,8 @@ void Prg_SFunctionEst::setup_model()
   _mdl_x0.alloc(_mdl_nx);
   v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
 
+  _mdl_x.alloc(_mdl_nx);
+
   iv_resize(_mdl_p_active, _mdl_np);
   iv_resize(_mdl_x0_active, _mdl_nx);
   v_resize(_mdl_der_x0_min, _mdl_nx);
@@ -347,7 +352,7 @@ void Prg_SFunctionEst::setup(int k,
     }
     _nx = _np + _mdl_nx;
 
-    // adapt sizes of reference and nominal outputs
+    // adapt sizes that depend on active variables
     m_resize(_ys_ref, _KK+1, _ny);
 
     m_resize(_M, (_KK+1)*_ny, _np+_nx0);
@@ -395,10 +400,14 @@ void Prg_SFunctionEst::setup(int k,
       if (!_mdl_x0_active[i-_np])
 	x.min[i] = x.max[i] = x.initial[i];
       else {
-	if (_mdl_x0.min[i-_np] > -Inf)
+	if (_mdl_x0.min[i-_np] > _mdl_x.min[i-_np])
 	  x.min[i] = _mdl_x0.min[i-_np] / _mdl_x_nominal[i-_np];
-	if (_mdl_x0.max[i-_np] < Inf)
+	else
+	  x.min[i] = _mdl_x.min[i-_np] / _mdl_x_nominal[i-_np];
+	if (_mdl_x0.max[i-_np] < _mdl_x.max[i-_np])
 	  x.max[i] = _mdl_x0.max[i-_np] / _mdl_x_nominal[i-_np];
+	else
+	  x.max[i] = _mdl_x.max[i-_np] / _mdl_x_nominal[i-_np];
       }
     }
   }
@@ -409,10 +418,14 @@ void Prg_SFunctionEst::setup(int k,
       if (!_mdl_x0_active[i])
 	u.min[i] = u.max[i] = u.initial[i];
       else {
-	if (_mdl_x0.min[i] > -Inf)
+	if (_mdl_x0.min[i] > _mdl_x.min[i])
 	  u.min[i] = _mdl_x0.min[i] / _mdl_x_nominal[i];
-	if (_mdl_x0.max[i] < Inf)
+	else
+	  u.min[i] = _mdl_x.min[i] / _mdl_x_nominal[i];
+	if (_mdl_x0.max[i] < _mdl_x.max[i])
 	  u.max[i] = _mdl_x0.max[i] / _mdl_x_nominal[i];
+	else
+	  u.max[i] = _mdl_x.max[i] / _mdl_x_nominal[i];
       }
     }
   }
@@ -423,8 +436,11 @@ void Prg_SFunctionEst::setup(int k,
 	x.initial[i] = _mdl_p[i] / _mdl_p_nominal[i];
 	i++;
       }
-    for (idx = 0; idx < _mdl_nx; idx++)
+    for (idx = 0; idx < _mdl_nx; idx++) {
       x.initial[_np+idx] = _mdl_xs[ks(k)][idx] / _mdl_x_nominal[idx];
+      x.min[_np+idx] = _mdl_x.min[idx] / _mdl_x_nominal[idx];
+      x.max[_np+idx] = _mdl_x.max[idx] / _mdl_x_nominal[idx];
+    }
   }
   // constraints for assigning relevant model outputs to opt vars
   // and on time derivatives of initial states

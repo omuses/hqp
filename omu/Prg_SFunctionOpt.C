@@ -154,6 +154,10 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
 					   mdl_der_u_weight2)));
 
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_max)));
+
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_bias)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_min)));
@@ -173,8 +177,6 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_weight1)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_yf_weight2)));
-
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
 
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_us)));
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_xs)));
@@ -210,6 +212,7 @@ void Prg_SFunctionOpt::setup_model()
   _mdl_y0.resize(_mdl_ny);
   _mdl_u.resize(_mdl_nu);
   _mdl_der_u.resize(_mdl_nu);
+  _mdl_x.alloc(_mdl_nx);
   _mdl_y.resize(_mdl_ny);
   _mdl_y_soft.resize(_mdl_ny);
   _mdl_yf.resize(_mdl_ny);
@@ -372,6 +375,8 @@ void Prg_SFunctionOpt::setup(int k,
 	if (!_multistage)
 	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
 		  "mdl_x0_active=1 requires prg_multistage=true");
+	x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
+	x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
       }
       else
 	x.min[i] = x.max[i] = x.initial[i];
@@ -384,8 +389,11 @@ void Prg_SFunctionOpt::setup(int k,
 	x.initial[i] = _mdl_us[ks(k)][idx] / _mdl_u_nominal[idx];
 	i++;
       }
-    for (i = _nu; i < _nx; i++)
+    for (i = _nu; i < _nx; i++) {
       x.initial[i] = _mdl_xs[ks(k)][i-_nu] / _mdl_x_nominal[i-_nu];
+      x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
+      x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
+    }
   }
 
   // setup control inputs

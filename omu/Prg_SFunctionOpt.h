@@ -158,6 +158,9 @@ public:
     \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
         &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
 	k=0,\ldots,K-1, \\[3ex]
+    \displaystyle \frac{x_{min}}{x_{nominal}} &<& x(t^{k})
+        &<& \displaystyle \frac{x_{max}}{x_{nominal}}, \quad &
+        k=0,\ldots,K, \\[3ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
@@ -241,6 +244,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs
   Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
+  Omu_VariableVec _mdl_x;	///< state bounds
   Omu_OptVarVec _mdl_y; 	///< model outputs
   Omu_OptVarVec _mdl_y_soft; 	///< attributes for relaxed output constraints
   Omu_OptVarVec _mdl_yf; 	///< model outputs at final time
@@ -438,6 +442,15 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_der_u_weight2() const {return _mdl_der_u.weight2;}
 
+  /// nominal state values (for scaling)
+  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
+
+  /// lower bounds on states at stage boundaries (default: -Inf)
+  const VECP mdl_x_min() const {return _mdl_x.min;}
+
+  /// upper bounds on states at stage boundaries (default: Inf)
+  const VECP mdl_x_max() const {return _mdl_x.max;}
+
   /// bias for outputs
   const VECP mdl_y_bias() const {return _mdl_y_bias;}
 
@@ -482,9 +495,6 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_yf_weight2() const {return _mdl_yf.weight2;}
-
-  /// nominal state values (for scaling)
-  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
 
   /// model inputs (size: KK+1 . mdl_nu)
   const MATP mdl_us() const {return _mdl_us;}
@@ -573,6 +583,17 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   void set_mdl_der_u_weight2(const VECP v)
   {v_copy_elements(v, _mdl_der_u.weight2);}
 
+  /// set nominal states
+  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
+
+  /// set lower bounds on states
+  void set_mdl_x_min(const VECP v)
+  {v_copy_elements(v, _mdl_x.min);}
+
+  /// set upper bounds on states
+  void set_mdl_x_max(const VECP v)
+  {v_copy_elements(v, _mdl_x.max);}
+
   /// set output bias
   void set_mdl_y_bias(const VECP v) {v_copy_elements(v, _mdl_y_bias);}
 
@@ -619,9 +640,6 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set quadratic weight
   void set_mdl_yf_weight2(const VECP v) {v_copy_elements(v, _mdl_yf.weight2);}
-
-  /// set nominal states
-  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
 
   /// set model inputs
   void set_mdl_us(const MATP v) {m_copy_elements(v, _mdl_us);}
