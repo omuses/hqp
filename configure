@@ -948,7 +948,7 @@ rm -f conftest.sh
 
 MAJOR_VERSION=1
 MINOR_VERSION=8
-PATCHLEVEL=0d
+PATCHLEVEL=0
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL}
 
@@ -1048,8 +1048,8 @@ fi
 echo "$as_me: error: Please specify --with-tcl (directory of tclConfig.sh)." >&2;}
    { (exit 1); exit 1; }; }
   fi
-  echo "$as_me:1051: checking \"for tclsh version\"" >&5
-echo $ECHO_N "checking \"for tclsh version\"... $ECHO_C" >&6
+  echo "$as_me:1051: checking for tclsh version" >&5
+echo $ECHO_N "checking for tclsh version... $ECHO_C" >&6
   TCL_VERSION=`echo 'puts -nonewline $tcl_version' | $TCLSH`
   echo "$as_me:1054: result: \"$TCL_VERSION\"" >&5
 echo "${ECHO_T}\"$TCL_VERSION\"" >&6
@@ -3622,8 +3622,8 @@ echo "$as_me:3621: result: $odc_gmalloc" >&5
 echo "${ECHO_T}$odc_gmalloc" >&6
 
 if test "$odc_gmalloc" = no; then
-  echo "$as_me:3625: checking \"for malloc\(0\) == NULL\"" >&5
-echo $ECHO_N "checking \"for malloc\(0\) == NULL\"... $ECHO_C" >&6
+  echo "$as_me:3625: checking if malloc returns NULL" >&5
+echo $ECHO_N "checking if malloc returns NULL... $ECHO_C" >&6
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3730,7 +3730,7 @@ fi
 # 	Produce outputs
 # -----------------------------------------------------------------------
 
-ac_config_files="$ac_config_files makedefs makedirs odc/Makefile hqp_docp/Makefile"
+ac_config_files="$ac_config_files makedefs makedirs odc/Makefile hqp_docp/Makefile doc/Doxyfile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -4066,7 +4066,8 @@ do
   "makedirs" ) CONFIG_FILES="$CONFIG_FILES makedirs" ;;
   "odc/Makefile" ) CONFIG_FILES="$CONFIG_FILES odc/Makefile" ;;
   "hqp_docp/Makefile" ) CONFIG_FILES="$CONFIG_FILES hqp_docp/Makefile" ;;
-  *) { { echo "$as_me:4069: error: invalid argument: $ac_config_target" >&5
+  "doc/Doxyfile" ) CONFIG_FILES="$CONFIG_FILES doc/Doxyfile" ;;
+  *) { { echo "$as_me:4070: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -4321,7 +4322,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:4324: creating $ac_file" >&5
+    { echo "$as_me:4325: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -4339,7 +4340,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:4342: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:4343: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -4352,7 +4353,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:4355: error: cannot find input file: $f" >&5
+           { { echo "$as_me:4356: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;

@@ -5,7 +5,7 @@ AC_INIT(hqp/Hqp.h)
 
 MAJOR_VERSION=1
 MINOR_VERSION=8
-PATCHLEVEL=0d
+PATCHLEVEL=0
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCHLEVEL}
 
@@ -56,7 +56,7 @@ else
   if test -z "$TCLSH"; then
     AC_MSG_ERROR([Please specify --with-tcl (directory of tclConfig.sh).])
   fi
-  AC_MSG_CHECKING("for tclsh version")
+  AC_MSG_CHECKING([for tclsh version])
   TCL_VERSION=`echo 'puts -nonewline $tcl_version' | $TCLSH`
   AC_MSG_RESULT("$TCL_VERSION")
   if test -z "$TCL_VERSION"; then
@@ -524,7 +524,7 @@ AC_ARG_ENABLE(gmalloc,
 AC_MSG_RESULT($odc_gmalloc)
 
 if test "$odc_gmalloc" = no; then
-  AC_MSG_CHECKING("for malloc\(0\) == NULL")
+  AC_MSG_CHECKING([if malloc returns NULL])
   AC_LANG_C
   AC_TRY_RUN([
   #include <stdlib.h>
@@ -594,4 +594,4 @@ AC_SUBST(IF_DEFS)
 # 	Produce outputs
 # -----------------------------------------------------------------------
 
-AC_OUTPUT(makedefs makedirs odc/Makefile hqp_docp/Makefile)
+AC_OUTPUT(makedefs makedirs odc/Makefile hqp_docp/Makefile doc/Doxyfile)

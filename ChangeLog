@@ -1,3 +1,10 @@
+2002-05-05    <rfranke>
+
+	* configure.in: change version to 1.8.0
+
+	* omu/Prg_SFunctionEst.h, omu/Prg_SFunctionOpt.h, configure.in:
+	  update documentation
+
 2002-05-04    <e_arnold>
 
 	* configure.in, Makefile, hqp/Hqp_Init.C: add MinGW/MSYS support
