@@ -812,7 +812,8 @@ void Omu_Program::stages_alloc(IVECP ks, VECP ts, int K, int sps,
   assert(tf >= t0 && K >= 0 && sps >= 0);
 
   v_resize(ts, KK + 1);
-  for (i = 0; i <= KK; i++)
+  ts[0] = t0; // explicitly assign first value to avoid div. by zero for KK=0
+  for (i = 1; i <= KK; i++)
     ts[i] = t0 + (double)i * (tf - t0) / (double)KK;
 
   iv_resize(ks, K + 1);
