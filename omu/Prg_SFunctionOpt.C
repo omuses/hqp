@@ -664,7 +664,6 @@ void Prg_SFunctionOpt::update(int kk,
 
   // set simulation time and mode
   ssSetT(_S, ts(kk));
-  ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
   // initialize model inputs
   real_T *mdl_u;
@@ -1162,7 +1161,6 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
 
     // set simulation time and mode
     ssSetT(_S, t);
-    ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
     // initialize model inputs using linear interpolation over time
     double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
@@ -1202,7 +1200,6 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 
   // set simulation time and mode
   ssSetT(_S, t);
-  ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
@@ -1229,6 +1226,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
+  // (furthermore a model may check for discrete changes in mdlOutputs)
   mdlOutputs(_S, 0); 
   if (ssGetErrorStatus(_S)) {
     fprintf(stderr, "Error from mdlOutputs: %s\n", ssGetErrorStatus(_S));

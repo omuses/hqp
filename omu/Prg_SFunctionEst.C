@@ -583,7 +583,6 @@ void Prg_SFunctionEst::update(int kk,
 
   // set simulation time and mode
   ssSetT(_S, ts(kk));
-  ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
   // pass estimated parameters to model
   write_active_mx_args(x);
@@ -842,7 +841,6 @@ void Prg_SFunctionEst::consistic(int kk, double t,
 
     // set simulation time and mode
     ssSetT(_S, t);
-    ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
     // pass estimated parameters to model
     write_active_mx_args(x);
@@ -886,7 +884,6 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   // set simulation time and mode
   ssSetT(_S, t);
-  ssSetSimTimeStep(_S, MINOR_TIME_STEP);
 
   // pass estimated parameters to model
   write_active_mx_args(x);

@@ -172,6 +172,9 @@ void Prg_SFunction::setup_model()
   // (note: variable step size is indicated as the model must allow
   //  simulation time stepping back)
   ssSetVariableStepSolver(_S, 1);
+  // (note: preselect major time steps requiring complete model evaluation --
+  //  minor time steps would require support for events and zero crossings)
+  ssSetSimTimeStep(_S, MAJOR_TIME_STEP);
 
   // initialize model
   mdlInitializeSizes(_S);
