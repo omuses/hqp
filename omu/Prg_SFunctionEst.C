@@ -67,6 +67,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   iv_zero(_mdl_x0_steady);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_y_nominal);
+
   _np = 0;
   _nx0 = 0;
   _ny = 0;
@@ -85,10 +86,10 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   v_set(_mdl_p_max, INF);
 
   _mdl_x0 = v_get(_mdl_nx);
+  _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_x0_min = v_get(_mdl_nx);
-  _mdl_x0_nominal = v_get(_mdl_nx);
   _mdl_x0_max = v_get(_mdl_nx);
-  v_set(_mdl_x0_nominal, 1.0);
+  v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_x0_min, -INF);
   v_set(_mdl_x0_max, INF);
 
@@ -109,7 +110,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealVec("mdl_p_min", &_mdl_p_min));
   _ifList.append(new If_RealVec("mdl_p_max", &_mdl_p_max));
   _ifList.append(new If_RealVec("mdl_x0", &_mdl_x0));
-  _ifList.append(new If_RealVec("mdl_x0_nominal", &_mdl_x0_nominal));
+  _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
   _ifList.append(new If_RealVec("mdl_x0_min", &_mdl_x0_min));
   _ifList.append(new If_RealVec("mdl_x0_max", &_mdl_x0_max));
 
@@ -142,7 +143,7 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   v_free(_mdl_p);
   v_free(_mdl_x0_min);
   v_free(_mdl_x0_max);
-  v_free(_mdl_x0_nominal);
+  v_free(_mdl_x_nominal);
   v_free(_mdl_x0);
 }
 
@@ -199,10 +200,10 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   v_set(_mdl_p_max, INF);
 
   v_resize(_mdl_x0, _mdl_nx);
-  v_resize(_mdl_x0_nominal, _mdl_nx);
+  v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_x0_min, _mdl_nx);
   v_resize(_mdl_x0_max, _mdl_nx);
-  v_set(_mdl_x0_nominal, 1.0);
+  v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_x0_min, -INF);
   v_set(_mdl_x0_max, INF);
 
@@ -273,14 +274,14 @@ void Prg_SFunctionEst::setup(int k,
 
     // setup initial states
     for (i = _np; i < _nx; i++) {
-      x.initial[i] = _mdl_x0[i-_np] / _mdl_x0_nominal[i-_np];
+      x.initial[i] = _mdl_x0[i-_np] / _mdl_x_nominal[i-_np];
       if (!_mdl_x0_active[i-_np])
 	x.min[i] = x.max[i] = x.initial[i];
       else {
 	if (_mdl_x0_min[i-_np] > -INF)
-	  x.min[i] = _mdl_x0_min[i-_np] / _mdl_x0_nominal[i-_np];
+	  x.min[i] = _mdl_x0_min[i-_np] / _mdl_x_nominal[i-_np];
 	if (_mdl_x0_max[i-_np] < INF)
-	  x.max[i] = _mdl_x0_max[i-_np] / _mdl_x0_nominal[i-_np];
+	  x.max[i] = _mdl_x0_max[i-_np] / _mdl_x_nominal[i-_np];
       }
     }
   }
@@ -376,7 +377,7 @@ void Prg_SFunctionEst::update(int kk,
   // pass current states to model
   real_T *mdl_x = ssGetContStates(_S);
   for (idx = 0; idx < _mdl_nx; idx++)
-    mdl_x[idx] = x[_np + idx] * _mdl_x0_nominal[idx];
+    mdl_x[idx] = x[_np + idx] * _mdl_x_nominal[idx];
 
   // obtain model outputs
   mdlOutputs(_S, 0);
@@ -418,7 +419,7 @@ void Prg_SFunctionEst::update(int kk,
     }
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_x0_steady[idx]) {
-	c[i] = mdl_xp[idx]/_mdl_x0_nominal[idx];
+	c[i] = mdl_xp[idx]/_mdl_x_nominal[idx];
 	++i;
       }
     }
@@ -583,7 +584,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   // pass current states to model
   real_T *mdl_x = ssGetContStates(_S);
   for (i = 0; i < _mdl_nx; i++)
-    mdl_x[i] = x[_np + i] * _mdl_x0_nominal[i];
+    mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
 
   // evaluate continuous model equations
   mdlDerivatives(_S);
@@ -596,7 +597,7 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   // get model derivatives and change to residual form
   real_T *mdl_xp = ssGetdX(_S);
   for (i = 0; i < _mdl_nx; i++)
-    F[_np + i] = mdl_xp[i]/_mdl_x0_nominal[i] - xp[_np + i];
+    F[_np + i] = mdl_xp[i]/_mdl_x_nominal[i] - xp[_np + i];
 
   // obtain Jacobians if required
   if (F.is_required_J()) {

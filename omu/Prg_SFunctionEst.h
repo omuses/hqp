@@ -51,10 +51,10 @@
    @f[
    \begin{array}{l}
     \displaystyle \dot{x}(t) = 
-     \frac{f[p_{nominal}\,p,\ x^0_{nominal}\,x(t),\ u(t)]}
-          {x^0_{nominal}}, \\[3ex]
+     \frac{f[p_{nominal}\,p,\ x_{nominal}\,x(t),\ u(t)]}
+          {x_{nominal}}, \\[3ex]
     \displaystyle y(t) = 
-     \frac{g[p_{nominal}\,p,\ x^0_{nominal}\,x(t),\ u(t)]}
+     \frac{g[p_{nominal}\,p,\ x_{nominal}\,x(t),\ u(t)]}
           {y_{nominal}}, \\[3ex]
     ys^{k} = y_{nominal}y(t^{k}), \quad k=0,\ldots,K,
    \end{array}
@@ -73,8 +73,8 @@
     \displaystyle \left\{ \frac{p_{min}}{p_{nominal}} \right. &<& p 
         &<& \left. \displaystyle \frac{p_{max}}{p_{nominal}} \right\}_i,
         \quad & i \in \mbox{find}(p_{active}), \\[3ex]
-    \displaystyle \left\{ \frac{x^0_{min}}{x^0_{nominal}} \right. &<& x(t^0) 
-        &<& \displaystyle \left. \frac{x^0_{max}}{x^0_{nominal}} \right\}_i, 
+    \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right. &<& x(t^0) 
+        &<& \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i, 
         \quad & i \in \mbox{find}(x^0_{active}), \\[3ex]
     && \left\{ x(t^0) \right. &=& \left. x^0 \right\}_i, 
         \quad & i \notin \mbox{find}(x^0_{active}), \\[3ex]
@@ -127,14 +127,14 @@ class Prg_SFunctionEst: public Prg_SFunction {
   IVECP		_mdl_x0_active; ///< indicate estimated states
   IVECP		_mdl_x0_steady; ///< initial state should be in steady-state
   IVECP		_mdl_y_active; 	///< indicate measured outputs
-  VECP		_mdl_y_nominal;	///< nominal values for outputs (for scaling)
+  VECP		_mdl_y_nominal;	///< nominal output values (for scaling)
 
   VECP 		_mdl_p;		///< initial parameter values
   VECP 		_mdl_p_nominal;	///< nominal parameter values (for scaling)
   VECP 		_mdl_p_min;	///< lower bounds for estimated parameters
   VECP 		_mdl_p_max;	///< upper bounds for estimated parameters
   VECP 		_mdl_x0;	///< initial states
-  VECP 		_mdl_x0_nominal;///< nominal initial states (for scaling)
+  VECP 		_mdl_x_nominal; ///< nominal state values (for scaling)
   VECP 		_mdl_x0_min;	///< lower bounds for estimated initial states
   VECP 		_mdl_x0_max;	///< upper bounds for estimated initial states
 
