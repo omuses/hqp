@@ -347,6 +347,8 @@ void Prg_SFunctionOpt::setup_struct(int k,
 				    Omu_DependentVec &f,
 				    Omu_Dependent &f0, Omu_DependentVec &c)
 {
+  int i;
+
   // consistic just takes states from optimizer
   m_ident(xt.Jx);
   m_zero(xt.Ju);
@@ -356,6 +358,30 @@ void Prg_SFunctionOpt::setup_struct(int k,
   m_ident(F.Jxp);
   sm_mlt(-1.0, F.Jxp, F.Jxp);
   F.set_linear(Omu_Dependent::WRT_xp);
+
+  // u goes in linear for building piecewise linear mdl_u
+  if (k < _K) {
+    m_zero(F.Ju);
+    for (i = 0; i < _nu; i++)
+      F.Ju[i][i] = 1.0;
+    F.set_linear(Omu_Dependent::WRT_u);
+  }
+
+  // linear relation for f in update
+  m_zero(f.Ju);
+  m_zero(f.Jx);
+  m_ident(f.Jxf);
+  f.set_linear();
+
+  // constraints c in update do not depend on u and xf
+  m_zero(c.Ju);
+  m_zero(c.Jxf);
+  c.set_linear(Omu_Dependent::WRT_u);
+  c.set_linear(Omu_Dependent::WRT_xf);
+
+  // objective does not depend on xf
+  v_zero(f0.gxf);
+  f0.set_linear(Omu_Dependent::WRT_xf);
 }
 
 //--------------------------------------------------------------------------
@@ -374,7 +400,7 @@ void Prg_SFunctionOpt::update(int kk,
 			      Omu_DependentVec &f, Omu_Dependent &f0,
 			      Omu_DependentVec &c)
 {
-  int i, idx, is, isc, j;
+  int i, idx, is, isc;
   int spsk = kk < _KK? _sps: 1; // one sample at final time
 
   // junction conditions for continuous-time equations
@@ -513,80 +539,169 @@ void Prg_SFunctionOpt::update(int kk,
     _mdl_ys[kk][i] = value(mdl_y[i]);
 
   // obtain Jacobians if required
-  if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
+  if (f.is_required_J() || f0.is_required_g() || c.is_required_J())
+    update_grds(kk, x, u, xf, f, f0, c);
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunctionOpt::update_grds(int kk, 
+				   const Omu_StateVec &x, const Omu_Vec &u,
+				   const Omu_StateVec &xf,
+				   Omu_DependentVec &f, Omu_Dependent &f0,
+				   Omu_DependentVec  &c)
+{
+  int i, idx, ii, iidx, is, j, jdx, rdx;
+  int spsk = kk < _KK? _sps: 1; // one sample at final time
+
+  if (ssGetmdlJacobian(_S) == NULL) {
     // call predefined update for numerical differentiation
+    // (indicate Jacobian mode to S-function via reservedForFutureInt[0])
     _S->mdlInfo->reservedForFutureInt[0] = 1;
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
     _S->mdlInfo->reservedForFutureInt[0] = 0;
-#if 1
-    // recalculate gradient of f0 as complete numeric diff. gives worse results
-    v_zero(f0.gx);
-    v_zero(f0.gu);
-    // controlled inputs
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
-      // contribution of objective term
-      if (_mdl_u.active[idx]) {
-	// control inputs
-	f0.gx[i] += dt * _mdl_u.weight1[idx];
-	f0.gx[i] += dt * _mdl_u.weight2[idx] *
-	  2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
-	// rates of change
-	if (kk < _KK) {
-	  f0.gu[i] += dt * _mdl_der_u.weight1[idx];
-	  f0.gu[i] += dt * _mdl_der_u.weight2[idx] *
-	    2.0 * (u[i] - _mdl_der_u.ref[idx]/_mdl_u_nominal[idx]);
-	}
-	i++;
-      }
-    }
-    // active outputs
-    for (i = 0, is = 0, idx = 0; idx < _mdl_ny; idx++) {
-      // contribution of objective term
-      if (_mdl_y.weight1[idx] != 0.0) {
-	for (j = 0; j < _nx; j++)
-	  f0.gx[j] += dt * _mdl_y.weight1[idx] * c.Jx[i + kk%spsk][j];
-      }
-      if (_mdl_y.weight2[idx] != 0.0) {
-	for (j = 0; j < _nx; j++)
-	  f0.gx[j] += dt * _mdl_y.weight2[idx] *
-	    2.0 * (c[i + kk%spsk] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
-	    c.Jx[i + kk%spsk][j];
-      }
-      if (_mdl_y.active[idx])
-	i += spsk;
+  }
+  else {
+    // exploit mdlJacobian to obtain c.Jx
+    real_T *pr = ssGetJacobianPr(_S);
+    int_T *ir = ssGetJacobianIr(_S);
+    int_T *jc = ssGetJacobianJc(_S);
 
-      // contribution of soft constraints
-      if (_mdl_y_soft.active[idx] == 1) {
-	if (kk < _KK)
-	  f0.gu[_nu + is + kk%spsk]
-	    += dt*(_mdl_y_soft.weight1[idx]
-		   + 2.0*_mdl_y_soft.weight2[idx]*u[_nu + is + kk%spsk]);
-	else
-	  f0.gx[_nx + is + kk%spsk]
-	    += dt*(_mdl_y_soft.weight1[idx]
-		   + 2.0*_mdl_y_soft.weight2[idx]*x[_nx + is + kk%spsk]);
-	is += spsk;
+    mdlJacobian(_S);
+
+    m_zero(c.Jx);
+    // Jacobian wrt S-function states (dy/dx)
+    for (jdx = 0; jdx < _mdl_nx; jdx++) {
+      for (i = 0, idx = _mdl_nx, ii = _nc+_nsc, iidx = _mdl_nx,
+	     rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
+	if (ir[rdx] >= _mdl_nx) {
+	  j = _mdl_nu + jdx;
+	  if (_mdl_y.active[ir[rdx] - _mdl_nx]) {
+	    // need to loop through idx to obtain i considering active outputs
+	    for (; idx < ir[rdx]; idx++) {
+	      if (_mdl_y.active[idx - _mdl_nx])
+		i += spsk;
+	    }
+	    c.Jx[i + kk%spsk][j] = pr[rdx];
+	  }
+	  // constraints at final time
+	  if (kk == _KK && _mdl_yf.active[ir[rdx] - _mdl_nx]) {
+	    // need to loop to obtain ii considering active outputs
+	    for (; iidx < ir[rdx]; iidx++) {
+	      if (_mdl_yf.active[iidx - _mdl_nx])
+		ii++;
+	    }
+	    c.Jx[ii][j] = pr[rdx];
+	  }
+	}
       }
     }
-    // additional terms at final time
-    if (kk == _KK) {
-      for (i = _nc+_nsc, idx = 0; idx < _mdl_ny; idx++) {
-	// contributions of final objective terms
-	if (_mdl_yf.weight1[idx] != 0.0) {
-	  for (j = 0; j < _nx; j++)
-	    f0.gx[j] += _mdl_yf.weight1[idx] * c.Jx[i][j];
+    // Jacobian wrt S-function inputs (dy/du)
+    // (note: these are states for the optimizer)
+    for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
+      if (_mdl_u.active[jdx - _mdl_nx]) {
+	for (i = 0, idx = _mdl_nx, ii = _nc+_nsc, iidx = _mdl_nx,
+	       rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
+	  if (ir[rdx] >= _mdl_nx) {
+	    if (_mdl_y.active[ir[rdx] - _mdl_nx]) {
+	      // need to loop to obtain i considering active outputs
+	      for (; idx < ir[rdx]; idx++) {
+		if (_mdl_y.active[idx - _mdl_nx])
+		  i += spsk;
+	      }
+	      c.Jx[i + kk%spsk][j] = pr[rdx];
+	    }
+	    // constraints at final time
+	    if (kk == _KK && _mdl_yf.active[ir[rdx] - _mdl_nx]) {
+	      // need to loop to obtain ii considering active outputs
+	      for (; iidx < ir[rdx]; iidx++) {
+		if (_mdl_yf.active[iidx - _mdl_nx])
+		  ii++;
+	      }
+	      c.Jx[ii][j] = pr[rdx];
+	    }
+	  }
 	}
-	if (_mdl_yf.weight2[idx] != 0.0) {
-	  for (j = 0; j < _nx; j++)
-	    f0.gx[j] += _mdl_yf.weight2[idx] *
-	      2.0 * (c[i] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
-	      c.Jx[i][j];
-	}
-	if (_mdl_yf.active[idx])
-	  i++;
+	j++;
       }
     }
-#endif
+  }
+
+  // apply chain rule to calculate gradient of f0 
+  // (do this as well if Omu_Program::update_grds was used, as complete
+  //  numeric differentiation gives bad results for quadratic terms)
+  double dt;
+  if (kk == 0)
+    dt = 0.5*(ts(kk+1) - ts(kk));
+  else if (kk == _KK)
+    dt = 0.5*(ts(kk) - ts(kk-1));
+  else
+    dt = 0.5*(ts(kk+1) - ts(kk-1));
+
+  v_zero(f0.gx);
+  v_zero(f0.gu);
+  // controlled inputs
+  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    // contribution of objective term
+    if (_mdl_u.active[idx]) {
+      // control inputs
+      f0.gx[i] += dt * _mdl_u.weight1[idx];
+      f0.gx[i] += dt * _mdl_u.weight2[idx] *
+	2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
+      // rates of change
+      if (kk < _KK) {
+	f0.gu[i] += dt * _mdl_der_u.weight1[idx];
+	f0.gu[i] += dt * _mdl_der_u.weight2[idx] *
+	  2.0 * (u[i] - _mdl_der_u.ref[idx]/_mdl_u_nominal[idx]);
+      }
+      i++;
+    }
+  }
+  // active outputs
+  for (i = 0, is = 0, idx = 0; idx < _mdl_ny; idx++) {
+    // contribution of objective term
+    if (_mdl_y.weight1[idx] != 0.0) {
+      for (j = 0; j < _nx; j++)
+	f0.gx[j] += dt * _mdl_y.weight1[idx] * c.Jx[i + kk%spsk][j];
+    }
+    if (_mdl_y.weight2[idx] != 0.0) {
+      for (j = 0; j < _nx; j++)
+	f0.gx[j] += dt * _mdl_y.weight2[idx] *
+	  2.0 * (c[i + kk%spsk] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
+	  c.Jx[i + kk%spsk][j];
+    }
+    if (_mdl_y.active[idx])
+      i += spsk;
+
+    // contribution of soft constraints
+    if (_mdl_y_soft.active[idx] == 1) {
+      if (kk < _KK)
+	f0.gu[_nu + is + kk%spsk]
+	  += dt*(_mdl_y_soft.weight1[idx]
+		 + 2.0*_mdl_y_soft.weight2[idx]*u[_nu + is + kk%spsk]);
+      else
+	f0.gx[_nx + is + kk%spsk]
+	  += dt*(_mdl_y_soft.weight1[idx]
+		 + 2.0*_mdl_y_soft.weight2[idx]*x[_nx + is + kk%spsk]);
+      is += spsk;
+    }
+  }
+  // additional terms at final time
+  if (kk == _KK) {
+    for (i = _nc+_nsc, idx = 0; idx < _mdl_ny; idx++) {
+      // contributions of final objective terms
+      if (_mdl_yf.weight1[idx] != 0.0) {
+	for (j = 0; j < _nx; j++)
+	  f0.gx[j] += _mdl_yf.weight1[idx] * c.Jx[i][j];
+      }
+      if (_mdl_yf.weight2[idx] != 0.0) {
+	for (j = 0; j < _nx; j++)
+	  f0.gx[j] += _mdl_yf.weight2[idx] *
+	    2.0 * (c[i] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
+	    c.Jx[i][j];
+      }
+      if (_mdl_yf.active[idx])
+	i++;
+    }
   }
 }
 
@@ -678,11 +793,65 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
     F[i] = u[i] - xp[i];
 
   // obtain Jacobians if required
-  if (F.is_required_J()) {
-    // call predefined continuous for numerical differentiation
+  if (F.is_required_J())
+    continuous_grds(kk, t, x, u, xp, F);
+}
+
+//--------------------------------------------------------------------------
+void Prg_SFunctionOpt::continuous_grds(int kk, double t,
+				       const Omu_StateVec &x,
+				       const Omu_Vec &u,
+				       const Omu_StateVec &xp,
+				       Omu_DependentVec &F)
+{
+  if (ssGetmdlJacobian(_S) == NULL) {
+    // call predefined continuous_grds for numerical differentiation
+    // (indicate Jacobian mode to S-function via reservedForFutureInt[0])
     _S->mdlInfo->reservedForFutureInt[0] = 1;
     Omu_Program::continuous_grds(kk, t, x, u, xp, F);
     _S->mdlInfo->reservedForFutureInt[0] = 0;
+  }
+  else {
+    // exploit mdlJacobian
+    int i, idx, j, jdx, rdx;
+    real_T *pr = ssGetJacobianPr(_S);
+    int_T *ir = ssGetJacobianIr(_S);
+    int_T *jc = ssGetJacobianJc(_S);
+
+    mdlJacobian(_S);
+
+    // obtain Jx
+    m_zero(F.Jx);
+    // Jacobian wrt S-function states (ddx/dx)
+    for (jdx = 0; jdx < _mdl_nx; jdx++) {
+      for (rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
+	idx = ir[rdx];
+	if (idx >= _mdl_nx)
+	  break;
+	i = _mdl_nu + idx;
+	j = _mdl_nu + jdx;
+	F.Jx[i][j] = pr[rdx];
+      }
+    }
+    // Jacobian wrt S-function inputs (ddx/du)
+    // (note: these are states for the optimizer)
+    for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
+      if (_mdl_u.active[jdx - _mdl_nx]) {
+	for (i = _mdl_nu, idx = 0, rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
+	  if (ir[rdx] >= _mdl_nx)
+	    break;
+	  if (_mdl_u.active[ir[rdx]]) {
+	    // need to loop through idx to obtain i considering active inputs
+	    for (; idx < ir[rdx]; idx++) {
+	      if (_mdl_u.active[idx])
+		i++;
+	    }
+	    F.Jx[i][j] = pr[rdx];
+          }
+	}
+	j++;
+      }
+    }
   }
 }
 

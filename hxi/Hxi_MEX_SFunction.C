@@ -138,16 +138,28 @@ static int_T setNumDWork(void *arg, int_T nDWork)
 //-------------------------------------------------------------------
 SimStruct *Hxi_SimStruct_create()
 {
-  // allocate a SimStruct and a model info struct
+  // allocate a SimStruct
   SimStruct *S = (SimStruct *)mxCalloc(1, sizeof(SimStruct));
-  struct _ssMdlInfo *mdlInfo = (struct _ssMdlInfo *)
-    mxCalloc(1, sizeof(struct _ssMdlInfo));
 
   // initialize the SimStruct as root model
   ssSetModelName(S, "SimStruct");
   ssSetPath(S, "SimStruct");
   ssSetRootSS(S, S);
+
+  // allocate a model info struct
+  struct _ssMdlInfo *mdlInfo = (struct _ssMdlInfo *)
+    mxCalloc(1, sizeof(struct _ssMdlInfo));
   ssSetMdlInfoPtr(S, mdlInfo);
+
+  // allocate model methods 2 struct
+  struct _ssSFcnModelMethods2 *modelMethods2 = (struct _ssSFcnModelMethods2 *)
+    mxCalloc(1, sizeof(struct _ssSFcnModelMethods2));
+  ssSetModelMethods2(S, modelMethods2);
+
+  // allocate sparse header for Jacobian
+  SparseHeader *jacobian = (SparseHeader *)
+    mxCalloc(1, sizeof(SparseHeader));
+  ssSetJacobianHeader(S, jacobian);
 
   // register callback methods
   ssSetRegNumInputPortsFcn(S, setNumInputPorts);
@@ -187,6 +199,8 @@ void Hxi_SimStruct_destroy(SimStruct *S)
   mxFree(ssGetPortInfoForInputs(S));
   mxFree(ssGetPortInfoForOutputs(S));
   mxFree(ssGetSFcnParamsPtr(S));
+  mxFree(ssGetJacobianHeader(S));
+  mxFree(ssGetModelMethods2(S));
   mxFree(ssGetMdlInfoPtr(S));
   mxFree(S);
 }
@@ -330,10 +344,26 @@ void mdlInitializeSizes(SimStruct *S)
   for (i = 0; i < ndw; i++)
     ndwel += ssGetDWorkWidth(S, i);
 
+  // initialize Jacobian and obtain number of elements
+  int njacm = nx + nxd + ny;
+  int njacn = nx + nxd + nu;
+  int njacel = ssGetJacobianNzMax(S);
+  if (njacel < 0) {
+    // full Jacobian
+    njacel = njacm * njacn;
+  }
+  int njacjc = 0;
+  if (njacel > 0) {
+    njacjc = njacn + 1;
+    ssSetJacobianM(S, njacm);
+    ssSetJacobianN(S, njacn);
+  }
+
   // allocate memory for real_T
   mxFree(ssGetRWork(S));
   real_T *rptr = (real_T *)mxCalloc(sizeof(real_T),
-				    nrw + nu + ny + nxd + 2*nx + ndwel);
+				    nrw + nu + ny + nxd + 2*nx + ndwel
+				    + njacel);
   ssSetRWork(S, rptr);
   rptr += nrw;
 
@@ -382,9 +412,14 @@ void mdlInitializeSizes(SimStruct *S)
     rptr += ssGetDWorkWidth(S, i);
   }
 
+  // setup Jacobian elements
+  ssSetJacobianPr(S, rptr);
+  rptr += njacel;
+
   // allocate memory for int_T
   mxFree(ssGetIWork(S));
-  int_T *iptr = (int_T *)mxCalloc(sizeof(int_T), niw + 2*nst);
+  int_T *iptr = (int_T *)mxCalloc(sizeof(int_T), niw + 2*nst
+				  + njacel + njacjc);
   ssSetIWork(S, iptr);
   iptr += niw;
 
@@ -403,6 +438,12 @@ void mdlInitializeSizes(SimStruct *S)
   ssSetSampleTimePtr(S, tptr);
   tptr += nst;
   ssSetOffsetTimePtr(S, tptr);
+
+  // setup Jacobian
+  ssSetJacobianIr(S, iptr);
+  iptr += njacel;
+  ssSetJacobianJc(S, iptr);
+  iptr += njacjc;
 }
 
 

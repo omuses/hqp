@@ -1,3 +1,10 @@
+2002-05-25    <rfranke>
+
+	* hxi/Hxi_MEX_SFunction.[hC], omu/Prg_SFunctionOpt.[hC]: 
+	  add support for S-function method mdlJacobian
+	* odc/sfun_dic.c: add mdlJacobian
+	* omu/Prg_SFunctionEst.C (setup_struct): predefine trivial Jacobians
+
 2002-05-16    <h_linke>
 	* omu/Omu_IntOdeTs.C:  code cleanup
 	* omu/Omu_IntSDIRK.C:  code cleanup

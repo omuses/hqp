@@ -141,6 +141,13 @@ inline void mdlDerivatives(SimStruct *S)
     sfcnDerivatives(S);
 }
 
+/** Optional: Compute Jacobian J = d(dxc,xd,y)/d(xc,xd,u). */
+inline void mdlJacobian(SimStruct *S)
+{
+  assert(ssGetmdlJacobian(S) != NULL);
+  sfcnJacobian(S);
+}
+
 /** Release resources allocated for simulation. */
 inline void mdlTerminate(SimStruct *S)
 {

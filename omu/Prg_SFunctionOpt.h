@@ -215,6 +215,30 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 		  const Omu_StateVec &xp, Omu_DependentVec &F);
   //@}
 
+  /**
+   * @name Overloaded gradient routines
+   * These routines call the S-function method mdlJacobian if available;
+   * otherwise they direct calls to the according methods by Omu_Program.
+   */
+  //@{
+
+  /**
+   * Overloaded update routine for obtaining gradients.
+   */
+  void update_grds(int kk, 
+		   const Omu_StateVec &x, const Omu_Vec &u,
+		   const Omu_StateVec &xf,
+		   Omu_DependentVec &f, Omu_Dependent &f0,
+		   Omu_DependentVec  &c);
+
+  /**
+   * Overloaded continuous routine for obtaining gradients.
+   */
+  void continuous_grds(int kk, double t,
+		       const Omu_StateVec &x, const Omu_Vec &u,
+		       const Omu_StateVec &xp, Omu_DependentVec &F);
+  //@}
+
  public:
 
   Prg_SFunctionOpt();		///< constructor
