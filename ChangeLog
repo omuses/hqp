@@ -1,3 +1,11 @@
+2003-03-27    <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]: introduce mdl_u_decimation for
+	  downsampling optimized inputs;
+	  rename mdl_u_nfixed to mdl_u0_nfixed
+
+	* configure.in: add check for gcc3 under Linux
+
 2003-03-13    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]: rename prg_nus_fixed to mdl_u_nfixed

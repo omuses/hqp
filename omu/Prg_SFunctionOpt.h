@@ -147,20 +147,17 @@ public:
     \displaystyle \frac{y_{0,min}}{y_{nominal}} &<& y(t^{0})
         &<& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
     \displaystyle && \{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
-        \quad & i \in \mbox{find}(u_{nfixed}>1-u_{order}), \\[3ex]
+        \quad & i \in \mbox{find}(u_{0,nfixed}>1-u_{order}), \\[3ex]
     \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &<& u(t^0)
         &<& \displaystyle\left.\frac{us^0+der\_u_{max}}{u_{nominal}}\right\}_i,
-        \ & i \in \mbox{find}(u_{nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
+        \ & i \in \mbox{find}(u_{0,nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
     \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &<& u(t^{k})
         &<& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, \quad &
-        i \in \mbox{find}(sps\,k \ge u_{nfixed} + u_{order} - 1), \\[1ex]
+        i \in \mbox{find}(k \ge u_{0,nfixed} + u_{order} - 1), \\[1ex]
 	&& && & k=0,\ldots,K, \\[2ex]
-    \displaystyle && \{ du^k &=& \displaystyle du^k_{initial} \}_i, \quad &
-        i \in \mbox{find}(sps\,k < u_{nfixed}+u_{order}-2), \\[2ex]
-    \displaystyle\left\{ \frac{{der\_u}_{min}}{u_{nominal}}\right. &<& du^{k}
-        &<& \displaystyle\left. \frac{{der\_u}_{max}}{u_{nominal}}\right\}_i, &
-        i \notin \mbox{find}(sps\,k < u_{nfixed}+u_{order}-2), \\[1ex]
-	&& && & k=0,\ldots,K-1, \\[2ex]
+    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
+        &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
+	k=0,\ldots,K-1, \\[3ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
@@ -170,6 +167,20 @@ public:
     \displaystyle \frac{y_{f\_min}}{y_{nominal}} &<& y(t_f)
         &<& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
    \end{array}
+   @f]
+   The actually optimized rates of changes @f$du^k, k=0,\ldots,K-1@f$ for
+   active inputs may be set to fixed values by specifying @f$u_{0,nfixed}@f$
+   and @f$u_{decimation}@f$ (defaults: 1), fixing initial values and holding
+   optimized inputs constant over multiple stages, respectively
+   @f[
+    du^k_i = \left\{\begin{array}{ll}
+      \displaystyle 0 , \quad &
+        i \in \mbox{find}(\mbox{mod}(k+1, u_{decimation}) \ne 0), \\[2ex]
+      \displaystyle du^k_{initial,i}, \quad &
+        i \in \mbox{find}(\mbox{mod}(k+1, u_{decimation}) = 0\ \mbox{and}\ 
+	k < u_{0,nfixed}+u_{order}-2), \\[2ex]
+      \displaystyle \mbox{free} , \quad & \mbox{else}.
+      \end{array}\right.
    @f]
    The initial guess is taken from given initial states and model inputs
    @f[
@@ -242,10 +253,18 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /**
    * Numbers of fixed control inputs at begin of time horizon (default: 1).
-   * The input is fixed up to the first time point for _mdl_u_nfixed=1,
-   * up to the second time point for _mdl_u_nfixed=2, and so on.
+   * An active input is free for _mdl_u0_fixed=0, fixed at the initial time
+   * point for _mdl_u0_nfixed=1, fixed up to the last time point of the
+   * first stage for _mdl_u0_nfixed=2, and so on.
    */
-  IVECP 	_mdl_u_nfixed;
+  IVECP 	_mdl_u0_nfixed;
+
+  /**
+   * Decimation factor, i.e.~numbers of subsequent optimized inputs with 
+   * equal values (default: 1). The controls of two subsequent stages are
+   * equal for decimation=2, three for decimation=3, and so on.
+   */
+  IVECP 	_mdl_u_decimation;
 
   /**
    * @name Implementation of predefined methods.
@@ -329,7 +348,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * problem description.
    */
   //@{
-  ///< free initial states (default: 0)
+  /// free initial states (default: 0)
   const IVECP mdl_x0_active() const {return _mdl_x0_active;}
 
   /// lower bounds for model outputs at initial time
@@ -351,7 +370,10 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   const IVECP mdl_u_active() const {return _mdl_u.active;}
 
   /// numbers of fixed control inputs at begin of time horizon (default: 1)
-  const IVECP mdl_u_nfixed() const {return _mdl_u_nfixed;}
+  const IVECP mdl_u0_nfixed() const {return _mdl_u0_nfixed;}
+
+  /// decimation for optimized model inputs (default: 1)
+  const IVECP mdl_u_decimation() const {return _mdl_u_decimation;}
 
   /// nominal input values (for scaling)
   const VECP mdl_u_nominal() const {return _mdl_u_nominal;}
@@ -445,7 +467,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @name Write methods for model specific members (no If prefix).
    */
   //@{
-  /// set free inputs
+  /// set free initial states
   void set_mdl_x0_active(const IVECP v) {iv_copy_elements(v, _mdl_x0_active);}
 
   /// set lower bounds for final model outputs
@@ -467,7 +489,11 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   void set_mdl_u_active(const IVECP v) {iv_copy_elements(v, _mdl_u.active);}
 
   /// set numbers of fixed control inputs
-  void set_mdl_u_nfixed(const IVECP v) {iv_copy_elements(v, _mdl_u_nfixed);}
+  void set_mdl_u0_nfixed(const IVECP v) {iv_copy_elements(v, _mdl_u0_nfixed);}
+
+  /// set decimation for optimized model inputs
+  void set_mdl_u_decimation(const IVECP v)
+  {iv_copy_elements(v, _mdl_u_decimation);}
 
   /// set nominal inputs
   void set_mdl_u_nominal(const VECP v) {v_copy_elements(v, _mdl_u_nominal);}

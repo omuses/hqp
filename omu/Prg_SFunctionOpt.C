@@ -96,7 +96,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
-  _mdl_u_nfixed = iv_get(_mdl_nu);
+  _mdl_u0_nfixed = iv_get(_mdl_nu);
+  _mdl_u_decimation = iv_get(_mdl_nu);
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
@@ -104,7 +105,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_y_bias = v_get(_mdl_ny);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
-  iv_set(_mdl_u_nfixed, 1);
+  iv_set(_mdl_u0_nfixed, 1);
+  iv_set(_mdl_u_decimation, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
@@ -132,7 +134,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_active)));
-  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_nfixed)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u0_nfixed)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_decimation)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_max)));
@@ -183,7 +186,8 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   v_free(_mdl_y_nominal);
   v_free(_mdl_x_nominal);
   v_free(_mdl_u_nominal);
-  iv_free(_mdl_u_nfixed);
+  iv_free(_mdl_u_decimation);
+  iv_free(_mdl_u0_nfixed);
   iv_free(_mdl_u_order);
   iv_free(_mdl_x0_active);
 }
@@ -221,14 +225,16 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 
   iv_resize(_mdl_x0_active, _mdl_nx);
   iv_resize(_mdl_u_order, _mdl_nu);
-  iv_resize(_mdl_u_nfixed, _mdl_nu);
+  iv_resize(_mdl_u0_nfixed, _mdl_nu);
+  iv_resize(_mdl_u_decimation, _mdl_nu);
   v_resize(_mdl_u_nominal, _mdl_nu);
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_set(_mdl_x0_active, 0);
   iv_set(_mdl_u_order, 1);
-  iv_set(_mdl_u_nfixed, 1);
+  iv_set(_mdl_u0_nfixed, 1);
+  iv_set(_mdl_u_decimation, 1);
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
@@ -332,9 +338,9 @@ void Prg_SFunctionOpt::setup(int k,
 		"mdl_u_order must be 0 or 1");
       if (_mdl_u.active[idx]) {
 	x.initial[i] = _mdl_us[0][idx] / _mdl_u_nominal[idx];
-	if (_mdl_u_nfixed[idx] > 1 - _mdl_u_order[idx])
+	if (_mdl_u0_nfixed[idx] > 1 - _mdl_u_order[idx])
 	  x.min[i] = x.max[i] = x.initial[i];
-	else if (_mdl_u_nfixed[idx] > 0 && _mdl_u_order[idx] == 0) {
+	else if (_mdl_u0_nfixed[idx] > 0 && _mdl_u_order[idx] == 0) {
 	  // apply rate of change bounds to initial step for zero order hold
 	  if (_mdl_der_u.min[idx] > -Inf)
 	    x.min[i] = x.initial[i]
@@ -361,7 +367,7 @@ void Prg_SFunctionOpt::setup(int k,
   // setup control inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
-      if (_multistage && ks(k) >= _mdl_u_nfixed[idx] + _mdl_u_order[idx] - 1) {
+      if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1) {
 	// control bounds
 	if (_mdl_u.min[idx] > -Inf) {
 	  x.min[i] = _mdl_u.min[idx] / _mdl_u_nominal[idx];
@@ -373,12 +379,12 @@ void Prg_SFunctionOpt::setup(int k,
       else if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
-	  for (j = _mdl_u_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
+	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
 	    c.min[spsk*(_nc+_nsc) + i + j] =
 	      _mdl_u.min[idx] / _mdl_u_nominal[idx];
 	}
 	if (_mdl_u.max[idx] < Inf) {
-	  for (j = _mdl_u_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
+	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
 	    c.max[spsk*(_nc+_nsc) + i + j] =
 	      _mdl_u.max[idx] / _mdl_u_nominal[idx];
 	}
@@ -412,14 +418,25 @@ void Prg_SFunctionOpt::setup(int k,
 	}
 	// override rate of change bounds for fixed controls
 	if (_multistage) {
-	  if (ks(k) < _mdl_u_nfixed[idx] + _mdl_u_order[idx] - 2) {
+	  if (k < _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 2) {
 	    u.min[i] = u.max[i] = u.initial[i];
 	  }
 	}
 	else {
-	  int jend = min(_mdl_u_nfixed[idx] + _mdl_u_order[idx] - 2, upsk);
+	  int jend = min(_mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 2, upsk);
 	  for (j = 0; j < jend; j++)
 	    u.min[i+j] = u.max[i+j] = u.initial[i+j];
+	}
+	// override rate of change bounds for joined controls
+	if (_multistage) {
+	  if ((k + 1) % _mdl_u_decimation[idx] != 0) {
+	    u.min[i] = u.max[i] = 0.0;
+	  }
+	}
+	else {
+	  for (j = 0; j < upsk; j++)
+	    if ((j + 1) % _mdl_u_decimation[idx] != 0)
+	      u.min[i+j] = u.max[i+j] = 0.0;
 	}
       }
       // for zero order hold: constraint u parameter of last interval to zero
