@@ -143,19 +143,19 @@ public:
    @f[
    \begin{array}{rcccll}
     \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
-        \quad & i\notin\mbox{find}(x_{active}), \\[3ex]
+        \quad & i\notin\mbox{find}(x_{0\_active}), \\[3ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{0})
         &<& \displaystyle \frac{y_{max}}{y_{nominal}}, \\[3ex]
-    \displaystyle &&\{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
-    \quad & i\in\mbox{find}(nus_{fixed}>0), \\[3ex]
-    \displaystyle \left\{\frac{u_{min}}{u_{nominal}}\right. &<& u(t^{k})
-        &<& \displaystyle\left. \frac{u_{max}}{u_{nominal}}\right\}_i, \quad &
-        k=0,\ldots,K \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed,i}, \\[3ex]
-    \displaystyle && \{du^k &=& \displaystyle du^k_{initial} \}_i, \quad &
-        k = 0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k < nus_{fixed,i}-1, \\[3ex]
-    \displaystyle \left\{\frac{{der\_u}_{min}}{u_{nominal}}\right. &<& du^{k}
-        &<& \left.\displaystyle \frac{{der\_u}_{max}}{u_{nominal}}\right\}_i, &
-        k=0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed,i}-1, \\[3ex]
+    \displaystyle && u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}},
+    \quad & nus_{fixed}>0, \\[3ex]
+    \displaystyle \frac{u_{min}}{u_{nominal}} &<& u(t^{k})
+        &<& \displaystyle \frac{u_{max}}{u_{nominal}}, \quad &
+        k=0,\ldots,K \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}, \\[3ex]
+    \displaystyle && du^k &=& \displaystyle du^k_{initial}, \quad &
+        k = 0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k < nus_{fixed}-1, \\[3ex]
+    \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &<& du^{k}
+        &<& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, &
+        k=0,\ldots,K-1 \ \ \mbox{and}\ \ sps\,k \ge nus_{fixed}-1, \\[3ex]
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
@@ -240,7 +240,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * The initial value is fixed for _nus_fixed=1, the initial and the 
    * second value are fixed for _nus_fixed=2, and so on).
    */
-  IVECP 	_nus_fixed;
+  int 	_nus_fixed;
 
   /**
    * @name Implementation of predefined methods.
@@ -312,9 +312,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    */
   //@{
   /// Numbers of fixed control inputs at begin of time horizon (default: 0)
-  const IVECP nus_fixed() const {return _nus_fixed;}
+  int nus_fixed() const {return _nus_fixed;}
   /// set numbers of fixed constrol inputs
-  void set_nus_fixed(const IVECP v) {iv_copy_elements(v, _nus_fixed);}
+  void set_nus_fixed(int val) {_nus_fixed = val;}
 
   /// indicate if problem is treated with one stage per time interval
   bool multistage() const {return _multistage;}
