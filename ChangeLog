@@ -1,3 +1,8 @@
+2003-05-20    <e_arnold>
+	
+	* omu/Omu_IntIMP.[hC]:
+	  revert to version 1.8.2
+	
 2003-05-20    <rfranke>
 
 	* omu/Prg_SFunction*.[hC] (setup_model):
