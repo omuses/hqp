@@ -167,8 +167,6 @@ Omu_IntSDIRK::Omu_IntSDIRK()
 Omu_IntSDIRK::~Omu_IntSDIRK()
 {
 
-  int i;
-
   IV_FREE(_x_algebraic);
 
   PX_FREE(_ppivot);
@@ -266,7 +264,7 @@ void Omu_IntSDIRK::init_method()
   _b_err[3] = -8.5e1/1.2e1;
   _b_err[4] = 0.0;
 
-  if(_c[_c->dim-1] == 1.0) {
+  if(_c[(int)_c->dim-1] == 1.0) {
     _stiffly_accurate = true;
     for(i = 0; i < _irk_stages; i++)
       if(_b[i] != _a[_irk_stages-1][i]) {
@@ -305,8 +303,6 @@ void Omu_IntSDIRK::init_yprime_pred(MATP pred)
 //--------------------------------------------------------------------------
 void Omu_IntSDIRK::realloc()
 {
-
-  int i;
 
   if ((int)_cxp->dim == _nd + _n && (int)_cu->dim == _nu)
     return;
@@ -393,13 +389,13 @@ void Omu_IntSDIRK::init_stage(int k,
   for(i = 0; i < _irk_stages-1; i++)
     for(j = i+1; j < _irk_stages; j++)
       if(_a[i][j] != 0.0)
-	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - 
-                          sdirk method not correctly defined!");
+	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - " 
+		"sdirk method not correctly defined!");
 
   for(i = 1; i < _irk_stages; i++)
       if(_a[i][i] != _a[0][0])
-	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - 
-                          sdirk method not correctly defined!");
+	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - "
+		"sdirk method not correctly defined!");
 
   if(_sparse_solver && !_banded_solver)
       _banded_solver = true;
@@ -435,6 +431,8 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
   double  err;
 
   _sys = sys;	// propagate to res() and jac()
+
+  err = 0.0;
 
   _cx_ptr = &cx;
   _cF_ptr = &cF;
@@ -741,6 +739,7 @@ void Omu_IntSDIRK::solve_stage(int stage, VECP y, VECP yprime)
   v_copy(yprime,_irk_yprime);
 
   cur_err = 1.0e10;
+  old_err = cur_err;
   ok = false;
   _recalc_jac = false;
     
@@ -896,6 +895,7 @@ void Omu_IntSDIRK::solve_stage_lsqr(int stage, VECP y, VECP yprime)
   v_copy(yprime,_irk_yprime);
 
   cur_err = 1.0e10;
+  old_err = cur_err;
   min_err = cur_err;
   ok = false;
   _recalc_jac = false;
@@ -1075,6 +1075,7 @@ void Omu_IntSDIRK::solve_final(VECP y, VECP yprime)
   v_copy(yprime,_irk_yprime);
 
   cur_err = 1.0e10;
+  old_err = cur_err;
   ok = false;
   _recalc_jac = false;
     
@@ -1193,10 +1194,9 @@ void Omu_IntSDIRK::solve_final(VECP y, VECP yprime)
 void Omu_IntSDIRK::sensitivity_adolc()
 {
 
-  int i, j, k, l;
+  int i, j, l;
 
-  double  aindep[_irk_stages*_n+_n+_nd+_nu];
-  double  f[_irk_stages*_n];
+  double  *aindep, *f;
 
   adoublev au(_nu);
   adoublev ay(_nd+_n);
@@ -1206,6 +1206,9 @@ void Omu_IntSDIRK::sensitivity_adolc()
   adoublev irk_ay(_irk_stages*(_nd+_n));
   adoublev irk_ayprime(_irk_stages*(_nd+_n));
   adoublev irk_aF(_irk_stages*(_nd+_n));
+
+  f = new double[_irk_stages*_n];
+  aindep = new double[_irk_stages*_n+_n+_nd+_nu];
 
   trace_on(_tag,1);
 
@@ -1516,6 +1519,9 @@ void Omu_IntSDIRK::sensitivity_adolc()
   
   _sen_evals++;
 
+  delete[] aindep;
+  delete[] f;
+
 }
 
 //--------------------------------------------------------------------------
@@ -1717,8 +1723,7 @@ void Omu_IntSDIRK::sensitivity_lsqr_adolc()
 
   int i, j, l;
 
-  double  aindep[_irk_stages*_n+_n+_nd+_nu];
-  double  f[_irk_stages*_n];
+  double  *aindep, *f;
 
   adoublev au(_nu);
   adoublev ay(_nd+_n);
@@ -1728,6 +1733,9 @@ void Omu_IntSDIRK::sensitivity_lsqr_adolc()
   adoublev irk_ay(_irk_stages*(_nd+_n));
   adoublev irk_ayprime(_irk_stages*(_nd+_n));
   adoublev irk_aF(_irk_stages*(_nd+_n));
+
+  f = new double[_irk_stages*_n];
+  aindep = new double[_irk_stages*_n+_n+_nd+_nu];
 
   trace_on(_tag,1);
 
@@ -1945,6 +1953,9 @@ void Omu_IntSDIRK::sensitivity_lsqr_adolc()
 	_Sxx0[j][l] = _Sh[j][l];
 
   _sen_evals++;
+
+  delete[] aindep;
+  delete[] f;
   
 }
 
@@ -2323,6 +2334,9 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_SVec &y,
   double  cur_err, old_err;
   
   Omu_DepVec &cF = *_cF_ptr;
+
+  cur_err = 0.0;
+  old_err = 0.0;
 
   m_resize(_Sh,_n,_n);
 
