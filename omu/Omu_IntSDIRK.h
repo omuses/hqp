@@ -53,7 +53,7 @@ class Omu_IntSDIRK: public Omu_Integrator {
   void init_yprime(int , double ,const Omu_SVec &,const Omu_Vector &, VECP );
   void jac(int ,double ,const VECP ,const VECP , const VECP , VECP );
   void res(double ,const VECP ,const VECP , const VECP , VECP);
-  void realloc();
+  void resize();
   void init_method();
   void init_yprime_pred(MATP );
   void solve_stage(int , VECP , VECP );
@@ -61,8 +61,14 @@ class Omu_IntSDIRK: public Omu_Integrator {
   void solve_final(VECP , VECP );
   void sensitivity();
   void sensitivity_lsqr();
+
+#ifdef OMU_WITH_ADOLC
+
   void sensitivity_adolc();
   void sensitivity_lsqr_adolc();
+
+#endif
+
   void mat2bandf(const MATP , int  , int , MATP );
 
   // backing store sys and vector of dependent variables for callbacks
@@ -177,8 +183,3 @@ class Omu_IntSDIRK: public Omu_Integrator {
 };
 
 #endif
-
-
-
-
-
