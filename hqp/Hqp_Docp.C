@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2001  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -717,7 +717,7 @@ void Hqp_Docp::update_fbd()
   int i, k, kxu, kf;
   int nx, nu, nf, nc;
   int offs, iend;
-  Real f0k;
+  Real f0, f0k;
   Real *v_ve;
   VECP c;
   int K = _kf - _k0;
@@ -727,7 +727,7 @@ void Hqp_Docp::update_fbd()
   c = v_get(1);
   kf = 0;
   kxu = 0;
-  _f = 0.0;
+  f0 = 0.0;
   for (k = 0; k <= K; k++) {
     nx = _nxs[k];
     nu = _nus[k];
@@ -744,10 +744,10 @@ void Hqp_Docp::update_fbd()
 
     v_sub(_fk, v_part(_x, kxu+nx+nu, nf, _xk), _fk);
 
-    _f += f0k;
+    f0 += f0k;
 
-    // break if _f is not finite
-    if (!is_finite(_f))
+    // break if f0 is not finite
+    if (!is_finite(f0))
       break;
 
     offs = _cns_start[k];
@@ -771,6 +771,9 @@ void Hqp_Docp::update_fbd()
   }
 
   v_free(c);
+
+  // take over calculated objective value
+  _f = f0;
 
   // update state/control bounds and initial/final states
   update_bounds();
@@ -839,7 +842,7 @@ void Hqp_Docp::update(const VECP y, const VECP z)
   SPMAT *A = _qp->A;
   MATP Lxx, Luu, Lxu;
   VECP c, vc, vf;
-  Real f0k;
+  Real f0, f0k;
   Real *v_ve;
   int offs;
 
@@ -862,7 +865,7 @@ void Hqp_Docp::update(const VECP y, const VECP z)
 
   kxu = 0;
   kf = 0;
-  _f = 0.0;
+  f0 = 0.0;
   for (k = 0; k <= K; k++) {
     nx = _nxs[k];
     nu = _nus[k];
@@ -914,10 +917,10 @@ void Hqp_Docp::update(const VECP y, const VECP z)
 
     v_sub(_fk, v_part(_x, kxu+nx+nu, nf, _xk), _fk);
 
-    _f += f0k;
+    f0 += f0k;
 
     // break if _f is not finite
-    if (!is_finite(_f))
+    if (!is_finite(f0))
       break;
 
     offs = _cns_start[k];
@@ -961,6 +964,9 @@ void Hqp_Docp::update(const VECP y, const VECP z)
     kf += nf;
     kxu += nx+nu;
   }
+
+  // take over calculated objective value
+  _f = f0;
 
   // update state/control bounds and initial/final states
   update_bounds();
