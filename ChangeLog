@@ -1,3 +1,8 @@
+2004-04-28    <rfranke>
+
+	* configure.in, configure:
+	  change version to 1.9.1, add tag release-1-9-0
+
 2004-04-27    <rfranke>
 
 	* configure.in: enable shared for Cygwin/gcc per default as well,
