@@ -34,7 +34,8 @@ If_Element::If_Element(const char *ifName)
 {
   // (note: need to cast away const for Tcl < 8.4)
   _token = Tcl_CreateObjCommand(theInterp, (char *)ifName,
-				tclCmd, (ClientData)this, NULL);
+				&If_Element::tclCmd, (ClientData)this,
+				&If_Element::tclCmdDeleted);
   _deleted = false;
 }
 

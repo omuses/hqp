@@ -1,5 +1,8 @@
 2002-11-22    <rfranke>
 
+	* iftcl/If_Element.C (If_Element):
+	  bug fix (register Tcl_CmdDeleteProc)
+
 	* hxi/simstruc.h, hxi/Hxi_MEX_SFunction.[hC]:
 	  adapt to Matlab versions 6.5 and 6.1, besides 6.0
 
