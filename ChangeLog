@@ -1,3 +1,10 @@
+2003-09-18    <h_linke>
+	* /omu/Omu_IntOdeTs.[hC]:
+	  adapt to new integrator interface, check for autonomous
+	  ode,
+	* /omu/Omu_IntSDIRK.[hC]:
+	  adapt to new integrator interface, code clean up
+	
 2003-09-13    <rfranke>
 
 	* configure.in: extend check for conflicting names defined for
