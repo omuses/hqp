@@ -4,6 +4,9 @@
 
 	* INSTALL: add note on gnumex
 
+	* Makefile (distclean): remove adol-c/SRC/iostream.h
+	  (configure might create it) 
+
 2003-11-19    <rfranke>
 
 	* omu/Prg_SFunctionOpt.C:

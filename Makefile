@@ -45,6 +45,7 @@ clean:
 
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
+	rm -f adol-c/SRC/iostream.h
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
