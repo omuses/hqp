@@ -626,6 +626,14 @@ void Prg_SFunctionEst::update(int kk,
     }
   }
 
+  // store values of model states
+  for (idx = 0; idx < _mdl_nx; idx++)
+    _mdl_xs[kk][idx] = value(mdl_x[idx]);
+
+  // store values of model outputs
+  for (idx = 0; idx < _mdl_ny; idx++)
+    _mdl_ys[kk][idx] = value(mdl_y[idx]);
+
   // obtain Jacobians if required
   if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
 
@@ -640,14 +648,6 @@ void Prg_SFunctionEst::update(int kk,
       for (idx = 0; idx < _mdl_nx; idx++)
 	_mdl_x0s[ex][idx] = mdl_x[idx];
     }
-
-    // store values of model states
-    for (idx = 0; idx < _mdl_nx; idx++)
-      _mdl_xs[kk][idx] = value(mdl_x[idx]);
-
-    // store values of model outputs
-    for (idx = 0; idx < _mdl_ny; idx++)
-      _mdl_ys[kk][idx] = value(mdl_y[idx]);
 
     // call predefined update for numerical differentiation
     _S->mdlInfo->reservedForFutureInt[0] = 1;

@@ -1,3 +1,9 @@
+2003-04-15    <rfranke>
+
+	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C: 
+	  bug fix for storing mdl_xs and mdl_us during update
+	  (was introduced 2003-04-04)
+
 2003-04-04    <rfranke>
 
 	* omu/Prg_SFunctionEst.[hC], omu/Prg_SFunctionOpt.[hC]: 

@@ -774,23 +774,20 @@ void Prg_SFunctionOpt::update(int kk,
     }
   }
 
-  // obtain Jacobians if required
-  if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
-
-    // store values of model states
-    if (kk == 0)
-      for (i = 0; i < _mdl_nx; i++)
-	_mdl_x0[i] = value(mdl_x[i]);
+  // store values of model states
+  if (kk == 0)
     for (i = 0; i < _mdl_nx; i++)
-      _mdl_xs[kk][i] = value(mdl_x[i]);
+      _mdl_x0[i] = value(mdl_x[i]);
+  for (i = 0; i < _mdl_nx; i++)
+    _mdl_xs[kk][i] = value(mdl_x[i]);
 
-    // store values of model outputs
-    for (i = 0; i < _mdl_ny; i++)
-      _mdl_ys[kk][i] = value(mdl_y[i]);
+  // store values of model outputs
+  for (i = 0; i < _mdl_ny; i++)
+    _mdl_ys[kk][i] = value(mdl_y[i]);
 
-    //Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
+  // obtain Jacobians if required
+  if (f.is_required_J() || f0.is_required_g() || c.is_required_J())
     update_grds(kk, x, u, xf, f, f0, c);
-  }
 }
 
 //--------------------------------------------------------------------------
