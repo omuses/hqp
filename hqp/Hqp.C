@@ -42,7 +42,9 @@ Hqp_Docp_create(Hqp_DocpSpec &spec, void *clientdata)
   // initialize Hqp if this was not done already
   if (theInterp == NULL) {
     Tcl_Interp *interp = Tcl_CreateInterp();
-    assert(Hqp_Init(interp) == TCL_OK);
+    Tcl_FindExecutable(""); // we don't have a better name
+    if (Hqp_Init(interp) != TCL_OK)
+      m_error(E_UNKNOWN, "Hqp_Docp_create: failed Hqp_Init");
   }
 
   // create a Hqp_Docp
