@@ -93,12 +93,22 @@ proc plot_vars {} {
 prg_name Bio
 
 # change model parameters
+
 # number of stages
+#prg_K 151
 prg_K 51
-# initial control trajectory generation
+
+# initial control trajectory generation: 0 - constant (prg_uinit), 
+#                                        1 - nonlinear controller
 prg_controller 0
+#prg_uinit 0.02
+
 # initial substrate concentration
 #prg_cs0 20.0
+
+# optimization horizon
+#prg_tf 150
+prg_tf 10
 
 # initialize 
 prg_setup

@@ -57,13 +57,14 @@ Prg_Bio::Prg_Bio()
     set_K(51);
     
     // initialize local variables
-    _fscale = 1.0;
+    _fscale = 1.0;   // cost function scaling parameter
     _y = VNULL;
-    _controller = 1;
-    _uinit = 0.01;
+    _controller = 1; // use the nonlinear state controller for generation of
+                     // the initial control trajectory (0/1)
+    _uinit = 0.01;   // initial control level without the nonlinear controller
     
     // model parameters
-    pimax = 0.16;   
+    pimax = 0.16; // various kinetic and stochiometric parameters    
     ks = 1;        
     kis = 160;    
     kip = 75;      
@@ -74,13 +75,13 @@ Prg_Bio::Prg_Bio()
     kp = 0.08;     
     kap = 0.1;
     kos = 0.02;     
-    cs0 = 5.0;     
-    v0 = 5;       
-    p0 = 0*v0;     
-    x0 = 30*v0;
-    Fsmin = 0;      
-    Fsmax = 0.1;   
-    tf = 10;   
+    cs0 = 5.0;    // initial value substrate concentration 
+    v0 = 5;       // initial value volume 
+    p0 = 0*v0;    // initial value product mass
+    x0 = 30*v0;   // bio mass (constant within optimization horizon)
+    Fsmin = 0;    // minimum substrate flow rate  
+    Fsmax = 0.1;  // maximum substrate flow rate   
+    tf = 10;      // optimization horizon
 
     // interface elements configurable via Tcl
     _ifList.append(new If_Real("prg_fscale", &_fscale));
