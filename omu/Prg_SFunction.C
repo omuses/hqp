@@ -239,8 +239,17 @@ void Prg_SFunction::setup_sfun()
     mdlStart(_S);
 
   // get initial states
-  v_resize(_mdl_x0, _mdl_nx);
+  if (ssGetmdlInitializeConditions(_S) != NULL) {
+    mdlInitializeConditions(_S);
+    if (ssGetErrorStatus(_S)) {
+      fprintf(stderr, "Error from mdlInitializeConditions: %s\n",
+	      ssGetErrorStatus(_S));
+      ssSetErrorStatus(_S, NULL);
+      m_error(E_RANGE, "mdlInitializeConditions");
+    }
+  }
   real_T *mdl_x = ssGetContStates(_S);
+  v_resize(_mdl_x0, _mdl_nx);
   for (i = 0; i < _mdl_nx; i++)
     _mdl_x0[i] = mdl_x[i];
 }
