@@ -1,7 +1,9 @@
 # Makefile for DASPK3
 
-daspk:
-	tar -xzf ddaspk30.tar.gz
+daspk: examples/DM/Makefile
+
+examples/DM/Makefile: ddaspk30.tar.gz
+	gunzip -c ddaspk30.tar.gz | tar -xf -
 	patch examples/DM/Makefile omu_ddaspk30.patch
 	cd examples/DM; make heat heatilu; cd ../..
 
