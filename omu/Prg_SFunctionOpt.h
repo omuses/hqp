@@ -29,6 +29,20 @@
 #define Prg_SFunctionOpt_H
 
 #include "Prg_SFunction.h"
+#include "Omu_Variables.h"
+
+/** Extend Omu_VariableVec with attributes for optimization criterion. */
+class Omu_OptVarVec: public Omu_VariableVec {
+public:
+  VECP 	weight1;	///< weight for linear objective term (default: 0.0)
+  VECP 	weight2;	///< weight for quadratic objective term (default: 0.0)
+  VECP 	ref; 		///< reference value for quadratic term (default: 0.0)
+  IVECP active; 	///< indicate used variables (default: 0 -- not used)
+
+  Omu_OptVarVec(); 		///< allocate empty vectors
+  virtual ~Omu_OptVarVec(); 	///< destroy vectors
+  virtual void resize(int n); 	///< resize and initialize vectors
+};
 
 /**
    Optimal control problem for a model given as MEX S-function.
@@ -45,15 +59,19 @@
    \begin{array}{l}
     \displaystyle{}
     J\ =\ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_u} \left\{
-      u_{weight2}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]^2
+      u_{weight1}\,u(t^{kk})
+      \ +\ u_{weight2}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK-1} \Delta t^{kk} \sum_{i=1}^{n_u} \left\{
-      {der\_u}_{weight2}\left[\dot{u}(t^{kk})\right]^2
+      {der\_u}_{weight1}\,\dot{u}(t^{kk})
+      \ +\ {der\_u}_{weight2}\left[\dot{u}(t^{kk})
+                                -\frac{{der\_u}_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
-      y_{weight2}\left[y(t^{kk})-\frac{y_{ref}}{y_{nominal}}\right]^2
+      y_{weight1}\,y(t^{kk})
+      \ +\ y_{weight2}\left[y(t^{kk})-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
@@ -115,8 +133,8 @@
     \displaystyle \frac{y_{min}}{y_{nominal}} &<& y(t^{kk})
         &<& \displaystyle \displaystyle \frac{y_{max}}{y_{nominal}}, \quad &
         kk=0,\ldots,KK, \\[3ex]
-    \displaystyle \frac{y_{min\_soft}}{y_{nominal}} - s^{kk} &<& y(t^{kk})
-        &<& \displaystyle \frac{y_{max\_soft}}{y_{nominal}} + s^{kk}, 
+    \displaystyle \frac{y_{soft\_min}}{y_{nominal}} - s^{kk} &<& y(t^{kk})
+        &<& \displaystyle \frac{y_{soft\_max}}{y_{nominal}} + s^{kk}, 
         \ \ s^{kk} > 0, \quad & kk=0,\ldots,KK, \\[3ex]
     \displaystyle \frac{y_{f\_min}}{y_{nominal}} &<& y(t_f)
         &<& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}}.
@@ -138,35 +156,17 @@
 class Prg_SFunctionOpt: public Prg_SFunction {
 
  protected:
-  VECP 		_mdl_x_nominal;	///< nominal initial states (for scaling)
+  Omu_OptVarVec _mdl_u; 	///< model inputs
+  Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
+  Omu_OptVarVec _mdl_y; 	///< model outputs
+  Omu_OptVarVec _mdl_y_soft; 	///< attributes for relaxed output constraints
+  Omu_OptVarVec _mdl_yf; 	///< model outputs at final time
 
-  IVECP		_mdl_u_active; 	///< indicate optimized model inputs
   VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
-  VECP 		_mdl_u_min;	///< lower bounds for optimized inputs
-  VECP 		_mdl_u_max;	///< upper bounds for optimized inputs
-  VECP 		_mdl_u_ref;	///< reference to be reached for control inputs
-  VECP 		_mdl_u_weight2;	///< weight for quadratic objective term
-  VECP 		_mdl_der_u_min;	///< lower bounds for rate of change
-  VECP 		_mdl_der_u_max;	///< upper bounds for rate of change
-  VECP 		_mdl_der_u_weight2;///< weight for rate of change of controls
-
-  /// indicate outputs used in criterion or hard constraints
-  IVECP		_mdl_y_active;
+  VECP 		_mdl_x_nominal;	///< nominal states (for scaling)
   VECP 		_mdl_y_nominal;	///< nominal outputs (for scaling)
+
   VECP 		_mdl_y_bias;	///< bias correction (offset) for outputs 
-  VECP 		_mdl_y_min;	///< lower bounds for outputs
-  VECP 		_mdl_y_max;	///< upper bounds for outputs
-  VECP 		_mdl_y_ref;	///< reference to be reached for active outputs
-  VECP 		_mdl_y_weight2;	///< weight for quadratic objective term
-  VECP 		_mdl_y_min_soft;      ///< lower soft bound
-  VECP 		_mdl_y_max_soft;      ///< upper soft bound
-  VECP 		_mdl_y_soft_weight1;  ///< linear weight for bound violation
-  VECP 		_mdl_y_soft_weight2;  ///< quadratic weight for bound violation
-  IVECP		_mdl_yf_active; ///< indicate active outputs at final time
-  VECP 		_mdl_yf_min; 	///< lower bounds on outputs at final time
-  VECP 		_mdl_yf_max; 	///< upper bounds on outputs at final time
-  VECP 		_mdl_yf_weight1;///< weight for linear final term in objective
-  VECP 		_mdl_yf_weight2;///< weight for quadratic final objective term
 
   int		_nx;	///< number of states for optimizer
   int		_nu;	///< number of optimized control inputs

@@ -34,24 +34,26 @@
 class Omu_VariableVec: public Omu_Vec {
   			// base class holds variable values
  public:
-  VECP min;		// minimal permitted values (default: -Inf)
-  VECP max;		// maximal permitted values (default: +Inf)
-  VECP initial;		// initial values (default: 0.0)
+  VECP min;		///< minimal permitted values (default: -Inf)
+  VECP max;		///< maximal permitted values (default: +Inf)
+  VECP initial;		///< initial values (default: 0.0)
 
-  Omu_VariableVec();
-  virtual ~Omu_VariableVec();
+  Omu_VariableVec();	///< allocate empty vectors
+  virtual ~Omu_VariableVec(); ///< destroy vectors
 
+  /** Allocate vectors of size n_expand for min, max, initial, and this
+      (default n_expand = n).
+      A derived classes may overload alloc() to restrict 
+      the capability of allocations for specific vectors.
+  */
   virtual void alloc(int n, int n_expand = -1);
-  	// -- allocate vectors of size n_expand 
-        //    for min, max, initial, and this
-	// -- (default n_expand: n)
-	// -- derived classes may overload alloc() to restrict 
-        //    the capability of allocations for specific vectors
 
  private:
-	// dismiss copy constructor and operator=
+  /// dismiss copy constructor and assignment operator
+  //@{
   Omu_VariableVec(const Omu_VariableVec &);
   Omu_VariableVec &operator=(const Omu_VariableVec &);
+  //@}
 };
 
 /** Vector of state variables, including sensitivity matrices Sx and Su
@@ -59,20 +61,23 @@ class Omu_VariableVec: public Omu_Vec {
     respectively. */
 class Omu_StateVec: public Omu_Vec {
 public:
-  MATP Sx;	// sensitivity matrix wrt initial states
-  MATP Su;	// sensitivity matrix wrt control parameters
+  MATP Sx;	///< sensitivity matrix wrt initial states
+  MATP Su;	///< sensitivity matrix wrt control parameters
 
+  /// allocate empty sensitivity matrices
   Omu_StateVec() {
     Sx = m_resize(m_get(1, 1), 0, 0);
     Su = m_resize(m_get(1, 1), 0, 0);
   }
+  /// destroy sensitivity matrices
   ~Omu_StateVec() {
     m_free(Su);
     m_free(Sx);
   }
 
  protected:
-  // protect copy constructor and operator= as they should not be used
+  /// protect copy constructor and operator= as they should not be used
+  //@{
   Omu_StateVec(const Omu_StateVec &sv): Omu_Vec(sv) {
     m_copy(sv.Sx, Sx);
     m_copy(sv.Su, Su);
@@ -82,6 +87,7 @@ public:
     m_copy(sv.Su, Su);
     return *this;
   }
+  //@}
 };
 
 /** Depreciated name for Omu_VariableVec. */

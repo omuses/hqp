@@ -30,6 +30,7 @@
 #define Prg_SFunctionEst_H
 
 #include "Prg_SFunction.h"
+#include "Omu_Variables.h"
 
 /**
    Estimation of initial states and parameters for a model given
@@ -126,19 +127,16 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   int		_mdl_np;///< number of model parameters
 
+  Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)
+  Omu_VariableVec _mdl_x0;	///< initial states
+
   IVECP		_mdl_p_active;	///< indicate estimated parameters
   IVECP		_mdl_x0_active; ///< indicate estimated states
   IVECP		_mdl_x0_steady; ///< initial state should be in steady-state
   IVECP		_mdl_y_active; 	///< indicate measured outputs
-  VECP		_mdl_y_nominal;	///< nominal output values (for scaling)
-
-  VECP 		_mdl_p;		///< initial parameter values
   VECP 		_mdl_p_nominal;	///< nominal parameter values (for scaling)
-  VECP 		_mdl_p_min;	///< lower bounds for estimated parameters
-  VECP 		_mdl_p_max;	///< upper bounds for estimated parameters
   VECP 		_mdl_x_nominal; ///< nominal state values (for scaling)
-  VECP 		_mdl_x0_min;	///< lower bounds for estimated initial states
-  VECP 		_mdl_x0_max;	///< upper bounds for estimated initial states
+  VECP		_mdl_y_nominal;	///< nominal output values (for scaling)
 
   int		_nx;	///< number of states for optimizer
   int		_np;	///< number of estimated parameters

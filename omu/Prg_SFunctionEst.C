@@ -42,9 +42,6 @@
 
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
-// define own Inf so that iftcl works
-static const double INF = 8e88;
-
 //--------------------------------------------------------------------------
 Prg_SFunctionEst::Prg_SFunctionEst()
 {
@@ -61,11 +58,15 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_x0_steady = iv_get(_mdl_nx);
   _mdl_y_active = iv_get(_mdl_ny);
+  _mdl_p_nominal = v_get(_mdl_np);
+  _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
   iv_zero(_mdl_p_active);
   iv_zero(_mdl_x0_active);
   iv_zero(_mdl_x0_steady);
   iv_zero(_mdl_y_active);
+  v_ones(_mdl_p_nominal);
+  v_ones(_mdl_x_nominal);
   v_ones(_mdl_y_nominal);
 
   _np = 0;
@@ -77,21 +78,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_ys = m_get(_KK+1, _mdl_ny);
   _prg_ys_ref = m_get(_KK+1, 1);
 
-  _mdl_p = v_get(_mdl_np);
-  _mdl_p_nominal = v_get(_mdl_np);
-  _mdl_p_min = v_get(_mdl_np);
-  _mdl_p_max = v_get(_mdl_np);
-  v_set(_mdl_p_nominal, 1.0);
-  v_set(_mdl_p_min, 0.0);
-  v_set(_mdl_p_max, INF);
-
-  _mdl_x_nominal = v_get(_mdl_nx);
-  _mdl_x0_min = v_get(_mdl_nx);
-  _mdl_x0_max = v_get(_mdl_nx);
-  v_set(_mdl_x_nominal, 1.0);
-  v_set(_mdl_x0_min, -INF);
-  v_set(_mdl_x0_max, INF);
-
   _M = m_resize(m_get(1, 1), (_KK+1)*_ny, _np+_nx0);
   _dxdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
   _dxfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
@@ -102,15 +88,16 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_IntVec("mdl_x0_active", &_mdl_x0_active));
   _ifList.append(new If_IntVec("mdl_x0_steady", &_mdl_x0_steady));
   _ifList.append(new If_IntVec("mdl_y_active", &_mdl_y_active));
+  _ifList.append(new If_RealVec("mdl_p_nominal", &_mdl_p_nominal));
+  _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
   _ifList.append(new If_RealVec("mdl_y_nominal", &_mdl_y_nominal));
 
   _ifList.append(new If_RealVec("mdl_p", &_mdl_p));
-  _ifList.append(new If_RealVec("mdl_p_nominal", &_mdl_p_nominal));
-  _ifList.append(new If_RealVec("mdl_p_min", &_mdl_p_min));
-  _ifList.append(new If_RealVec("mdl_p_max", &_mdl_p_max));
-  _ifList.append(new If_RealVec("mdl_x_nominal", &_mdl_x_nominal));
-  _ifList.append(new If_RealVec("mdl_x0_min", &_mdl_x0_min));
-  _ifList.append(new If_RealVec("mdl_x0_max", &_mdl_x0_max));
+  _ifList.append(new If_RealVec("mdl_p_min", &_mdl_p.min));
+  _ifList.append(new If_RealVec("mdl_p_max", &_mdl_p.max));
+  _ifList.append(new If_RealVec("mdl_x0", &_mdl_x0));
+  _ifList.append(new If_RealVec("mdl_x0_min", &_mdl_x0.min));
+  _ifList.append(new If_RealVec("mdl_x0_max", &_mdl_x0.max));
 
   _ifList.append(new If_RealMat("mdl_us", &_mdl_us));
   _ifList.append(new If_RealMat("mdl_ys", &_mdl_ys));
@@ -127,21 +114,16 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   m_free(_dxfdpx0);
   m_free(_dxdpx0);
   m_free(_M);
+  m_free(_prg_ys_ref);
+  m_free(_mdl_ys);
+  m_free(_mdl_us);
   iv_free(_mdl_p_active);
   iv_free(_mdl_x0_steady);
   iv_free(_mdl_x0_active);
   iv_free(_mdl_y_active);
   v_free(_mdl_y_nominal);
-  m_free(_prg_ys_ref);
-  m_free(_mdl_ys);
-  m_free(_mdl_us);
-  v_free(_mdl_p_min);
-  v_free(_mdl_p_max);
-  v_free(_mdl_p_nominal);
-  v_free(_mdl_p);
-  v_free(_mdl_x0_min);
-  v_free(_mdl_x0_max);
   v_free(_mdl_x_nominal);
+  v_free(_mdl_p_nominal);
 }
 
 //--------------------------------------------------------------------------
@@ -167,6 +149,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   // check for optional S-function methods that are required
   assert(ssGetmdlDerivatives(_S) != NULL);
 
+  // determine number of parameters
   if (_mdl_args_p_idx >= 0) {
     _mx_p = mxGetCell(_mx_args, _mdl_args_p_idx);
     _mdl_np = mxGetNumberOfElements(_mx_p);
@@ -177,31 +160,26 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   }
   
   // adapt sizes of model vectors
+  _mdl_p.alloc(_mdl_np);
+  v_zero(_mdl_p.min);
+
+  _mdl_x0.alloc(_mdl_nx);
+  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
+
   iv_resize(_mdl_p_active, _mdl_np);
   iv_resize(_mdl_x0_active, _mdl_nx);
   iv_resize(_mdl_x0_steady, _mdl_nx);
   iv_resize(_mdl_y_active, _mdl_ny);
+  v_resize(_mdl_p_nominal, _mdl_np);
+  v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
   iv_zero(_mdl_p_active);
   iv_zero(_mdl_x0_active);
   iv_zero(_mdl_x0_steady);
   iv_zero(_mdl_y_active);
+  v_ones(_mdl_p_nominal);
+  v_ones(_mdl_x_nominal);
   v_ones(_mdl_y_nominal);
-
-  v_resize(_mdl_p, _mdl_np);
-  v_resize(_mdl_p_nominal, _mdl_np);
-  v_resize(_mdl_p_min, _mdl_np);
-  v_resize(_mdl_p_max, _mdl_np);
-  v_set(_mdl_p_nominal, 1.0);
-  v_set(_mdl_p_min, 0.0);
-  v_set(_mdl_p_max, INF);
-
-  v_resize(_mdl_x_nominal, _mdl_nx);
-  v_resize(_mdl_x0_min, _mdl_nx);
-  v_resize(_mdl_x0_max, _mdl_nx);
-  v_set(_mdl_x_nominal, 1.0);
-  v_set(_mdl_x0_min, -INF);
-  v_set(_mdl_x0_max, INF);
 
   m_resize(_mdl_us, _KK+1, _mdl_nu);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
@@ -259,10 +237,10 @@ void Prg_SFunctionEst::setup(int k,
     for (i = 0; i < _mdl_np; i++) {
       if (_mdl_p_active[i]) {
 	x.initial[ip] = _mdl_p[i] / _mdl_p_nominal[i];
-	if (_mdl_p_min[i] > -INF)
-	  x.min[ip] = _mdl_p_min[i] / _mdl_p_nominal[i];
-	if (_mdl_p_max[i] < INF)
-	  x.max[ip] = _mdl_p_max[i] / _mdl_p_nominal[i];
+	if (_mdl_p.min[i] > -Inf)
+	  x.min[ip] = _mdl_p.min[i] / _mdl_p_nominal[i];
+	if (_mdl_p.max[i] < Inf)
+	  x.max[ip] = _mdl_p.max[i] / _mdl_p_nominal[i];
 	++ip;
       }
     }
@@ -274,10 +252,10 @@ void Prg_SFunctionEst::setup(int k,
       if (!_mdl_x0_active[i-_np])
 	x.min[i] = x.max[i] = x.initial[i];
       else {
-	if (_mdl_x0_min[i-_np] > -INF)
-	  x.min[i] = _mdl_x0_min[i-_np] / _mdl_x_nominal[i-_np];
-	if (_mdl_x0_max[i-_np] < INF)
-	  x.max[i] = _mdl_x0_max[i-_np] / _mdl_x_nominal[i-_np];
+	if (_mdl_x0.min[i-_np] > -Inf)
+	  x.min[i] = _mdl_x0.min[i-_np] / _mdl_x_nominal[i-_np];
+	if (_mdl_x0.max[i-_np] < Inf)
+	  x.max[i] = _mdl_x0.max[i-_np] / _mdl_x_nominal[i-_np];
       }
     }
   }

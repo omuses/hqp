@@ -32,16 +32,18 @@
 /** Vector class with automatic construction / destruction */
 class Omu_Vec: public VECP {
 public:
-  Omu_Vec() {_v = v_resize(v_get(1), 0);}
-  virtual ~Omu_Vec() {v_free(_v);}
+  Omu_Vec() {_v = v_resize(v_get(1), 0);} ///< allocate empty vector
+  virtual ~Omu_Vec() {v_free(_v);} 	  ///< destroy vector
 
  protected:
-  // protect copy constructor and operator= as they should not be used
+  /// protect copy constructor and operator= as they should not be used
+  //@{
   Omu_Vec(const Omu_Vec &v): VECP() {_v = v_copy(v, _v);}
   Omu_Vec &operator=(const Omu_Vec &v) {
     _v = v_copy(v, _v);
     return *this;
   }
+  //@}
 };
 
 

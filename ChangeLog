@@ -1,5 +1,20 @@
 2002-05-11    <rfranke>
 
+	* omu/Prg_SFunctionEst.C:
+	  use Omu_VariableVec instead of individual VECP's
+	  for min, max, and values
+	* omu/Prg_SFunctionOpt.C:
+	  introduce Omu_OptVarVec, based on Omu_VariableVec,
+	  to hold weights, ref vals, etc., besides min, max
+
+	* iftcl/{If_Real.C, If_RealVec.C, If_RealMat.C} (put):
+	  add support for "Inf", "-Inf", "+Inf" as input values
+	* odc/Prg_SFunctionEst.C, odc/Prg_SFunctionOpt.C:
+	  use Hqp's default Inf
+
+	* hqp/Hqp.h, hqp/Meschach.h:
+	  move Inf and is_finite from Hqp.h to Meschach.h
+
 	* omu/Prg_SFunctionOpt.[hC]: introduce terms at final time
 	  - mdl_yf_min, mdl_yf_max for constraints at final time
 	  - mdl_yf_weight1, mdl_yf_weight2 for objective
