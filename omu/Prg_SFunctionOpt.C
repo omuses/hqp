@@ -674,6 +674,7 @@ void Prg_SFunctionOpt::update(int kk,
 
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
+  double dtu; 	// factor used for controlled inputs in objective function
   if (kk == 0) {
     if (_KK > 0) {
       dt = 0.5*(ts(kk+1) - ts(kk));
@@ -694,10 +695,10 @@ void Prg_SFunctionOpt::update(int kk,
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
       // control inputs
-      f0 += _mdl_u.weight1[idx] * _mdl_us[kk][idx] / _mdl_u_nominal[idx];
+      dtu = (_mdl_u_order[idx] == 0)? dt0: dt;
+      f0 += dtu * _mdl_u.weight1[idx] * _mdl_us[kk][idx] / _mdl_u_nominal[idx];
       help = (_mdl_us[kk][idx] - _mdl_u.ref[idx]) / _mdl_u_nominal[idx];
-      f0 += _mdl_u.weight2[idx]*help*help;
-      f0 *= (_mdl_u_order[idx] == 0)? dt0: dt;
+      f0 += dtu * _mdl_u.weight2[idx]*help*help;
       // rates of change
       if (kk < _KK) {
 	f0 += dt0 * _mdl_der_u.weight1[idx] * u[i*upsk + kk%upsk]/_t_nominal;
@@ -1015,6 +1016,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   //  numeric differentiation gives bad results for quadratic terms)
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
+  double dtu; 	// factor used for controlled inputs in objective function
   if (kk == 0) {
     if (_KK > 0) {
       dt = 0.5*(ts(kk+1) - ts(kk));
@@ -1038,10 +1040,10 @@ void Prg_SFunctionOpt::update_grds(int kk,
     // contribution of objective term
     if (_mdl_u.active[idx]) {
       // controlled inputs
-      f0.gx[i] += _mdl_u.weight1[idx];
-      f0.gx[i] += _mdl_u.weight2[idx] *
+      dtu = (_mdl_u_order[idx] == 0)? dt0: dt;
+      f0.gx[i] += dtu * _mdl_u.weight1[idx];
+      f0.gx[i] += dtu * _mdl_u.weight2[idx] *
 	2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
-      f0.gx[i] *= (_mdl_u_order[idx] == 0)? dt0: dt;
       // rates of change
       if (kk < _KK) {
 	f0.gu[i] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
@@ -1071,12 +1073,12 @@ void Prg_SFunctionOpt::update_grds(int kk,
     if (_mdl_y_soft.active[idx] == 1) {
       if (kk < _KK)
 	f0.gu[upsk*_nu + is + kk%spsk]
-	  += dt*(_mdl_y_soft.weight1[idx]
-		 + 2.0*_mdl_y_soft.weight2[idx]*u[upsk*_nu + is + kk%spsk]);
+	  += dt * (_mdl_y_soft.weight1[idx]
+		   + 2.0*_mdl_y_soft.weight2[idx]*u[upsk*_nu + is + kk%spsk]);
       else
 	f0.gx[_nx + is + kk%spsk]
-	  += dt*(_mdl_y_soft.weight1[idx]
-		 + 2.0*_mdl_y_soft.weight2[idx]*x[_nx + is + kk%spsk]);
+	  += dt * (_mdl_y_soft.weight1[idx]
+		   + 2.0*_mdl_y_soft.weight2[idx]*x[_nx + is + kk%spsk]);
       is += spsk;
     }
   }

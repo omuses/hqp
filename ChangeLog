@@ -1,7 +1,14 @@
+2003-06-18    <rfranke>
+
+	* omu/Prg_SFunctionOpt.C (update):
+	  bug fix for control terms in objective function
+	  (bug had been introduced on 2003-02-15)
+
 2003-06-12    <rfranke>
 
 	* omu/Prg_SFunctionOpt.C (setup):
 	  bug fix for constraints and weights on y0
+	  (bug had been introduced on 2003-03-04)
 
 2003-05-20    <e_arnold>
 	
