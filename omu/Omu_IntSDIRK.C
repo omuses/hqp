@@ -56,8 +56,13 @@ IF_CLASS_DEFINE("SDIRK", Omu_IntSDIRK, Omu_Integrator);
 Omu_IntSDIRK::Omu_IntSDIRK()
 {
 
+  _sys = NULL;
+  _cx_ptr = NULL;
+  _cF_ptr = NULL;
+
   _recalc_jac = true;
   _stiffly_accurate = false;
+  _sens_adolc = false;
   _sens_at_once = false;
   _lsqr_sol = false;
 
@@ -75,10 +80,6 @@ Omu_IntSDIRK::Omu_IntSDIRK()
   _ppivot= px_get(1);
   _Spivot= px_get(1);
 
-  _cx = v_get(1);
-  _cu = v_get(1);
-  _cxp = v_get(1);
-  _cF = v_get(1);
   _cFh = v_get(1);
 
   _par = v_get(1);
@@ -94,10 +95,7 @@ Omu_IntSDIRK::Omu_IntSDIRK()
 
   _yprime = m_get(1,1);
 
-  _cFx  = m_get(1,1);
   _cFxh = m_get(1,1);
-  _cFu  = m_get(1,1);
-  _cFxp = m_get(1,1);
   _Sxd  = m_get(1,1);
   _Sxd0 = m_get(1,1);
   _Sxx  = m_get(1,1);
@@ -148,7 +146,8 @@ Omu_IntSDIRK::Omu_IntSDIRK()
 
   _gamma0 = 1.0;
 
-  _ifList.append(new If_Bool("prg_int_sens", &_sens_at_once));
+  _ifList.append(new If_Bool("prg_int_sensadolc", &_sens_adolc));
+  _ifList.append(new If_Bool("prg_int_sensatonce", &_sens_at_once));
   _ifList.append(new If_Bool("prg_int_lsqrsol", &_lsqr_sol));
   _ifList.append(new If_Bool("prg_int_sparsol", &_sparse_solver));
   _ifList.append(new If_Bool("prg_int_banded", &_banded));
@@ -175,10 +174,6 @@ Omu_IntSDIRK::~Omu_IntSDIRK()
   PX_FREE(_ppivot);
   PX_FREE(_Spivot);
 
-  V_FREE(_cx);
-  V_FREE(_cu);
-  V_FREE(_cxp);
-  V_FREE(_cF);
   V_FREE(_cFh);
   V_FREE(_par);
   V_FREE(_y);
@@ -201,10 +196,7 @@ Omu_IntSDIRK::~Omu_IntSDIRK()
   M_FREE(_a_pred);
 
   M_FREE(_yprime);
-  M_FREE(_cFx);
   M_FREE(_cFxh);
-  M_FREE(_cFu);
-  M_FREE(_cFxp);
 
   M_FREE(_Sxd);
   M_FREE(_Sxd0);
@@ -316,7 +308,7 @@ void Omu_IntSDIRK::realloc()
 
   int i;
 
-  if ((int)_cx->dim == _nd + _n && (int)_cu->dim == _nu)
+  if ((int)_cxp->dim == _nd + _n && (int)_cu->dim == _nu)
     return;
 
   //
@@ -325,10 +317,9 @@ void Omu_IntSDIRK::realloc()
 
   iv_resize(_x_algebraic,_n);
 
-  v_resize(_cx, _nd + _n);
   v_resize(_cu, _nu);
-  v_resize(_cxp, _nd + _n);
-  v_resize(_cF, _nd + _n);
+ _cxp.realloc(_nd + _n, _nx, _nu);
+
   v_resize(_cFh, _n);
 
   v_resize(_par, _nd+_nu);
@@ -340,10 +331,7 @@ void Omu_IntSDIRK::realloc()
 
   m_resize(_yprime, _irk_stages, _n);
 
-  m_resize(_cFx, _nd + _n, _nd + _n);
   m_resize(_cFxh, _n, _n);
-  m_resize(_cFu, _nd + _n, _nu);
-  m_resize(_cFxp, _nd + _n, _nd + _n);
 
   m_resize(_Sxd0,_n,_nd);
   m_resize(_Sxd,_n,_nd);
@@ -413,6 +401,9 @@ void Omu_IntSDIRK::init_stage(int k,
 	m_error(E_INTERN,"Omu_IntSDIRK::init_stage - 
                           sdirk method not correctly defined!");
 
+  if(_sparse_solver && !_banded_solver)
+      _banded_solver = true;
+
   if (_jac_sbw >= 0) {
     // take user-defined value
     _ml = _mu = _jac_sbw;
@@ -428,10 +419,6 @@ void Omu_IntSDIRK::init_stage(int k,
       _banded_solver = false;
   }
 
-  if(_sparse_solver)
-    if(_banded_solver)
-      _banded_solver = false;
-
   realloc();
 
 }
@@ -440,13 +427,17 @@ void Omu_IntSDIRK::init_stage(int k,
 
 void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 			 const Omu_States &x, const Omu_Vector &u,
-			 Omu_Program *sys, VECP xt,
-			 MATP Sx, MATP Su)
+			 Omu_Program *sys, Omu_DepVec &cF, Omu_SVec &cx)
 {
 
   bool    ok, tend_ok;
   int     i, j, l, steps;
   double  err;
+
+  _sys = sys;	// propagate to res() and jac()
+
+  _cx_ptr = &cx;
+  _cF_ptr = &cF;
 
   if(_output > 1) {
     cout << endl;
@@ -455,29 +446,24 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
     cout << "  tstart: " << tstart;
     cout << "  tend: " << tend << endl;
     cout.precision(8);
-    v_output(xt);
+    v_output(cx);
   }
 
-  _sys = sys;	// propagate to res() and jac()
-
-  m_zero(_cFx);
-  m_zero(_cFu);
-  m_zero(_cFxp);
   m_zero(_Sxx0);
 
   _nod = x.nv;
 
   if(_sa) {
-    m_move(Sx,_nd,0,_n-_nod,_nd,_Sxd0,0,0);
-    m_move(Sx,_nd,_nd,_n,_n-_nod,_Sxx0,0,0);
-    m_move(Su,_nd,0,_n,_nu,_Sxu0,0,0);
+    m_move(cx.Sx,_nd,0,_n-_nod,_nd,_Sxd0,0,0);
+    m_move(cx.Sx,_nd,_nd,_n,_n-_nod,_Sxx0,0,0);
+    m_move(cx.Su,_nd,0,_n,_nu,_Sxu0,0,0);
   }
 
   // compute initial values for yprime
   v_zero(_yprime0);
   for(i = 0; i < _n; i++)
     _yprime0[i] = 1.0e-5;
-  init_yprime(kk,tstart,xt,u,_yprime0);
+  init_yprime(kk,tstart,cx,u,_yprime0);
 
   if(_nsteps > 0)
     _h_new = (tend - tstart)/_nsteps;
@@ -491,10 +477,10 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
   v_zero(_y);
 
   for (i = 0; i < _nd; i++)
-    _par[i] = xt[i];
+    _par[i] = cx[i];
 
   for (i = 0; i < _n; i++)
-    _y[i] = xt[_nd + i];		// initial states
+    _y[i] = cx[_nd + i];		// initial states
 
   for (i = 0; i < _nu; i++)
     _par[_nd + i] = u[i];
@@ -700,11 +686,20 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
       cout << "  newtonsteps: " << _newtonsteps << endl;
     }
 
-    if(_sa)
-      if(_nod == 0 && !_lsqr_sol)
-	sensitivity();
-      else
-	sensitivity_lsqr();
+    if(_sa) {
+      if(_sens_adolc) {
+	if(_nod == 0 && !_lsqr_sol)
+	  sensitivity_adolc();
+        else
+	  sensitivity_lsqr_adolc();
+      }
+      else {
+        if(_nod == 0 && !_lsqr_sol)
+	  sensitivity();
+        else
+	  sensitivity_lsqr();
+      }
+    }
 
     _t += _h; 
     _h = _h_new;
@@ -716,15 +711,18 @@ void Omu_IntSDIRK::solve(int kk, Real tstart, Real tend,
 
   // return results of integration process
   for(i = 0; i < _n; i++)
-    xt[_nd+i] = _y[i];
+    cx[_nd+i] = _y[i];
+
+  for(i = 0; i < _nd; i++)
+    cx[i] = _par[i];
   
   if(_output > 1)
     v_output(_y);
     
   if(_sa) {
-    m_move(_Sxd0,0,0,_n,_nd,Sx,_nd,0);
-    m_move(_Sxx0,0,0,_n,_n-_nod,Sx,_nd,_nd);
-    m_move(_Sxu0,0,0,_n,_nu,Su,_nd,0);
+    m_move(_Sxd0,0,0,_n,_nd,cx.Sx,_nd,0);
+    m_move(_Sxx0,0,0,_n,_n-_nod,cx.Sx,_nd,_nd);
+    m_move(_Sxu0,0,0,_n,_nu,cx.Su,_nd,0);
   }
 
 }
@@ -1189,11 +1187,10 @@ void Omu_IntSDIRK::solve_final(VECP y, VECP yprime)
 }
 
 
-/*
 //--------------------------------------------------------------------------
 // differentiate the whole integration scheme using adol-c
 
-void Omu_IntSDIRK::sensitivity()
+void Omu_IntSDIRK::sensitivity_adolc()
 {
 
   int i, j, k, l;
@@ -1521,14 +1518,15 @@ void Omu_IntSDIRK::sensitivity()
 
 }
 
-*/
-
 //--------------------------------------------------------------------------
 
 void Omu_IntSDIRK::sensitivity()
 {
 
   int    i, j, k, l;
+
+  Omu_SVec &cx = *_cx_ptr;
+  Omu_DepVec &cF = *_cF_ptr;
   
   m_resize(_SF,_n,_n+_nd+_nu);
   m_resize(_Sxd,_n,_n+_nd+_nu);
@@ -1536,41 +1534,44 @@ void Omu_IntSDIRK::sensitivity()
   m_resize(_Sh,_irk_stages*_n,_n+_nd+_nu);
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = _par[i];
+    cx[i] = _par[i];
     _cxp[i] = 0.0;
   }
 
   for (i = 0; i < _nu; i++) {
     _cu[i] = _par[_nd + i];
   }
+
+  // evaluate residuals and Jacobians
+  bool is_required_J_bak = cF.is_required_J();
+  cF.set_required_J(true);
   
   for(i = 0; i < _irk_stages; i++) {
 
     for(j = 0; j < _n; j++)
       if(!_x_algebraic[j]) {
-     	_cx[_nd+j] = _y0[j];
+     	cx[_nd+j] = _y0[j];
 	for(l = 0; l <= i; l++)
-	  _cx[_nd+j] += _h*_a[i][l]*_yprime[l][j];
+	  cx[_nd+j] += _h*_a[i][l]*_yprime[l][j];
 	_cxp[_nd+j] = _yprime[i][j];
       }
       else
-	_cx[_nd+j] = _yprime[i][j];
+	cx[_nd+j] = _yprime[i][j];
 
-    _sys->continuous(_kk, _t+_c[i]*_h, _cx, _cu, _cxp, 
-		     _cF, _cFx, _cFu, _cFxp);
+    _sys->continuous(_kk, _t+_c[i]*_h, cx, _cu, _cxp, cF);
 
     for (j = 0; j < _n; j++)
       for (l = 0; l < _n; l++)
 	if(!_x_algebraic[l]) {
-	  _irk_jac[j][l] = _cFxp[_nd+ j][_nd+ l] + 
-	    _h*_a[i][i]*_cFx[_nd+ j][_nd+ l];
-	  _Sxd[j][_nd+l] = _cFx[_nd+ j][_nd+ l];
+	  _irk_jac[j][l] = cF.Jxp[_nd+ j][_nd+ l] + 
+	    _h*_a[i][i]*cF.Jx[_nd+ j][_nd+ l];
+	  _Sxd[j][_nd+l] = cF.Jx[_nd+ j][_nd+ l];
 	}
 	else
-	  _irk_jac[j][l] = _cFx[_nd+ j][_nd+ l];
+	  _irk_jac[j][l] = cF.Jx[_nd+ j][_nd+ l];
 	
-    m_move(_cFx,_nd,0,_n,_nd,_Sxd,0,0);
-    m_move(_cFu,_nd,0,_n,_nu,_Sxd,0,_nd+_n);
+    m_move(cF.Jx,_nd,0,_n,_nd,_Sxd,0,0);
+    m_move(cF.Ju,_nd,0,_n,_nu,_Sxd,0,_nd+_n);
 
     if(_banded_solver) {
       if(_sparse_solver) {
@@ -1608,7 +1609,7 @@ void Omu_IntSDIRK::sensitivity()
       for (k = 0; k < _n; k++)
 	for (l = 0; l < _n; l++)
 	  if(!_x_algebraic[l])
-	    _Sxx[k][l] = _h*_a[i][j]*_cFx[_nd+ k][_nd+ l];
+	    _Sxx[k][l] = _h*_a[i][j]*cF.Jx[_nd+ k][_nd+ l];
 
       m_move(_Sh,j*_n,0,_n,_nd+_n+_nu,_SF,0,0);
       
@@ -1634,6 +1635,8 @@ void Omu_IntSDIRK::sensitivity()
     m_move(_Sxd,0,0,_n,_n+_nd+_nu,_Sh,i*_n,0);
     
   }
+
+  cF.set_required_J(is_required_J_bak);
 
   m_resize(_Sxd,_n,_nd);
   m_resize(_Sxu,_n,_nu);
@@ -1706,11 +1709,10 @@ void Omu_IntSDIRK::sensitivity()
 
 }
 
-/*
 //--------------------------------------------------------------------------
 // differentiate the whole integration scheme using adol-c
 
-void Omu_IntSDIRK::sensitivity_lsqr()
+void Omu_IntSDIRK::sensitivity_lsqr_adolc()
 {
 
   int i, j, l;
@@ -1946,8 +1948,6 @@ void Omu_IntSDIRK::sensitivity_lsqr()
   
 }
 
-*/
-
 //--------------------------------------------------------------------------
 
 void Omu_IntSDIRK::sensitivity_lsqr()
@@ -1955,47 +1955,53 @@ void Omu_IntSDIRK::sensitivity_lsqr()
 
   int i, j, k, l;
 
+  Omu_SVec &cx = *_cx_ptr;
+  Omu_DepVec &cF = *_cF_ptr;
+
   m_resize(_SF,_n,_n+_nd+_nu);
   m_resize(_Sxd,_n,_n+_nd+_nu);
   m_resize(_Sxu,_n,_n+_nd+_nu);
   m_resize(_Sh,_irk_stages*_n,_n+_nd+_nu);
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = _par[i];
+    cx[i] = _par[i];
     _cxp[i] = 0.0;
   }
 
   for (i = 0; i < _nu; i++) {
     _cu[i] = _par[_nd + i];
   }
+
+  // evaluate residuals and Jacobians
+  bool is_required_J_bak = cF.is_required_J();
+  cF.set_required_J(true);
   
   for(i = 0; i < _irk_stages; i++) {
 
     for(j = 0; j < _n; j++)
       if(!_x_algebraic[j]) {
-     	_cx[_nd+j] = _y0[j];
+     	cx[_nd+j] = _y0[j];
 	for(l = 0; l <= i; l++)
-	  _cx[_nd+j] += _h*_a[i][l]*_yprime[l][j];
+	  cx[_nd+j] += _h*_a[i][l]*_yprime[l][j];
 	_cxp[_nd+j] = _yprime[i][j];
       }
       else
-	_cx[_nd+j] = _yprime[i][j];
+	cx[_nd+j] = _yprime[i][j];
 
-    _sys->continuous(_kk, _t+_c[i]*_h, _cx, _cu, _cxp, 
-		     _cF, _cFx, _cFu, _cFxp);
+    _sys->continuous(_kk, _t+_c[i]*_h, cx, _cu, _cxp, cF);
 
     for (j = 0; j < _n; j++)
       for (l = 0; l < _n; l++)
 	if(!_x_algebraic[l]) {
-	  _irk_jac[j][l] = _cFxp[_nd+ j][_nd+ l] +
-	    _h*_a[i][i]*_cFx[_nd+ j][_nd+ l];
-	  _Sxd[j][_nd+l] = _cFx[_nd+ j][_nd+ l];
+	  _irk_jac[j][l] = cF.Jxp[_nd+ j][_nd+ l] +
+	    _h*_a[i][i]*cF.Jx[_nd+ j][_nd+ l];
+	  _Sxd[j][_nd+l] = cF.Jx[_nd+ j][_nd+ l];
 	}
 	else
-	  _irk_jac[j][l] = _cFx[_nd+ j][_nd+ l];
+	  _irk_jac[j][l] = cF.Jx[_nd+ j][_nd+ l];
 	
-    m_move(_cFx,_nd,0,_n,_nd,_Sxd,0,0);
-    m_move(_cFu,_nd,0,_n,_nu,_Sxd,0,_nd+_n);
+    m_move(cF.Jx,_nd,0,_n,_nd,_Sxd,0,0);
+    m_move(cF.Ju,_nd,0,_n,_nu,_Sxd,0,_nd+_n);
 
     if(_sparse_solver) {
       sp_resize(_irk_jac_sp,_n,_n);
@@ -2051,7 +2057,7 @@ void Omu_IntSDIRK::sensitivity_lsqr()
       for (k = 0; k < _n; k++)
 	for (l = 0; l < _n; l++)
 	  if(!_x_algebraic[l])
-	    _Sxx[k][l] = _h*_a[i][j]*_cFx[_nd+ k][_nd+ l];
+	    _Sxx[k][l] = _h*_a[i][j]*cF.Jx[_nd+ k][_nd+ l];
 
       m_move(_Sh,j*_n,0,_n,_nd+_n+_nu,_SF,0,0);
       
@@ -2080,6 +2086,8 @@ void Omu_IntSDIRK::sensitivity_lsqr()
     m_move(_Sxd,0,0,_n,_n+_nd+_nu,_Sh,i*_n,0);
     
   }
+
+  cF.set_required_J(is_required_J_bak);
 
   m_resize(_Sxd,_n,_nd);
   m_resize(_Sxu,_n,_nu);
@@ -2160,14 +2168,17 @@ void Omu_IntSDIRK::res(double t, const VECP  y, const VECP yprime,
 
   int i;
 
+  Omu_SVec &cx = *_cx_ptr;
+  Omu_DepVec &cF = *_cF_ptr;
+
   // form vectors of independent variables
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = par[i];
+    cx[i] = par[i];
     _cxp[i] = 0.0;
   }
   for (i = 0; i < _n; i++) {
-    _cx[_nd + i] = y[i];
+    cx[_nd + i] = y[i];
     _cxp[_nd + i] = yprime[i];
   }
   for (i = 0; i < _nu; i++) {
@@ -2176,10 +2187,10 @@ void Omu_IntSDIRK::res(double t, const VECP  y, const VECP yprime,
 
   // evaluate residual
 
-  _sys->continuous(_kk, t, _cx, _cu, _cxp, _cF);
+  _sys->continuous(_kk, t, cx, _cu, _cxp, cF);
 
   for (i = 0; i < _n; i++)
-    res[i] = _cF[_nd+i];
+    res[i] = cF[_nd+i];
 
   _res_evals++;
 
@@ -2192,14 +2203,17 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 
   int    i, j;
 
+  Omu_SVec &cx = *_cx_ptr;
+  Omu_DepVec &cF = *_cF_ptr;
+
   // form vectors of independent variables
 
   for (i = 0; i < _nd; i++) {
-    _cx[i] = par[i];
+    cx[i] = par[i];
     _cxp[i] = 0.0;
   }
   for (i = 0; i < _n; i++) {
-    _cx[_nd + i] = y[i];
+    cx[_nd + i] = y[i];
     _cxp[_nd + i] = yprime[i];
   }
   for (i = 0; i < _nu; i++) {
@@ -2207,11 +2221,15 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
   }
 
   // evaluate residuals and Jacobians
+  bool is_required_J_bak = cF.is_required_J();
+  cF.set_required_J(true);
 
-  _sys->continuous(_kk, t, _cx, _cu, _cxp, _cF, _cFx, _cFu, _cFxp);
+  _sys->continuous(_kk, t, cx, _cu, _cxp, cF);
+
+  cF.set_required_J(is_required_J_bak);
 
   for (i = 0; i < _n; i++)
-    res[i] = _cF[_nd+i];
+    res[i] = cF[_nd+i];
 
   if(stage > 0) {
 
@@ -2224,7 +2242,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
     
     for(i = 0; i < _n; i++)
       for(j = 0; j < _n; j++)
-	_irk_jac[i][j] = _cFxp[_nd+i][_nd+j] + _cFh[j]*_cFx[_nd+i][_nd+j];
+	_irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j] + _cFh[j]*cF.Jx[_nd+i][_nd+j];
   }
   else {
     
@@ -2240,7 +2258,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
       
       for(i = 0; i < _n; i++)
 	for(j = 0; j < _n; j++)
-	  _irk_jac[i][j] = _cFxp[_nd+i][_nd+j] + _cFh[j]*_cFx[_nd+i][_nd+j];
+	  _irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j] + _cFh[j]*cF.Jx[_nd+i][_nd+j];
     }
 
     // only algebraic states
@@ -2251,7 +2269,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 	    _cFh[i] = 1.0;
       for(i = 0; i < _n; i++)
 	for(j = 0; j < _n; j++)
-	  _irk_jac[i][j] = _cFh[j]*_cFx[_nd+i][_nd+j];
+	  _irk_jac[i][j] = _cFh[j]*cF.Jx[_nd+i][_nd+j];
       for(i = 0; i < _n; i++)
 	_irk_jac[i][i] += 1.0e-8;
     }
@@ -2264,7 +2282,7 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 	    _cFh[i] = 1.0;
       for(i = 0; i < _n; i++)
 	for(j = 0; j < _n; j++)
-	  _irk_jac[i][j] = _cFxp[_nd+i][_nd+j];
+	  _irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j];
       for(i = 0; i < _n; i++)
 	_irk_jac[i][i] += 1.0e-8;
     }
@@ -2281,7 +2299,8 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
       for(i = 0; i < _n; i++)
 	if(_x_algebraic[i]) 
 	  for(j = 0; j < _n; j++)
-	    _irk_jac[i][j] = _cFxp[_nd+i][_nd+j] + _cFh[j]*_cFx[_nd+i][_nd+j];
+	    _irk_jac[i][j] = cF.Jxp[_nd+i][_nd+j] 
+		+ _cFh[j]*cF.Jx[_nd+i][_nd+j];
 
       if(_na > 0)    
 	for(i = 0; i < _n; i++)
@@ -2295,14 +2314,16 @@ void Omu_IntSDIRK::jac(int stage, double t, const VECP y, const VECP yprime,
 }
 
 //--------------------------------------------------------------------------
-void Omu_IntSDIRK::init_yprime(int k, double t, const VECP y, const VECP u, 
-			     VECP yprime)
+void Omu_IntSDIRK::init_yprime(int k, double t, const Omu_SVec &y, 
+			       const Omu_Vector &u, VECP yprime)
 {
 
   bool    ok;
   int     i, j;
   double  cur_err, old_err;
   
+  Omu_DepVec &cF = *_cF_ptr;
+
   m_resize(_Sh,_n,_n);
 
   for(i = 0; i < _nd; i++)
@@ -2332,9 +2353,9 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const VECP y, const VECP u,
       // check for convergence
       for(ok = true, j = 0 ; j < _n; j++)
 	if(!_x_algebraic[j]) {
-	  ok = ok  && (fabs(_cF[_nd+j])<0.1*_atol);
-	  cur_err = max(cur_err,fabs(_cF[_nd+j]));
-	  cur_err = max(cur_err,fabs(_cF[_nd+j]));
+	  ok = ok  && (fabs(cF[_nd+j])<0.1*_atol);
+	  cur_err = max(cur_err,fabs(cF[_nd+j]));
+	  cur_err = max(cur_err,fabs(cF[_nd+j]));
 	}
 
       if(cur_err > old_err) {
@@ -2367,19 +2388,27 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const VECP y, const VECP u,
 
     // (re)calculate and factorize Jacobian
     if(_recalc_jac) {
-      _sys->continuous(k, t, y, u, _cxp, _cF, _cFx, _cFu, _cFxp);
+
+      // evaluate residuals and Jacobians
+      bool is_required_J_bak = cF.is_required_J();
+      cF.set_required_J(true);
+
+      _sys->continuous(k, t, y, u, _cxp, cF);
+
+      cF.set_required_J(is_required_J_bak);
+
       if(i == 0) {
 	old_err = 0.0;
 	// check for convergence
 	for(ok = true, j = 0 ; j < _n; j++)
 	  if(!_x_algebraic[j]) {
-	    ok = ok  && (fabs(_cF[_nd+j])<0.1*_atol);
-	    old_err = max(old_err,fabs(_cF[_nd+j]));
+	    ok = ok  && (fabs(cF[_nd+j])<0.1*_atol);
+	    old_err = max(old_err,fabs(cF[_nd+j]));
 	  }
 	old_err++;
       }
 
-      m_move(_cFxp,_nd,_nd,_n,_n,_Sh,0,0);
+      m_move(cF.Jxp,_nd,_nd,_n,_n,_Sh,0,0);
       for(j = 0; j < _n; j++)
 	if(_x_algebraic[j]) 
 	  _Sh[j][j] = 1.0;
@@ -2392,9 +2421,9 @@ void Omu_IntSDIRK::init_yprime(int k, double t, const VECP y, const VECP u,
 	LUfactor(_Sh, _ppivot);
     }
     else
-      _sys->continuous(k, t, y, u, _cxp, _cF);
+      _sys->continuous(k, t, y, u, _cxp, cF);
 
-    v_move(_cF,_nd,_n,_irk_res,0);
+    v_move(cF,_nd,_n,_irk_res,0);
     sv_mlt(-1.0,_irk_res,_irk_res);
     if(_banded_solver)
       bdLUsolve(_irk_jac_bd, _ppivot, _irk_res, _irk_delta);

@@ -43,13 +43,14 @@ class Omu_IntSDIRK: public Omu_Integrator {
   // interface routine from Omu_Integrator
   void solve(int kk, Real tstart, Real tend,
 	     const Omu_States &x, const Omu_Vector &u,
-	     Omu_Program *sys, VECP xt,
-	     MATP Sx, MATP Su);
+	     Omu_Program *sys,  Omu_DepVec &Fc, Omu_SVec &xc);
 
   void init_stage(int k, const Omu_States &x, const Omu_Vector &u,
 		  bool sa);
 
-  void init_yprime(int , double ,const VECP ,const VECP , VECP );
+  private:
+
+  void init_yprime(int , double ,const Omu_SVec &,const Omu_Vector &, VECP );
   void jac(int ,double ,const VECP ,const VECP , const VECP , VECP );
   void res(double ,const VECP ,const VECP , const VECP , VECP);
   void realloc();
@@ -60,14 +61,20 @@ class Omu_IntSDIRK: public Omu_Integrator {
   void solve_final(VECP , VECP );
   void sensitivity();
   void sensitivity_lsqr();
+  void sensitivity_adolc();
+  void sensitivity_lsqr_adolc();
   void mat2bandf(const MATP , int  , int , MATP );
 
-  private:
+  // backing store sys and vector of dependent variables for callbacks
+  Omu_Program	*_sys;
+  Omu_SVec	*_cx_ptr;
+  Omu_DepVec 	*_cF_ptr;
 
   bool          _recalc_jac;
-  bool          _stiffly_accurate;
-  bool          _sens_at_once;
   bool          _lsqr_sol;
+  bool          _stiffly_accurate;
+  bool          _sens_adolc;
+  bool          _sens_at_once;
 
   int           _output;
   int           _n_splitt_tape_eval;
@@ -89,9 +96,6 @@ class Omu_IntSDIRK: public Omu_Integrator {
   bool		_banded;
   bool		_banded_solver;	              // use banded solver
   bool		_sparse_solver;	              // use sparse solver
-
-  // backing store sys and current stage
-  Omu_Program	*_sys;
 
   int		_mu;	     // upper semi-bandwidth
   int		_ml;	     // lower semi-bandwidth
@@ -146,15 +150,11 @@ class Omu_IntSDIRK: public Omu_Integrator {
   VECP          _err;
 
   // vectors and matrices for low level _sys->continuous callback
-  VECP		_cx;
-  VECP		_cu;
-  VECP		_cxp;
-  VECP		_cF;
+  Omu_Vec      	_cu;
+  Omu_SVec	_cxp;
+
   VECP		_cFh;
-  MATP		_cFx;
   MATP		_cFxh;
-  MATP		_cFu;
-  MATP		_cFxp;
 
   // sensitivity equations
   MATP          _Sxd;
