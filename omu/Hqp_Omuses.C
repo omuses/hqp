@@ -468,7 +468,7 @@ void Hqp_Omuses::update_vals(int k, const VECP x, const VECP u,
     }
 
     f0k = 0.0;
-    if (nxt != nf && kkend - _prg->ks(k) > 1 && kk == kkend - 1) {
+    if (nxt != nf && kk == kkend - 1) {
       // final sample period of stage with more than one sample period;
       // fk gets its actual size nf
       fk.adapt_size(nf);
@@ -612,7 +612,7 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
     // initialize dependent variables
     f0k = 0.0;
-    if (nxt != nf && kkend - _prg->ks(k) > 1 && kk == kkend - 1) {
+    if (nxt != nf && kk == kkend - 1) {
       // final sample period of stage with more than one sample period;
       // fk gets its actual size nf
       fk.adapt_size(nf);
