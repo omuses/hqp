@@ -1,3 +1,8 @@
+2003-05-06    <rfranke>
+
+	* omu/Omu_Integrator.C (solve): bug fix for discrete states in
+	  high-level integrator interface
+
 2003-04-22    <rfranke>
 
 	* omu/Omu_IntDASPK.[hC]: adapt to new integrator interface

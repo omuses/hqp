@@ -202,7 +202,7 @@ void Omu_Integrator::solve(int kk, double tstart, double tend,
     m_move(xt.Sx, _nd, 0, _n, _nx, _xc.Sq, 0, 0);
     m_move(xt.Su, _nd, 0, _n, _nu, _xc.Sq, 0, _nx);
   }
-  v_move(x, 0, _nx, _q, 0);
+  v_move(xt, 0, _nx, _q, 0);
   v_move(u, 0, _nu, _q, _nx);
 
   // call high-level solve
