@@ -61,10 +61,10 @@ namespace Hxi {
 /** Alternative native %mxArray for Hqp. */
 class mxArray {
 protected:
-  real_T 	 	_dummy; // argument for ADOL-C memory management
-  vector<real_T> 	_data; 	// data vector
-  int_T 		_m;	// number of rows (more generally first dim)
-  int_T 		_n;	// number of cols (more generally resting dims)
+  real_T 	 	_dummy; ///< argument for ADOL-C memory management
+  vector<real_T> 	_data; 	///< data vector
+  int_T 		_m;	///< number of rows (more generally first dim)
+  int_T 		_n;	///< number of cols (more generally other dims)
 
 public:
   /** Constuctor. */
@@ -79,6 +79,7 @@ public:
   real_T *getPr() {
     return _data.size() > 0? &_data[0]: NULL;
   }
+  /** Get address of first element of const real data. */
   const real_T *getPr() const {
     return _data.size() > 0? &_data[0]: NULL;
   }

@@ -44,6 +44,8 @@ namespace Hxi {
 
 /** Real type used in S-function. */
 typedef HXI_REAL_T real_T;
+
+/** Pointer type used for Real inputs of S-function. */
 typedef real_T **InputRealPtrsType;
 
 /** Integer type used in S-function. */
