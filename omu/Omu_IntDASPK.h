@@ -65,13 +65,13 @@ class Omu_IntDASPK: public Omu_Integrator {
 
   char *name() {return "DASPK";}
 
-  void init_stage(int k,
-		  const Omu_States &x, const Omu_Vector &u,
-		  bool sa);
+  virtual void init(int k,
+		    const Omu_StateVec &x, const Omu_Vec &u,
+		    const Omu_DependentVec &Fc, bool sa);
 
-  void solve(int kk, double tstart, double tend,
-	     const Omu_VariableVec &x, const Omu_VariableVec &u,
-	     Omu_Program *sys, Omu_DependentVec &Ft, Omu_StateVec &xt);
+  virtual void solve(int kk, double tstart, double tend,
+		     Omu_StateVec &xc, Omu_StateVec &dxc, Omu_Vec &q,
+		     Omu_DependentVec &Fc);
 
   //@}
 
@@ -138,12 +138,11 @@ class Omu_IntDASPK: public Omu_Integrator {
  private:
 
   void		resize();
-  void		init_options(const Omu_States &x);
+  void		init_options(const Omu_DependentVec &Fc);
 
-  // backing store sys and vector of dependent variables for callbacks
-  Omu_Program	*_sys;
-  Omu_StateVec	*_xt_ptr;
-  Omu_DependentVec *_Ft_ptr;
+  // backing store vectors for DASPK callbacks
+  Omu_StateVec	*_xc_ptr;
+  Omu_DependentVec *_Fc_ptr;
 
   // variables for DASPK
   int		_mu;	// upper semi-bandwidth
@@ -162,12 +161,11 @@ class Omu_IntDASPK: public Omu_Integrator {
   VECP		_senpar;
 
   // arguments for low level _sys->continuous callback
-  Omu_Vec	_ut;
-  Omu_SVec	_dxt;
-  Omu_SVec	_xt_jac;
-  Omu_SVec	_dxt_jac;
-  MATP		_Yx;
-  MATP		_Yu;
+  Omu_Vec	_q;
+  Omu_SVec	_dxc;
+  Omu_SVec	_xc_jac;
+  Omu_SVec	_dxc_jac;
+  MATP		_Yq;
 };  
 
 #endif

@@ -1,3 +1,7 @@
+2003-04-22    <rfranke>
+
+	* omu/Omu_IntDASPK.[hC]: adapt to new integrator interface
+
 2003-04-19    <rfranke>
 
 	* omu/Omu_Integrator.[hC]: add high-level interface for integrators
