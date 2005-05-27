@@ -1,6 +1,6 @@
 diff -cr adolc-1.9.0/adolc/adouble.h adol-c/adolc/adouble.h
 *** adolc-1.9.0/adolc/adouble.h	2004-05-24 12:50:28.000000000 +0200
---- adol-c/adolc/adouble.h	2004-10-04 23:52:22.000000000 +0200
+--- adol-c/adolc/adouble.h	2005-05-27 17:52:28.197196868 +0200
 ***************
 *** 43,48 ****
 --- 43,51 ----
@@ -14,8 +14,20 @@ diff -cr adolc-1.9.0/adolc/adouble.h adol-c/adolc/adouble.h
   /*                                                         THIS FILE IS C++ */
   #ifdef __cplusplus
 ***************
+*** 95,101 ****
+--- 98,106 ----
+   protected:
+    locint location;
+    badouble( void ){};
++  public:
+    badouble( const badouble& a ) {location = a.location;};
++  protected:
+    badouble( locint lo ) {location = lo;};
+  
+   public:
+***************
 *** 558,560 ****
---- 561,565 ----
+--- 563,567 ----
   /*                                                                THAT'S ALL*/
   
   #endif
@@ -23,7 +35,7 @@ diff -cr adolc-1.9.0/adolc/adouble.h adol-c/adolc/adouble.h
 + #endif
 diff -cr adolc-1.9.0/adolc/common.h adol-c/adolc/common.h
 *** adolc-1.9.0/adolc/common.h	2004-05-24 12:50:31.000000000 +0200
---- adol-c/adolc/common.h	2004-10-04 23:52:39.000000000 +0200
+--- adol-c/adolc/common.h	2005-05-27 17:52:28.198196748 +0200
 ***************
 *** 47,54 ****
 --- 47,58 ----
@@ -41,7 +53,7 @@ diff -cr adolc-1.9.0/adolc/common.h adol-c/adolc/common.h
   #endif
 diff -cr adolc-1.9.0/adolc/Makefile.in adol-c/adolc/Makefile.in
 *** adolc-1.9.0/adolc/Makefile.in	2004-09-13 11:55:15.000000000 +0200
---- adol-c/adolc/Makefile.in	2004-10-14 13:44:31.000000000 +0200
+--- adol-c/adolc/Makefile.in	2005-05-27 17:52:28.200196509 +0200
 ***************
 *** 258,288 ****
   	@for dep in $?; do \
@@ -147,7 +159,7 @@ diff -cr adolc-1.9.0/adolc/Makefile.in adol-c/adolc/Makefile.in
   distclean-tags:
 diff -cr adolc-1.9.0/Makefile.in adol-c/Makefile.in
 *** adolc-1.9.0/Makefile.in	2004-09-13 11:55:14.000000000 +0200
---- adol-c/Makefile.in	2004-10-14 13:44:33.000000000 +0200
+--- adol-c/Makefile.in	2005-05-27 17:52:28.202196269 +0200
 ***************
 *** 204,211 ****
   	      exit 1;; \
