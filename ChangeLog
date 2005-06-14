@@ -1,3 +1,10 @@
+2005-06-14  <rfranke>
+
+	* hxi/cg_sfun.h, hxi/Hxi_sfun_types.h, hxi/Hxi_SimStruct_methods.h,
+	  hxi/Hxi_SimStruct.h, hxi/Hxi_SimStruct.C:
+	  - treat files required to build an Hxi S-function for a treated
+	    model outside Hqp solver
+
 2005-05-27  <e_arnold>
 
 	* adol-c/hqp_adolc.patch:
