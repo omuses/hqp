@@ -467,10 +467,10 @@ class Prg_SFunctionEst: public Prg_SFunction {
     // to achieve multiple shooting behavior when no simulation is performed
     int ex = 0;
     for (int kk = 0; kk <= _KK; kk++) {
-      for (int i = 0; i < _mdl_nx; i++)
-	_mdl_xs[kk][i] = v[ex][i];
       if (kk > 0 && ts(kk) < ts(kk-1))
 	ex++;
+      for (int i = 0; i < _mdl_nx; i++)
+	_mdl_xs[kk][i] = v[ex][i];
     }
   }
 

@@ -1,9 +1,17 @@
+2005-06-29  <rfranke>
+
+	* omu/Prg_SFunctionEst.h: bug fix in set_mdl_x0s
+	  (initial states for multiple experiments were wrong with init_simulation)
+
+	* hqp/hqp_solve.tcl: raise new error "evaluation" if
+	  prg_f or sqp_norm_inf are infeasible after a model evaluation
+
 2005-06-14  <rfranke>
 
 	* hxi/cg_sfun.h, hxi/Hxi_sfun_types.h, hxi/Hxi_SimStruct_methods.h,
 	  hxi/Hxi_SimStruct.h, hxi/Hxi_SimStruct.C:
-	  - treat files required to build an Hxi S-function for a treated
-	    model outside Hqp solver
+	  - treat files required to build an Hxi S-function for a model
+	    outside Hqp solver
 
 2005-05-27  <e_arnold>
 
