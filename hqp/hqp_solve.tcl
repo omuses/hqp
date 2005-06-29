@@ -71,10 +71,20 @@ proc hqp_solve {{stream stdout} {hot 0}} {
       hqp_puts -nonewline $stream [format "%3d %12.6g %10.4g %10.4g " \
          [sqp_iter] [prg_f] [sqp_norm_inf] [sqp_norm_grd_L]]
       hqp_flush $stream
+      # check feasibility of model evaluation
+      if [catch {expr [prg_f]*[sqp_norm_inf]}] {
+        hqp_puts $stream ""
+        error evaluation
+      }
     } else {
       hqp_puts -nonewline $stream [format "%3d %12.6g %10.4g " \
          [sqp_iter] [prg_f] [sqp_norm_inf]]
       hqp_flush $stream
+      # check feasibility of model evaluation
+      if [catch {expr [prg_f]*[sqp_norm_inf]}] {
+        hqp_puts $stream ""
+        error evaluation
+      }
 
       # additional break test as norm_inf changed with taken step
       # (Don't use this brake test after cold start,
