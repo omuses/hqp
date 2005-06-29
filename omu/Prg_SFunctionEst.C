@@ -569,11 +569,13 @@ void Prg_SFunctionEst::update(int kk,
   ssSetT(_S, ts(kk));
 
   // initialize model inputs
-  real_T *mdl_u;
-  if (ssGetInputPortRequiredContiguous(_S, 0))
-    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-  else
-    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u = NULL;
+  if (ssGetNumInputPorts(_S) > 0) {
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  }
   for (idx = 0; idx < _mdl_nu; idx++)
     mdl_u[idx] = _mdl_us[kk][idx];
 
@@ -602,7 +604,9 @@ void Prg_SFunctionEst::update(int kk,
   SMETHOD_CALL2(mdlOutputs, _S, 0);
 
   // store outputs in constraints
-  real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);
+  real_T *mdl_y = NULL;
+  if (ssGetNumOutputPorts(_S) > 0)
+    mdl_y = ssGetOutputPortRealSignal(_S, 0);
   for (i = 0, idx = 0; idx < _mdl_ny; idx++) {
     if (_mdl_y_active[idx]) {
       c[i++] = mdl_y[idx] / _mdl_y_nominal[idx];
@@ -807,11 +811,13 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   ssSetT(_S, t);
 
   // initialize model inputs
-  real_T *mdl_u;
-  if (ssGetInputPortRequiredContiguous(_S, 0))
-    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-  else
-    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u = NULL;
+  if (ssGetNumInputPorts(_S) > 0) {
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  }
   for (i = 0; i < _mdl_nu; i++)
     mdl_u[i] = _mdl_us[kk][i];
 
@@ -878,11 +884,13 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
-  real_T *mdl_u;
-  if (ssGetInputPortRequiredContiguous(_S, 0))
-    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-  else
-    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u = NULL;
+  if (ssGetNumInputPorts(_S) > 0) {
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  }
   for (i = 0; i < _mdl_nu; i++) {
     if (_mdl_u_order[i] == 0)
       mdl_u[i] = _mdl_us[kk][i];

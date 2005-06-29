@@ -17,6 +17,8 @@ using namespace std;
 #define HQP_MAGIC_CODE 1994.0528 
 // (creation date of first Hqp component -- the IP solver)
 
+#define HXI_VECADDR(vec) ((vec).size() > 0? &(vec)[0]: NULL)
+
 /*
  * Note: Don't include Hxi_SimStruct.h to separate calls to ss* from
  *       SimStruct implementation. Hxi_SimStruct.h declares ss* as functions;
@@ -216,11 +218,11 @@ public:
   }
   /** Get continuous states. */
   REAL_T *getContStates() {
-    return &_xc[0];
+    return HXI_VECADDR(_xc);
   }
   /** Get derivatives of continuous states. */
   REAL_T *getdX() {
-    return &_dxc[0];
+    return HXI_VECADDR(_dxc);
   }
 
   /** Set number of discrete states. */
@@ -234,7 +236,7 @@ public:
   }
   /** Get pointer to discrete states. */
   REAL_T *getDiscStates() {
-    return &_xd[0];
+    return HXI_VECADDR(_xd);
   }
   /** Alternative get pointer to discrete states. */
   REAL_T *getRealDiscStates() {
@@ -272,11 +274,11 @@ public:
   }
   /** Get pointer to inputs of a port. */
   REAL_T *getInputPortRealSignal(int_T port) {
-    return &_u[port][0];
+    return HXI_VECADDR(_u[port]);
   }
   /** Get pointer to pointers to inputs of a port. */
   InputRealPtrsType getInputPortRealSignalPtrs(int_T port) {
-    return &_uPtrs[port][0];
+    return HXI_VECADDR(_uPtrs[port]);
   }
   /** Specify if input port is used in mdlOutputs or mdlGetTimeOfNextVarHit. */
   int_T setInputPortDirectFeedThrough(int_T port, int_T dft) {
@@ -322,7 +324,7 @@ public:
   }
   /** Get pointer to outputs of a port. */
   REAL_T *getOutputPortRealSignal(int_T port) {
-    return &_y[port][0];
+    return HXI_VECADDR(_y[port]);
   }
   /** Alternative get pointer to outputs of a port. */
   void *getOutputPortSignal(int_T port) {
@@ -358,7 +360,7 @@ public:
   }
   /** Get pointer to a data work vector. */
   void *getDWork(int_T idx) {
-    return &_dwork[idx][0];
+    return HXI_VECADDR(_dwork[idx]);
   }
 
   /** Set number of sample times. */
@@ -403,7 +405,7 @@ public:
   }
   /** Get vector of zero crossing signals. */
   REAL_T *getNonsampledZCs() {
-    return &_zc_signals[0];
+    return HXI_VECADDR(_zc_signals);
   }
 
   /** Set number of non-zero elements in Jacobian. */
@@ -424,15 +426,15 @@ public:
   }
   /** Get pointer to first Jacobian element. */
   REAL_T *getJacobianPr() {
-    return &_jacobianPr[0];
+    return HXI_VECADDR(_jacobianPr);
   }
   /** Get pointer to first Jacobian index. */
   int_T *getJacobianIr() {
-    return &_jacobianIr[0];
+    return HXI_VECADDR(_jacobianIr);
   }
   /** Get pointer to first column start index of Jacobian. */
   int_T *getJacobianJc() {
-    return &_jacobianJc[0];
+    return HXI_VECADDR(_jacobianJc);
   }
 
   /** Set size of real work array. */
@@ -446,7 +448,7 @@ public:
   }
   /** Get pointer to first element of real work vector. */
   REAL_T *getRWork() {
-    return &_rwork[0];
+    return HXI_VECADDR(_rwork);
   }
 
   /** Set size of int work vector. */
@@ -460,7 +462,7 @@ public:
   }
   /** Get pointer to first element of int work vector. */
   int_T *getIWork() {
-    return &_iwork[0];
+    return HXI_VECADDR(_iwork);
   }
 
   /** Set size of pointer work vector. */
@@ -474,7 +476,7 @@ public:
   }
   /** Get pointer to first element of pointer work vector. */
   void **getPWork() {
-    return &_pwork[0];
+    return HXI_VECADDR(_pwork);
   }
 
   /** Set size of modes vector. */
@@ -490,7 +492,7 @@ public:
   }
   /** Get pointer to first element of modes vector. */
   int_T *getModeVector() {
-    return &_modes[0];
+    return HXI_VECADDR(_modes);
   }
 
   /** Set pointer to user data. */
@@ -714,7 +716,7 @@ public:
 
   /** Get address of first element of real data. */
   REAL_T *getPr() const {
-    return _realData.size() > 0? (REAL_T *)&_realData[0]: NULL;
+    return (REAL_T *)HXI_VECADDR(_realData);
   }
 
   /** Set number of data elements. */

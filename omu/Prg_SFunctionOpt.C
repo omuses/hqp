@@ -749,11 +749,13 @@ void Prg_SFunctionOpt::update(int kk,
   ssSetT(_S, ts(kk));
 
   // initialize model inputs
-  real_T *mdl_u;
-  if (ssGetInputPortRequiredContiguous(_S, 0))
-    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-  else
-    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u = NULL;
+  if (ssGetNumInputPorts(_S) > 0) {
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  }
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       _mdl_us[kk][idx] = x[i++] * _mdl_u_nominal[idx];
@@ -769,7 +771,9 @@ void Prg_SFunctionOpt::update(int kk,
   SMETHOD_CALL2(mdlOutputs, _S, 0); 
 
   // obtain model outputs
-  real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);
+  real_T *mdl_y = NULL;
+  if (ssGetNumOutputPorts(_S) > 0)
+    mdl_y = ssGetOutputPortRealSignal(_S, 0);
 
   // correct model outputs with bias
   for (idx = 0; idx < _mdl_ny; idx++)
@@ -1289,11 +1293,13 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   ssSetT(_S, t);
 
   // initialize model inputs
-  real_T *mdl_u;
-  if (ssGetInputPortRequiredContiguous(_S, 0))
-    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-  else
-    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u = NULL;
+  if (ssGetNumInputPorts(_S) > 0) {
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  }
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
@@ -1352,11 +1358,13 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   ssSetT(_S, t);
 
   // initialize model inputs
-  real_T *mdl_u;
-  if (ssGetInputPortRequiredContiguous(_S, 0))
-    mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
-  else
-    mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  real_T *mdl_u = NULL;
+  if (ssGetNumInputPorts(_S) > 0) {
+    if (ssGetInputPortRequiredContiguous(_S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+    else
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+  }
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
