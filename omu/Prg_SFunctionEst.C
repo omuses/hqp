@@ -115,8 +115,8 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ys_ref = m_get(_KK+1, _ny);
 
   _ssr = 0.0;
-  _M = m_resize(m_get(1, 1), (_KK+1)*_ny, _np+_nx0);
-  _P = m_resize(m_get(1, 1), _np+_nx0, _np+_nx0);
+  _M2 = m_resize(m_get(1, 1), (_KK+1)*_ny, _np+_nx0);
+  _P2 = m_resize(m_get(1, 1), _np+_nx0, _np+_nx0);
   _COV = m_resize(m_get(1, 1), _np+_nx0, _np+_nx0);
   _dydx = m_resize(m_get(1, 1), _ny, _nx);
   _dxdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
@@ -172,8 +172,8 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   m_free(_dxdpx0);
   m_free(_dydx);
   m_free(_COV);
-  m_free(_P);
-  m_free(_M);
+  m_free(_P2);
+  m_free(_M2);
   m_free(_ys_ref);
   m_free(_mdl_ys);
   m_free(_mdl_xs);
@@ -219,7 +219,7 @@ void Prg_SFunctionEst::setup_model()
   Prg_SFunction::setup_model();
 
   // check for optional S-function methods that are required
-  assert(ssGetmdlDerivatives(_S) != NULL);
+  assert(ssGetmdlDerivatives(_SS) != NULL);
 
   // adapt sizes of model vectors
   _mdl_p.alloc(_mdl_np);
@@ -354,16 +354,16 @@ void Prg_SFunctionEst::setup(int k,
     // adapt sizes that depend on active variables
     m_resize(_ys_ref, _KK+1, _ny);
 
-    m_resize(_M, (_KK+1)*_ny, _np+_nx0);
-    m_resize(_P, _np+_nx0, _np+_nx0);
+    m_resize(_M2, (_KK+1)*_ny, _np+_nx0);
+    m_resize(_P2, _np+_nx0, _np+_nx0);
     m_resize(_COV, _np+_nx0, _np+_nx0);
     m_resize(_dydx, _ny, _nx);
     m_resize(_dxdpx0, _nx, _np+_nx0);
     m_resize(_dydpx0, _ny, _np+_nx0);
     m_resize(_dxfdx, _nx, _nx);
     m_resize(_dxfdpx0, _nx, _np+_nx0);
-    m_zero(_M);
-    m_zero(_P);
+    m_zero(_M2);
+    m_zero(_P2);
     m_zero(_COV);
     _ssr = 0.0;
   }
@@ -566,15 +566,15 @@ void Prg_SFunctionEst::update(int kk,
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
 
   // set simulation time
-  ssSetT(_S, ts(kk));
+  ssSetT(_SS, ts(kk));
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_S) > 0) {
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  if (ssGetNumInputPorts(_SS) > 0) {
+    if (ssGetInputPortRequiredContiguous(_SS, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (idx = 0; idx < _mdl_nu; idx++)
     mdl_u[idx] = _mdl_us[kk][idx];
@@ -584,12 +584,12 @@ void Prg_SFunctionEst::update(int kk,
   //  e.g. for numerical approximation of Jacobian)
   if (_np > 0) {
     write_active_mx_args(x);
-    if (ssGetmdlInitializeConditions(_S) != NULL)
-      SMETHOD_CALL(mdlInitializeConditions, _S);
+    if (ssGetmdlInitializeConditions(_SS) != NULL)
+      SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_S);
+  real_T *mdl_x = ssGetContStates(_SS);
   if (kk == 0 || !new_experiment) {
     for (idx = 0; idx < _mdl_nx; idx++)
       mdl_x[idx] = x[_np + idx] * _mdl_x_nominal[idx];
@@ -601,12 +601,12 @@ void Prg_SFunctionEst::update(int kk,
   }
 
   // obtain model outputs
-  SMETHOD_CALL2(mdlOutputs, _S, 0);
+  SMETHOD_CALL2(mdlOutputs, _SS, 0);
 
   // store outputs in constraints
   real_T *mdl_y = NULL;
-  if (ssGetNumOutputPorts(_S) > 0)
-    mdl_y = ssGetOutputPortRealSignal(_S, 0);
+  if (ssGetNumOutputPorts(_SS) > 0)
+    mdl_y = ssGetOutputPortRealSignal(_SS, 0);
   for (i = 0, idx = 0; idx < _mdl_ny; idx++) {
     if (_mdl_y_active[idx]) {
       c[i++] = mdl_y[idx] / _mdl_y_nominal[idx];
@@ -627,8 +627,8 @@ void Prg_SFunctionEst::update(int kk,
 
   // constraints on time derivatives of initial states
   if (new_experiment) {
-    real_T *mdl_dx = ssGetdX(_S);
-    SMETHOD_CALL(mdlDerivatives, _S);
+    real_T *mdl_dx = ssGetdX(_SS);
+    SMETHOD_CALL(mdlDerivatives, _SS);
     for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
@@ -666,7 +666,7 @@ void Prg_SFunctionEst::update(int kk,
     }
     if (new_experiment) {
       // store model states
-      real_T *mdl_x = ssGetContStates(_S);
+      real_T *mdl_x = ssGetContStates(_SS);
       for (idx = 0; idx < _mdl_nx; idx++)
 	_mdl_x0s[ex][idx] = mdl_x[idx];
     }
@@ -730,7 +730,7 @@ void Prg_SFunctionEst::update(int kk,
     // store results in M
     for (i = 0; i < _ny; i++)
       for (j = 0; j < _np + _nx0; j++)
-	_M[kk*_ny + i][j] = _dydpx0[i][j];
+	_M2[kk*_ny + i][j] = _dydpx0[i][j];
 
     // consider contribution of continuous-time equations
     if (kk < _KK && ex == _exs[kk+1]) {
@@ -777,9 +777,9 @@ void Prg_SFunctionEst::update(int kk,
 	double rn = (n - tn[i]) / (tn[i+1] - tn[i]);
 	t_f2_95 = tv[i] * (1.0 - rn) + tv[i+1] * rn;
       }
-      mtrm_mlt(_M, _M, _COV);
-      m_inverse(_COV, _P);
-      sm_mlt(_ssr/n, _P, _COV);
+      mtrm_mlt(_M2, _M2, _COV);
+      m_inverse(_COV, _P2);
+      sm_mlt(_ssr/n, _P2, _COV);
       for (i = 0, idx = 0; idx < _mdl_np; idx++) {
 	if (_mdl_p_active[idx]) {
 	  _mdl_p_confidence[idx]
@@ -808,29 +808,29 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
 
   // set simulation time
-  ssSetT(_S, t);
+  ssSetT(_SS, t);
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_S) > 0) {
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  if (ssGetNumInputPorts(_SS) > 0) {
+    if (ssGetInputPortRequiredContiguous(_SS, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (i = 0; i < _mdl_nu; i++)
     mdl_u[i] = _mdl_us[kk][i];
 
   // initialize model in first stage
-  if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
+  if (kk == 0 && ssGetmdlInitializeConditions(_SS) != NULL) {
     // pass estimated parameters to model
     write_active_mx_args(x);
     // initialize model
-    SMETHOD_CALL(mdlInitializeConditions, _S);
+    SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
   // pass states from optimizer to model
-  real_T *mdl_x = ssGetContStates(_S);
+  real_T *mdl_x = ssGetContStates(_SS);
   if (kk == 0 || !new_experiment) {
     for (i = 0; i < _mdl_nx; i++)
       mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
@@ -846,11 +846,11 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   // mdlUpdate is not called at initial times to prevent initialization
   // of potentially estimated initial states, e.g. from parameters;
   // it is called once in Prg_SFunction::setup_model() instead.
-  //if (!new_experiment && ssGetmdlUpdate(_S) != NULL) {
-  if (ssGetmdlUpdate(_S) != NULL) {
+  //if (!new_experiment && ssGetmdlUpdate(_SS) != NULL) {
+  if (ssGetmdlUpdate(_SS) != NULL) {
     // also call mdlOutputs as done by Simulink before each mdlUpdate
-    SMETHOD_CALL2(mdlOutputs, _S, 0); 
-    SMETHOD_CALL2(mdlUpdate, _S, 0);
+    SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+    SMETHOD_CALL2(mdlUpdate, _SS, 0);
   }
 
   // take over estimated parameters from optimizer
@@ -880,16 +880,16 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   int i;
 
   // set simulation time
-  ssSetT(_S, t);
+  ssSetT(_SS, t);
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_S) > 0) {
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  if (ssGetNumInputPorts(_SS) > 0) {
+    if (ssGetInputPortRequiredContiguous(_SS, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (i = 0; i < _mdl_nu; i++) {
     if (_mdl_u_order[i] == 0)
@@ -903,24 +903,24 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   //  e.g. for numerical approximation of Jacobian)
   if (_np > 0) {
     write_active_mx_args(x);
-    if (ssGetmdlInitializeConditions(_S) != NULL)
-      SMETHOD_CALL(mdlInitializeConditions, _S);
+    if (ssGetmdlInitializeConditions(_SS) != NULL)
+      SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_S);
+  real_T *mdl_x = ssGetContStates(_SS);
   for (i = 0; i < _mdl_nx; i++)
     mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
-  SMETHOD_CALL2(mdlOutputs, _S, 0); 
+  SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
   // evaluate continuous model equations
-  SMETHOD_CALL(mdlDerivatives, _S);
+  SMETHOD_CALL(mdlDerivatives, _SS);
 
   // get model derivatives and change to residual form
-  real_T *mdl_dx = ssGetdX(_S);
+  real_T *mdl_dx = ssGetdX(_SS);
   for (i = 0; i < _mdl_nx; i++)
     F[_np + i] = mdl_dx[i]/_mdl_x_nominal[i] - dx[_np + i];
 

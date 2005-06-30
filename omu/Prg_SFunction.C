@@ -74,7 +74,7 @@ Prg_SFunction::Prg_SFunction()
 
   _mdl_needs_setup = true;
 
-  _S = NULL;
+  _SS = NULL;
 
   _mdl_np = 0;
   _mdl_nx = 0;
@@ -95,9 +95,9 @@ Prg_SFunction::Prg_SFunction()
 Prg_SFunction::~Prg_SFunction()
 {
   int i;
-  if (_S) {
-    mdlTerminate(_S);
-    Hxi_SimStruct_destroy(_S);
+  if (_SS) {
+    mdlTerminate(_SS);
+    Hxi_SimStruct_destroy(_SS);
   }
   for (i = 0; i < _mdl_nargs; i++)
     mxDestroyArray(_mx_args[i]);
@@ -143,7 +143,7 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
   }
   args = new mxArray* [nargs];
   for (i = 0; i < nargs; i++) {
-    args[i] = Hxi::mx_parse_argument(str);
+    args[i] = Hxi::mx_parse_argument(_SS, str);
     str = Hxi::mx_forward_argument(str);
     if (*str == ',')
       str = Hxi::mx_forward_whitespaces(++str);  // skip arg delimiter
@@ -201,50 +201,50 @@ void Prg_SFunction::setup_model()
   int i;
 
   // setup S-function
-  if (_S) {
-    mdlTerminate(_S);
-    Hxi_SimStruct_destroy(_S);
+  if (_SS) {
+    mdlTerminate(_SS);
+    Hxi_SimStruct_destroy(_SS);
   }
 
-  _S = Hxi_SimStruct_create(_mdl_path[0] != '\0'? _mdl_path: _mdl_name);
-  if (ssGetErrorStatus(_S)) {
-    fprintf(stderr, "Error creating SimStruct: %s\n", ssGetErrorStatus(_S));
-    m_error(E_FORMAT, ssGetErrorStatus(_S));
+  _SS = Hxi_SimStruct_create(_mdl_path[0] != '\0'? _mdl_path: _mdl_name);
+  if (ssGetErrorStatus(_SS)) {
+    fprintf(stderr, "Error creating SimStruct: %s\n", ssGetErrorStatus(_SS));
+    m_error(E_FORMAT, ssGetErrorStatus(_SS));
   }
 
   // initialize model name
-  ssSetModelName(_S, _mdl_name);
+  ssSetModelName(_SS, _mdl_name);
 
   // initialize S-function parameters
-  ssSetSFcnParamsCount(_S, _mdl_nargs);
+  ssSetSFcnParamsCount(_SS, _mdl_nargs);
   for (i = 0; i < _mdl_nargs; i++)
-    ssSetSFcnParam(_S, i, _mx_args[i]);
+    ssSetSFcnParam(_SS, i, _mx_args[i]);
 
   // initialize solver
   // (note: variable step size is indicated as the model must allow
   //  simulation time stepping back)
-  ssSetVariableStepSolver(_S, 1);
+  ssSetVariableStepSolver(_SS, 1);
   // (note: preselect major time steps requiring complete model evaluation --
   //  minor time steps would require support for events and zero crossings)
-  ssSetMinorTimeStep(_S, 0);
+  ssSetMinorTimeStep(_SS, 0);
 
   // initialize model
-  SMETHOD_CALL(mdlInitializeSizes, _S);
-  if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
+  SMETHOD_CALL(mdlInitializeSizes, _SS);
+  if (ssGetNumSFcnParams(_SS) != ssGetSFcnParamsCount(_SS)) {
     fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
-	    ssGetNumSFcnParams(_S), ssGetSFcnParamsCount(_S));
+	    ssGetNumSFcnParams(_SS), ssGetSFcnParamsCount(_SS));
     m_error(E_FORMAT, "Prg_SFunction::setup_model: parameter count mismatch");
   }
 
   // obtain model sizes
-  _mdl_nx = ssGetNumContStates(_S);
+  _mdl_nx = ssGetNumContStates(_SS);
   // count inputs of ports as long as they are contiguous in memory
   // (this limitation is because later on we will only access port 0)
   _mdl_nu = 0;
-  for (i = 0; i < ssGetNumInputPorts(_S); i++) {
-    if (*ssGetInputPortRealSignalPtrs(_S, i)
-	== *ssGetInputPortRealSignalPtrs(_S, 0) + _mdl_nu)
-      _mdl_nu += ssGetInputPortWidth(_S, i);
+  for (i = 0; i < ssGetNumInputPorts(_SS); i++) {
+    if (*ssGetInputPortRealSignalPtrs(_SS, i)
+	== *ssGetInputPortRealSignalPtrs(_SS, 0) + _mdl_nu)
+      _mdl_nu += ssGetInputPortWidth(_SS, i);
     else {
       m_warning(WARN_UNKNOWN,
 		"Prg_SFunction::setup_model: ignoring non-contiguous inputs");
@@ -254,10 +254,10 @@ void Prg_SFunction::setup_model()
   // count outputs of ports as long as they are contiguous in memory
   // (this limitation is because later on we will only access port 0)
   _mdl_ny = 0;
-  for (i = 0; i < ssGetNumOutputPorts(_S); i++) {
-    if (ssGetOutputPortRealSignal(_S, i)
-	== ssGetOutputPortRealSignal(_S, 0) + _mdl_ny)
-      _mdl_ny += ssGetOutputPortWidth(_S, i);
+  for (i = 0; i < ssGetNumOutputPorts(_SS); i++) {
+    if (ssGetOutputPortRealSignal(_SS, i)
+	== ssGetOutputPortRealSignal(_SS, 0) + _mdl_ny)
+      _mdl_ny += ssGetOutputPortWidth(_SS, i);
     else {
       m_warning(WARN_UNKNOWN,
 		"Prg_SFunction::setup_model: ignoring non-contiguous outputs");
@@ -266,19 +266,19 @@ void Prg_SFunction::setup_model()
   }
 
   // set simulation time
-  ssSetT(_S, _t0);
+  ssSetT(_SS, _t0);
 
   // initialize and check sample times of model
-  mdlInitializeSampleTimes(_S);
-  assert(ssGetNumSampleTimes(_S) > 0);
-  assert(value(ssGetSampleTime(_S, 0)) == CONTINUOUS_SAMPLE_TIME);
-  if (ssGetNumSampleTimes(_S) > 1)
+  mdlInitializeSampleTimes(_SS);
+  assert(ssGetNumSampleTimes(_SS) > 0);
+  assert(value(ssGetSampleTime(_SS, 0)) == CONTINUOUS_SAMPLE_TIME);
+  if (ssGetNumSampleTimes(_SS) > 1)
     m_warning(WARN_UNKNOWN,
 	      "Prg_SFunction::setup_model: ignoring multiple sample times");
 
   // start using S-function
-  if (ssGetmdlStart(_S) != NULL)
-    mdlStart(_S);
+  if (ssGetmdlStart(_SS) != NULL)
+    mdlStart(_SS);
 
   // get parameters
   // determine number of parameters
@@ -296,11 +296,11 @@ void Prg_SFunction::setup_model()
   // get initial states
   // (states shall be initialized with mdlInitializeConditions;
   //  mdlOutputs is called according to the docu afterwards)
-  if (ssGetmdlInitializeConditions(_S) != NULL) {
-    SMETHOD_CALL(mdlInitializeConditions, _S);
+  if (ssGetmdlInitializeConditions(_SS) != NULL) {
+    SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
-  SMETHOD_CALL2(mdlOutputs, _S, 0);
-  real_T *mdl_x = ssGetContStates(_S);
+  SMETHOD_CALL2(mdlOutputs, _SS, 0);
+  real_T *mdl_x = ssGetContStates(_SS);
   v_resize(_mdl_x0, _mdl_nx);
   for (i = 0; i < _mdl_nx; i++)
     _mdl_x0[i] = mdl_x[i];

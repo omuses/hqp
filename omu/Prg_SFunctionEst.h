@@ -235,8 +235,8 @@ class Prg_SFunctionEst: public Prg_SFunction {
 
   // confidence things
   double _ssr;		///< sum of squared output residuals
-  MATP 	_M;		///< measurement matrix M=dy/d(p,x0)
-  MATP 	_P;		///< precision matrix P=(M^TM)^(-1)
+  MATP 	_M2;		///< measurement matrix M=dy/d(p,x0)
+  MATP 	_P2;		///< precision matrix P=(M^TM)^(-1)
   MATP 	_COV;		///< covariance matrix COV=
   MATP 	_dydx;		///< help variable dy/dx
   MATP 	_dxdpx0;	///< help variable dx/d(p,x0)
@@ -311,10 +311,10 @@ class Prg_SFunctionEst: public Prg_SFunction {
   void set_ys_ref(const MATP val) {m_copy_elements(val, _ys_ref);}
 
   /// measurement matrix M=dy/d(p,x0) (size: (KK+1)*ny . np+nx0)
-  const MATP M() const {return _M;}
+  const MATP M() const {return _M2;}
 
   /// precision matrix P=(M^TM)^(-1) (size: np+nx0 . np+nx0)
-  const MATP P() const {return _P;}
+  const MATP P() const {return _P2;}
 
   /// covariance matrix (size: np+nx0 . np+nx0)
   const MATP COV() const {return _COV;}

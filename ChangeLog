@@ -1,3 +1,13 @@
+2005-06-30  <rfranke>
+
+	* omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.[hC],
+	  omu/Omu_Program.[hC], omu/Omu_IntODE.[hC],
+	  odc/Prg_DIC_SFunction.[hC], odc/Prg_DID_SFunction.[hC]:
+	  resolve name clashes with gcc's ctype.h (_X, _U, _S, _P)
+
+	* configure.in, configure:
+	  improve autoconf for Tcl under Windows using different compilers
+
 2005-06-29  <rfranke>
 
 	* omu/Prg_SFunctionEst.h: bug fix in set_mdl_x0s

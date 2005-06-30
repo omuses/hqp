@@ -44,7 +44,7 @@ class Prg_SFunction: public Omu_Program {
   char 		*_mdl_name;	///< S-function name
   char 		*_mdl_path;	///< full S-function path
   char 		*_mdl_args;	///< S-function parameters
-  SimStruct 	*_S;		///< pointer to %SimStruct
+  SimStruct 	*_SS;		///< pointer to %SimStruct
   mxArray	**_mx_args; 	///< S-function parameters after parsing
   int 		_mdl_nargs; 	///< number of S-function arguments
 

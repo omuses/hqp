@@ -337,8 +337,8 @@ private:
   void		ad_free();
   int		_max_ndep;
   int		_max_nindep;
-  MATP 		_U;
-  MATP 		_Z;
+  MATP 		_U2;
+  MATP 		_Z2;
   double	***_Z3;
   short	  	**_nz;
 

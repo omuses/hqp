@@ -26,7 +26,7 @@ Prg_DID_SFunction::Prg_DID_SFunction()
 
   _with_cns = true;
 
-  _S = NULL;
+  _SS = NULL;
 
   // interface elements
   _ifList.append(new If_Bool("prg_with_cns", &_with_cns));
@@ -36,9 +36,9 @@ Prg_DID_SFunction::Prg_DID_SFunction()
 //--------------------------------------------------------------------------
 Prg_DID_SFunction::~Prg_DID_SFunction()
 {
-  if (_S) {
-    mdlTerminate(_S);
-    Hxi_SimStruct_destroy(_S);
+  if (_SS) {
+    mdlTerminate(_SS);
+    Hxi_SimStruct_destroy(_SS);
   }
   mxDestroyArray(_mx_dt);
 }
@@ -47,57 +47,57 @@ Prg_DID_SFunction::~Prg_DID_SFunction()
 void Prg_DID_SFunction::setup_stages(IVECP ks, VECP ts)
 {
   // (re)create a new SimStruct
-  if (_S) {
-    mdlTerminate(_S);
-    Hxi_SimStruct_destroy(_S);
+  if (_SS) {
+    mdlTerminate(_SS);
+    Hxi_SimStruct_destroy(_SS);
   }
-  _S = Hxi_SimStruct_create(""); // no path argument for inlined S-function
+  _SS = Hxi_SimStruct_create(""); // no path argument for inlined S-function
 
   // initialize model parameters
   mxGetPr(_mx_dt)[0] = _dt;
 
   // pass model parameters to SimStruct
-  ssSetSFcnParamsCount(_S, 1);
-  ssSetSFcnParam(_S, 0, _mx_dt);
+  ssSetSFcnParamsCount(_SS, 1);
+  ssSetSFcnParam(_SS, 0, _mx_dt);
 
   // initialize model sizes
-  mdlInitializeSizes(_S);
-  if (ssGetErrorStatus(_S)) {
+  mdlInitializeSizes(_SS);
+  if (ssGetErrorStatus(_SS)) {
     cerr << "Error from mdlInitializeSizes: "
-	 << ssGetErrorStatus(_S) << "\n";
+	 << ssGetErrorStatus(_SS) << "\n";
     exit(-1);
   }
 
   // check for number of parameters
-  if (ssGetNumSFcnParams(_S) != ssGetSFcnParamsCount(_S)) {
+  if (ssGetNumSFcnParams(_SS) != ssGetSFcnParamsCount(_SS)) {
     cerr << "S-function parameter count mismatch: expected "
-	 << ssGetNumSFcnParams(_S) << ", provided "
-	 << ssGetSFcnParamsCount(_S) << "!\n";
+	 << ssGetNumSFcnParams(_SS) << ", provided "
+	 << ssGetSFcnParamsCount(_SS) << "!\n";
     exit(-1);
   }
 
   // check model sizes
-  assert(_nx == ssGetNumDiscStates(_S));
-  assert(ssGetNumInputPorts(_S) == 1);
-  assert(_nu == ssGetInputPortWidth(_S, 0));
-  assert(ssGetNumOutputPorts(_S) == 1);
-  assert(_mdl_ny == ssGetOutputPortWidth(_S, 0));
+  assert(_nx == ssGetNumDiscStates(_SS));
+  assert(ssGetNumInputPorts(_SS) == 1);
+  assert(_nu == ssGetInputPortWidth(_SS, 0));
+  assert(ssGetNumOutputPorts(_SS) == 1);
+  assert(_mdl_ny == ssGetOutputPortWidth(_SS, 0));
   // ... further checks may follow
 
   // initialize sample times of model
-  mdlInitializeSampleTimes(_S);
-  if (ssGetErrorStatus(_S)) {
+  mdlInitializeSampleTimes(_SS);
+  if (ssGetErrorStatus(_SS)) {
     cerr << "Error from mdlInitializeSampleTimes: "
-	 << ssGetErrorStatus(_S) << "\n";
+	 << ssGetErrorStatus(_SS) << "\n";
     exit(-1);
   }
 
   // check sample times of model
-  assert(ssGetNumSampleTimes(_S) == 1);
-  assert(value(ssGetSampleTime(_S, 0)) > 0.0);
+  assert(ssGetNumSampleTimes(_SS) == 1);
+  assert(value(ssGetSampleTime(_SS, 0)) > 0.0);
 
   // allocate stages for optimization
-  stages_alloc(ks, ts, K(), 1, 0.0, K()*value(ssGetSampleTime(_S, 0)));
+  stages_alloc(ks, ts, K(), 1, 0.0, K()*value(ssGetSampleTime(_SS, 0)));
 }
 
 //--------------------------------------------------------------------------
@@ -111,13 +111,13 @@ void Prg_DID_SFunction::setup(int k,
   // initial values
   if (k == 0) {
     // get initial states from model
-    mdlInitializeConditions(_S);
-    if (ssGetErrorStatus(_S)) {
+    mdlInitializeConditions(_SS);
+    if (ssGetErrorStatus(_SS)) {
       cerr << "Error from mdlInitializeConditions: "
-	   << ssGetErrorStatus(_S) << "\n";
-      ssSetErrorStatus(_S, NULL);
+	   << ssGetErrorStatus(_SS) << "\n";
+      ssSetErrorStatus(_SS, NULL);
     }
-    real_T *mdl_x = ssGetDiscStates(_S);
+    real_T *mdl_x = ssGetDiscStates(_SS);
     x.initial[0] = value(mdl_x[0]);
     x.initial[1] = value(mdl_x[1]);
   }
@@ -154,13 +154,13 @@ void Prg_DID_SFunction::update(int kk,
 			       adoublev &f, adouble &f0, adoublev &c)
 {
   int i;
-  real_T dt = ssGetSampleTime(_S, 0);
+  real_T dt = ssGetSampleTime(_SS, 0);
 
   // update constraints and objective for given x and u
   if (kk < KK()) {
-    real_T *mdl_x = ssGetDiscStates(_S);
-    real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_S, 0);
-    real_T *mdl_y = ssGetOutputPortRealSignal(_S, 0);
+    real_T *mdl_x = ssGetDiscStates(_SS);
+    real_T **mdl_u = (real_T **)ssGetInputPortRealSignalPtrs(_SS, 0);
+    real_T *mdl_y = ssGetOutputPortRealSignal(_SS, 0);
 
     // initialize model states and inputs
     for (i = 0; i < _nx; ++i)
@@ -169,10 +169,10 @@ void Prg_DID_SFunction::update(int kk,
       *mdl_u[i] = u[i];
 
     // obtain model outputs for current states and inputs
-    mdlOutputs(_S, 0);
-    if (ssGetErrorStatus(_S)) {
-      cerr << "Error from mdlOutputs: " << ssGetErrorStatus(_S) << "\n";
-      ssSetErrorStatus(_S, NULL);
+    mdlOutputs(_SS, 0);
+    if (ssGetErrorStatus(_SS)) {
+      cerr << "Error from mdlOutputs: " << ssGetErrorStatus(_SS) << "\n";
+      ssSetErrorStatus(_SS, NULL);
     }
 
     // objective
@@ -184,10 +184,10 @@ void Prg_DID_SFunction::update(int kk,
     }
 
     // evaluate model equations
-    mdlUpdate(_S, 0);
-    if (ssGetErrorStatus(_S)) {
-      cerr << "Error from mdlUpdate: " << ssGetErrorStatus(_S) << "\n";
-      ssSetErrorStatus(_S, NULL);
+    mdlUpdate(_SS, 0);
+    if (ssGetErrorStatus(_SS)) {
+      cerr << "Error from mdlUpdate: " << ssGetErrorStatus(_SS) << "\n";
+      ssSetErrorStatus(_SS, NULL);
     }
 
     // get new states

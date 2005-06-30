@@ -114,8 +114,8 @@ class Omu_IntODE: public Omu_Integrator {
   // variables for ADOL-C
   VECP		_x;
   VECP		_v;
-  MATP		_X;
-  MATP		_Y;
+  MATP		_X2;
+  MATP		_Y2;
 };  
 
 #endif

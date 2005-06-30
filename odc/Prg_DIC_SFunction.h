@@ -20,7 +20,7 @@ class Prg_DIC_SFunction: public Omu_Program {
 
  protected:
 
-  SimStruct *_S;
+  SimStruct *_SS;
 
   void setup_stages(IVECP ks, VECP ts);
 

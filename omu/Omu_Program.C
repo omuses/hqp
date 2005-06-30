@@ -106,17 +106,17 @@ bool Omu_Program::has_low_level_continuous()
 void Omu_Program::ad_alloc(int m, int n)
 {
 #ifdef OMU_WITH_ADOLC
-  _U = m_get(m, m);
-  m_ident(_U);
-  _Z = m_get(m, n);
+  _U2 = m_get(m, m);
+  m_ident(_U2);
+  _Z2 = m_get(m, n);
   _Z3 = myalloc(m, n, 1);
   _nz = myalloc_short(m, n);
 
   _max_ndep = m;
   _max_nindep = n;
 #else
-  _U = NULL;
-  _Z = NULL;
+  _U2 = NULL;
+  _Z2 = NULL;
   _Z3 = NULL;
   _nz = NULL;
 
@@ -145,8 +145,8 @@ void Omu_Program::ad_free()
   free(**_Z3);
   free(*_Z3);
   free(_Z3);
-  m_free(_Z);
-  m_free(_U);
+  m_free(_Z2);
+  m_free(_U2);
 #endif
 }
 
@@ -275,7 +275,7 @@ void Omu_Program::setup_struct(int k,
 
       trace_off();
 
-      reverse(4, ndep, nindep, 0, ndep, _U->me, _Z3, _nz);
+      reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
 
       setup_Jacobian(_Z3, _nz, xt, xt.Jx, Omu_Dependent::WRT_x, 0, 0);
       setup_Jacobian(_Z3, _nz, xt, xt.Ju, Omu_Dependent::WRT_u, 0, nxt);
@@ -300,7 +300,7 @@ void Omu_Program::setup_struct(int k,
 
       trace_off();
 
-      reverse(4, ndep, nindep, 0, ndep, _U->me, _Z3, _nz);
+      reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
 
       setup_Jacobian(_Z3, _nz, F, F.Jx, Omu_Dependent::WRT_x, 0, 0);
       setup_Jacobian(_Z3, _nz, F, F.Ju, Omu_Dependent::WRT_u, 0, nxt);
@@ -336,7 +336,7 @@ void Omu_Program::setup_struct(int k,
     trace_off();
 
     ad_realloc(ndep, nindep);
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z3, _nz);
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
 
     setup_Jacobian(_Z3, _nz, f, f.Jx, Omu_Dependent::WRT_x, 0, 0);
     setup_Jacobian(_Z3, _nz, f, f.Ju, Omu_Dependent::WRT_u, 0, nxt);
@@ -419,31 +419,31 @@ void Omu_Program::update(int kk,
 
     // calculate Jacobians using reverse
     ad_realloc(ndep, nindep);
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z->me);
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z2->me);
 
     if (!f.Jx.is_constant()) {
       for (i = 0; i < nf; i++) {
-	Zi = _Z[i];
+	Zi = _Z2[i];
 	for (j = 0; j < nx; j++)
 	  f.Jx[i][j] = Zi[j];
       }
     }
     if (!f.Ju.is_constant()) {
       for (i = 0; i < nf; i++) {
-	Zi = _Z[i];
+	Zi = _Z2[i];
 	for (j = 0; j < nu; j++)
 	  f.Ju[i][j] = Zi[nx + j];
       }
     }
     if (!f.Jxf.is_constant()) {
       for (i = 0; i < nf; i++) {
-	Zi = _Z[i];
+	Zi = _Z2[i];
 	for (j = 0; j < nxf; j++)
 	  f.Jxf[i][j] = Zi[nx + nu + j];
       }
     }
 
-    Zi = _Z[nf];
+    Zi = _Z2[nf];
     if (!f0.gx.is_constant()) {
       for (j = 0; j < nx; j++)
 	f0.gx[j] = Zi[j];
@@ -459,21 +459,21 @@ void Omu_Program::update(int kk,
 
     if (!c.Jx.is_constant()) {
       for (i = 0; i < nc; i++) {
-	Zi = _Z[nf + 1 + i];
+	Zi = _Z2[nf + 1 + i];
 	for (j = 0; j < nx; j++)
 	  c.Jx[i][j] = Zi[j];
       }
     }
     if (!c.Ju.is_constant()) {
       for (i = 0; i < nc; i++) {
-	Zi = _Z[nf + 1 + i];
+	Zi = _Z2[nf + 1 + i];
 	for (j = 0; j < nu; j++)
 	  c.Ju[i][j] = Zi[nx + j];
       }
     }
     if (!c.Jxf.is_constant()) {
       for (i = 0; i < nc; i++) {
-	Zi = _Z[nf + 1 + i];
+	Zi = _Z2[nf + 1 + i];
 	for (j = 0; j < nxf; j++)
 	  c.Jxf[i][j] = Zi[nx + nu + j];
       }
@@ -537,18 +537,18 @@ void Omu_Program::consistic(int kk, double t,
   if (grds) {
     trace_off();
 
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z->me);
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z2->me);
 
     if (!xt.Jx.is_constant()) {
       for (i = 0; i < nxt; i++) {
-	Zi = _Z[i];
+	Zi = _Z2[i];
 	for (j = 0; j < nxt; j++)
 	  xt.Jx[i][j] = Zi[j];
       }
     }
     if (!xt.Ju.is_constant()) {
       for (i = 0; i < nxt; i++) {
-	Zi = _Z[i];
+	Zi = _Z2[i];
 	for (j = 0; j < nu; j++)
 	  xt.Ju[i][j] = Zi[nxt+j];
       }
@@ -600,10 +600,10 @@ void Omu_Program::consistic(int kk, double t,
   if (grds) {
     trace_off();
 
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z->me);
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z2->me);
 
     for (i = 0; i < nxt; i++) {
-      Zi = _Z[i];
+      Zi = _Z2[i];
       for (j = 0; j < nxt; j++)
 	xtx[i][j] = Zi[j];
 
@@ -691,7 +691,7 @@ void Omu_Program::continuous(int kk, double t,
   if (grds) {
     trace_off();
 
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z3);
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3);
 
     for (i = 0; i < nxt; i++) {
       Zi = _Z3[i];
@@ -765,10 +765,10 @@ void Omu_Program::continuous(int kk, double t,
   if (grds) {
     trace_off();
 
-    reverse(4, ndep, nindep, 0, ndep, _U->me, _Z->me);
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z2->me);
 
     for (i = 0; i < nxt; i++) {
-      Zi = _Z[i];
+      Zi = _Z2[i];
       for (j = 0; j < nxt; j++)
 	Fx[i][j] = Zi[j];
 
@@ -778,7 +778,7 @@ void Omu_Program::continuous(int kk, double t,
 
     if ((MAT *)Fdx != MNULL) {
       for (i = 0; i < nxt; i++) {
-	Zi = _Z[i];
+	Zi = _Z2[i];
 	for (j = 0; j < nxt; j++)
 	  Fdx[i][j] = Zi[nxt+nu+j];
       }

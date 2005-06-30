@@ -236,7 +236,7 @@ void Prg_SFunctionOpt::setup_model()
   Prg_SFunction::setup_model();
 
   // check for optional S-function methods that are required
-  assert(ssGetmdlDerivatives(_S) != NULL);
+  assert(ssGetmdlDerivatives(_SS) != NULL);
 
   // adapt sizes of model vectors
   _mdl_x0.alloc(_mdl_nx);
@@ -746,15 +746,15 @@ void Prg_SFunctionOpt::update(int kk,
   }
 
   // set simulation time
-  ssSetT(_S, ts(kk));
+  ssSetT(_SS, ts(kk));
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_S) > 0) {
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  if (ssGetNumInputPorts(_SS) > 0) {
+    if (ssGetInputPortRequiredContiguous(_SS, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
@@ -763,17 +763,17 @@ void Prg_SFunctionOpt::update(int kk,
   }
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_S);
+  real_T *mdl_x = ssGetContStates(_SS);
   for (i = 0; i < _mdl_nx; i++)
     mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
 
   // call mdlOutputs
-  SMETHOD_CALL2(mdlOutputs, _S, 0); 
+  SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
   // obtain model outputs
   real_T *mdl_y = NULL;
-  if (ssGetNumOutputPorts(_S) > 0)
-    mdl_y = ssGetOutputPortRealSignal(_S, 0);
+  if (ssGetNumOutputPorts(_SS) > 0)
+    mdl_y = ssGetOutputPortRealSignal(_SS, 0);
 
   // correct model outputs with bias
   for (idx = 0; idx < _mdl_ny; idx++)
@@ -867,8 +867,8 @@ void Prg_SFunctionOpt::update(int kk,
   if (kk == 0) {
     i = spsk*(_nc+_nsc);
     // constraints on derivatives of initial states
-    SMETHOD_CALL(mdlDerivatives, _S);
-    real_T *mdl_dx = ssGetdX(_S);
+    SMETHOD_CALL(mdlDerivatives, _SS);
+    real_T *mdl_dx = ssGetdX(_SS);
     for (idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
@@ -937,18 +937,18 @@ void Prg_SFunctionOpt::update_grds(int kk,
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
 
-  if (ssGetmdlJacobian(_S) == NULL) {
+  if (ssGetmdlJacobian(_SS) == NULL) {
     // call predefined update for numerical differentiation
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
   }
   else {
     // exploit mdlJacobian to obtain c.Jx
     int mdl_u_idx, mdl_x_idx, mdl_dx_idx, mdl_y_idx;
-    real_T *pr = ssGetJacobianPr(_S);
-    int_T *ir = ssGetJacobianIr(_S);
-    int_T *jc = ssGetJacobianJc(_S);
+    real_T *pr = ssGetJacobianPr(_SS);
+    int_T *ir = ssGetJacobianIr(_SS);
+    int_T *jc = ssGetJacobianJc(_SS);
 
-    mdlJacobian(_S);
+    mdlJacobian(_SS);
 
     m_zero(c.Jx);
     m_zero(c.Ju);
@@ -1290,15 +1290,15 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   int i, idx;
 
   // set simulation time
-  ssSetT(_S, t);
+  ssSetT(_SS, t);
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_S) > 0) {
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  if (ssGetNumInputPorts(_SS) > 0) {
+    if (ssGetInputPortRequiredContiguous(_SS, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
@@ -1308,13 +1308,13 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   }
 
   // initialize model in first stage
-  if (kk == 0 && ssGetmdlInitializeConditions(_S) != NULL) {
+  if (kk == 0 && ssGetmdlInitializeConditions(_SS) != NULL) {
     // initialize model
-    SMETHOD_CALL(mdlInitializeConditions, _S);
+    SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
   // pass states from optimizer to model
-  real_T *mdl_x = ssGetContStates(_S);
+  real_T *mdl_x = ssGetContStates(_SS);
   for (i = 0; i < _mdl_nx; i++)
     mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
 
@@ -1324,11 +1324,11 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   // mdlUpdate is not called at initial time to prevent initialization
   // of potentially optimized initial states, e.g. from parameters;
   // it is called once in Prg_SFunction::setup_model() instead.
-  //if (kk > 0 && ssGetmdlUpdate(_S) != NULL) {
-  if (ssGetmdlUpdate(_S) != NULL) {
+  //if (kk > 0 && ssGetmdlUpdate(_SS) != NULL) {
+  if (ssGetmdlUpdate(_SS) != NULL) {
     // also call mdlOutputs as done by Simulink before each mdlUpdate
-    SMETHOD_CALL2(mdlOutputs, _S, 0); 
-    SMETHOD_CALL2(mdlUpdate, _S, 0);
+    SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+    SMETHOD_CALL2(mdlUpdate, _SS, 0);
   }
 
   // take over optimized control inputs from optimizer
@@ -1355,15 +1355,15 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   int upsk = _multistage? 1: _KK;
 
   // set simulation time
-  ssSetT(_S, t);
+  ssSetT(_SS, t);
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_S) > 0) {
-    if (ssGetInputPortRequiredContiguous(_S, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_S, 0);
+  if (ssGetNumInputPorts(_SS) > 0) {
+    if (ssGetInputPortRequiredContiguous(_SS, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_S, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
@@ -1373,20 +1373,20 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   }
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_S);
+  real_T *mdl_x = ssGetContStates(_SS);
   for (i = 0; i < _mdl_nx; i++)
     mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
   // (furthermore a model may check for discrete changes in mdlOutputs)
-  SMETHOD_CALL2(mdlOutputs, _S, 0); 
+  SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
   // evaluate continuous model equations
-  SMETHOD_CALL(mdlDerivatives, _S);
+  SMETHOD_CALL(mdlDerivatives, _SS);
 
   // get model derivatives and change to residual form
-  real_T *mdl_dx = ssGetdX(_S);
+  real_T *mdl_dx = ssGetdX(_SS);
   for (i = 0; i < _mdl_nx; i++)
     F[_nu + i] = mdl_dx[i]/_mdl_x_nominal[i] - dx[_nu + i];
 
@@ -1416,7 +1416,7 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 				       const Omu_StateVec &dx,
 				       Omu_DependentVec &F)
 {
-  if (ssGetmdlJacobian(_S) == NULL) {
+  if (ssGetmdlJacobian(_SS) == NULL) {
     // call predefined continuous_grds for numerical differentiation
     Omu_Program::continuous_grds(kk, t, x, u, dx, F);
   }
@@ -1424,11 +1424,11 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
     // exploit mdlJacobian
     int i, idx, j, jdx, rdx;
     int mdl_u_idx, mdl_x_idx;
-    real_T *pr = ssGetJacobianPr(_S);
-    int_T *ir = ssGetJacobianIr(_S);
-    int_T *jc = ssGetJacobianJc(_S);
+    real_T *pr = ssGetJacobianPr(_SS);
+    int_T *ir = ssGetJacobianIr(_SS);
+    int_T *jc = ssGetJacobianJc(_SS);
 
-    mdlJacobian(_S);
+    mdlJacobian(_SS);
 
     // obtain Jx
     m_zero(F.Jx);

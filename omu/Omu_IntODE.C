@@ -46,8 +46,8 @@ Omu_IntODE::Omu_IntODE()
 
   _x = v_get(1);
   _v = v_get(1);
-  _X = m_get(1, 1);
-  _Y = m_get(1, 1);
+  _X2 = m_get(1, 1);
+  _Y2 = m_get(1, 1);
 
   _Yx = m_get(1, 1);
   _Yu = m_get(1, 1);
@@ -56,8 +56,8 @@ Omu_IntODE::Omu_IntODE()
 //--------------------------------------------------------------------------
 Omu_IntODE::~Omu_IntODE()
 {
-  m_free(_Y);
-  m_free(_X);
+  m_free(_Y2);
+  m_free(_X2);
   v_free(_v);
   v_free(_x);
 
@@ -100,8 +100,8 @@ void Omu_IntODE::resize()
 
   v_resize(_x, _nd + 2 * _n + _nu);
   v_resize(_v, _nd + 2 * _n + _nu);
-  m_resize(_X, _nd + 2 * _n + _nu, _nx + _nu);
-  m_resize(_Y, _n, _nx + _nu);
+  m_resize(_X2, _nd + 2 * _n + _nu, _nx + _nu);
+  m_resize(_Y2, _n, _nx + _nu);
 
   //
   // variables for low level _sys->continuous callback
@@ -304,26 +304,26 @@ void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
     int nindep = _nd + 2 * _n + _nu;
     int npar = _nx + _nu;
 
-    m_zero(_X);
+    m_zero(_X2);
     for (i = 0; i < _nd; i++) {
-      _X[i][i] = 1.0;
+      _X2[i][i] = 1.0;
     }
     for (i = 0; i < _n; i++) {
       for (j = 0; j < npar; j++) {
-	_X[_nd + i][j] = y[(1 + j) * _n + i];
-	_X[_nd + _n + i][j] = 0.0; // yprime[(1 + j) * _n + i];
+	_X2[_nd + i][j] = y[(1 + j) * _n + i];
+	_X2[_nd + _n + i][j] = 0.0; // yprime[(1 + j) * _n + i];
       }
     }
     for (i = 0; i < _nu; i++) {
-      _X[_nd + 2 * _n + i][_nd + _n + i] = 1.0;
+      _X2[_nd + 2 * _n + i][_nd + _n + i] = 1.0;
     }
       
-    forward(3, _n, nindep, npar, _x->ve, _X->me, f->ve, _Y->me);
+    forward(3, _n, nindep, npar, _x->ve, _X2->me, f->ve, _Y2->me);
 
     for (i = _nd; i < _nxt; i++) {
       f[i - _nd] /= -Ft.Jdx[i][i];
       for (j = 0; j < npar; j++) {
-	f[(1 + j) * _n + i - _nd] = _Y[i - _nd][j] / -Ft.Jdx[i][i];
+	f[(1 + j) * _n + i - _nd] = _Y2[i - _nd][j] / -Ft.Jdx[i][i];
       }
     }
   }

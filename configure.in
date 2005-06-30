@@ -323,12 +323,12 @@ fi
 
 case "$target" in
   CYGWIN*|MSYS*|MINGW*|CL)
-    if test -z "$TCL_LIB_SPEC"; then
-      # take "." out of TCL_VERSION in case of no tclConfig.sh
-      TCL_VERSION="${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}"
-      TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
-      TCL_STUB_LIB="${LDLIB_PREFIX}tclstub${TCL_VERSION}${LDLIB_SUFFIX}"
-    fi
+    # Don't use TCL_LIB_SPEC under Windows, as different compilers 
+    # require different syntax, like -ltcl or tcl.lib.
+    # Furthermore, take "." out of TCL_VERSION in case of no tclConfig.sh
+    TCL_VERSION="${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}"
+    TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
+    TCL_STUB_LIB="${LDLIB_PREFIX}tclstub${TCL_VERSION}${LDLIB_SUFFIX}"
   ;;
 esac
 
