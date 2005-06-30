@@ -758,7 +758,8 @@ void Prg_SFunctionEst::update(int kk,
     _ssr += f0;
 
     // obtain precision matrix, covariance matrix, and confidence intervals
-    if (kk == _KK) {
+    // Note: skip if nothing is estimated as m_inverse crashes for dim=0
+    if (kk == _KK && _M2->n > 0) {
       static double tn[] = {1, 5, 10, 15, 20, 30, 40,
 			    50, 60, 80, 100, 200, 500, 100000};
       static double tv[] = {12.706, 2.571, 2.228, 2.131, 2.086, 2.042, 2.021,
