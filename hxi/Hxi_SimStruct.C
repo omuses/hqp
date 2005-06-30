@@ -8,6 +8,25 @@
  * rf, 05/05/2001
  */
 
+/*
+    Copyright (C) 1994--2005  Ruediger Franke
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; 
+    version 2 of the License.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library (file COPYING.LIB);
+    if not, write to the Free Software Foundation, Inc.,
+    59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 #include <assert.h>
 
 #include <vector>
@@ -67,6 +86,11 @@ static void defaultSFunctionMethod2(SimStruct *S, int_T);
 // check for Hxi::SimStruct
 inline bool isHxiSimStruct(const SimStruct *S) {
   return (value(*((real_T*)S)) == HQP_MAGIC_CODE);
+}
+
+// check for Hxi::mxArray
+inline bool isHxiMxArray(const mxArray *a) {
+  return (value(*((real_T*)a)) == HQP_MAGIC_CODE);
 }
 
 namespace Hxi {
@@ -685,9 +709,16 @@ protected:
   int_T 		_n;	///< number of cols (more generally other dims)
   bool 			_isNumeric; ///< indicate numeric data
 
+protected:
+  /** Default constuctor shall not be used. */
+  mxArray() {
+    _dummy = HQP_MAGIC_CODE;
+  }
+
 public:
   /** Constuctor for real array. */
   mxArray(int_T m, int_T n, int_T) : _realData(m*n, _dummy) {
+    _dummy = HQP_MAGIC_CODE; 
     _isNumeric = true;
     _m = m;
     _n = n;
@@ -697,6 +728,7 @@ public:
 
   /** Constuctor for char array. */
   mxArray(const char *s) : _charData(s) {
+    _dummy = HQP_MAGIC_CODE; 
     _isNumeric = false;
   }
 
@@ -781,8 +813,10 @@ public:
 #endif
 #endif
 
-#if defined(HXI_WITH_MEX)
+#if defined(HXI_WITH_MEX) && !defined(HXI_INLINE_S_FUNCTION)
 /// @name Implementation of S-function methods accessing the SimStruct.
+///  Inlined S-functions are supported with the Hxi implementation;
+///  external S-functions are supported with both, MEX and Hxi.
 //@{
 #define HXI_SS_NOSET0(ITEM)
 #define HXI_SS_SETGET1(ITEM, TYPE, ARG) \
@@ -860,44 +894,68 @@ public:
 //@}
 
 /// @name Implementation of mxArray methods.
-///       Always use MEX mxArrays if MEX is enabled.
+/// Create Hxi::mxArray if passed SimStruct is Hxi::SimStruct
 //@{
 #define HXI_MX_CREATE1(WHAT, TYPE1, ARG1) \
-  HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1) { \
-    return mxCreate##WHAT(ARG1); \
+  HXI_EXTERN mxArray* hmxCreate##WHAT(SimStruct *S, TYPE1 ARG1) { \
+    if (S != NULL && isHxiSimStruct(S))                       \
+      return (mxArray*)(new Hxi::mxArray<real_T>(ARG1)); \
+    else \
+      return mxCreate##WHAT(ARG1); \
   }
 #define HXI_MX_CREATE3(WHAT, TYPE1, ARG1, TYPE2, ARG2, TYPE3, ARG3) \
-  HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3) { \
-    return mxCreate##WHAT(ARG1, ARG2, ARG3); \
+  HXI_EXTERN mxArray* hmxCreate##WHAT(SimStruct *S, TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3) { \
+    if (S != NULL && isHxiSimStruct(S))                             \
+      return (mxArray*)(new Hxi::mxArray<real_T>(ARG1, ARG2, ARG3)); \
+    else \
+      return mxCreate##WHAT(ARG1, ARG2, ARG3);  \
   }
 #define HXI_MX_DESTROY(WHAT) \
   HXI_EXTERN void hmxDestroy##WHAT(mxArray *a) { \
-    mxDestroy##WHAT(a); \
+    if (isHxiMxArray(a)) \
+      delete (Hxi::mxArray<real_T>*)a; \
+    else \
+      mxDestroy##WHAT(a); \
   }
 #define HXI_MX_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN void hmxSet##ITEM(mxArray *a, TYPE ARG) { \
-    mxSet##ITEM(a, ARG); \
+    if (isHxiMxArray(a)) \
+      ((Hxi::mxArray<real_T>*)a)->set##ITEM(ARG); \
+    else \
+      mxSet##ITEM(a, ARG); \
   } \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
-    return mxGet##ITEM(a); \
+    if (isHxiMxArray(a)) \
+      return ((Hxi::mxArray<real_T>*)a)->get##ITEM(); \
+    else \
+      return mxGet##ITEM(a); \
   }
 #define HXI_MX_NOSET1(ITEM, TYPE, ARG)
 #define HXI_MX_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
-    return mxGet##ITEM(a); \
+    if (isHxiMxArray(a)) \
+      return ((Hxi::mxArray<real_T>*)a)->get##ITEM(); \
+    else \
+      return mxGet##ITEM(a); \
   }
 #define HXI_MX_IS1(ITEM) \
   HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
-    return mxIs##ITEM(a); \
+    if (isHxiMxArray(a)) \
+      return ((Hxi::mxArray<real_T>*)a)->is##ITEM(); \
+    else \
+      return mxIs##ITEM(a); \
   }
 #define HXI_MX_TO1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxArrayTo##ITEM(const mxArray *a) { \
-    return mxArrayTo##ITEM(a); \
+    if (isHxiMxArray(a)) \
+      return ((Hxi::mxArray<real_T>*)a)->to##ITEM(); \
+    else \
+      return mxArrayTo##ITEM(a); \
   }
 //@}
 
-#else // defined(HXI_WITH_MEX)
-/// @name Implementation of S-function methods accessing a Hxi::SimStruct.
+#else // defined(HXI_WITH_MEX) && !defined(HXI_INLINE_S_FUNCTION)
+/// @name Implementation of S-function methods accessing an Hxi::SimStruct.
 //@{
 #define HXI_SS_NOSET0(ITEM)
 #define HXI_SS_SETGET1(ITEM, TYPE, ARG) \
@@ -947,11 +1005,11 @@ public:
 /// @name Implementation of mxArray methods for Hxi::mxArray only.
 //@{
 #define HXI_MX_CREATE1(WHAT, TYPE1, ARG1) \
-  HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1) { \
+  HXI_EXTERN mxArray* hmxCreate##WHAT(SimStruct *, TYPE1 ARG1) { \
     return (mxArray*)(new Hxi::mxArray<real_T>(ARG1)); \
   }
 #define HXI_MX_CREATE3(WHAT, TYPE1, ARG1, TYPE2, ARG2, TYPE3, ARG3) \
-  HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3) { \
+  HXI_EXTERN mxArray* hmxCreate##WHAT(SimStruct *, TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3) { \
     return (mxArray*)(new Hxi::mxArray<real_T>(ARG1, ARG2, ARG3)); \
   }
 #define HXI_MX_DESTROY(WHAT) \
@@ -979,7 +1037,7 @@ public:
     return ((Hxi::mxArray<real_T>*)a)->to##ITEM(); \
   }
 //@}
-#endif // defined(HXI_WITH_MEX)
+#endif // defined(HXI_WITH_MEX) && !defined(HXI_INLINE_S_FUNCTION)
 
 // actually define methods
 #include "Hxi_SimStruct_methods.h"

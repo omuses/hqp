@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -164,7 +164,7 @@ static const char *mx_count_dimensions(const char *arg, int &m, int &n)
  *   - matrices of doubles
  *   - cell arrays enclosed by '{' '}' are parsed as strings
  */
-static mxArray *mx_parse_argument(const char *arg)
+static mxArray *mx_parse_argument(SimStruct *S, const char *arg)
 {
   const char *str = mx_forward_whitespaces(arg);
   const char *str1;
@@ -195,7 +195,7 @@ static mxArray *mx_parse_argument(const char *arg)
       }
     }
     arg_str[idx] = '\0';
-    mxa = mxCreateString(arg_str);
+    mxa = hmxCreateString(S, arg_str);
     free(arg_str);
   }
   else if (*str == '{') {
@@ -213,13 +213,13 @@ static mxArray *mx_parse_argument(const char *arg)
       arg_str[j] = *(str + j);
     }
     arg_str[j] = '\0';
-    mxa = mxCreateString(arg_str);
+    mxa = hmxCreateString(S, arg_str);
     free(arg_str);
   }
   else {
     // create mxDoubleMatrix
     mx_count_dimensions(str, m, n);
-    mxa = mxCreateDoubleMatrix(m, n, mxREAL);
+    mxa = hmxCreateDoubleMatrix(S, m, n, mxREAL);
     if (*str == '[')
       str = mx_forward_whitespaces(++str); // step into array
     for (i = 0; i < m; i++) {

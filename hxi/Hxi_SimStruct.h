@@ -186,14 +186,14 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
 /** @name Declarations of mxArray methods. */ 
 /*@{*/
 #define HXI_MX_CREATE1(WHAT, TYPE1, ARG1) \
-  HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1); \
+  HXI_EXTERN mxArray* hmxCreate##WHAT(SimStruct *S, TYPE1 ARG1); \
   inline mxArray* mxCreate##WHAT(TYPE1 ARG1) { \
-    return hmxCreate##WHAT(ARG1); \
+    return hmxCreate##WHAT(NULL, ARG1); \
   }
 #define HXI_MX_CREATE3(WHAT, TYPE1, ARG1, TYPE2, ARG2, TYPE3, ARG3) \
-  HXI_EXTERN mxArray* hmxCreate##WHAT(TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3); \
+  HXI_EXTERN mxArray* hmxCreate##WHAT(SimStruct *S, TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3); \
   inline mxArray* mxCreate##WHAT(TYPE1 ARG1, TYPE2 ARG2, TYPE3 ARG3) { \
-    return hmxCreate##WHAT(ARG1, ARG2, ARG3); \
+    return hmxCreate##WHAT(NULL, ARG1, ARG2, ARG3); \
   }
 #define HXI_MX_DESTROY(WHAT) \
   HXI_EXTERN void hmxDestroy##WHAT(mxArray *a); \

@@ -215,6 +215,10 @@ void Prg_SFunction::setup_model()
   // initialize model name
   ssSetModelName(_SS, _mdl_name);
 
+  // (re-)parse model arguments to
+  // adapt mxArray to SimStruct of loaded S-function (MEX or Hxi)
+  set_mdl_args(_mdl_args);
+
   // initialize S-function parameters
   ssSetSFcnParamsCount(_SS, _mdl_nargs);
   for (i = 0; i < _mdl_nargs; i++)

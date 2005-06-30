@@ -4,6 +4,9 @@
 	
 2005-06-30  <rfranke>
 
+	* omu/Prg_SFunction.C, hxi/Hxi_SimStruct.[hC], hxi/Hxi_mx_parse.h:
+	  support MEX and Hxi S-functions at the same time
+
 	* omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.[hC],
 	  omu/Omu_Program.[hC], omu/Omu_IntODE.[hC],
 	  odc/Prg_DIC_SFunction.[hC], odc/Prg_DID_SFunction.[hC]:
