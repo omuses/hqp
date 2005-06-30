@@ -1,3 +1,7 @@
+2005-06-30  <e_arnold>
+
+	* hqp/Hqp_IpLQDOCP.[hC] revert to previous revision 1.3/1.8 
+	
 2005-06-30  <rfranke>
 
 	* omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.[hC],

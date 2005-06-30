@@ -70,7 +70,7 @@ class Hqp_IpLQDOCP: public Hqp_IpMatrix {
   TMATP Vxx; 
   TMATP CH_Guu; 
   TPERMP CH_Guu_p; 
-  //  TPERMP CH_Guu_b; 
+  TPERMP CH_Guu_b; 
   IVECP CH_Guu_nr;
   TMATP Gxu; 
   TMATP Guu;
@@ -97,7 +97,7 @@ class Hqp_IpLQDOCP: public Hqp_IpMatrix {
   MATP Z;
   
   PERM *pivot;
-  //  PERM *blocks;
+  PERM *blocks;
   VECP ct; 
   VECP yb;
 
