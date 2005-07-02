@@ -1,6 +1,10 @@
-2005-06-30  <e_arnold>
+2005-07-02  <e_arnold>
 
-	* hqp/Hqp_IpLQDOCP.[hC] revert to previous revision 1.3/1.8 
+	* Makefile: add install-adolc
+
+2005-06-30  <e_arnold>	
+
+	* hqp/Hqp_IpLQDOCP.[hC]: revert to previous revision 1.3/1.8 
 	
 2005-06-30  <rfranke>
 

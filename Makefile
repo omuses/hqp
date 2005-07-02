@@ -76,6 +76,14 @@ install::
 # install include files
 	for f in omu/*.h hxi/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/; done
+	@if test -n "$(ADOLC_SRCS)"; then $(MAKE) install-adolc; fi
+# complete directory structure for includes
+	rm -rf $(INC_DIR_ROOT)/hqp
+	cd "$(INC_DIR_ROOT)"; \
+	ln -s hqp-$(VERSION) hqp; \
+	cd "$(PWD)"
+
+install-adolc:
 	@if test ! -d $(INC_DIR)-$(VERSION)/adolc; then \
 	mkdir $(INC_DIR)-$(VERSION)/adolc; fi
 	for f in adol-c/adol-c/adolc/*.h; do \
@@ -92,8 +100,3 @@ install::
 	mkdir $(INC_DIR)-$(VERSION)/adolc/tapedoc; fi
 	for f in adol-c/adol-c/adolc/tapedoc/*.h; do \
 	  $(INSTALL_DATA) $$f $(INC_DIR)-$(VERSION)/adolc/tapedoc/; done
-# complete directory structure for includes
-	rm -rf $(INC_DIR_ROOT)/hqp
-	cd "$(INC_DIR_ROOT)"; \
-	ln -s hqp-$(VERSION) hqp; \
-	cd "$(PWD)"
