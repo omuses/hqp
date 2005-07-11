@@ -82,7 +82,7 @@ puts "Obj-evals: [prg_fbd_evals]"
 
 # plot result
 puts "Plotting resulting signals..."
-if {[catch {set tk_version}] || [catch {package require BLT}]} {
+if {[catch {package present Tk}] || [catch {package require BLT}]} {
     puts "Skipping plot as no blt::graph available."
 } else {
 

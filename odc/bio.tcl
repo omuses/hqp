@@ -7,7 +7,7 @@
 
 source omu.tcl
 
-if { [catch {set tk_version}] || [catch {package require BLT}] } {
+if { [catch {package present Tk}] || [catch {package require BLT}] } {
     set plots 0
     puts stderr "plots disabled"
 } else {

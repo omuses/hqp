@@ -7,7 +7,7 @@
 
 source omu.tcl
 
-if {[catch {set tk_version}] 
+if {[catch {package present Tk}] 
     || [catch {package require BLT}]} {
   set plots 0
   puts stderr "Crane plots disabled"

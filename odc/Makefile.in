@@ -96,7 +96,7 @@ gmalloc $(GMALLOC_O): $(GMALLOC_O:$O=.c)
 
 clean:
 	rm -f $(RESULT)@EXE_SUFFIX@ *.o *.obj *.[pi]db *.ilk \
-	  *~ *core *.stackdump control.plt
+	  *~ *core *.stackdump control.plt sfun*@SHLIB_SUFFIX@
 
 depend:
 	makedepend -- $(CFLAGS) -- $(SRCS)
