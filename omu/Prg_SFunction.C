@@ -150,13 +150,14 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
   }
 
   // take over successfully parsed args
-  free(_mdl_args);
   for (i = 0; i < _mdl_nargs; i++)
     mxDestroyArray(_mx_args[i]);
   delete [] _mx_args;
   _mx_args = args;
   _mdl_nargs = nargs;
-  _mdl_args = strdup(arg_str);
+  char *mdl_args = strdup(arg_str);
+  free(_mdl_args);
+  _mdl_args = mdl_args; // Note: intermediate mdl_args in case arg_str == _mdl_args
 
   _mdl_needs_setup = true;
 }
