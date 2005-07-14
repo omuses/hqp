@@ -1307,12 +1307,6 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
       mdl_u[idx] = _mdl_us[kk][idx];
   }
 
-  // initialize model in first stage
-  if (kk == 0 && ssGetmdlInitializeConditions(_SS) != NULL) {
-    // initialize model
-    SMETHOD_CALL(mdlInitializeConditions, _SS);
-  }
-
   // pass states from optimizer to model
   real_T *mdl_x = ssGetContStates(_SS);
   for (i = 0; i < _mdl_nx; i++)
@@ -1321,10 +1315,6 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   // call mdlUpdate to get discrete events processed
   // Note: this is done once at the beginning of a sample interval;
   // no event processing takes place during the integration.
-  // mdlUpdate is not called at initial time to prevent initialization
-  // of potentially optimized initial states, e.g. from parameters;
-  // it is called once in Prg_SFunction::setup_model() instead.
-  //if (kk > 0 && ssGetmdlUpdate(_SS) != NULL) {
   if (ssGetmdlUpdate(_SS) != NULL) {
     // also call mdlOutputs as done by Simulink before each mdlUpdate
     SMETHOD_CALL2(mdlOutputs, _SS, 0); 
@@ -1335,15 +1325,8 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   for (i = 0; i < _nu; i++)
     xt[i] = x[i];
   // read back states from model
-  // Note: take optimized initial states from the optimizer
-  // to prevent their overriding by the model, e.g. from parameters;
-  // they are read once in Prg_SFunction::setup_model() instead.
-  for (i = 0; i < _mdl_nx; i++) {
-    if (kk == 0 && _mdl_x0_active[i])
-      xt[_nu + i] = x[_nu + i];
-    else
-      xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
-  }
+  for (i = 0; i < _mdl_nx; i++)
+    xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
 }
 
 //--------------------------------------------------------------------------

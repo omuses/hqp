@@ -1,3 +1,11 @@
+2005-07-14  <rfranke>
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C (consistic):
+	  simplify and improve processing of discrete events, assuming:
+	  - mdlInitializeConditions is executed only once during setup_model
+	  - initial conditions that include optimized variables
+	    have to be formulated as optimization constraints
+
 2005-07-11  <rfranke>
 
 	* odc/Makefile (clean): clean up any shared libs in odc
