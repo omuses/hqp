@@ -1,3 +1,11 @@
+2005-07-20  <rfranke>
+
+	* configure.in, configure:
+	  disable ADOL-C per default; require explicit --enable-adolc
+	
+	* omu/Prg_SFunction.C (setup_model):
+	  simplify and improve processing of discrete events
+
 2005-07-14  <rfranke>
 
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C (consistic):

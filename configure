@@ -851,7 +851,7 @@ Optional Features:
   --enable-symbols      enable symbols for debugging
   --disable-shared    disable dynamic loading of HQP/Omuses
   --enable-mex     include MEX S-function interface with Omuses
-  --disable-adolc     disable ADOL-C for automatic differentiation
+  --enable-adolc     enable ADOL-C for automatic differentiation
   --enable-fortran    include DASPK and RKsuite with Omuses
   --enable-gmalloc    link ODC with GNU malloc
   --enable-cute     include CUTE interface with HQP
@@ -4494,26 +4494,17 @@ IF_DEFS="-DUSE_COMPAT_CONST=1 $IF_DEFS"
 # 	Configure ADOL-C
 # -----------------------------------------------------------------------
 
-echo "$as_me:$LINENO: checking --disable-adolc" >&5
-echo $ECHO_N "checking --disable-adolc... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking --enable-adolc" >&5
+echo $ECHO_N "checking --enable-adolc... $ECHO_C" >&6
 # Check whether --enable-adolc or --disable-adolc was given.
 if test "${enable_adolc+set}" = set; then
   enableval="$enable_adolc"
   omu_adolc=$enableval
 else
-  omu_adolc=yes
-fi;
-if test "$target" = CL; then
-  # disable ADOL-C for cl due to incompatibility
   omu_adolc=no
-fi
-if test "$omu_adolc" = yes; then
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-else
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-fi
+fi;
+echo "$as_me:$LINENO: result: $omu_adolc" >&5
+echo "${ECHO_T}$omu_adolc" >&6
 
 if test "$omu_adolc" = yes; then
   cd adol-c;
@@ -4530,7 +4521,7 @@ if test "$omu_adolc" = yes; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adol-c/adolc/*\$O ../adol-c/adol-c/adolc/*/*\$O"
 else
   ASRCS=""
-  ADOLCDEF =""
+  ADOLCDEF=""
 fi
 
 
