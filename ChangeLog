@@ -1,3 +1,20 @@
+2005-08-01  <rfranke>
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  - extend _multistage binary flag to integer and provide
+	    re-initialization of states in each stage with _multistage=2
+	
+	* omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  - roll back treatment of discrete events to release 1.9.2, but
+	    don't call mdlOutputs in Prg_SFunction::setup_model and
+	    skip call to mdlInitializeSizes if initial time changed
+
+2005-07-25  <rfranke>
+
+	* omu/Hqp_DocpStub.[hC], omu/Hqp_Omuses.C: 
+	  - don't catch model errors during initial simulation
+	  - move treatment of model errors to Hqp_DocpStub for update_stage
+
 2005-07-20  <rfranke>
 
 	* configure.in, configure:

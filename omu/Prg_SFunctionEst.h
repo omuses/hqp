@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2004  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -109,14 +109,14 @@
    \end{array}
    @f]
    The problem is treated as multistage problem with @f$K_{N_{ex}}@f$ stages
-   and one sample period per stage per default. 
+   and one sample period per stage per default (multistage=1 or multistage=2). 
    Discrete-time state variables with unknown initial value are introduced
    for the estimated parameters p, in order to preserve a sparse structure.
    Additional @f$K_{N_{ex}}@f$ junction conditions (equality constraints)
    are introduced for the estimated parameters and @f$K_{N_{ex}}-N_{ex}+1@f$
    junction conditions are introduced for the state variables x.
    Alternatively the problem can be treated without stages hiding model
-   states from the optimizer.
+   states from the optimizer (multistage=0).
 
    The states of all stages are either initialized with the initial states
    @f$x0s^l@f$
@@ -135,6 +135,12 @@
    @f]
    All but the initial states of the experiments may be initialized
    with the results of an initial-value simulation for given initial
+   states and inputs (multistage=0 or multistage=1).
+   With multistage=2, individual initial states are used for each stage,
+   resulting in the multiple shooting method.
+   This might be useful if no sensible initial guesses can be
+   given for unknown parameters, so that a simulation fails.
+
    states and inputs. If the problem is treated as multistage problem,
    then not performing the simulation results in the multiple shooting
    method. This might be useful if no sensible initial guesses can be
@@ -221,7 +227,7 @@ class Prg_SFunctionEst: public Prg_SFunction {
   int		_np;	///< number of estimated parameters
   int		_nx0;	///< number of estimated initial states
   int		_ny;	///< number of reference outputs for estimation
-  bool 		_multistage; 	///< treat as multistage problem
+  int 		_multistage; 	///< treat as multistage problem
 
   int		_nex;	///< number of experiments used for estimation
   MATP 		_mdl_x0s;///< initial states for each experiment
@@ -301,9 +307,9 @@ class Prg_SFunctionEst: public Prg_SFunction {
   void set_nex(int val) {_nex = val;}
 
   /// indicate if problem is treated with one stage per time interval
-  bool multistage() const {return _multistage;}
+  int multistage() const {return _multistage;}
   /// set multistage flag
-  void set_multistage(bool val) {_multistage = val;}
+  void set_multistage(int val) {_multistage = val;}
 
   /// reference values for active model outputs (size: KK+1 . ny)
   const MATP ys_ref() const {return _ys_ref;}

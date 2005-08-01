@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2004  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -228,9 +228,9 @@ public:
    When treated as multistage problem, the additional optimization
    variables introduced for states are normally initialized with the results
    of an initial-value simulation for the given initial states and inputs 
-   (see above). Alternatively, the multistage problem may be treated with
-   multiple shooting, i.e. all states are initialized with
-   the initial states @f$x^0@f$
+   (multistage=1). Alternatively, with multistage=2, the multistage problem
+   may be treated with multiple shooting, i.e. all states are initialized
+   with the initial states @f$x^0@f$
    @f[
    \begin{array}{rcll}
     x_{initial}(t^k) &=& \displaystyle \frac{x^0}{x_{nominal}},
@@ -290,7 +290,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_ncf;	///< number of constrained/used outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
-  bool 		_multistage; 	///< treat as multistage problem
+  int 		_multistage; 	///< treat as multistage problem
 
   /**
    * Number of sample periods per stage (default: 1).
@@ -392,9 +392,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    */
   //@{
   /// indicate if problem is treated with one stage per time interval
-  bool multistage() const {return _multistage;}
+  int multistage() const {return _multistage;}
   /// set multistage flag
-  void set_multistage(bool val) {_multistage = val;}
+  void set_multistage(int val) {_multistage = val;}
 
   //@}
 

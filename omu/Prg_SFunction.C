@@ -272,6 +272,7 @@ void Prg_SFunction::setup_model()
 
   // set simulation time
   ssSetT(_SS, _t0);
+  _t0_setup_model = _t0;
 
   // initialize and check sample times of model
   mdlInitializeSampleTimes(_SS);
@@ -298,28 +299,12 @@ void Prg_SFunction::setup_model()
   v_resize(_mdl_p, _mdl_np);
   read_mx_args(_mdl_p);
 
-  // get initial states
-  // (states shall be initialized with mdlInitializeConditions;
-  //  mdlOutputs is called according to the docu afterwards)
+  // get initial states that shall be initialized with mdlInitializeConditions
+  // Note: initialization might also be postponed by the model to the next
+  //       mdlOutputs/mdlUpdate call, e.g. if initial states depend on inputs,
+  //       however, don't call these methods here as inputs are not known.
   if (ssGetmdlInitializeConditions(_SS) != NULL) {
     SMETHOD_CALL(mdlInitializeConditions, _SS);
-  }
-  // initialize model inputs
-  real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
-    else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
-  }
-  for (i = 0; i < _mdl_nu; i++)
-    mdl_u[i] = 0.0; // Note: unfortunately no values are available yet
-  // calculate model outputs
-  SMETHOD_CALL2(mdlOutputs, _SS, 0);
-  // furthermore call mdlUpdate to get discrete events processed, if any
-  // (cf. steady-state simulation for tstart=tend)
-  if (ssGetmdlUpdate(_SS) != NULL) {
-    SMETHOD_CALL2(mdlUpdate, _SS, 0);
   }
   real_T *mdl_x = ssGetContStates(_SS);
   v_resize(_mdl_x0, _mdl_nx);

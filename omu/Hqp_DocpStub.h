@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -38,7 +38,47 @@ class Hqp_DocpStub {
 
 private:
   Hqp_DocpHandle _handle;
-  int _k0, _kf;		// store back arguments of horizon(int, int)
+  int _k0, _kf;		// store back result of setup_horizon
+
+  /**
+   *  Catch errors from model evaluation and signal them with
+   *  infinite objective function. This signaling is useful for line search.
+   */
+  bool _catch_model_errors;
+
+  /**
+   * @name Static callback methods 
+   */
+  //@{
+  static void setup_horizon(void *clientdata, int &k0, int &kf);
+
+  static void setup_vars(void *clientdata, int k,
+                         VECP x, VECP xmin, VECP xmax,
+                         VECP u, VECP umin, VECP umax,
+                         VECP c, VECP cmin, VECP cmax);
+
+  static void setup_struct(void *clientdata,
+                           int k, const VECP x, const VECP u,
+                           MATP fx, MATP fu, IVECP f_lin,
+                           VECP f0x, VECP f0u, int &f0_lin,
+                           MATP cx, MATP cu, IVECP c_lin,
+                           MATP Lxx, MATP Luu, MATP Lxu);
+
+  static void init_simulation(void *clientdata,
+                              int k, VECP x, VECP u);
+
+  static void update_vals(void *clientdata,
+                          int k, const VECP x, const VECP u,
+                          VECP f, Real &f0, VECP c);
+
+  static void update_stage(void *clientdata,
+                           int k, const VECP x, const VECP u,
+                           VECP f, Real &f0, VECP c,
+                           MATP fx, MATP fu, VECP f0x, VECP f0u,
+                           MATP cx, MATP cu,
+                           const VECP rf, const VECP rc,
+                           MATP Lxx, MATP Luu, MATP Lxu);
+  //@}
 
 public:
 

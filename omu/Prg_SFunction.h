@@ -48,6 +48,7 @@ class Prg_SFunction: public Omu_Program {
   mxArray	**_mx_args; 	///< S-function parameters after parsing
   int 		_mdl_nargs; 	///< number of S-function arguments
 
+  double 	_t0_setup_model;///< time used for initialization of model
   int		_mdl_np;	///< number of model parameters
   int		_mdl_nx;	///< number of model states
   int		_mdl_nu;	///< number of model inputs

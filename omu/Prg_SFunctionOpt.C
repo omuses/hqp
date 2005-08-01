@@ -27,7 +27,6 @@
 #include <stdlib.h>
 
 #include <If_Int.h>
-#include <If_Bool.h>
 #include <If_Real.h>
 #include <If_RealVec.h>
 #include <If_RealMat.h>
@@ -109,7 +108,7 @@ void Omu_OptVarVec::resize(int n)
 Prg_SFunctionOpt::Prg_SFunctionOpt()
 {
   _sps = 1;
-  _multistage = true;
+  _multistage = 1;
 
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_der_x0_min = v_get(_mdl_nx);
@@ -147,7 +146,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_ys = m_get(_KK+1, _mdl_ny);
 
   _ifList.append(new If_Int("prg_sps", &_sps));
-  _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
+  _ifList.append(new If_Int(GET_SET_CB(int, "prg_", multistage)));
 
   // redefine mdl_x0 in order to also consider mdl_xs
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0)));
@@ -701,7 +700,7 @@ void Prg_SFunctionOpt::init_simulation(int k,
 				       Omu_VariableVec &x, Omu_VariableVec &u)
 {
   // initial states
-  if (k == 0)
+  if (k == 0 || _multistage > 1)
     v_copy(x.initial, x);
 }
 
@@ -1307,6 +1306,15 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
       mdl_u[idx] = _mdl_us[kk][idx];
   }
 
+  // initialize model in first stage
+  // This way model initial conditions get applied as functions of parameters.
+  // Don't initialize if time changed, e.g. for subsequent simulation calls
+  if (kk == 0 && t == _t0_setup_model
+      && ssGetmdlInitializeConditions(_SS) != NULL) {
+    // initialize model
+    SMETHOD_CALL(mdlInitializeConditions, _SS);
+  }
+
   // pass states from optimizer to model
   real_T *mdl_x = ssGetContStates(_SS);
   for (i = 0; i < _mdl_nx; i++)
@@ -1324,9 +1332,17 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   // take over optimized control inputs from optimizer
   for (i = 0; i < _nu; i++)
     xt[i] = x[i];
+
   // read back states from model
-  for (i = 0; i < _mdl_nx; i++)
-    xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
+  // Note: take optimized initial states from the optimizer
+  // to prevent their overriding by the model, e.g. from parameters;
+  // they are read once in Prg_SFunction::setup_model() instead.
+  for (i = 0; i < _mdl_nx; i++) {
+    if (kk == 0 && _mdl_x0_active[i])
+      xt[_nu + i] = x[_nu + i];
+    else
+      xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
+  }
 }
 
 //--------------------------------------------------------------------------

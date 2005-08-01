@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2004  Ruediger Franke
+    Copyright (C) 1997--2005  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -611,22 +611,11 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
     // solve continuous equations over sample period
     if (nxf > 0) {
-
       v_copy(x0k, xfk);
       m_copy(x0k.Sx, xfk.Sx);
       m_copy(x0k.Su, xfk.Su);
-
-      m_catch(E_CONV,
-	      // try
-	      // use tractcatch to get error message printed to stderr
-	      m_tracecatch(// try
-			   _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
-					      xk, uk, _prg, Fk, xfk),
-			   // catch and throw
-			   m_error_description()),
-	      // catch
-	      f0 = Inf;
-	      return);
+      _integrator->solve(kk, _prg->ts(kk), _prg->ts(kk+1),
+                         xk, uk, _prg, Fk, xfk);
     }
 
     //

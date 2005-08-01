@@ -27,7 +27,6 @@
 #include <stdlib.h>
 
 #include <If_Int.h>
-#include <If_Bool.h>
 #include <If_Real.h>
 #include <If_RealVec.h>
 #include <If_RealMat.h>
@@ -74,7 +73,7 @@ IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 //--------------------------------------------------------------------------
 Prg_SFunctionEst::Prg_SFunctionEst()
 {
-  _multistage = true;
+  _multistage = 1;
 
   _mdl_p_active = iv_get(_mdl_np);
   _mdl_p_confidence = v_get(_mdl_np);
@@ -156,7 +155,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _ifList.append(new If_RealMat(GET_CB(const MATP, "", mdl_ys)));
 
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", nex)));
-  _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", multistage)));
+  _ifList.append(new If_Int(GET_SET_CB(int, "prg_", multistage)));
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "prg_", ys_ref)));
   _ifList.append(new If_RealMat(GET_CB(const MATP, "prg_", M)));
   _ifList.append(new If_RealMat(GET_CB(const MATP, "prg_", P)));
@@ -384,21 +383,21 @@ void Prg_SFunctionEst::setup(int k,
       x.alloc(_np, _nx);
   }
 
-  if (k == 0) {
-    // setup parameters
-    int ip = 0;
-    for (i = 0; i < _mdl_np; i++) {
-      if (_mdl_p_active[i]) {
-	x.initial[ip] = _mdl_p[i] / _mdl_p_nominal[i];
-	if (_mdl_p.min[i] > -Inf)
-	  x.min[ip] = _mdl_p.min[i] / _mdl_p_nominal[i];
-	if (_mdl_p.max[i] < Inf)
-	  x.max[ip] = _mdl_p.max[i] / _mdl_p_nominal[i];
-	++ip;
-      }
+  // setup parameters
+  int ip = 0;
+  for (i = 0; i < _mdl_np; i++) {
+    if (_mdl_p_active[i]) {
+      x.initial[ip] = _mdl_p[i] / _mdl_p_nominal[i];
+      if (_mdl_p.min[i] > -Inf)
+        x.min[ip] = _mdl_p.min[i] / _mdl_p_nominal[i];
+      if (_mdl_p.max[i] < Inf)
+        x.max[ip] = _mdl_p.max[i] / _mdl_p_nominal[i];
+      ++ip;
     }
-    assert(ip == _np);	// _np must not have changed since setup_stages
+  }
+  assert(ip == _np);	// _np must not have changed since setup_stages
 
+  if (k == 0) {
     // setup initial states
     for (i = _np; i < _nx; i++) {
       x.initial[i] = _mdl_xs[ks(0)][i-_np] / _mdl_x_nominal[i-_np];
@@ -436,11 +435,6 @@ void Prg_SFunctionEst::setup(int k,
   }
   // setup states of subsequent stages
   else {
-    for (i = 0, idx = 0; idx < _mdl_np; idx++)
-      if (_mdl_p_active[idx]) {
-	x.initial[i] = _mdl_p[i] / _mdl_p_nominal[i];
-	i++;
-      }
     for (idx = 0; idx < _mdl_nx; idx++) {
       x.initial[_np+idx] = _mdl_xs[ks(k)][idx] / _mdl_x_nominal[idx];
       x.min[_np+idx] = _mdl_x.min[idx] / _mdl_x_nominal[idx];
@@ -550,7 +544,7 @@ void Prg_SFunctionEst::init_simulation(int k,
 				       Omu_VariableVec &x, Omu_VariableVec &u)
 {
   // initial states
-  if (k == 0)
+  if (k == 0 || _multistage > 1)
     v_copy(x.initial, x);
 }
 
@@ -822,6 +816,17 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   for (i = 0; i < _mdl_nu; i++)
     mdl_u[i] = _mdl_us[kk][i];
 
+  // initialize model in first stage
+  // This way model initial conditions get applied as functions of parameters.
+  // Don't initialize if time changed, e.g. for subsequent simulation calls
+  if (kk == 0 && t == _t0_setup_model
+      && ssGetmdlInitializeConditions(_SS) != NULL) {
+    // pass estimated parameters to model
+    write_active_mx_args(x);
+    // initialize model
+    SMETHOD_CALL(mdlInitializeConditions, _SS);
+  }
+
   // pass states from optimizer to model
   real_T *mdl_x = ssGetContStates(_SS);
   if (kk == 0 || !new_experiment) {
@@ -845,9 +850,21 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   // take over estimated parameters from optimizer
   for (i = 0; i < _np; i++)
     xt[i] = x[i];
+
   // read back states from model
-  for (i = 0; i < _mdl_nx; i++)
-    xt[_np + i] = mdl_x[i] / _mdl_x_nominal[i];
+  // Note: take estimated initial states from the optimizer
+  // to prevent their overriding by the model, e.g. from parameters;
+  // they are read once in Prg_SFunction::setup_model() instead.
+  for (i = 0; i < _mdl_nx; i++) {
+    if (new_experiment && _mdl_x0_active[i]) {
+      if (kk == 0)
+        xt[_np + i] = x[_np + i];
+      else
+        xt[_np + i] = u[i];
+    }
+    else
+      xt[_np + i] = mdl_x[i] / _mdl_x_nominal[i];
+  }
 }
 
 //--------------------------------------------------------------------------
