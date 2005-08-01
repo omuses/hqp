@@ -773,7 +773,12 @@ void Prg_SFunctionEst::update(int kk,
 	t_f2_95 = tv[i] * (1.0 - rn) + tv[i+1] * rn;
       }
       mtrm_mlt(_M2, _M2, _COV);
-      m_inverse(_COV, _P2);
+      m_catchall(// try
+                 m_inverse(_COV, _P2),
+                 // catch
+                 m_error(E_CONV, 
+                         "Prg_SFunctionEst::update: singular Covariance matrix")
+                 );
       sm_mlt(_ssr/n, _P2, _COV);
       for (i = 0, idx = 0; idx < _mdl_np; idx++) {
 	if (_mdl_p_active[idx]) {
