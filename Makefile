@@ -34,7 +34,6 @@ doc::
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
-	rm -f odc/*.dll
 	rm -f hxi/*~
 	cd malloc; $(MAKE) clean; cd ..
 	cd omu; $(MAKE) clean; cd ..
@@ -49,10 +48,11 @@ clean:
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
 	if test -n "$(ADOLC_SRCS)"; then \
-	cd adol-c; \
-	if test -d adol-c; then rm -rf adol-c; fi \
+	  cd adol-c; \
+	  if test -d adol-c; then rm -rf adol-c; fi \
 	fi
 	rm -rf doc/Doxyfile doc/latex doc/refman.pdf
+	rm -rf *.cache
 
 LIB_DIR_ROOT = $(INSTALL_PREFIX)/lib
 INC_DIR_ROOT = $(INSTALL_PREFIX)/include
