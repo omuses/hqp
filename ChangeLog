@@ -1,3 +1,15 @@
+2004-11-21  <rfranke>
+
+	* configure.in, configure:
+	  change version to 1.9.3, add tag release-1-9-3
+
+	* makedirs.in:
+	  add quotes to allow spaces in installation dirs of Tcl and MATLAB
+
+	* Makefile, odc/Makefile.in (clean):
+	  - clean up exp and lib files
+	  - clean up atom4te.cache files
+
 2005-08-01  <rfranke>
 
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
