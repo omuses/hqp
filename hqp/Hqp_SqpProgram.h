@@ -33,8 +33,7 @@
 #include <If_Class.h>
 
 #include "Hqp_impl.h"
-
-class Hqp_Program;
+#include "Hqp_Program.h"
 
 IF_BASE_DECLARE(Hqp_SqpProgram);
 
@@ -91,6 +90,11 @@ class Hqp_SqpProgram {
   //@{
   /** current linear quadratic approximation */
   virtual Hqp_Program *qp() {return _qp;}
+
+  /** current optimization step (solution of linear-quadratic sub-problem)*/
+  virtual const VECP s() const {return _qp->x;}
+  /** set optimization step */
+  virtual void set_s(const VECP v) {v_copy_elements(v, _qp->x);}
 
   /** current vector of optimization variables */
   virtual const VECP x() const {return _x;}

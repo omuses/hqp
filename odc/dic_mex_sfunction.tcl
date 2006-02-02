@@ -27,7 +27,7 @@ mdl_path ./sfun_dic[mex_extension sfun_dic]
 # setup stages and sample periods per stage
 prg_KK 60
 prg_sps 1
-prg_multistage true
+prg_multistage 1
 prg_setup_stages
 
 # model inputs and sample time points

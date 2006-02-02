@@ -58,6 +58,7 @@ Hqp_SqpProgram::Hqp_SqpProgram()
 
   _ifList.append(new If_Real(GET_SET_CB(Real, f)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, x)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, s)));
   _ifList.append(new If_Cmd("prg_setup", &Hqp_SqpProgram::setup, this));
   _ifList.append(new If_Cmd("prg_init_x", &Hqp_SqpProgram::init_x, this));
   _ifList.append(new If_Cmd("prg_qp_dump", &Hqp_SqpProgram::qp_dump, this));

@@ -1,3 +1,21 @@
+2006-02-02  <rfranke>
+
+	* configure.in, configure: DEVELOPMENT_VERSION=yes
+
+	* hqp/hqp_solve.tcl (hqp_solve):
+	  don't raise error subiters if qp_result is feasible
+
+	* hqp/Hqp_SqpProgram.[hC]:
+	  add optimization step s as prg_s to iftcl interface
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - additionally consider y_ref, u_ref and der_u_ref for
+	    evaluation of first order terms in optimization objective
+	  - add mdl_u0 to read and write model inputs at initial time
+	  - mdl_y0 and mdl_yf to read model outputs at initial and final time
+
+	* odc/dic_mex_sfunction.tcl: adapt to integer prg_multistage
+
 2004-11-21  <rfranke>
 
 	* configure.in, configure:
