@@ -171,7 +171,7 @@ proc hqp_solve {{stream stdout} {hot 0}} {
 
     hqp_puts $stream [format "%8.3g" [sqp_alpha]]
 
-    if {[qp_iter] >= [qp_max_iters]} {
+    if {[qp_iter] >= [qp_max_iters] && [qp_result] != "feasible"} {
         error subiters
     }
     if {[sqp_iter] >= [sqp_max_iters]} {
