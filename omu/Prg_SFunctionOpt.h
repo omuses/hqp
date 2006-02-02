@@ -62,33 +62,34 @@ public:
    \begin{array}{l}
     \displaystyle 
     J\ =\ \sum_{i=1}^{n_y} \left\{
-      y_{0\_weight1}\,y(t_0)
+      y_{0\_weight1}\left[y(t_0)-\frac{y_{ref}}{y_{nominal}}\right]
       \ +\ y_{0\_weight2}\left[y(t_0)-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
     \\[4ex] \displaystyle \qquad 
     \ + \ \sum_{kk=0}^{KK} \sum_{i=1}^{n_u} \Delta t_{u,i}^{kk} \left\{
-      u_{weight1}\,u(t^{kk})
+      u_{weight1}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]
       \ +\ u_{weight2}\left[u(t^{kk})-\frac{u_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{k=0}^{K-1} (t^{k+1}-t^{k}) \sum_{i=1}^{n_u} \left\{
-      {der\_u}_{weight1}\,du^k
+      {der\_u}_{weight1}\left[du^k
+                                -\frac{{der\_u}_{ref}}{u_{nominal}}\right]
       \ +\ {der\_u}_{weight2}\left[du^k
                                 -\frac{{der\_u}_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
-      y_{weight1}\,y(t^{kk})
+      y_{weight1}\left[y(t^{kk})-\frac{y_{ref}}{y_{nominal}}\right]
       \ +\ y_{weight2}\left[y(t^{kk})-\frac{y_{ref}}{y_{nominal}}\right]^2
+    \right\}_i
+    \\[4ex] \displaystyle \qquad
+    \ + \ \sum_{i=1}^{n_y} \left\{
+      y_{f\_weight1}\left[y(t_f)-\frac{y_{ref}}{y_{nominal}}\right]
+      \ +\ y_{f\_weight2}\left[y(t_f)-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
          y_{soft\_weight1}\,s^{kk} + y_{soft\_weight2}\,s^{kk}s^{kk}
-    \right\}_i
-    \\[4ex] \displaystyle \qquad
-    \ + \ \sum_{i=1}^{n_y} \left\{
-      y_{f\_weight1}\,y(t_f)
-      \ +\ y_{f\_weight2}\left[y(t_f)-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
     \quad\to\quad \min
    \end{array}
@@ -422,11 +423,17 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// maximum for time derivative of x0  
   const VECP mdl_der_x0_max() const {return _mdl_der_x0_max;}
 
+  /// model inputs at initial time
+  const VECP mdl_u0() const {return _mdl_u0;}
+
   /// lower bounds for model inputs at initial time
   const VECP mdl_u0_min() const {return _mdl_u0.min;}
 
   /// upper bounds for model inputs at initial time
   const VECP mdl_u0_max() const {return _mdl_u0.max;}
+
+  /// model outputs at initial time
+  const VECP mdl_y0() const {return _mdl_y0;}
 
   /// lower bounds for model outputs at initial time
   const VECP mdl_y0_min() const {return _mdl_y0.min;}
@@ -527,6 +534,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_y_soft_weight2() const {return _mdl_y_soft.weight2;}
 
+  /// model outputs at final time
+  const VECP mdl_yf() const {return _mdl_yf;}
+
   /// lower bounds for model outputs at final time
   const VECP mdl_yf_min() const {return _mdl_yf.min;}
 
@@ -553,7 +563,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
    * @name Write methods for model specific members (no If prefix).
    */
   //@{
-  /// set initial states
+  /// set initial states and copy them to all mdl_xs
   void set_mdl_x0(const VECP v) {
     v_copy_elements(v, _mdl_x0);
     // copy initial states to all sample periods
@@ -577,6 +587,14 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set maximum for dx0dt
   void set_mdl_der_x0_max(const VECP v) {v_copy_elements(v, _mdl_der_x0_max);}
+
+  /// set initial values for model inputs and copy them to all mdl_us
+  void set_mdl_u0(const VECP v) {
+    v_copy_elements(v, _mdl_u0);
+    for (int kk = 0; kk <= _KK; kk++)
+      for (int i = 0; i < _mdl_nu; i++)
+	_mdl_us[kk][i] = v[i];
+  }
 
   /// set lower bounds for initial model inputs
   void set_mdl_u0_min(const VECP v) {v_copy_elements(v, _mdl_u0.min);}
@@ -703,7 +721,12 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   void set_mdl_yf_weight2(const VECP v) {v_copy_elements(v, _mdl_yf.weight2);}
 
   /// set model inputs
-  void set_mdl_us(const MATP v) {m_copy_elements(v, _mdl_us);}
+  void set_mdl_us(const MATP v) {
+    m_copy_elements(v, _mdl_us);
+    // also set additionally treated mdl_u0
+    for (int i = 0; i < _mdl_nu; i++)
+      _mdl_u0[i] = _mdl_us[0][i];
+  }
 
   /// set model states
   void set_mdl_xs(const MATP v) {
