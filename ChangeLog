@@ -1,3 +1,9 @@
+2006-02-21  <rfranke>
+
+	* meschach/bkpfacto.c (BKPfactor):
+	  bug fix for numerical overflow causing bad memory access
+	  (this bug lead LQDOCP to crash if QP problem degenerates)
+
 2006-02-02  <rfranke>
 
 	* configure.in, configure: DEVELOPMENT_VERSION=yes

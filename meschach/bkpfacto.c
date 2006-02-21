@@ -28,7 +28,7 @@
 	Matrix factorisation routines to work with the other matrix files.
 */
 
-static	char	rcsid[] = "$Id: bkpfacto.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
+static	char	rcsid[] = "$Id: bkpfacto.c,v 1.3 2006/02/21 14:08:56 rfranke Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
@@ -152,7 +152,10 @@ PERM	*pivot, *blocks;
 		    if ( tmp > sigma )
 			sigma = tmp;
 		}
-		if ( aii*sigma >= alpha*sqr(lambda) )
+                /* rf 02/21/06: check matrix size (i+1 == n) to avoid
+                   else branch with interchange(A,i+1,r) in case
+                   of numerical overflow, e.g. if aii == NaN */
+		if ( aii*sigma >= alpha*sqr(lambda) || i+1 == n)
 		    onebyone = TRUE;
 		else if ( fabs(m_entry(A,r,r)) >= alpha*sigma )
 		{
