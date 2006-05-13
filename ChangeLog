@@ -1,10 +1,10 @@
-2006-05-13  < e_arnold>
+2006-05-13  <e_arnold>
 
 	* hqp/Hqp_IpsMehrotra.[hC]:
 	  re-implementation of Mehrotra's predictor-corrector method
 
-	* configure.in, conigure, Makefile.hqp:
-	  moidify for gcc 4.1.0
+	* configure.in, configure, Makefile.hqp:
+	  modify for gcc 4.1.0
 	
 2006-02-21  <rfranke>
 
