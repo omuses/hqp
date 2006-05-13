@@ -7,13 +7,13 @@
  * rf, 9/14/96
  *   - extended interface to Hqp_IpMatrix
  * ea, 5/9/97
- *   - Mehrotra´s primal-dual predictor-corrector method for QP problems.
+ *   - Mehrotra's primal-dual predictor-corrector method for QP problems.
  *     S. J. Wright: Primal-dual interior-point methods.
  *                   SIAM, Philadelphia, 1997.
  */
 
 /*
-    Copyright (C) 1994--1998  Eckhard Arnold and Ruediger Franke
+    Copyright (C) 1994--2006  Eckhard Arnold and Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -59,13 +59,15 @@ class Hqp_IpsMehrotra: public Hqp_Solver {
   VEC           *_z_hot;        // hot start
   VEC           *_w_hot;        
   VEC           *_phimin;       // convergence check
+  VEC		*_d1;
+  VEC		*_d2;
   Real		_mu0;		// used for cold start
-  Real		_zeta;          // not used!
   Real		_alpha;		// step length
   Real          _gammaf;
-  Real		_beta;          // not used!
-  Real		_gap;		// duality gap???
+  Real		_gap;		// duality gap
   Real          _test;          // KKT residual
+  Real          _norm_r0;
+  Real          _norm_data;
 
   Hqp_IpMatrix	*_matrix;
 
@@ -73,6 +75,7 @@ class Hqp_IpsMehrotra: public Hqp_Solver {
   int		_fail_iters;	// lost iters after a failed warm start
   int		_max_warm_iters;
   int           _logging;       // output
+  int           _init_method;   // initialization method
 
  public:
 
@@ -91,7 +94,7 @@ class Hqp_IpsMehrotra: public Hqp_Solver {
 
   // member access
   Real		gap() {return _gap;}
-  Real		zeta() {return _zeta;}
+  //  Real		zeta() {return _zeta;}
 
   char	*name() {return "Mehrotra";}
 };  

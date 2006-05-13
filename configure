@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TCLSH VERSION CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX WFLAG U_INT_DEF uname_found CXXCPP EGREP RANLIB ac_ct_RANLIB OBJ_SUFFIX LIB_PREFIX LIB_SUFFIX SHLIB_SUFFIX MKLIB_SUFFIX LDLIB_PREFIX LDLIB_SUFFIX EXE_SUFFIX LD SHLD LDFLAGS_START LFLAG RFLAG TCL_LIBS TCL_STUB_LIB MES_CC MES_CFLAGS HQP_LIBS OMU_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MATLAB MEX_SRCS MEX_INCDIR1 MEX_INCDIR2 MEX_LIBDIR MEX_RLIBDIR MEX_LIBS MEX_SCRIPT MEX_EXTENSION OMU_DEFS TCL_INCDIR TCL_LIBDIR ASRCS ADOLCDEF fortran_f77 fortran_g77 FORTRAN_COMP FORTRAN_FLAGS FORTRAN_LIBS OMU_INTDASPK_C DASPK DASPK_OBJS OMU_INTRKSUITE_C RKSUITE_O GMALLOC_O CUTE_SRCS ASCEND_INCDIR ASCEND_SRCS HQP_DEFS IF_DEFS HQP_MACH_OBJS HQP_DOCP_MACH_OBJS OMU_MACH_OBJS ODC_MACH_OBJS DOT HAVE_DOT ALL_DEFS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TCLSH VERSION CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX WFLAG U_INT_DEF uname_found CXXCPP EGREP RANLIB ac_ct_RANLIB OBJ_SUFFIX LIB_PREFIX LIB_SUFFIX SHLIB_SUFFIX MKLIB_SUFFIX LDLIB_PREFIX LDLIB_SUFFIX EXE_SUFFIX LD SHLD LDFLAGS_START LFLAG RFLAG TCL_LIBS TCL_STUB_LIB MES_CC MES_CFLAGS HQP_LIBS OMU_LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MATLAB MEX_SRCS MEX_INCDIR1 MEX_INCDIR2 MEX_LIBDIR MEX_RLIBDIR MEX_LIBS MEX_SCRIPT MEX_EXTENSION OMU_DEFS TCL_INCDIR TCL_LIBDIR ASRCS ADOLCDEF fortran_f77 fortran_g77 fortran_gfortran FORTRAN_COMP FORTRAN_FLAGS FORTRAN_LIBS OMU_INTDASPK_C DASPK DASPK_OBJS OMU_INTRKSUITE_C RKSUITE_O GMALLOC_O CUTE_SRCS ASCEND_INCDIR ASCEND_SRCS HQP_DEFS IF_DEFS HQP_MACH_OBJS HQP_DOCP_MACH_OBJS OMU_MACH_OBJS ODC_MACH_OBJS DOT HAVE_DOT ALL_DEFS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -4643,9 +4643,52 @@ fi
     if test ! -z "$fortran_g77"; then
       fortran_ftn="g77"
     else
-      { { echo "$as_me:$LINENO: error: \"Require f77 or g77 to enable RKsuite.\"" >&5
-echo "$as_me: error: \"Require f77 or g77 to enable RKsuite.\"" >&2;}
-   { (exit 1); exit 1; }; }
+      # Extract the first word of "gfortran", so it can be a program name with args.
+set dummy gfortran; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_fortran_gfortran+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $fortran_gfortran in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_fortran_gfortran="$fortran_gfortran" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_fortran_gfortran="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  ;;
+esac
+fi
+fortran_gfortran=$ac_cv_path_fortran_gfortran
+
+if test -n "$fortran_gfortran"; then
+  echo "$as_me:$LINENO: result: $fortran_gfortran" >&5
+echo "${ECHO_T}$fortran_gfortran" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+      if test ! -z "$fortran_gfortran"; then
+	fortran_ftn="gfortran"
+      else
+	{ { echo "$as_me:$LINENO: error: \"Require f77" >&5
+echo "$as_me: error: \"Require f77" >&2;}
+   { (exit g77); exit g77; }; }
+      fi
     fi
   fi
   if test "$CC" = "gcc -mno-cygwin"; then
@@ -4882,6 +4925,74 @@ if test $ac_cv_lib_ftn_pow_dd = yes; then
 fi
 
   fi
+  echo "$as_me:$LINENO: checking for sqrt in -lgfortran" >&5
+echo $ECHO_N "checking for sqrt in -lgfortran... $ECHO_C" >&6
+if test "${ac_cv_lib_gfortran_sqrt+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgfortran  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char sqrt ();
+int
+main ()
+{
+sqrt ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_gfortran_sqrt=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_gfortran_sqrt=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_gfortran_sqrt" >&5
+echo "${ECHO_T}$ac_cv_lib_gfortran_sqrt" >&6
+if test $ac_cv_lib_gfortran_sqrt = yes; then
+  fortran_lib=gfortran
+fi
+
 
   case "$fortran_lib" in
     ftn)
@@ -4896,6 +5007,9 @@ fi
 # don't use f2c.h due to name clash with ADOL-C (symbol "address")
 #      AC_CHECK_HEADER(f2c.h, OMU_DEFS="$OMU_DEFS -DHAVE_F2C_H=1")
       FORTRAN_LIBS="-lf2c"
+      ;;
+    gfortran)
+      FORTRAN_LIBS="-lgfortran"
       ;;
   esac
 fi
@@ -5822,6 +5936,7 @@ s,@ASRCS@,$ASRCS,;t t
 s,@ADOLCDEF@,$ADOLCDEF,;t t
 s,@fortran_f77@,$fortran_f77,;t t
 s,@fortran_g77@,$fortran_g77,;t t
+s,@fortran_gfortran@,$fortran_gfortran,;t t
 s,@FORTRAN_COMP@,$FORTRAN_COMP,;t t
 s,@FORTRAN_FLAGS@,$FORTRAN_FLAGS,;t t
 s,@FORTRAN_LIBS@,$FORTRAN_LIBS,;t t

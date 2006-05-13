@@ -16,7 +16,7 @@ clean:
 	cd hqp; $(MAKE) clean; cd ..
 	cd iftcl; $(MAKE) clean; cd ..
 	rm -f meschach/*.o meschach/*.obj meschach/*.[pi]db meschach/*~
-	rm -f lib/*.*[^n] config.* *.[pi]db *~
+	rm -f lib/[^p]*.* config.* *.[pi]db *~
 
 distclean: clean
 	rm -f makedefs makedirs hqp_docp/Makefile lib/pkgIndex.tcl

@@ -643,7 +643,12 @@ if test "$omu_fortran" != no; then
     if test ! -z "$fortran_g77"; then
       fortran_ftn="g77"
     else
-      AC_MSG_ERROR("Require f77 or g77 to enable RKsuite.")
+      AC_PATH_PROG(fortran_gfortran, gfortran)
+      if test ! -z "$fortran_gfortran"; then
+	fortran_ftn="gfortran"
+      else
+	AC_MSG_ERROR("Require f77, g77, or gfortran to enable RKsuite.")
+      fi
     fi
   fi
   if test "$CC" = "gcc -mno-cygwin"; then
@@ -675,6 +680,7 @@ if test "$omu_fortran" != no; then
   if test "${fortran_f77}" = "f77"; then
     AC_CHECK_LIB(ftn, pow_dd, fortran_lib=ftn)
   fi
+  AC_CHECK_LIB(gfortran, sqrt, fortran_lib=gfortran)
 
   case "$fortran_lib" in
     ftn)
@@ -689,6 +695,9 @@ if test "$omu_fortran" != no; then
 # don't use f2c.h due to name clash with ADOL-C (symbol "address")
 #      AC_CHECK_HEADER(f2c.h, OMU_DEFS="$OMU_DEFS -DHAVE_F2C_H=1")
       FORTRAN_LIBS="-lf2c"
+      ;;
+    gfortran)
+      FORTRAN_LIBS="-lgfortran"
       ;;
   esac
 fi
