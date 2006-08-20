@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2006  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -887,7 +887,8 @@ void Omu_Program::consistic_grds(int kk, double t,
 //--------------------------------------------------------------------------
 void Omu_Program::continuous_grds(int kk, double t,
 				  const Omu_StateVec &x, const Omu_Vec &u,
-				  const Omu_StateVec &dx, Omu_DependentVec &F)
+				  const Omu_StateVec &dx, Omu_DependentVec &F,
+                                  int wrt)
 {
   bool is_required_J = F.is_required_J();
 
@@ -902,7 +903,7 @@ void Omu_Program::continuous_grds(int kk, double t,
     double vi_bak, dvi;
     VECP F_bak = v_copy(F, VNULL);
 
-    if (!F.Jx.is_constant()) {
+    if ((wrt & Omu_Dependent::WRT_x) && !F.Jx.is_constant()) {
       for (i = 0; i < nx; i++) {
 	vi_bak = x->ve[i];
 	dvi = 1e-4 * fabs(vi_bak) + 1e-6;
@@ -918,7 +919,7 @@ void Omu_Program::continuous_grds(int kk, double t,
       }
     }
 
-    if (!F.Ju.is_constant()) {
+    if ((wrt & Omu_Dependent::WRT_u) && !F.Ju.is_constant()) {
       for (i = 0; i < nu; i++) {
 	vi_bak = u->ve[i];
 	dvi = 1e-4 * fabs(vi_bak) + 1e-6;
@@ -934,7 +935,7 @@ void Omu_Program::continuous_grds(int kk, double t,
       }
     }
 
-    if (!F.Jdx.is_constant()) {
+    if ((wrt & Omu_Dependent::WRT_dx) && !F.Jdx.is_constant()) {
       for (i = 0; i < ndx; i++) {
 	vi_bak = dx->ve[i];
 	dvi = 1e-4 * fabs(vi_bak) + 1e-6;

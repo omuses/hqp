@@ -1,3 +1,8 @@
+2006-08-15  <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunction.[hC]:
+	  add support for time as optimization variable
+
 2006-05-13  <e_arnold>
 
 	* hqp/Hqp_IpsMehrotra.[hC]:

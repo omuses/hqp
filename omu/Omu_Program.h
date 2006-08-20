@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2006  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -315,7 +315,8 @@ class Omu_Program {
    */
   virtual void continuous_grds(int kk, double t,
 			       const Omu_StateVec &x, const Omu_Vec &u,
-			       const Omu_StateVec &dx, Omu_DependentVec &F);
+			       const Omu_StateVec &dx, Omu_DependentVec &F,
+                               int wrt = Omu_Dependent::WRT_ALL);
 
   /**
    * Low-level update routine for obtaining gradients.

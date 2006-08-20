@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2006  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -109,6 +109,10 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 {
   _sps = 1;
   _multistage = 1;
+  _t_scale_idx = -1;
+  _t_active = 0;
+  _t_scale_i = -1;
+  _t_scale_nominal = 1.0;
 
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_der_x0_min = v_get(_mdl_nx);
@@ -144,9 +148,12 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_us = m_get(_KK+1, _mdl_nu);
   _mdl_xs = m_get(_KK+1, _mdl_nx);
   _mdl_ys = m_get(_KK+1, _mdl_ny);
+  _taus = v_get(_KK+1);
 
   _ifList.append(new If_Int("prg_sps", &_sps));
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", multistage)));
+  _ifList.append(new If_Int(GET_SET_CB(int, "", mdl_t_scale_idx)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "prg_", taus)));
 
   // redefine mdl_x0 in order to also consider mdl_xs
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x0)));
@@ -216,6 +223,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 //--------------------------------------------------------------------------
 Prg_SFunctionOpt::~Prg_SFunctionOpt()
 {
+  v_free(_taus);
   m_free(_mdl_ys);
   m_free(_mdl_xs);
   m_free(_mdl_us);
@@ -304,6 +312,12 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
+  // setup scaling of time
+  v_copy(Omu_Program::ts(), _taus);
+  if (_t_scale_idx >= 0)
+    for (kk = 0; kk < _KK; kk++)
+      _mdl_us[kk][_t_scale_idx] = 1.0;
+
   // setup _mdl_xs with initial states from model
   v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
@@ -327,9 +341,23 @@ void Prg_SFunctionOpt::setup(int k,
     // obtain numbers of optimization variables (active model variables)
     _nu = 0;
     for (idx = 0; idx < _mdl_nu; idx++) {
+      if (idx == _t_scale_idx)
+        _t_scale_i = _nu;
       if (_mdl_u.active[idx])
 	_nu++;
     }
+    // initialize time scaling
+    if (_t_scale_idx >= 0) {
+      // take over specification of model variable
+      _t_active = _mdl_u.active[_t_scale_idx];
+      _t_scale_nominal = _mdl_u_nominal[_t_scale_idx];
+      if (_mdl_u_order[_t_scale_idx] != 0)
+	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+		  "mdl_u_order[mdl_t_scale_idx] must be 0 (zero order hold)");
+    }
+    else
+      _t_active = 0;
+
     _nx = _nu + _mdl_nx;
     _nc = 0;
     _ns = 0;
@@ -536,13 +564,15 @@ void Prg_SFunctionOpt::setup(int k,
 	}
 	// override rate of change bounds for joined controls
 	if (_multistage) {
-	  if ((k + 1) % _mdl_u_decimation[idx] != 0) {
+	  if (_mdl_u_decimation[idx] == 0 ||
+              (k + 1) % _mdl_u_decimation[idx] != 0) {
 	    u.min[i] = u.max[i] = 0.0;
 	  }
 	}
 	else {
 	  for (j = 0; j < upsk; j++)
-	    if ((j + 1) % _mdl_u_decimation[idx] != 0)
+	    if (_mdl_u_decimation[idx] == 0 ||
+                (j + 1) % _mdl_u_decimation[idx] != 0)
 	      u.min[i+j] = u.max[i+j] = 0.0;
 	}
       }
@@ -666,14 +696,14 @@ void Prg_SFunctionOpt::setup_struct(int k,
 	  // no dependecy on time derivative for zero order hold
 	  F.Jdx[i][i] = 0.0;
 	  // F.Ju is zero for zero order hold
-	  for (j = 0; j < _nu; j++)
-	    F.Ju[i][j] = 0.0;
-	} else {
+	}
+        else {
 	  if (_multistage) {
-	    // F.Ju is constant for multistage
-	    for (j = 0; j < _nu; j++)
-	      F.Ju[i][j] = 0.0;
+	    // F.Ju is constant for multistage and not _t_active
 	    F.Ju[i][i] = 1.0/_t_nominal;
+            // an additional element needs to be allocated for _t_active
+            if (_t_active)
+              F.Ju[i][_t_scale_i] = 1.0;
 	  }
 	  else {
 	    // just allocate dense structure
@@ -684,7 +714,7 @@ void Prg_SFunctionOpt::setup_struct(int k,
 	i++;
       }
     }
-    if (_multistage)
+    if (_multistage && !_t_active)
       F.set_linear(Omu_Dependent::WRT_u);
   }
 
@@ -720,17 +750,26 @@ void Prg_SFunctionOpt::update(int kk,
   int i, idx, is, isc;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
+  double tscale_1 = _t_active? x[_t_scale_i]* _t_scale_nominal: 1.0;
+  double tscale = _t_active && kk < _KK?
+    (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
+  double help;
 
   // junction conditions for continuous-time equations
   if (kk < _KK) {
     // controlled inputs
     for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx]) {
-	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0))
+	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0)) {
 	  // zero order hold at end of stage:
 	  // apply step in u for subsequent stage
-	  f[i] = x[i] + ((ts(kk+1) - ts(kk-spsk/upsk+1)) * u[i*upsk + kk%upsk]
-			 /_t_nominal);
+          help = ((ts(kk+1) - ts(kk-spsk/upsk+1))/_t_nominal
+                  * u[i*upsk + kk%upsk]);
+          if (_t_active && i != _t_scale_i)
+            f[i] = x[i] + tscale * help;
+          else
+            f[i] = x[i] + help;
+        }
 	else
 	  // piecewise linear interpolation or within stage with zoh
 	  f[i] = xf[i];
@@ -750,9 +789,6 @@ void Prg_SFunctionOpt::update(int kk,
     }
   }
 
-  // set simulation time
-  ssSetT(_SS, ts(kk));
-
   // initialize model inputs
   real_T *mdl_u = NULL;
   if (ssGetNumInputPorts(_SS) > 0) {
@@ -766,6 +802,13 @@ void Prg_SFunctionOpt::update(int kk,
       _mdl_us[kk][idx] = x[i++] * _mdl_u_nominal[idx];
     mdl_u[idx] = _mdl_us[kk][idx];
   }
+
+  // obtain scaled simulation time
+  if (kk < _KK)
+    _taus[kk+1] = _taus[kk] + tscale * (ts(kk+1) - ts(kk));
+
+  // set simulation time
+  ssSetT(_SS, _taus[kk]);
 
   // pass current states to model
   real_T *mdl_x = ssGetContStates(_SS);
@@ -785,7 +828,6 @@ void Prg_SFunctionOpt::update(int kk,
     mdl_y[idx] += _mdl_y_bias[idx];
 
   // utilize model outputs for constraints and optimization objective
-  double help;
   f0 = 0.0;
 
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
@@ -793,18 +835,18 @@ void Prg_SFunctionOpt::update(int kk,
   double dtu; 	// factor used for controlled inputs in objective function
   if (kk == 0) {
     if (_KK > 0) {
-      dt = 0.5*(ts(kk+1) - ts(kk));
-      dt0 = ts(kk+1) - ts(kk);
+      dt = 0.5 * (ts(kk+1) - ts(kk)) * tscale;
+      dt0 = (ts(kk+1) - ts(kk)) * tscale;
     } else {
       // steady-state problem
       dt = dt0 = 1.0;
     }
   } else if (kk == _KK) {
-    dt = 0.5*(ts(kk) - ts(kk-1));
+    dt = 0.5 * (ts(kk) - ts(kk-1)) * tscale_1;
     dt0 = 0.0;
   } else {
-    dt = 0.5*(ts(kk+1) - ts(kk-1));
-    dt0 = ts(kk+1) - ts(kk);
+    dt = 0.5 * ((ts(kk) - ts(kk-1)) * tscale_1 + (ts(kk+1) - ts(kk)) * tscale);
+    dt0 = (ts(kk+1) - ts(kk)) * tscale;
   }
 
   // contribution of controlled inputs
@@ -876,7 +918,7 @@ void Prg_SFunctionOpt::update(int kk,
     for (idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
-        c[i] = mdl_dx[idx] / _mdl_x_nominal[idx];
+        c[i] = tscale * mdl_dx[idx] / _mdl_x_nominal[idx];
         i++;
       }
     }
@@ -949,8 +991,14 @@ void Prg_SFunctionOpt::update_grds(int kk,
   int i, idx, ii, iidx0, iidx, isc, iscdx, is, j, jdx, rdx;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
+  double tscale_1 = _t_active? x[_t_scale_i]* _t_scale_nominal: 1.0;
+  double tscale = _t_active && kk < _KK?
+    (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
+  int t_scale_iu = _t_scale_i*upsk + kk%upsk;
+  double help;
 
-  if (ssGetmdlJacobian(_SS) == NULL) {
+  if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
+    // todo: use analytic Jacobian if _t_active
     // call predefined update for numerical differentiation
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
   }
@@ -1171,8 +1219,14 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	  // apply step in u for subsequent stage
 	  f.Jxf[i][i] = 0.0;
 	  f.Jx[i][i] = 1.0;
-	  f.Ju[i][i*upsk + kk%upsk] = ((ts(kk+1) - ts(kk-spsk/upsk+1))
-				       /_t_nominal);
+          help = (ts(kk+1) - ts(kk-spsk/upsk+1))/_t_nominal;
+          if (_t_active && i != _t_scale_i) {
+            f.Ju[i][i*upsk + kk%upsk] = tscale*help;
+            f.Jx[i][_t_scale_i] = _t_scale_nominal*help*u[i*upsk + kk%upsk];
+            f.Ju[i][t_scale_iu] = f.Jx[i][_t_scale_i];
+          }
+          else
+            f.Ju[i][i*upsk + kk%upsk] = help;
 	}
 	i++;
       }
@@ -1192,20 +1246,35 @@ void Prg_SFunctionOpt::update_grds(int kk,
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
   double dtu; 	// factor used for controlled inputs in objective function
+  double ddtx; 	// help variable for partial derivative of a dt
+  double ddtu; 	// help variable for partial derivative of a dt
+  double ddt0; 	// help variable for partial derivative of a dt
   if (kk == 0) {
     if (_KK > 0) {
-      dt = 0.5*(ts(kk+1) - ts(kk));
-      dt0 = ts(kk+1) - ts(kk);
+      dt = 0.5 * (ts(kk+1) - ts(kk)) * tscale;
+      ddtx = 0.5 * (ts(kk+1) - ts(kk)) * _t_scale_nominal;
+      ddtu = 0.5 * (ts(kk+1) - ts(kk)) * _t_scale_nominal;
+      dt0 = (ts(kk+1) - ts(kk)) * tscale;
+      ddt0 = (ts(kk+1) - ts(kk)) * _t_scale_nominal;
     } else {
       // steady-state problem
       dt = dt0 = 1.0;
+      ddtx = 0.0;
+      ddtu = 0.0;
+      ddt0 = 0.0;
     }
   } else if (kk == _KK) {
-    dt = 0.5*(ts(kk) - ts(kk-1));
+    dt = 0.5 * (ts(kk) - ts(kk-1)) * tscale_1;
+    ddtx = 0.5 * (ts(kk) - ts(kk-1)) * _t_scale_nominal;
+    ddtu = 0.0;
     dt0 = 0.0;
+    ddt0 = 0.0;
   } else {
-    dt = 0.5*(ts(kk+1) - ts(kk-1));
-    dt0 = ts(kk+1) - ts(kk);
+    dt = 0.5 * ((ts(kk) - ts(kk-1)) * tscale_1 + (ts(kk+1) - ts(kk)) * tscale);
+    ddtx = 0.5 * (ts(kk+1) - ts(kk-1)) * _t_scale_nominal;
+    ddtu = 0.5 * (ts(kk+1) - ts(kk)) * _t_scale_nominal;
+    dt0 = (ts(kk+1) - ts(kk)) * tscale;
+    ddt0 = (ts(kk+1) - ts(kk)) * _t_scale_nominal;
   }
 
   v_zero(f0.gx);
@@ -1216,14 +1285,40 @@ void Prg_SFunctionOpt::update_grds(int kk,
     if (_mdl_u.active[idx]) {
       // controlled inputs
       dtu = (_mdl_u_order[idx] == 0)? dt0: dt;
+      help = (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
       f0.gx[i] += dtu * _mdl_u.weight1[idx];
-      f0.gx[i] += dtu * _mdl_u.weight2[idx] *
-	2.0 * (x[i] - _mdl_u.ref[idx]/_mdl_u_nominal[idx]);
+      f0.gx[i] += dtu * _mdl_u.weight2[idx] * 2.0 * help;
+      if (_t_active) {
+        if (_mdl_u_order[idx] == 0) {
+          f0.gx[_t_scale_i] += ddt0 * _mdl_u.weight1[idx] * help;
+          f0.gx[_t_scale_i] += ddt0 * _mdl_u.weight2[idx] * help*help;
+          if (kk < _KK) {
+            f0.gu[t_scale_iu] += ddt0 * _mdl_u.weight1[idx] * help;
+            f0.gu[t_scale_iu] += ddt0 * _mdl_u.weight2[idx] * help*help;
+          }
+        }
+        else if (_mdl_u_order[idx] > 0) {
+          f0.gx[_t_scale_i] += ddtx * _mdl_u.weight1[idx] * help;
+          f0.gx[_t_scale_i] += ddtx * _mdl_u.weight2[idx] * help*help;
+          if (kk < _KK) {
+            f0.gu[t_scale_iu] += ddtu * _mdl_u.weight1[idx] * help;
+            f0.gu[t_scale_iu] += ddtu * _mdl_u.weight2[idx] * help*help;
+          }
+        }
+      }
       // rates of change
       if (kk < _KK) {
-	f0.gu[i] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
-	f0.gu[i] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal *
-	  2.0 * (u[i]/_t_nominal - _mdl_der_u.ref[idx]/_mdl_u_nominal[idx]);
+	help = u[i*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
+	  / _mdl_u_nominal[idx];
+	f0.gu[i*upsk + kk%upsk] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
+	f0.gu[i*upsk + kk%upsk] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal *
+	  2.0 * help;
+        if (_t_active) {
+          f0.gx[_t_scale_i] += ddt0 * _mdl_der_u.weight1[idx] * help;
+          f0.gx[_t_scale_i] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
+          f0.gu[t_scale_iu] += ddt0 * _mdl_der_u.weight1[idx] * help;
+          f0.gu[t_scale_iu] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
+        }
       }
       i++;
     }
@@ -1231,32 +1326,55 @@ void Prg_SFunctionOpt::update_grds(int kk,
   // active outputs
   for (i = 0, is = 0, idx = 0; idx < _mdl_ny; idx++) {
     // contribution of objective term
+    help = (c[i + kk%spsk] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]);
     if (_mdl_y.weight1[idx] != 0.0) {
       for (j = 0; j < _nx; j++)
 	f0.gx[j] += dt * _mdl_y.weight1[idx] * c.Jx[i + kk%spsk][j];
+      if (_t_active) {
+        f0.gx[_t_scale_i] += ddtx * _mdl_y.weight1[idx] * help;
+        if (kk < _KK)
+          f0.gu[t_scale_iu] += ddtu * _mdl_y.weight1[idx] * help;
+      }
     }
     if (_mdl_y.weight2[idx] != 0.0) {
       for (j = 0; j < _nx; j++)
 	f0.gx[j] += dt * _mdl_y.weight2[idx] *
-	  2.0 * (c[i + kk%spsk] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
-	  c.Jx[i + kk%spsk][j];
+          2.0 * help * c.Jx[i + kk%spsk][j];
+      if (_t_active) {
+        f0.gx[_t_scale_i] += ddtx * _mdl_y.weight2[idx] * help*help;
+        if (kk < _KK)
+          f0.gu[t_scale_iu] += ddtu * _mdl_y.weight2[idx] * help*help;
+      }
     }
     if (_mdl_y.active[idx])
       i += spsk;
 
     // contribution of soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
-      if (kk < _KK)
+      if (kk < _KK) {
+        help = u[upsk*_nu + is + kk%spsk];
 	f0.gu[upsk*_nu + is + kk%spsk]
 	  += dt * (_mdl_y_soft.weight1[idx]
-		   + 2.0*_mdl_y_soft.weight2[idx]*u[upsk*_nu + is + kk%spsk]);
-      else
+		   + 2.0*_mdl_y_soft.weight2[idx]*help);
+      }
+      else {
+        help = x[_nx + is + kk%spsk];
 	f0.gx[_nx + is + kk%spsk]
 	  += dt * (_mdl_y_soft.weight1[idx]
-		   + 2.0*_mdl_y_soft.weight2[idx]*x[_nx + is + kk%spsk]);
+		   + 2.0*_mdl_y_soft.weight2[idx]*help);
+        
+      }
+      if (_t_active) {
+        f0.gx[_t_scale_i] += ddtx * (_mdl_y_soft.weight1[idx]*help
+                                     + _mdl_y_soft.weight2[idx]*help*help);
+        if (kk < _KK)
+          f0.gu[t_scale_iu] += ddtu * (_mdl_y_soft.weight1[idx]*help
+                                       + _mdl_y_soft.weight2[idx]*help*help);
+      }
       is += spsk;
     }
   }
+
   // additional terms at initial time
   if (kk == 0) {
     for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
@@ -1302,9 +1420,6 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
 {
   int i, idx;
 
-  // set simulation time
-  ssSetT(_SS, t);
-
   // initialize model inputs
   real_T *mdl_u = NULL;
   if (ssGetNumInputPorts(_SS) > 0) {
@@ -1319,6 +1434,15 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
     else
       mdl_u[idx] = _mdl_us[kk][idx];
   }
+
+  // initialize scaled time 
+  if (kk == 0 || _t_scale_idx < 0)
+    _taus[kk] = ts(kk);
+  else
+    _taus[kk] = _taus[kk-1] +  mdl_u[_t_scale_idx] * (ts(kk) - ts(kk-1));
+
+  // set simulation time
+  ssSetT(_SS, _taus[kk]);
 
   // initialize model in first stage
   // This way model initial conditions get applied as functions of parameters.
@@ -1366,9 +1490,9 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 {
   int i, idx;
   int upsk = _multistage? 1: _KK;
-
-  // set simulation time
-  ssSetT(_SS, t);
+  double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
+  double tscale = _t_active?
+    (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
 
   // initialize model inputs
   real_T *mdl_u = NULL;
@@ -1381,9 +1505,19 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
-    else
+    else if (_mdl_u_order[i] == 0)
       mdl_u[idx] = _mdl_us[kk][idx];
+    else
+      mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
   }
+
+  // obtain scaled simulation time
+  if (kk < _KK)
+    _taus[kk+1] = _taus[kk] + tscale * (ts(kk+1) - ts(kk));
+  double tau = _taus[kk] * (1 - rt) + _taus[kk+1] * rt;
+
+  // set simulation time
+  ssSetT(_SS, tau);
 
   // pass current states to model
   real_T *mdl_x = ssGetContStates(_SS);
@@ -1401,7 +1535,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   // get model derivatives and change to residual form
   real_T *mdl_dx = ssGetdX(_SS);
   for (i = 0; i < _mdl_nx; i++)
-    F[_nu + i] = mdl_dx[i]/_mdl_x_nominal[i] - dx[_nu + i];
+    F[_nu + i] = tscale*mdl_dx[i]/_mdl_x_nominal[i] - dx[_nu + i];
 
   // model equations for controlled inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
@@ -1411,7 +1545,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 	F[i] = 0.0 - dx[i];
       else
 	// piecewise linear interpolation
-	F[i] = u[i*upsk + kk%upsk]/_t_nominal - dx[i];
+	F[i] = tscale*u[i*upsk + kk%upsk]/_t_nominal - dx[i];
       i++;
     }
   }
@@ -1429,9 +1563,10 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 				       const Omu_StateVec &dx,
 				       Omu_DependentVec &F)
 {
-  if (ssGetmdlJacobian(_SS) == NULL) {
+  if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
+    // todo: use analytic Jacobian if _t_active
     // call predefined continuous_grds for numerical differentiation
-    Omu_Program::continuous_grds(kk, t, x, u, dx, F);
+    Omu_Program::continuous_grds(kk, t, x, u, dx, F, Omu_Dependent::WRT_x);
   }
   else {
     // exploit mdlJacobian
@@ -1474,19 +1609,28 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 	j++;
       }
     }
+  }
 
-    // set F.Ju if not multistage
-    // note: this can't be done in setup_struct as F.Ju changes within stage
-    if (!_multistage) {
-      int upsk = _KK;
-      m_zero(F.Ju);
-      for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
-	if (_mdl_u.active[idx]) {
-	  if (_mdl_u_order[idx] > 0)
-	    // piecewise linear interpolation
-	    F.Ju[i][i*upsk + kk%upsk] = 1.0/_t_nominal;
-	  i++;
-	}
+  // set F.Ju analytically
+  // note: this can't generally be done in setup_struct as
+  //   - if _t_active: F.Ju depends on tscale
+  //   - if not _multistage: structure of F.Ju changes over sample periods
+  if (_t_active || !_multistage) {
+    int i, idx;
+    int upsk = _multistage? 1: _KK;
+    double tscale = _t_active?
+      (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
+    m_zero(F.Ju);
+    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+      if (_mdl_u.active[idx]) {
+        if (_mdl_u_order[idx] > 0) {
+          // piecewise linear interpolation
+          F.Ju[i][i*upsk + kk%upsk] = tscale/_t_nominal;
+          if (_t_active)
+            F.Ju[i][_t_scale_i*upsk + kk%upsk] =
+              _t_scale_nominal * u[i*upsk + kk%upsk]/_t_nominal;
+        }
+        i++;
       }
     }
   }

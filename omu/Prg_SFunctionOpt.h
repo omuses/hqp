@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2006  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -53,6 +53,8 @@ public:
    to the overall number of @f$KK=sps\,K@f$ sample periods with the sample
    time points @f$t^{kk}, kk=0,...,KK@f$ (sample time points within
    a stage are for instance useful to better treat path constraints).
+   The model time may be parameterized by defining a piecewise constant
+   model input as scaling factor.
    Sought control trajectories are described piecewise as constant or
    linear functions of control parameters in each stage.
 
@@ -97,26 +99,35 @@ public:
    with
    @f[
    \begin{array}{l}
-    \displaystyle \Delta t_{u,i}^{kk} = \left\{\begin{array}{ll}
-      t^{kk+1} - t^{kk}, & u_{order,i} = 0 \ \ \mbox{and}\ \ kk < KK, \\
-      0, & u_{order,i} = 0 \ \ \mbox{and}\ \ kk = KK, \\
+    \displaystyle \Delta t_{u,i}^{kk} = 
+    \left\{\begin{array}{ll}
+      t_{scale}^{kk+1}(t^{kk+1} - t^{kk}), & u_{order,i} = 0 \ \ \mbox{and}\ \ kk < KK, \\[1ex]
+      0, & u_{order,i} = 0 \ \ \mbox{and}\ \ kk = KK, \\[1ex]
       \Delta t^{kk}, & u_{order,i} = 1,
     \end{array}\right. \\[5ex]
-    \displaystyle \Delta t^{kk} = \frac{1}{2}\left\{\begin{array}{ll}
-      t^{kk+1} - t^{kk}, & kk=0, \\
-      t^{kk} - t^{kk-1}, & kk=KK, \\
-      t^{kk+1} - t^{kk-1}, & \mbox{else},
+    \displaystyle \Delta t^{kk} = \frac{1}{2}
+    \left\{\begin{array}{ll}
+      t_{scale}^{kk+1}(t^{kk+1} - t^{kk}), & kk=0, \\[1ex]
+      t_{scale}^{kk}(t^{kk} - t^{kk-1}), & kk=KK, \\[1ex]
+      t_{scale}^{kk+1}(t^{kk+1} - t^{kk}) + t_{scale}^{kk}(t^{kk} - t^{kk-1}), & \mbox{else},
+    \end{array}\right. \\[5ex]
+    \displaystyle t_{scale} = 
+    \left\{\begin{array}{ll}
+      u_{t\_scale\_idx}, & t\_scale\_idx \ge 0, \\
+      1, & \mbox{else},
     \end{array}\right.
    \end{array}
    @f]
    subject to the model given with the S-function methods
    mdlDerivatives @f$f@f$ and mdlOutputs @f$g,\ t\in[t_0,t_f]@f$
+   and with parameterized time @f$\tau@f$
    @f[
    \begin{array}{l}
-    \displaystyle \dot{x}(t) = 
-     \frac{f[x_{nominal}\,x(t),\ u_{nominal}\,u(t)]}{x_{nominal}}, \\[3ex]
-    \displaystyle y(t) = 
-     \frac{g[x_{nominal}\,x(t),\ u_{nominal}\,u(t)]}{y_{nominal}}
+    \displaystyle \quad\ \dot{\tau}(t) = t_{scale}(t), \\[3ex]
+    \displaystyle \dot{x}(\tau(t)) = 
+     \frac{f[x_{nominal}\,x(\tau(t)),\ u_{nominal}\,u(\tau(t))]}{x_{nominal}}, \\[3ex]
+    \displaystyle y(\tau(t)) = 
+     \frac{g[x_{nominal}\,x(\tau(t)),\ u_{nominal}\,u(\tau(t))]}{y_{nominal}}
       \ +\ \frac{y_{bias}}{y_{nominal}},
    \end{array}
    @f]
@@ -124,10 +135,15 @@ public:
    using optimized control parameters @f$du^k@f$ or given inputs @f$us@f$ 
    @f[
    \begin{array}{ll}
-    \left\{ u(t) = u(t^{k-1}) + (t^{k}-t^{k-1})du^{k-1} \right\}_i,
+    \left\{ u(t) = u(t^{k-1}) +
+      \left\{\begin{array}{ll}
+      (t^{k}-t^{k-1})du^{k-1}, & i = t\_scale\_idx \\[1ex]
+      (t^{k}-t^{k-1})du^{k-1}t_{scale}^k, & \mbox{else}
+      \end{array}\right.
+    \rule{0ex}{5.5ex}\right\}_i,
     & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=0), \\[1ex]
     & t\in[t^{k},t^{k+1}),\ k=1,\ldots,K-1, \\[3ex]
-    \left\{ \dot{u}(t) = du^{k} \right\}_i,
+    \left\{ \dot{u}(\tau(t)) = du^{k} \right\}_i,
     & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=1), \\[1ex]
     & t\in[t^{k},t^{k+1}),\ k=0,\ldots,K-1, \\[3ex]
     \left\{ u(t) = \displaystyle \frac{us^{kk}}{u_{nominal}} \right\}_i, &
@@ -277,6 +293,11 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
 
+  VECP		_taus;		///< scaled time communicated to outside as prg_ts
+  int 		_t_scale_idx; 	///< index into mdl_u vector for variable used for scaling of time
+  int 		_t_active; 	///< time is being scaled
+  int 		_t_scale_i; 	///< index of internal optimization variable for scaling of time
+  double 	_t_scale_nominal;///< nominal value for time scaling (default: 1)
   double 	_t_nominal; 	///< nominal time (used internally for scaling)
   VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
   VECP 		_mdl_x_nominal;	///< nominal states (for scaling)
@@ -397,6 +418,36 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set multistage flag
   void set_multistage(int val) {_multistage = val;}
 
+  //@}
+
+  /**
+   * @name Access methods for scaling of time
+   */
+  //@{
+  /// optional index of a model input used for scaling of time (default: -1)
+  int mdl_t_scale_idx() const {return _t_scale_idx;}
+  /// set index of model input used for scaling of time
+  void set_mdl_t_scale_idx(int val) {_t_scale_idx = val;}
+
+  /// vector of start time points in each sample period
+  const VECP taus() const {
+    return _taus;
+  }
+  /// set vector of start times
+  void set_taus(const VECP n_taus) {
+    // first use _taus as intermediate storage for initialization of _ts
+    v_copy_elements(n_taus, _taus); // this also checks the dimension of n_taus
+    if (_t_scale_idx >= 0) {
+      for (int kk = 1; kk < (int)_taus->dim; kk++)
+        _taus[kk] = _taus[kk-1] + ((n_taus[kk] - n_taus[kk-1])
+                                   / _mdl_us[kk][_t_scale_idx]);
+    }
+    // take over unscaled ts
+    Omu_Program::set_ts(_taus);
+    // finally take over n_taus
+    if (_t_scale_idx >= 0)
+      v_copy_elements(n_taus, _taus);
+  }	
   //@}
 
   /**
