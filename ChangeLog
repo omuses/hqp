@@ -1,3 +1,9 @@
+2007-01-07  <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - add soft constraints mdl_yf_soft_min/max for outputs at final time
+	  - add constraints mdl_uf_min/max for inputs at final time
+
 2006-08-15  <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunction.[hC]:

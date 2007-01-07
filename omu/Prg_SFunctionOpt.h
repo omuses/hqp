@@ -91,9 +91,14 @@ public:
     \right\}_i
     \\[4ex] \displaystyle \qquad
     \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
-         y_{soft\_weight1}\,s^{kk} + y_{soft\_weight2}\,s^{kk}s^{kk}
+      y_{soft\_weight1}\,s^{kk} + y_{soft\_weight2}\,s^{kk}s^{kk}
     \right\}_i
-    \quad\to\quad \min
+    \\[4ex] \displaystyle \qquad
+    \ + \ \sum_{i=1}^{n_y} \left\{
+      y_{f\_soft\_weight1}\,s_f + y_{f\_soft\_weight2}\,s_fs_f
+    \right\}_i
+    \\[4ex] \displaystyle \qquad
+    \ \to\quad \min
    \end{array}
    @f]
    with
@@ -180,8 +185,13 @@ public:
         \ & i \in \mbox{find}(u_{0,nfixed}=1\ \mbox{and}\ u_{order}=0), \\[3ex]
     \displaystyle \frac{y_{0,min}}{y_{nominal}} &\le& y(t^{0})
         &\le& \displaystyle \frac{y_{0,max}}{y_{nominal}}, \\[3ex]
+    \displaystyle \frac{u_{f\_min}}{u_{nominal}} &\le& u(t_f)
+        &\le& \displaystyle \frac{u_{f\_max}}{u_{nominal}}, \\[3ex]
     \displaystyle \frac{y_{f\_min}}{y_{nominal}} &\le& y(t_f)
-        &\le& \displaystyle \displaystyle \frac{y_{f\_max}}{y_{nominal}},
+        &\le& \displaystyle \frac{y_{f\_max}}{y_{nominal}}, \\[3ex]
+    \displaystyle \frac{y_{f\_soft\_min}}{y_{nominal}} - s_f &\le& y(t_f)
+        &\le& \displaystyle \frac{y_{f\_soft\_max}}{y_{nominal}} + s_f, \\[3ex]
+    \displaystyle && s_f &\ge& 0,
    \end{array}
    @f]
    as well as at all time points
@@ -289,7 +299,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Omu_VariableVec _mdl_x;	///< state bounds
   Omu_OptVarVec _mdl_y; 	///< model outputs
   Omu_OptVarVec _mdl_y_soft; 	///< attributes for relaxed output constraints
+  Omu_OptVarVec _mdl_uf; 	///< model inputs at final time
   Omu_OptVarVec _mdl_yf; 	///< model outputs at final time
+  Omu_OptVarVec _mdl_yf_soft; 	///< relaxed output constraints at final time
 
   IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
 
@@ -312,6 +324,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_ncf;	///< number of constrained/used outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
+  int		_nsf;	///< number of slacks for soft constraints at final time
+  int		_nscf;	///< number of soft constraints at final time
   int 		_multistage; 	///< treat as multistage problem
 
   /**
@@ -585,6 +599,15 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_y_soft_weight2() const {return _mdl_y_soft.weight2;}
 
+  /// model inputs at final time
+  const VECP mdl_uf() const {return _mdl_uf;}
+
+  /// lower bounds for model inputs at final time
+  const VECP mdl_uf_min() const {return _mdl_uf.min;}
+
+  /// upper bounds for model inputs at final time
+  const VECP mdl_uf_max() const {return _mdl_uf.max;}
+
   /// model outputs at final time
   const VECP mdl_yf() const {return _mdl_yf;}
 
@@ -599,6 +622,18 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_yf_weight2() const {return _mdl_yf.weight2;}
+
+  /// soft lower bounds for model outputs at final time
+  const VECP mdl_yf_soft_min() const {return _mdl_yf_soft.min;}
+
+  /// soft upper bounds for model outputs at final time
+  const VECP mdl_yf_soft_max() const {return _mdl_yf_soft.max;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_yf_soft_weight1() const {return _mdl_yf_soft.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_yf_soft_weight2() const {return _mdl_yf_soft.weight2;}
 
   /// model inputs (size: KK+1 . mdl_nu)
   const MATP mdl_us() const {return _mdl_us;}
@@ -759,6 +794,12 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   void set_mdl_y_soft_weight2(const VECP v)
   {v_copy_elements(v, _mdl_y_soft.weight2);}
 
+  /// set lower bounds for final model inputs
+  void set_mdl_uf_min(const VECP v) {v_copy_elements(v, _mdl_uf.min);}
+
+  /// set upper bounds for final model inputs
+  void set_mdl_uf_max(const VECP v) {v_copy_elements(v, _mdl_uf.max);}
+
   /// set lower bounds for final model outputs
   void set_mdl_yf_min(const VECP v) {v_copy_elements(v, _mdl_yf.min);}
 
@@ -770,6 +811,22 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set quadratic weight
   void set_mdl_yf_weight2(const VECP v) {v_copy_elements(v, _mdl_yf.weight2);}
+
+  /// set soft lower bounds for model outputs at final time
+  void set_mdl_yf_soft_min(const VECP v)
+  {v_copy_elements(v, _mdl_yf_soft.min);}
+
+  /// set soft upper bounds for model outputs at final time
+  void set_mdl_yf_soft_max(const VECP v)
+  {v_copy_elements(v, _mdl_yf_soft.max);}
+
+  /// set linear weight
+  void set_mdl_yf_soft_weight1(const VECP v)
+  {v_copy_elements(v, _mdl_yf_soft.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_yf_soft_weight2(const VECP v)
+  {v_copy_elements(v, _mdl_yf_soft.weight2);}
 
   /// set model inputs
   void set_mdl_us(const MATP v) {
