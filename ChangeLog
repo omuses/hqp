@@ -1,3 +1,8 @@
+2007-03-29  <rfranke>
+
+	* configure.in, configure:
+	  change version to 1.9.4, add tag release-1-9-4
+
 2007-01-07  <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]:
