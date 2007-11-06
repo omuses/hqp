@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -93,11 +93,36 @@ public:
   void set_linear(int wrt = Omu_Dependent::WRT_ALL, bool value = true) {
     if (!c_setup)
       m_error(E_OVERWRITE, "Omu_DepVec::set_linear");
+
+    // mark elements linear
     for (int i = 0; i < (int)_linear_flags->dim; i++)
       if (value)
 	_linear_flags[i] |= wrt;
       else
 	_linear_flags[i] &= ~wrt;
+
+    // mark variables linear
+    int val = value? 1: 0;
+    int offs = 0;
+    if ((wrt & Omu_Dependent::WRT_x))
+      for (int j = 0; j < Jx->n; j++)
+        _linear_vars[offs + j] = val;
+    offs += Jx->n;
+    if ((wrt & Omu_Dependent::WRT_u))
+      for (int j = 0; j < Ju->n; j++)
+        _linear_vars[offs + j] = val;
+    offs += Ju->n;
+    if ((wrt & Omu_Dependent::WRT_dx))
+      for (int j = 0; j < Jdx->n; j++)
+        _linear_vars[offs + j] = val;
+    offs += Jdx->n;
+    if ((wrt & Omu_Dependent::WRT_xf))
+      for (int j = 0; j < Jxf->n; j++)
+        _linear_vars[offs + j] = val;
+    offs += Jxf->n;
+    if ((wrt & Omu_Dependent::WRT_q))
+      for (int j = 0; j < Jq->n; j++)
+        _linear_vars[offs + j] = val;
   }
   bool is_linear(int wrt = Omu_Dependent::WRT_ALL) const {
     bool result = true;
@@ -118,6 +143,29 @@ public:
   bool is_linear_element(int i, int wrt = Omu_Dependent::WRT_ALL) const {
     return (_linear_flags[i] & wrt) == wrt;
   }
+
+  void set_linear_variable(int vec, int j, bool value = true) {
+    if (!c_setup)
+      m_error(E_OVERWRITE, "Omu_DepVec::set_linear_variable");
+    int offs = vec > Omu_Dependent::WRT_x? Jx->n: 0
+      + vec > Omu_Dependent::WRT_u? Ju->n: 0
+      + vec > Omu_Dependent::WRT_dx? Jdx->n: 0
+      + vec > Omu_Dependent::WRT_xf? Jxf->n: 0
+      + vec > Omu_Dependent::WRT_q? Jq->n: 0;
+    if (value)
+      _linear_vars[offs + j] = 1;
+    else
+      _linear_vars[offs + j] = 0;
+  }
+
+  bool is_linear_variable(int vec, int j) const {
+    int offs = vec > Omu_Dependent::WRT_x? Jx->n: 0
+      + vec > Omu_Dependent::WRT_u? Ju->n: 0
+      + vec > Omu_Dependent::WRT_dx? Jdx->n: 0
+      + vec > Omu_Dependent::WRT_xf? Jxf->n: 0
+      + vec > Omu_Dependent::WRT_q? Jq->n: 0;
+    return _linear_vars[offs + j] != 0;
+  }
   //@}
 
   /** Analyze dependencies after setup process */
@@ -125,6 +173,7 @@ public:
 
 protected:
   IVECP _linear_flags;
+  IVECP _linear_vars;
 
   // dismiss copy constructor and assignment operator
   Omu_DepVec(const Omu_DepVec &cv): Omu_DependentVec(cv) {}

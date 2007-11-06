@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -127,13 +127,13 @@ void Omu_Jacobian::analyze_struct(bool is_constant)
   _is_constant = is_constant;
 
   // determine semi-bandwidths (i.e. number of side-diagonals)
-  _sbw_lower = -1;
-  _sbw_upper = -1;
+  _sbw_lower = 0;
+  _sbw_upper = 0;
   for (i = 0; i < nrows; i++) {
     sbwi = i;		// maximum lower sbw in this row
-    for (j = 0; j < i && j < ncols; j++) {
-      if ((*this)[i][j] != 0.0)
-	break;
+    for (j = 0; j < i; j++) {
+      if (j < ncols && (*this)[i][j] != 0.0)
+        break;
       --sbwi;
     }
     _sbw_lower = max(sbwi, _sbw_lower);
@@ -141,7 +141,7 @@ void Omu_Jacobian::analyze_struct(bool is_constant)
     sbwi = ncols - i - 1;// maximum upper sbw in this row
     for (j = ncols - 1; j > i; j--) {
       if ((*this)[i][j] != 0.0)
-	break;
+        break;
       --sbwi;
     }
     _sbw_upper = max(sbwi, _sbw_upper);

@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2006  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -773,6 +773,26 @@ void Prg_SFunctionOpt::setup_struct(int k,
   // objective does not depend on xf
   v_zero(f0.gxf);
   f0.set_linear(Omu_Dependent::WRT_xf);
+
+  // slack variables appear linear in all optimization constraints
+  if (_multistage) {
+    if (k < _K) {
+      for (j = _nu; j < u->dim; j++) {
+        F.set_linear_variable(Omu_Dependent::WRT_u, j);
+        f.set_linear_variable(Omu_Dependent::WRT_u, j);
+        c.set_linear_variable(Omu_Dependent::WRT_u, j);
+        for (i = 0; i < F->dim; i++)
+          F.Ju[i][j] = 0.0;
+        for (i = 0; i < f->dim; i++)
+          f.Ju[i][j] = 0.0;
+      }
+    }
+    else {
+      for (j = _nx; j < x->dim; j++) {
+        c.set_linear_variable(Omu_Dependent::WRT_x, j);
+      }
+    }
+  }
 }
 
 //--------------------------------------------------------------------------

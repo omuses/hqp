@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -142,7 +142,7 @@ public:
   /** constant matrix */
   bool is_constant() const {return _is_constant;}
 
-  /** semi-bandwidth */
+  /** semi-bandwidth, i.e. number of side diagonals */
   int sbw() const {return max(_sbw_lower, _sbw_upper);}
 
   /** lower semi-bandwidth */
@@ -203,6 +203,11 @@ public:
   /** Query if an element of the dependent vector is linear */
   virtual bool is_linear_element(int i,
 				 int wrt = Omu_Dependent::WRT_ALL) const = 0;
+
+  /** Mark a variable that appears linear in all elements */
+  virtual void set_linear_variable(int wrt, int j, bool value = true) = 0;
+  /** Query if a variable is linear in all elements */
+  virtual bool is_linear_variable(int wrt, int j) const = 0;
 
   /** Set flag indicating that Jacobians are required */
   void set_required_J(bool value = true) {

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2006  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -173,11 +173,12 @@ static void setup_Jacobian(Real ***Z3, short **nz,
 {
   int ny = y->dim;
   int ncols = J->n;
-  bool lin_el;
+  bool is_lin;
   int i, j;
 
+  // mark linear elements of y
   for (i = 0; i < ny; i++) {
-    lin_el = y.is_linear_element(i, J_flags);
+    is_lin = y.is_linear_element(i, J_flags);
     for (j = 0; j < ncols; j++) {
       switch (nz[i_offs + i][j_offs + j]) {
       case 0: // no dependency
@@ -189,16 +190,32 @@ static void setup_Jacobian(Real ***Z3, short **nz,
 	}
 	else if (J[i][j] != *Z3[i_offs + i][j_offs + j]) {
 	  // there are different linear dependencies over sample periods
-	  lin_el = false;
+	  is_lin = false;
 	  J[i][j] = 1.0;
 	}
 	break;
       default: // non-linear
-	lin_el = false;	// mark non-linear dependency
+	is_lin = false;	// mark non-linear dependency
 	J[i][j] = 1.0;	// store any value for sparsity pattern
       }
     }
-    y.set_linear_element(i, J_flags, lin_el);
+    y.set_linear_element(i, J_flags, is_lin);
+  }
+
+  // mark linear variables
+  for (j = 0; j < ncols; j++) {
+    is_lin = y.is_linear_variable(J_flags, j);
+    for (i = 0; i < ny; i++) {
+      switch (nz[i_offs + i][j_offs + j]) {
+      case 0: // no dependency
+	break;
+      case 1: // linear
+        break;
+      default: // non-linear
+	is_lin = false;	// mark non-linear dependency
+      }
+    }
+    y.set_linear_variable(J_flags, j, is_lin);
   }
 }
 
@@ -231,11 +248,11 @@ void Omu_Program::setup_struct(int k,
 
   // initialize Jacobians with zeros;
   // afterwards dependencies during all sample periods are collected
-  if (with_continuous) {
-    xt.set_linear();
-    m_zero(xt.Jx);
-    m_zero(xt.Ju);
+  xt.set_linear();
+  m_zero(xt.Jx);
+  m_zero(xt.Ju);
 
+  if (with_continuous) {
     F.set_linear();
     m_zero(F.Jx);
     m_zero(F.Ju);
@@ -254,36 +271,34 @@ void Omu_Program::setup_struct(int k,
 
   for (kk = ks(k); kk < kkend; kk++) {
 
-    // check continuous-time equations (consistic and continuous)
+    //
+    // analyze evaluation of consistent initial values
+    //
+
+    ndep = nxt;
+    nindep = nxt + nu;
+    ad_realloc(ndep, nindep);
+
+    trace_on(4, 1);	// tape 4, keep = 1 for following reverse call
+    ax <<= x->ve;
+    au <<= u->ve;
+
+    consistic(kk, ts(kk), ax, au, axt);
+
+    axt >>= xt->ve; 
+
+    trace_off();
+
+    reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
+
+    setup_Jacobian(_Z3, _nz, xt, xt.Jx, Omu_Dependent::WRT_x, 0, 0);
+    setup_Jacobian(_Z3, _nz, xt, xt.Ju, Omu_Dependent::WRT_u, 0, nxt);
+
+    //
+    // analyze residuum evaluation
+    //
+
     if (with_continuous) {
-
-      //
-      // analyze evaluation of consistent initial values
-      //
-
-      ndep = nxt;
-      nindep = nxt + nu;
-      ad_realloc(ndep, nindep);
-
-      trace_on(4, 1);	// tape 4, keep = 1 for following reverse call
-      ax <<= x->ve;
-      au <<= u->ve;
-
-      consistic(kk, ts(kk), ax, au, axt);
-
-      axt >>= xt->ve; 
-
-      trace_off();
-
-      reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
-
-      setup_Jacobian(_Z3, _nz, xt, xt.Jx, Omu_Dependent::WRT_x, 0, 0);
-      setup_Jacobian(_Z3, _nz, xt, xt.Ju, Omu_Dependent::WRT_u, 0, nxt);
-
-      //
-      // analyze residuum evaluation
-      //
-
       ndep = nxt;
       nindep = 2*nxt + nu;
       ad_realloc(ndep, nindep);

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -61,6 +61,7 @@ class Hqp_Omuses: public Hqp_DocpStub {
   MATP 	_IS;		///< help matrix
   bool 	_ad;		///< flag about use of automatic differentiation
   double _fscale;	///< scaling of optimization criterion
+  int 	_hela_setup;	///< setup structure of Hessian of Lagrangian
 
   /** Setup integrator for all stages.
       This is required if the integrator is exchanged after problem setup. */

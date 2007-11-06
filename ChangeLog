@@ -1,5 +1,19 @@
 2007-11-06  <rfranke>
 
+	* omu/Hqp_Omuses.[hC]:
+	  setup Hessian depending on new prg_hela_setup
+
+	* omu/Omu_Program.C, omu/Prg_SFunctionOpt.C
+	  setup structure for linear elements
+
+	* omu/Omu_Dependents.h, omu/Omu_Deps.[hC]:
+	  new methods set_linear_variable and is_linear_variable
+
+	* omu/Omu_Dependents.C (analyze_struct):
+	  bug fix for determination of semi band width for non-square matrices
+
+2007-11-06  <rfranke>
+
 	* Omu_IntIMP.C:
 	  rework treatment of fixed step size
 

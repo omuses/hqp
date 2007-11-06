@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include <If_Bool.h>
+#include <If_Int.h>
 #include <If_Real.h>
 #include <If_Method.h>
 #include <If_Module.h>
@@ -65,6 +66,7 @@ Hqp_Omuses::Hqp_Omuses()
 
   _ad = true;
   _fscale = 1.0;
+  _hela_setup = 1;
   _stages_ok = false;
 
   _ifList.append(new IF_MODULE("prg_name", &_prg, Omu_Program));
@@ -74,6 +76,7 @@ Hqp_Omuses::Hqp_Omuses()
 			    &Hqp_Omuses::setup_stages, this));
   _ifList.append(new If_Bool("prg_ad", &_ad));
   _ifList.append(new If_Real("prg_fscale", &_fscale));
+  _ifList.append(new If_Int("prg_hela_setup", &_hela_setup));
 }
 
 //--------------------------------------------------------------------------
@@ -323,6 +326,8 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
   }
   else {
     // no continuous-time equations in last stage
+    for (i = 0; i < nxt; i++)
+      xk.flags[i] |= Omu_SVarVec::Discrete;
     xk.nd = nxt;
     v_zero(xk.D);
   }
@@ -332,9 +337,9 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
   if (xk.nd < nxt)
     // final states do only exist if there are continuous equations
     xfk.size(nxt, nx, nu, 0);
-  
+
   // communicate Jacobian struct of a pure discrete problem to Hqp_Docp
-  if (k == K) {
+  if (k == K && xtk.Jx.is_ident() && xtk.Ju.is_zero()) {
     //  || xk.nv == 0 && xk.nd == nx && _prg->ks(k+1) - _prg->ks(k) == 1) {
     // We could also communicate the struct for a
     // discrete-time stage with one sample period,
@@ -348,6 +353,45 @@ void Hqp_Omuses::setup_struct(int k, const VECP, const VECP,
     m_copy(ck.Ju, cu);
     for (i = 0; i < nc; i++)
       c_lin[i] = (int)ck.is_linear_element(i);
+  }
+
+  // communicate struct of Hessian to Hqp_Docp
+  // for now: make Hessian diagonal for all variables that are
+  //   - discrete states or control parameters and
+  //   - only appear linear in any constraint
+  //   assuming that the objective does not introduce off-diagonal elements
+  if (_hela_setup) {
+    for (i = 0; i < nx; i++) {
+      if ((xk.flags[i] & Omu_SVarVec::Discrete) != 0
+          && (k == K || fk.is_linear_variable(Omu_Dependent::WRT_x, i))
+          && ck.is_linear_variable(Omu_Dependent::WRT_x, i)) {
+        // zero out off-diagonal elements (upper diagonal part is sufficient)
+        for (j = 0; j < i; j++)
+          Lxx[j][i] = 0.0;
+        for (j = i + 1; j < nx; j++)
+          Lxx[i][j] = 0.0;
+        for (j = 0; j < nu; j++)
+          Lxu[i][j] = 0.0;
+      }
+    }
+    for (i = 0; i < nu; i++) {
+      // check that control does not influence continuous-time equations
+      is_zero = true;
+      for (j = 0; j < nxt && is_zero; j++) {
+        is_zero &= (Fk.Ju[j][i] == 0.0);
+      }
+      if (is_zero
+          && fk.is_linear_variable(Omu_Dependent::WRT_u, i)
+          && ck.is_linear_variable(Omu_Dependent::WRT_u, i)) {
+        // zero out off-diagonal elements (upper diagonal part is sufficient)
+        for (j = 0; j < i; j++)
+          Luu[j][i] = 0.0;
+        for (j = i + 1; j < nu; j++)
+          Luu[i][j] = 0.0;
+        for (j = 0; j < nx; j++)
+          Lxu[j][i] = 0.0;
+      }
+    }
   }
 
   // setup integrator for stage

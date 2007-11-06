@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2007  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -31,11 +31,13 @@ Omu_DepVec::Omu_DepVec()
 {
   c_setup = false;
   _linear_flags = iv_resize(iv_get(1), 0);
+  _linear_vars = iv_resize(iv_get(1), 0);
 }
 
 //--------------------------------------------------------------------------
 Omu_DepVec::~Omu_DepVec()
 {
+  iv_free(_linear_vars);
   iv_free(_linear_flags);
 }
 
@@ -56,9 +58,11 @@ void Omu_DepVec::size(int dim, int nx, int nu, int ndx, int nxf, int nq)
   Jdx.size(dim, ndx);
   Jxf.size(dim, nxf);
   Jq.size(dim, nq);
+  iv_resize(_linear_vars, nx + nu + ndx + nxf + nq);
 
   v_zero(_v);
   iv_zero(_linear_flags);
+  iv_zero(_linear_vars);
   _required_J = true;
 }
 
