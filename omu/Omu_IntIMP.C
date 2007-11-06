@@ -297,6 +297,7 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
 {
     double t, dt, err, tol, ynorm, dtnew, dtold, facmax;
     int i;
+    double dtmin = 10.0*MACHEPS*(tend - tstart);
 
     _kk = kk;
     _xc_ptr = &xc; 
@@ -306,7 +307,7 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
     v_copy(xc, _x);
     m_copy(xc.Sq, _xs);
 
-    if ( _stepsize > 0.0 ) {    // with fixed step size 
+    if ( false && _stepsize > 0.0 ) {    // with fixed step size 
 	_max_sing = 1;
 	t = tstart;
 	while ( t < tend ) {
@@ -321,7 +322,9 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
 	_max_sing = 5;
 
 	// initial step size
-	if ( _hinit > 0.0 )
+        if (_stepsize > 0.0)
+            dt = _stepsize;
+        else if ( _hinit > 0.0 )
 	    dt = _hinit;
 	else
 	    dt = _dt;
@@ -335,7 +338,7 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
 
 	while ( t < tend ) {
 	    _dt = dt;  // keep last 'regular' step size
-	    if ( dt < 10.0*MACHEPS*t ) {
+	    if ( dt < dtmin ) {
 		m_error(E_CONV, 
 			"Omu_IntIMP::solve step size too small");
 	    }
@@ -370,15 +373,29 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
 	    }
 
 	    // local error estimation
-	    for ( i = 0, err = 0.0; i < _n; i++ ) {
-		err = max(err, fabs(_y2[i]-_y1[i])/
-		    max(fabs(_y2[i]), max(fabs(_x[i]), 1.0e-6)));
-	    }
-	    err = 1.0/3.0*err; // 1/(2^p-1)
-	    // new step size
-	    ynorm = v_norm2(_y2);
-	    tol = _atol+_rtol*ynorm;
-	    dtnew = dt*min(facmax, max(0.25, 0.9*pow(tol/err, 1.0/3.0)));
+            if ( _stepsize > 0.0 ) {
+                // apply user-defined _stepsize and neglect errors
+                if (dt == _stepsize)
+                    dtnew = dt;
+                else {
+                    // get back to mesh defined by _stepsize if step has been reduced
+                    for (dtnew = tstart; dtnew - t < dtmin; dtnew += _stepsize);
+                    dtnew -= t;
+                }
+                err = 0.0;
+                tol = 0.0;
+            }
+            else {
+                for ( i = 0, err = 0.0; i < _n; i++ ) {
+		    err = max(err, fabs(_y2[i]-_y1[i])/
+                              max(fabs(_y2[i]), max(fabs(_x[i]), 1.0e-6)));
+                }
+                err = 1.0/3.0*err; // 1/(2^p-1)
+                // new step size
+                ynorm = v_norm2(_y2);
+                tol = _atol+_rtol*ynorm;
+                dtnew = dt*min(facmax, max(0.25, 0.9*pow(tol/err, 1.0/3.0)));
+            }
 	    if ( err > tol ) {
 		// reject step
 		dt = dtnew;

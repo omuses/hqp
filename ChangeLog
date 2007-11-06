@@ -1,3 +1,11 @@
+2007-11-06  <rfranke>
+
+	* Omu_IntIMP.C:
+	  rework treatment of fixed step size
+
+	* configure.in, configure:
+	  change to development version 1.9.5
+
 2007-03-29  <rfranke>
 
 	* configure.in, configure:
