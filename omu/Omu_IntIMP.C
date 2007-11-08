@@ -9,11 +9,12 @@
  *             2003-01-02 modified Newton's method from Hairer/Wanner
  *             2003-08-25 Omu_Integrator
  *             2003-09-06 step size control by Richardson extrapolation
+ * R. Franke   2007-11-06 rework fixed step size
  *
  */
 
 /*
-    Copyright (C) 1999--2003  Eckhard Arnold
+    Copyright (C) 1999--2007  Eckhard Arnold, Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
