@@ -1,3 +1,19 @@
+2008-11-07  <rfranke>
+
+	* Omu_IntIMP.C:
+	  rework treatment of fixed step size again (cf. 2007-11-06)
+
+	* omu/Omu_Integrator.[hC], omu/Omu_IntIMP.C (solve):
+	  new configuration property prg_int_min_stepsize (default: 0)
+	  determining step size that shall at least be applied
+
+        * omu/Prg_SFunctionEst.C (update, continuous):
+          don't call mdlInitializeConditions for active parameters anymore,
+          as otherwise states might be initialized from parameters
+
+        * omu/Omu_Program.C:
+          bug fix for determination of problem structure with ADOL-C
+
 2007-11-06  <rfranke>
 
 	* omu/Hqp_Omuses.[hC]:

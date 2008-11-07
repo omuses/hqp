@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2008  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -49,6 +49,7 @@ Omu_Integrator::Omu_Integrator()
   _n = 0;
   _m = 0;
   _stepsize = 0.0;
+  _min_stepsize = 0.0;
   _rtol = 1e-8;
   _atol = 1e-8;
   _res_evals = 0;
@@ -66,6 +67,7 @@ Omu_Integrator::Omu_Integrator()
 
   _ifList.append(new If_Bool("prg_int_serr", &_serr));
   _ifList.append(new If_Real("prg_int_stepsize", &_stepsize));
+  _ifList.append(new If_Real("prg_int_min_stepsize", &_min_stepsize));
   _ifList.append(new If_Real("prg_int_rtol", &_rtol));
   _ifList.append(new If_Real("prg_int_atol", &_atol));
   _ifList.append(new If_Int("prg_int_res_evals", &_res_evals));

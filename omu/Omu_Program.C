@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2007  Ruediger Franke
+    Copyright (C) 1997--2008  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -169,7 +169,8 @@ void Omu_Program::setup_stages(IVECP ks, VECP ts)
 //--------------------------------------------------------------------------
 static void setup_Jacobian(Real ***Z3, short **nz,
 			   Omu_DependentVec &y,
-			   MATP J, int J_flags, int i_offs, int j_offs)
+			   MATP J, int J_flags, int i_offs, int j_offs,
+                           bool isFirstCall)
 {
   int ny = y->dim;
   int ncols = J->n;
@@ -184,7 +185,7 @@ static void setup_Jacobian(Real ***Z3, short **nz,
       case 0: // no dependency
 	break;
       case 1: // linear
-	if (J[i][j] == 0.0) {
+	if (isFirstCall) {
 	  // store actual constant value
 	  J[i][j] = *Z3[i_offs + i][j_offs + j];
 	}
@@ -235,6 +236,7 @@ void Omu_Program::setup_struct(int k,
   int nf = f->dim;
   int nc = c->dim;
   bool with_continuous = (f0.gxf->dim > 0);
+  bool init;
 
   adoublev ax(nxt);
   adoublev au(nu);
@@ -269,6 +271,7 @@ void Omu_Program::setup_struct(int k,
   m_zero(c.Ju);
   m_zero(c.Jxf);
 
+  init = true;  // indicate first sample period of stage
   for (kk = ks(k); kk < kkend; kk++) {
 
     //
@@ -291,8 +294,8 @@ void Omu_Program::setup_struct(int k,
 
     reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
 
-    setup_Jacobian(_Z3, _nz, xt, xt.Jx, Omu_Dependent::WRT_x, 0, 0);
-    setup_Jacobian(_Z3, _nz, xt, xt.Ju, Omu_Dependent::WRT_u, 0, nxt);
+    setup_Jacobian(_Z3, _nz, xt, xt.Jx, Omu_Dependent::WRT_x, 0, 0, init);
+    setup_Jacobian(_Z3, _nz, xt, xt.Ju, Omu_Dependent::WRT_u, 0, nxt, init);
 
     //
     // analyze residuum evaluation
@@ -317,9 +320,10 @@ void Omu_Program::setup_struct(int k,
 
       reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
 
-      setup_Jacobian(_Z3, _nz, F, F.Jx, Omu_Dependent::WRT_x, 0, 0);
-      setup_Jacobian(_Z3, _nz, F, F.Ju, Omu_Dependent::WRT_u, 0, nxt);
-      setup_Jacobian(_Z3, _nz, F, F.Jdx, Omu_Dependent::WRT_dx, 0, nxt + nu);
+      setup_Jacobian(_Z3, _nz, F, F.Jx, Omu_Dependent::WRT_x, 0, 0, init);
+      setup_Jacobian(_Z3, _nz, F, F.Ju, Omu_Dependent::WRT_u, 0, nxt, init);
+      setup_Jacobian(_Z3, _nz, F, F.Jdx, Omu_Dependent::WRT_dx, 0,
+		     nxt + nu, init);
 
       // initialize final values of integration
       for (i = 0; i < nxt; i++)
@@ -353,15 +357,17 @@ void Omu_Program::setup_struct(int k,
     ad_realloc(ndep, nindep);
     reverse(4, ndep, nindep, 0, ndep, _U2->me, _Z3, _nz);
 
-    setup_Jacobian(_Z3, _nz, f, f.Jx, Omu_Dependent::WRT_x, 0, 0);
-    setup_Jacobian(_Z3, _nz, f, f.Ju, Omu_Dependent::WRT_u, 0, nxt);
+    setup_Jacobian(_Z3, _nz, f, f.Jx, Omu_Dependent::WRT_x, 0, 0, init);
+    setup_Jacobian(_Z3, _nz, f, f.Ju, Omu_Dependent::WRT_u, 0, nxt, init);
     setup_Jacobian(_Z3, _nz, f, f.Jxf, Omu_Dependent::WRT_xf,
-		   0, nxt + nu);
+		   0, nxt + nu, init);
 
-    setup_Jacobian(_Z3, _nz, c, c.Jx, Omu_Dependent::WRT_x, nf + 1, 0);
-    setup_Jacobian(_Z3, _nz, c, c.Ju, Omu_Dependent::WRT_u, nf + 1, nxt);
+    setup_Jacobian(_Z3, _nz, c, c.Jx, Omu_Dependent::WRT_x, nf + 1, 0, init);
+    setup_Jacobian(_Z3, _nz, c, c.Ju, Omu_Dependent::WRT_u, nf + 1, nxt, init);
     setup_Jacobian(_Z3, _nz, c, c.Jxf, Omu_Dependent::WRT_xf,
-		   nf + 1, nxt + nu);
+		   nf + 1, nxt + nu, init);
+
+    init = false;
   }
 #else
   m_error(E_NULL, "Omu_Program::setup_struct: was compiled without ADOL-C");

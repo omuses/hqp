@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2008  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -260,6 +260,12 @@ class Omu_Integrator {
    * Default: 0.0, i.e. integrator chooses own stepsize.
    */
   double	_stepsize;
+
+  /**
+   * Minimal stepsize to be taken by integator.
+   * Default: 0.0, i.e. no limitation.
+   */
+  double	_min_stepsize;
 
   /**
    * Relative integration error tolerance (only for variable stepsize).

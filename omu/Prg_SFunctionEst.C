@@ -578,8 +578,8 @@ void Prg_SFunctionEst::update(int kk,
   //  e.g. for numerical approximation of Jacobian)
   if (_np > 0) {
     write_active_mx_args(x);
-    if (ssGetmdlInitializeConditions(_SS) != NULL)
-      SMETHOD_CALL(mdlInitializeConditions, _SS);
+    //if (ssGetmdlInitializeConditions(_SS) != NULL)
+    //  SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
   // pass current states to model
@@ -903,8 +903,8 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   //  e.g. for numerical approximation of Jacobian)
   if (_np > 0) {
     write_active_mx_args(x);
-    if (ssGetmdlInitializeConditions(_SS) != NULL)
-      SMETHOD_CALL(mdlInitializeConditions, _SS);
+    //if (ssGetmdlInitializeConditions(_SS) != NULL)
+    //  SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
   // pass current states to model

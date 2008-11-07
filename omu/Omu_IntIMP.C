@@ -9,12 +9,12 @@
  *             2003-01-02 modified Newton's method from Hairer/Wanner
  *             2003-08-25 Omu_Integrator
  *             2003-09-06 step size control by Richardson extrapolation
- * R. Franke   2007-11-06 rework fixed step size
+ * R. Franke   2008-11-06 rework fixed step size
  *
  */
 
 /*
-    Copyright (C) 1999--2007  Eckhard Arnold, Ruediger Franke
+    Copyright (C) 1999--2008  Eckhard Arnold, Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -298,7 +298,7 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
 {
     double t, dt, err, tol, ynorm, dtnew, dtold, facmax;
     int i;
-    double dtmin = 10.0*MACHEPS*(tend - tstart);
+    double dtmin = _min_stepsize > 0.0? _min_stepsize: 10.0*MACHEPS*(tend - tstart);
 
     _kk = kk;
     _xc_ptr = &xc; 
@@ -308,24 +308,40 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
     v_copy(xc, _x);
     m_copy(xc.Sq, _xs);
 
-    if ( false && _stepsize > 0.0 ) {    // with fixed step size 
-	_max_sing = 1;
+    if ( _stepsize > 0.0 ) {    // with fixed step size
+        if (_min_stepsize <= 0.0)
+            dtmin = _stepsize; // use _stepsize if no _min_stepsize specified
+	_max_sing = 5;
+        _modnewtonsteps = -1; // force recalculation of Jacobian initially
 	t = tstart;
+        dt = _stepsize;
 	while ( t < tend ) {
-	    dt = _stepsize;
 	    if ( t+dt > tend ) 
 		dt = tend-t;
-	    fixedstep(t, dt, _x, _xs);
-	    t += _stepsize;
+            m_catchall( fixedstep(t, dt, _x, _xs);,
+                // reduce step size as fixedstep has failed
+                dt *= 0.5;
+	        if ( dt < dtmin )
+                    m_error(E_CONV, 
+		            "Omu_IntIMP::solve step size below min_stepsize");
+                _modnewtonsteps = -1; // force recalculation of Jacobian
+            );
+            if (_modnewtonsteps >= 0) {
+                // accept successful step
+	        t += dt;
+                // readjust dt to mesh defined by _stepsize if dt was reduced
+                if (dt != _stepsize) {
+                    for (dt = tstart; dt - t < dtmin; dt += _stepsize);
+                    dt -= t;
+                }
+            }    
 	}
     } else {    // with step size control
 	// allow _max_sing singular Jacobians
 	_max_sing = 5;
 
 	// initial step size
-        if (_stepsize > 0.0)
-            dt = _stepsize;
-        else if ( _hinit > 0.0 )
+	if ( _hinit > 0.0 )
 	    dt = _hinit;
 	else
 	    dt = _dt;
@@ -374,29 +390,15 @@ void Omu_IntIMP::solve(int kk, double tstart, double tend,
 	    }
 
 	    // local error estimation
-            if ( _stepsize > 0.0 ) {
-                // apply user-defined _stepsize and neglect errors
-                if (dt == _stepsize)
-                    dtnew = dt;
-                else {
-                    // get back to mesh defined by _stepsize if step has been reduced
-                    for (dtnew = tstart; dtnew - t < dtmin; dtnew += _stepsize);
-                    dtnew -= t;
-                }
-                err = 0.0;
-                tol = 0.0;
-            }
-            else {
-                for ( i = 0, err = 0.0; i < _n; i++ ) {
-		    err = max(err, fabs(_y2[i]-_y1[i])/
-                              max(fabs(_y2[i]), max(fabs(_x[i]), 1.0e-6)));
-                }
-                err = 1.0/3.0*err; // 1/(2^p-1)
-                // new step size
-                ynorm = v_norm2(_y2);
-                tol = _atol+_rtol*ynorm;
-                dtnew = dt*min(facmax, max(0.25, 0.9*pow(tol/err, 1.0/3.0)));
-            }
+	    for ( i = 0, err = 0.0; i < _n; i++ ) {
+		err = max(err, fabs(_y2[i]-_y1[i])/
+		    max(fabs(_y2[i]), max(fabs(_x[i]), 1.0e-6)));
+	    }
+	    err = 1.0/3.0*err; // 1/(2^p-1)
+	    // new step size
+	    ynorm = v_norm2(_y2);
+	    tol = _atol+_rtol*ynorm;
+	    dtnew = dt*min(facmax, max(0.25, 0.9*pow(tol/err, 1.0/3.0)));
 	    if ( err > tol ) {
 		// reject step
 		dt = dtnew;
@@ -533,7 +535,8 @@ void Omu_IntIMP::fixedstep(double tstep, double dt, VECP y, MATP yq)
 	v_mltadd(_z, _fh, -dt/2.0, _res);
 
 	// check for convergence
-	if ( v_norm2(_res) < 0.1*(_atol+_rtol*v_norm2(_z)) )
+	if ( _modnewtonsteps >= 0 
+             && v_norm2(_res) < 0.1*(_atol+_rtol*v_norm2(_z)) )
 	    break;
 	else if ( inewton == _maxiters-1 ) {
 	    m_error(E_CONV, 
@@ -541,11 +544,11 @@ void Omu_IntIMP::fixedstep(double tstep, double dt, VECP y, MATP yq)
 	}
 
 	// (re)calculate and factorize Jacobian
-	if ( !(_modnewtonsteps % _max_modnewtonsteps) ) {
+	if ( _modnewtonsteps < 0 || _modnewtonsteps >= _max_modnewtonsteps ) {
 	    sys_jac(t, _y, _fh, _yy);
 	    m_copy(_yy, _yyn);
 	    lufac_jac(1.0, dt/2.0, _yyn);
-	    _modnewtonsteps = 1;
+	    _modnewtonsteps = 0;
 	} else
 	    _modnewtonsteps++;
 
@@ -553,10 +556,6 @@ void Omu_IntIMP::fixedstep(double tstep, double dt, VECP y, MATP yq)
 	v_sub(_z, _fh, _z);
     }
 
-    // calculate step 
-    v_mltadd(_y0, _z, 2.0, _y);
-    v_copy(_y, y);
-  
     // sensitivities
     if ( _sa ) {
 	v_add(_y0, _z, _y);
@@ -564,13 +563,17 @@ void Omu_IntIMP::fixedstep(double tstep, double dt, VECP y, MATP yq)
 	sys_jac(t, _y, _fh, _yy, _yq);
 	m_copy(_yy, _yyn);
 	lufac_jac(1.0, dt/2.0, _yyn);
-	_modnewtonsteps = 1;
+	_modnewtonsteps = 0;
 
 	m_mlt(_yy, yq, _yqq);
 	m_add(_yqq, _yq, _yqq);
 	LUsolveM(_yyn, _ppivot, _yqq, _yqq);
 	ms_mltadd(yq, _yqq, dt, yq);
     }
+
+    // calculate step 
+    v_mltadd(_y0, _z, 2.0, _y);
+    v_copy(_y, y);
 }
 
 //========================================================================
