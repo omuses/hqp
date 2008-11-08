@@ -1,3 +1,8 @@
+2008-11-08  <rfranke>
+
+	* configure.in, configure:
+	  change version to 1.9.5, add tag release-1-9-5
+
 2008-11-07  <rfranke>
 
 	* Omu_IntIMP.C:

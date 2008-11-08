@@ -47,6 +47,7 @@ clean:
 
 distclean: clean
 	rm -f makedefs makedirs odc/Makefile odc/mex.tcl hqp_docp/Makefile
+	rm -f lib/pkgIndex.tcl
 	if test -n "$(ADOLC_SRCS)"; then \
 	  cd adol-c; \
 	  if test -d adol-c; then rm -rf adol-c; fi \
