@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -36,14 +36,15 @@ void Hqp_DocpStub::setup_horizon(void *clientdata, int &k0, int &kf)
 
 //-------------------------------------------------------------------------
 void Hqp_DocpStub::setup_vars(void *clientdata, int k,
-                              VECP x, VECP xmin, VECP xmax,
-                              VECP u, VECP umin, VECP umax,
-                              VECP c, VECP cmin, VECP cmax)
+                              VECP x, VECP x_min, VECP x_max, IVECP x_int,
+                              VECP u, VECP u_min, VECP u_max, IVECP u_int,
+                              VECP c, VECP c_min, VECP c_max)
 {
   Hqp_DocpStub *stub = (Hqp_DocpStub *)clientdata;
-  stub->setup_vars(k, x, xmin, xmax,
-                   u, umin, umax,
-                   c, cmin, cmax);
+  stub->setup_vars(k, 
+                   x, x_min, x_max, x_int,
+                   u, u_min, u_max, u_int,
+                   c, c_min, c_max);
 }
 
 //-------------------------------------------------------------------------
@@ -158,9 +159,10 @@ void Hqp_DocpStub::setup_horizon(int &k0, int &kf)
 }
 
 //-------------------------------------------------------------------------
-void Hqp_DocpStub::alloc_vars(VECP v, VECP vmin, VECP vmax, int n)
+void Hqp_DocpStub::alloc_vars(VECP v, VECP v_min, VECP v_max, IVECP v_int,
+                              int n)
 {
-  Hqp_Docp_alloc_vars(_handle, v, vmin, vmax, n);
+  Hqp_Docp_alloc_vars(_handle, v, v_min, v_max, v_int, n);
 }
 
 

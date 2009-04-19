@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,23 +29,29 @@
 #include <If_Real.h>
 #include <If_RealVec.h>
 #include <If_Method.h>
+#include <If_Module.h>
 
-#include "Hqp_SqpSolver.h"
 #include "Hqp_SqpProgram.h"
+#include "Hqp_SqpSolver.h"
+#include "Hqp_MipSolver.h"
 #include "Hqp_Program.h"
 
-// let currently created program be nodified by theSqpSolver
+// let currently created program be nodified by the solvers
 //----------------------------------------------------------
 extern Hqp_SqpSolver *theSqpSolver;
+extern Hqp_MipSolver *theMipSolver;
 
 typedef If_Method<Hqp_SqpProgram> If_Cmd;
 
 IF_BASE_DEFINE(Hqp_SqpProgram);
 
-#define GET_SET_CB(vartype, name) \
-  "prg_"#name, \
-  IF_GET_CB(vartype, Hqp_SqpProgram, name), \
+#define GET_SET_CB(vartype, prefix, name) \
+  GET_CB(vartype, prefix, name), \
   IF_SET_CB(vartype, Hqp_SqpProgram, set_##name)
+
+#define GET_CB(vartype, prefix, name) \
+  prefix#name, \
+  IF_GET_CB(vartype, Hqp_SqpProgram, name)
 
 //-------------------------------------------------------------------------
 Hqp_SqpProgram::Hqp_SqpProgram()
@@ -55,10 +61,13 @@ Hqp_SqpProgram::Hqp_SqpProgram()
   _f = 0.0;
 
   theSqpSolver->set_prg(this);
+  if (theMipSolver)
+    theMipSolver->set_prg(this);
 
-  _ifList.append(new If_Real(GET_SET_CB(Real, f)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, x)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, s)));
+  _ifList.append(new If_Real(GET_CB(Real, "prg_", f)));
+  _ifList.append(new If_Real(GET_CB(Real, "prg_", norm_inf)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "prg_", x)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "prg_", s)));
   _ifList.append(new If_Cmd("prg_setup", &Hqp_SqpProgram::setup, this));
   _ifList.append(new If_Cmd("prg_init_x", &Hqp_SqpProgram::init_x, this));
   _ifList.append(new If_Cmd("prg_qp_dump", &Hqp_SqpProgram::qp_dump, this));
@@ -182,6 +191,24 @@ void Hqp_SqpProgram::qp_dump()
   }
   _qp->foutput(fp);
   fclose(fp);
+}
+
+//--------------------------------------------------------------------------
+Real Hqp_SqpProgram::norm_inf() const
+{
+  Real ret, tmp;
+
+  if ((VEC *)(_qp->b) != VNULL && _qp->b->dim > 0)
+    ret = v_norm_inf(_qp->b);
+  else
+    ret = 0.0;
+
+  if ((VEC *)(_qp->d) != VNULL && _qp->d->dim > 0) {
+    tmp = -v_min(_qp->d, NULL);
+    ret = max(ret, tmp);
+  }
+
+  return ret;
 }
 
 

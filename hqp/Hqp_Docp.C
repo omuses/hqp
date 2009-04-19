@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -193,6 +193,7 @@ Hqp_Docp::Hqp_Docp()
   _nxs = iv_get(1);
   _nus = iv_get(1);
   _xus_init = v_get(1);
+  _xus_integer = iv_get(1);
   _granul = 100;
   _f0_lin = iv_get(1);
   _xu_eq = new Hqp_DocpAssoc;
@@ -228,6 +229,7 @@ Hqp_Docp::~Hqp_Docp()
   iv_free(_nus);
   iv_free(_nxs);
   v_free(_xus_init);
+  iv_free(_xus_integer);
   iv_free(_f_start);
   iv_free(_f_lin);
   delete _cns_eq;
@@ -246,14 +248,20 @@ void Hqp_Docp::horizon(int k0, int kf)
 }
 
 //-------------------------------------------------------------------------
-void Hqp_Docp::alloc_vars(VECP v, VECP vmin, VECP vmax, int n)
+void Hqp_Docp::alloc_vars(VECP v, VECP v_min, VECP v_max, IVECP v_int, int n)
 {
-  v_resize(v, n);
-  v_resize(vmin, n);
-  v_resize(vmax, n);
+  if ((VEC *)v != VNULL)
+    v_resize(v, n);
+  if ((VEC *)v_min != VNULL)
+    v_resize(v_min, n);
+  if ((VEC *)v_max != VNULL)
+    v_resize(v_max, n);
+  if ((IVEC *)v_int != IVNULL)
+    iv_resize(v_int, n);
   v_set(v, 0.0);
-  v_set(vmin, -Inf);
-  v_set(vmax, Inf);
+  v_set(v_min, -Inf);
+  v_set(v_max, Inf);
+  iv_set(v_int, 0);
 }
 
 //-------------------------------------------------------------------------
@@ -338,9 +346,10 @@ void Hqp_Docp::setup_x()
   int i, k, K;
   int nsp, nfsp;
   int ncnssp;
-  VECP x, xmin, xmax;
-  VECP u, umin, umax;
-  VECP c, cmin, cmax;
+  VECP x, x_min, x_max;
+  VECP u, u_min, u_max;
+  IVECP x_int, u_int;
+  VECP c, c_min, c_max;
 
   K = _kf - _k0;
 
@@ -357,6 +366,7 @@ void Hqp_Docp::setup_x()
   //
 
   v_resize(_xus_init, 0);
+  iv_resize(_xus_integer, 0);
   nsp = 0;
   nfsp = 0;
   iv_resize(_f_start, K+2);	// two additional
@@ -367,71 +377,85 @@ void Hqp_Docp::setup_x()
   iv_resize(_cns_start, K+2);	// one additional for the final values
 
   x = v_get(1);
-  xmin = v_get(1);
-  xmax = v_get(1);
+  x_min = v_get(1);
+  x_max = v_get(1);
+  x_int = iv_get(1);
   u = v_get(1);
-  umin = v_get(1);
-  umax = v_get(1);
+  u_min = v_get(1);
+  u_max = v_get(1);
+  u_int = iv_get(1);
   c = v_get(1);
-  cmin = v_get(1);
-  cmax = v_get(1);
+  c_min = v_get(1);
+  c_max = v_get(1);
 
   for (k = 0; k <= K; k++) {
     v_resize(x, 0);
-    v_resize(xmin, 0);
-    v_resize(xmax, 0);
+    v_resize(x_min, 0);
+    v_resize(x_max, 0);
+    iv_resize(x_int, 0);
     v_resize(u, 0);
-    v_resize(umin, 0);
-    v_resize(umax, 0);
+    v_resize(u_min, 0);
+    v_resize(u_max, 0);
+    iv_resize(u_int, 0);
     v_resize(c, 0);
-    v_resize(cmin, 0);
-    v_resize(cmax, 0);
+    v_resize(c_min, 0);
+    v_resize(c_max, 0);
 
-    setup_vars(_k0+k, x, xmin, xmax, u, umin, umax, c, cmin, cmax);
-    assert(xmin->dim == x->dim && x->dim == xmax->dim);
-    assert(umin->dim == u->dim && u->dim == umax->dim);
-    assert(cmin->dim == c->dim && c->dim == cmax->dim);
+    setup_vars(_k0+k,
+               x, x_min, x_max, x_int,
+               u, u_min, u_max, u_int,
+               c, c_min, c_max);
+    assert(x_min->dim == x->dim && x->dim == x_max->dim);
+    assert(x->dim == x_int->dim);
+    assert(u_min->dim == u->dim && u->dim == u_max->dim);
+    assert(u->dim == u_int->dim);
+    assert(c_min->dim == c->dim && c->dim == c_max->dim);
 
     if (k == 0) {
       //
       // treat special state constraints here
       //  -- assume equal initial/final state for xmin[i] = xmax[i] (= Inf)
       //
-      iv_resize(_x_type, xmin->dim);
+      iv_resize(_x_type, x_min->dim);
       iv_zero(_x_type);
-      for (i = 0; i < (int)xmin->dim; i++) {
-	if (xmin[i] == xmax[i] && xmin[i] == Inf) {
+      for (i = 0; i < (int)x_min->dim; i++) {
+	if (x_min[i] == x_max[i] && x_min[i] == Inf) {
 	  _x_type[i] = Periodical;
-	  xmin[i] = -Inf;
+	  x_min[i] = -Inf;
 	}
       }
     }
 
-    // grow size of vector for initial values
+    // grow sizes of vectors for initial values and integer settings
     v_expand(_xus_init, x->dim + u->dim, _granul);
+    iv_expand(_xus_integer, x->dim + u->dim, _granul);
 
     // parse state variables and bounds
-    for (i = 0; i < (int)x->dim; i++)
+    for (i = 0; i < (int)x->dim; i++) {
       _xus_init[nsp + i] = x[i];
-    parse_constr(xmin, xmax, nsp, _xu_eq, _xu_lb, _xu_ub);
-    nsp += xmin->dim;
-    _nxs[k] = xmin->dim;
+      _xus_integer[nsp + i] = x_int[i];
+    }
+    parse_constr(x_min, x_max, nsp, _xu_eq, _xu_lb, _xu_ub);
+    nsp += x_min->dim;
+    _nxs[k] = x_min->dim;
     if (k > 0) {
       _f_start[k-1] = nfsp;
-      nfsp += xmin->dim;
+      nfsp += x_min->dim;
     }
 
     // parse control parameters and bounds
-    for (i = 0; i < (int)u->dim; i++)
+    for (i = 0; i < (int)u->dim; i++) {
       _xus_init[nsp + i] = u[i];
-    parse_constr(umin, umax, nsp, _xu_eq, _xu_lb, _xu_ub);
-    nsp += umin->dim;
-    _nus[k] = umin->dim;
+      _xus_integer[nsp + i] = u_int[i];
+    }
+    parse_constr(u_min, u_max, nsp, _xu_eq, _xu_lb, _xu_ub);
+    nsp += u_min->dim;
+    _nus[k] = u_min->dim;
 
     // parse constraints
     _cns_start[k] = ncnssp;
-    parse_constr(cmin, cmax, ncnssp, _cns_eq, _cns_lb, _cns_ub);
-    ncnssp += cmin->dim;
+    parse_constr(c_min, c_max, ncnssp, _cns_eq, _cns_lb, _cns_ub);
+    ncnssp += c_min->dim;
   }
 
   // final state
@@ -442,14 +466,16 @@ void Hqp_Docp::setup_x()
   _cns_start[K+1] = ncnssp;
 
   v_free(x);
-  v_free(xmin);
-  v_free(xmax);
+  v_free(x_min);
+  v_free(x_max);
+  iv_free(x_int);
   v_free(u);
-  v_free(umin);
-  v_free(umax);
+  v_free(u_min);
+  v_free(u_max);
+  iv_free(u_int);
   v_free(c);
-  v_free(cmin);
-  v_free(cmax);
+  v_free(c_min);
+  v_free(c_max);
 
   // adapt dimensions
 
@@ -528,6 +554,9 @@ void Hqp_Docp::setup_qp()
   //
   // init sparsity structure and set constant values
   //
+
+  // integers
+  iv_copy(_xus_integer, _qp->x_int);
 
   // initial and final state constraints
 

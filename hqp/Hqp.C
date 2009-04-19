@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -64,9 +64,9 @@ Hqp_Docp_destroy(Hqp_DocpHandle handle)
 //-------------------------------------------------------------------------
 extern "C" void
 Hqp_Docp_alloc_vars(Hqp_DocpHandle handle,
-		    VECP v, VECP vmin, VECP vmax, int n)
+		    VECP v, VECP v_min, VECP v_max, IVECP v_int, int n)
 {
-  handle->alloc_vars(v, vmin, vmax, n);
+  handle->alloc_vars(v, v_min, v_max, v_int, n);
 }
 
 //-------------------------------------------------------------------------

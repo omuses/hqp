@@ -37,6 +37,40 @@ proc hqp_logging {{value {}}} {
 hqp_logging
 
 #
+# solver initialization and iteration counter
+#
+
+proc hqp_init {} {
+  if {[sqp_solver] != "None"} {
+    sqp_init
+  } elseif {[mip_solver] != "None"} {
+    # mip_init
+  } else {
+    error "No solver configured. Expecting sqp_solver or mip_solver."
+  }
+}
+
+proc hqp_iter {{value {}}} {
+  if {[sqp_solver] != "None"} {
+    return [eval sqp_iter $value]
+  } elseif {[mip_solver] != "None"} {
+    return 0
+  } else {
+    error "No solver configured. Expecting sqp_solver or mip_solver."
+  }
+}
+
+proc hqp_max_iters {{value {}}} {
+  if {[sqp_solver] != "None"} {
+    return [eval sqp_max_iters $value]
+  } elseif {[mip_solver] != "None"} {
+    return 1
+  } else {
+    error "No solver configured. Expecting sqp_solver or mip_solver."
+  }
+}
+
+#
 # hot start routine
 #
 proc hqp_solve_hot {{stream stdout}} {
@@ -47,6 +81,16 @@ proc hqp_solve_hot {{stream stdout}} {
 # general solution routine
 #
 proc hqp_solve {{stream stdout} {hot 0}} {
+
+  if {[sqp_solver] == "None" && [mip_solver] == "None"} {
+      error "No solver configured; require sqp_solver or mip_solver."
+  }
+
+  #
+  # Call SQP solver if it has been configured
+  #
+
+ if {[sqp_solver] != "None"} {
 
   global qp_iters
 
@@ -201,6 +245,21 @@ proc hqp_solve {{stream stdout} {hot 0}} {
 
   hqp_puts $stream [format "\n%43d qp-it" $qp_iters]
   unset qp_iters
+
+ }
+
+  #
+  # Call mixed integer solver if it has been configured
+  # Note: both SQP and MIP solver may be useful
+  #       to first solve for non-linearities and then
+  #       for integers using the last linearized problem
+  #
+
+  if {[mip_solver] != "None"} {
+    set result [mip_solve]
+    prg_update_fbd 	;# take over solution
+    return $result
+  }
 
   return optimal
 }

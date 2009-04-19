@@ -12,10 +12,13 @@
  * rf, 00/11/01
  *  add support for MSC
  *
+ * rf, 09/04/11
+ *  add mixed integer solver (Hqp_MipSolver)
+ *
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -44,8 +47,9 @@
 #include <If_Module.h>
 
 #include "Hqp.h"
-#include "Hqp_SqpSolver.h"
 #include "Hqp_SqpProgram.h"
+#include "Hqp_SqpSolver.h"
+#include "Hqp_MipSolver.h"
 
 #include "Hqp_SqpPowell.h"
 
@@ -58,11 +62,17 @@ Hqp_SqpProgram *theSqpProgram = NULL;
 /** Hold a pointer to the Hqp_SqpSolver */
 Hqp_SqpSolver *theSqpSolver = NULL;
 
+/** Hold a pointer to the Hqp_MipSolver */
+Hqp_MipSolver *theMipSolver = NULL;
+
 #ifdef IF_CLASS_STATIC
 //--------------------------------------------------------------------------
 // Ensure linkage of modules
 // where automatic inclusion of all objects does not work.
 //--------------------------------------------------------------------------
+#if defined(HQP_WITH_LPSOLVE)
+#include "Hqp_LPSolve.h"
+#endif
 #if defined(HQP_WITH_ASCEND)
 #include "Prg_ASCEND.h"
 #endif
@@ -102,6 +112,9 @@ static void Hqp_ClassAlloc()
 #endif
 #if defined(HQP_WITH_ASCEND)
   IF_CLASS_ALLOC("ASCEND", Prg_ASCEND, Hqp_SqpProgram);
+#endif
+#if defined(HQP_WITH_LPSOLVE)
+  IF_CLASS_ALLOC("LPSolve", Hqp_LPSolve, Hqp_MipSolver);
 #endif
 }
 #endif
@@ -168,8 +181,9 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
   theSqpProgram = NULL;
   theSqpSolver = new Hqp_SqpPowell;
 
-  _ifList.append(new IF_MODULE("sqp_solver", &theSqpSolver, Hqp_SqpSolver));
   _ifList.append(new IF_MODULE("prg_name", &theSqpProgram, Hqp_SqpProgram));
+  _ifList.append(new IF_MODULE("sqp_solver", &theSqpSolver, Hqp_SqpSolver));
+  _ifList.append(new IF_MODULE("mip_solver", &theMipSolver, Hqp_MipSolver));
   _ifList.append(new If_String("hqp_version", &Hqp_Version));
   _ifList.append(new If_Procedure("m_version", &m_version_cmd));
 

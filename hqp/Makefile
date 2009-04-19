@@ -7,7 +7,7 @@ include ../makedefs
 O = $(OBJ_SUFFIX)
 
 CCDEFS = $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) $(ASCEND_INCDIR) \
-	 $(HQP_INCDIR) $(HQP_DEFS)
+	 $(LPSOLVE_INCDIR) $(HQP_INCDIR) $(HQP_DEFS)
 
 SRCS = 	Hqp_Init.C \
 	Hqp.C \
@@ -39,6 +39,8 @@ SRCS = 	Hqp_Init.C \
 	Hqp_HL_SparseBFGS.C \
 	Hqp_SqpProgram.C \
 	Hqp_Docp.C \
+        Hqp_MipSolver.C \
+        $(LPSOLVE_SRCS) \
 	$(CUTE_SRCS) \
 	$(ASCEND_SRCS)
 

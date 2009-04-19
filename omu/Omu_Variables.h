@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2003  Ruediger Franke
+    Copyright (C) 1997--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -37,6 +37,7 @@ class Omu_VariableVec: public Omu_Vec {
   VECP min;		///< minimal permitted values (default: -Inf)
   VECP max;		///< maximal permitted values (default: +Inf)
   VECP initial;		///< initial values (default: 0.0)
+  IVECP integer; 	///< integer variables (default: 0)
 
   Omu_VariableVec();	///< allocate empty vectors
   virtual ~Omu_VariableVec(); ///< destroy vectors

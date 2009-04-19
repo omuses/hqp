@@ -74,9 +74,9 @@ class Hqp_Omuses: public Hqp_DocpStub {
   void setup_horizon(int &k0, int &kf);
 
   void setup_vars(int k,
-		  VECP x, VECP xmin, VECP xmax,
-		  VECP u, VECP umin, VECP umax,
-		  VECP c, VECP cmin, VECP cmax);
+		  VECP x, VECP x_min, VECP x_max, IVECP x_int,
+		  VECP u, VECP u_min, VECP u_max, IVECP u_int,
+		  VECP c, VECP c_min, VECP c_max);
 
   void setup_struct(int k, const VECP x, const VECP u,
 		    MATP fx, MATP fu, IVECP f_lin,

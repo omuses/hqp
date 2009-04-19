@@ -1,11 +1,12 @@
-/*
- * Hqp_Program.h -- program for sparse quadratic programming
+/**
+ * @file Hqp_Program.h 
+ *   Optimization program for sparse quadratic programming
  *
  * rf, 5/15/94
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,27 +29,38 @@
 
 #include "Hqp_impl.h"
 
-
+/** Optimization program for sparse quadratic programming */
 class Hqp_Program {
 
  public:
 
-  VECP		x;	// variables to optimize on
+  /** @name flags for variables */
+  //@{
+  static const int IS_LOCAL; 	///< local variable of nonlinear group
+  static const int IS_SLACK; 	///< slack variable
+  //@}
 
-  SPMATP	Q;	// criterion: 1/2 x'Qx + c'x -> min
-  VECP		c;
+  VECP		x;	///< optimization variables
+  IVECP 	x_flags;///< classification of variables
+  IVECP 	x_int; 	///< mark integer variables with values > 0
 
-  SPMATP	A;	// equality constraints: Ax + b = 0
-  VECP		b;
+  SPMATP	Q;	///< criterion: 1/2 x'Qx + c'x -> min
+  VECP		c; 	///< linear term of criterion
 
-  SPMATP	C;	// inequality constraints: Cx + d >= 0
-  VECP		d;
+  SPMATP	A;	///< equality constraints: Ax + b = 0
+  VECP		b; 	///< constant term of equality constraints
 
-  Hqp_Program();
-  ~Hqp_Program();
+  SPMATP	C;	///< inequality constraints: Cx + d >= 0
+  VECP		d; 	///< constant term of inequality constraints
 
+  Hqp_Program(); 	///< constructor
+  ~Hqp_Program(); 	///< destructor
+
+  /** change size of optimization program */
   void resize(int n, int me, int m,
 	      int el_n = 0, int el_me = 0, int el_m = 0);
+
+  /** dump optimization program to FILE */
   void foutput(FILE *fp);
 };  
 

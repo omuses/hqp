@@ -76,8 +76,8 @@ Hqp_SqpSolver::Hqp_SqpSolver()
   _dphi = 0.0;
   _sQs = 0.0;
   _xQx = 0.0;
-  _eps = 1e-6;
-  _solver->eps(1e-10);
+  _eps = 1e-5;
+  _solver->eps(1e-9);
   _norm_dx = 0.0;
   _norm_x = 0.0;
   _norm_inf = 0.0;

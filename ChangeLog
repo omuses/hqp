@@ -1,3 +1,31 @@
+2009-04-19  <rfranke>
+
+	* Hqp_MipSolver.[hC], Hqp_LPSolve.[hC],
+          Hqp_SqpProgram.[hC], Hqp_Init.C, odc/dic_mex_sfunction_int.tcl:
+	   - new integration of mixed integer solver lp_solve
+
+        * Hqp_Program.[hC], Hqp_Docp.[hC], Hqp.[hC], Hqp_DocpWrapper.h,
+          Hqp_DocpStub.[hC], Hqp_Omuses.[hC], Omu_Variables.[hC],
+          Prg_SFunctionOpt.[hC], hqp_docp/Prg_DID.C:
+          - add configuration of integer variables
+
+        * hqp/hqp_solve.tcl:
+          - add usage of mixed integer solver
+
+        * iftcl/If_Module.h:
+          - add treatment of module name "None" if no module chosen
+
+        * Hqp_SqpProgram.[hC]:
+          - add norm_inf / prg_norm_inf method
+
+        * Hqp_SqpSolver.C, Omu_Integrator.C: reduce default tolerances
+          - change _eps from 1e-6 to 1e-5, qp->eps from 1e-10 to 1e-9
+          - change _rtol/_atol from 1e-8 to 1e-7
+
+	* configure.in, configure, makedefs.in, makedirs.in, hqp/Makefile:
+          - add MIP solver
+	  - change version to 1.9.6, development
+
 2008-11-08  <rfranke>
 
 	* configure.in, configure:

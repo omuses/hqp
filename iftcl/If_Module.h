@@ -55,11 +55,11 @@ class If_Module: public If_Element {
       if (*_module)
 	Tcl_AppendResult(interp, (*_module)->name(), NULL);
       else
-	Tcl_AppendResult(interp, "No module chosen.", NULL);
+	Tcl_AppendResult(interp, "None", NULL);
       return IF_OK;
     }
     else if (objc == 2) {
-      if (!_list) {
+      if (!_list && strcmp(Tcl_GetString(objv[1]), "None") != 0) {
 	Tcl_AppendResult(interp, "No modules available.", NULL);
 	return IF_ERROR;
       }
@@ -72,6 +72,12 @@ class If_Module: public If_Element {
 
       // delete the current module to free interface elements
       delete *_module;
+
+      // check for no module selection
+      if (strcmp(Tcl_GetString(objv[1]), "None") == 0) {
+        *_module = NULL;
+        return IF_OK;
+      }
 
       // create the requested module
       *_module = _list->createObject(Tcl_GetString(objv[1]));

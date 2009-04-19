@@ -717,6 +717,8 @@ DASPK_OBJS
 OMU_INTRKSUITE_C
 RKSUITE_O
 GMALLOC_O
+LPSOLVE_INCDIR
+LPSOLVE_SRCS
 CUTE_SRCS
 ASCEND_INCDIR
 ASCEND_SRCS
@@ -1318,6 +1320,7 @@ Optional Features:
   --enable-adolc     enable ADOL-C for automatic differentiation
   --enable-fortran    include DASPK and RKsuite with Omuses
   --enable-gmalloc    link ODC with GNU malloc
+  --enable-lpsolve     include mixed integer solver lp_solve with HQP
   --enable-cute     include CUTE interface with HQP
   --enable-ascend     include preliminary Ascend4 interface with HQP
 
@@ -1766,8 +1769,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 MAJOR_VERSION=1
 MINOR_VERSION=9
-PATCHLEVEL_BASE=5
-DEVELOPMENT_VERSION=no
+PATCHLEVEL_BASE=6
+DEVELOPMENT_VERSION=yes
 # note: PATCHLEVEL is formed by appending to PATCHLEVEL_BASE the
 # modification date of ChangeLog if DEVELOPMENT_VERSION = yes
 
@@ -5749,6 +5752,35 @@ fi
 
 
 # -----------------------------------------------------------------------
+# 	Configure support for lp_solve
+# -----------------------------------------------------------------------
+
+{ echo "$as_me:$LINENO: checking --enable-lpsolve" >&5
+echo $ECHO_N "checking --enable-lpsolve... $ECHO_C" >&6; }
+# Check whether --enable-lpsolve was given.
+if test "${enable_lpsolve+set}" = set; then
+  enableval=$enable_lpsolve; hqp_lpsolve=$enableval
+else
+  hqp_lpsolve=no
+fi
+
+{ echo "$as_me:$LINENO: result: $hqp_lpsolve" >&5
+echo "${ECHO_T}$hqp_lpsolve" >&6; }
+
+if test "$hqp_lpsolve" != no; then
+  LPSOLVE_INCDIR="-I../lp_solve_5.5"
+  LPSOLVE_SRCS="Hqp_LPSolve.C"
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_LPSOLVE=1"
+  HQP_MACH_OBJS="$HQP_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+else
+  LPSOLVE_INCDIR=""
+  LPSOLVE_SRCS=""
+fi
+
+
+
+# -----------------------------------------------------------------------
 # 	Configure support for CUTE
 # -----------------------------------------------------------------------
 
@@ -6653,6 +6685,8 @@ DASPK_OBJS!$DASPK_OBJS$ac_delim
 OMU_INTRKSUITE_C!$OMU_INTRKSUITE_C$ac_delim
 RKSUITE_O!$RKSUITE_O$ac_delim
 GMALLOC_O!$GMALLOC_O$ac_delim
+LPSOLVE_INCDIR!$LPSOLVE_INCDIR$ac_delim
+LPSOLVE_SRCS!$LPSOLVE_SRCS$ac_delim
 CUTE_SRCS!$CUTE_SRCS$ac_delim
 ASCEND_INCDIR!$ASCEND_INCDIR$ac_delim
 ASCEND_SRCS!$ASCEND_SRCS$ac_delim
@@ -6669,7 +6703,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 21; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 23; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

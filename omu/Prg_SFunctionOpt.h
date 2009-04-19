@@ -518,6 +518,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// indicate optimized inputs
   const IVECP mdl_u_active() const {return _mdl_u.active;}
 
+  /// indicate integers
+  const IVECP mdl_u_integer() const {return _mdl_u.integer;}
+
   /// numbers of fixed control inputs at begin of time horizon (default: 1)
   const IVECP mdl_u0_nfixed() const {return _mdl_u0_nfixed;}
 
@@ -705,6 +708,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set optimized inputs
   void set_mdl_u_active(const IVECP v) {iv_copy_elements(v, _mdl_u.active);}
+
+  /// set integers
+  void set_mdl_u_integer(const IVECP v) {iv_copy_elements(v, _mdl_u.integer);}
 
   /// set numbers of fixed control inputs
   void set_mdl_u0_nfixed(const IVECP v) {iv_copy_elements(v, _mdl_u0_nfixed);}

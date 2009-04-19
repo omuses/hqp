@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2004  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -45,9 +45,9 @@ public:
 
   /** Obligatory: setup variables per control interval. */
   void (*setup_vars)(void *clientdata, int k,
-		     VECP x, VECP xmin, VECP xmax,
-		     VECP u, VECP umin, VECP umax,
-		     VECP c, VECP cmin, VECP cmax);
+		     VECP x, VECP x_min, VECP x_max, IVECP x_int,
+		     VECP u, VECP u_min, VECP u_max, IVECP u_int,
+		     VECP c, VECP c_min, VECP c_max);
 
   /** Optional: setup sparse structure and mark linear constraints
       per control interval. */
@@ -106,7 +106,7 @@ extern "C" {
   /** Service routine for allocating vectors. */
   HQP_API void
   Hqp_Docp_alloc_vars(Hqp_DocpHandle handle,
-		      VECP v, VECP vmin, VECP vmax, int n);
+		      VECP v, VECP v_min, VECP v_max, IVECP v_int, int n);
 
   /** Default implementation for updating gradients.
    *  It can be used e.g. to check against own derivatives. */

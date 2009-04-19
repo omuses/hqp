@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,10 +29,15 @@
 
 #include "Hqp_Program.h"
 
+// flags 
+const int Hqp_Program::IS_LOCAL = 	0x0001;
+const int Hqp_Program::IS_SLACK = 	0x0002;
+
 //-------------------------------------------------------------------------
 Hqp_Program::Hqp_Program()
 {
   x = VNULL;
+  x_flags = x_int = IVNULL;
   Q = A = C = SMNULL;
   c = b = d = VNULL;
 }
@@ -41,6 +46,8 @@ Hqp_Program::Hqp_Program()
 Hqp_Program::~Hqp_Program()
 {
   v_free(x);
+  iv_free(x_flags);
+  iv_free(x_int);
   sp_free(Q);
   v_free(c);
   sp_free(A);
@@ -68,6 +75,8 @@ void Hqp_Program::resize(int n, int me, int m,
     el_m = m > 0? 1 + (int)(log((double)m) / log2): 0;
 
   x = v_resize(x, n);
+  x_flags = iv_resize(x_flags, n);
+  x_int = iv_resize(x_int, n);
 
   Q = sp_get(n, n, el_n);
   c = v_resize(c, n);

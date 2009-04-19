@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -53,9 +53,9 @@ private:
   static void setup_horizon(void *clientdata, int &k0, int &kf);
 
   static void setup_vars(void *clientdata, int k,
-                         VECP x, VECP xmin, VECP xmax,
-                         VECP u, VECP umin, VECP umax,
-                         VECP c, VECP cmin, VECP cmax);
+                         VECP x, VECP x_min, VECP x_max, IVECP x_int,
+                         VECP u, VECP u_min, VECP u_max, IVECP u_int,
+                         VECP c, VECP c_min, VECP c_max);
 
   static void setup_struct(void *clientdata,
                            int k, const VECP x, const VECP u,
@@ -94,9 +94,9 @@ public:
 
   /** Required: setup variables for one stage k */
   virtual void setup_vars(int k,
-			  VECP x, VECP xmin, VECP xmax,
-			  VECP u, VECP umin, VECP umax,
-			  VECP c, VECP cmin, VECP cmax) = 0;
+			  VECP x, VECP x_min, VECP x_max, IVECP x_int,
+			  VECP u, VECP u_min, VECP u_max, IVECP u_int,
+			  VECP c, VECP c_min, VECP c_max) = 0;
 
   /** Optional: setup structure of Jacobians and Hessians for one stage k */
   virtual void setup_struct(int k, const VECP x, const VECP u,
@@ -130,7 +130,7 @@ public:
   //@}
 
   /** allocate variables from implementation of setup_vars */
-  void	alloc_vars(VECP v, VECP vmin, VECP vmax, int n);
+  void	alloc_vars(VECP v, VECP v_min, VECP v_max, IVECP v_int, int n);
 };  
 
 

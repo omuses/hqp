@@ -1,28 +1,13 @@
-/*
- * Hqp_Docp.h --
- *   -- superclass: Hqp_SqpProgram
- *   -- superclass for formulating Discrete time Optimal Control Programs
+/**
+ * @file Hqp_Docp.h 
+ *   base class for formulating Discrete-time Optimal Control Programs
+ *
  * rf, 11/12/94
  *
- * rf, 9/15/96
- *   -- introduce update_stage() for vals, grds, and hela
- *   -- separate update_bounds()
- *
- * rf, 1/31/97
- *   -- variable number of states/controls per stage
- *
- * rf, 11/01/00
- *   -- introduce new virtual method setup_horizon
- *   -- delete method init_vars
- *      (introduce additional arguments to setup_vars instead)
- *   -- provide default implementation for method init_simulation
- *
- * rf, 21/04/02
- *   -- change signature of Hqp_Docp::setup_struct to common conventions
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -49,33 +34,34 @@
 
 class Hqp_DocpAssoc;
 
-//--------------------------------------
+/** Base class for Discrete-time Optimal Control Programs */
 class Hqp_Docp: public Hqp_SqpProgram {
 
  public:
 
-  Hqp_Docp();
-  ~Hqp_Docp();
+  Hqp_Docp(); 			///< constructor
+  ~Hqp_Docp(); 			///< destructor
 
-  void	horizon(int k0, int kf);
+  void	horizon(int k0, int kf);///< setup
 
   // types of states for automatic setup of constraints
-  static const int Periodical;	// equal initial and final states
+  static const int Periodical;	///< equal initial and final states
 
-  void	setup();		// init task for given _k0 and _kf
-  void	init_x();		// set start variables
+  void	setup();		///< init task for given _k0 and _kf
+  void	init_x();		///< set start variables
 
-  int simulate(IF_DEF_ARGS);	// perform a simulation for current _x
+  int simulate(IF_DEF_ARGS);	///< perform a simulation for current _x
 
-  // provide abstract interface for an optimal control task
-  // (default implementation of update_grds() uses finite differences)
-  //------------------------------------------------------------------
+  /**
+   * @name Interface for an optimal control problem.
+   */
+  //@{
   virtual void setup_horizon(int &k0, int &kf);
 
   virtual void setup_vars(int k,
-			  VECP x, VECP xmin, VECP xmax,
-			  VECP u, VECP umin, VECP umax,
-			  VECP c, VECP cmin, VECP cmax) = 0;
+			  VECP x, VECP x_min, VECP x_max, IVECP x_int,
+			  VECP u, VECP u_min, VECP u_max, IVECP u_int,
+			  VECP c, VECP c_min, VECP c_max) = 0;
 
   virtual void setup_struct(int k, const VECP x, const VECP u,
 			    MATP fx, MATP fu, IVECP f_lin,
@@ -89,6 +75,9 @@ class Hqp_Docp: public Hqp_SqpProgram {
   virtual void update_vals(int k, const VECP x, const VECP u,
 			   VECP f, Real &f0, VECP c) = 0;
 
+  /** Update Jacobians.
+   *  The default implementation obtains finite differences.
+   */
   virtual void update_grds(int k, const VECP x, const VECP u,
 			   MATP fx, MATP fu, VECP f0x, VECP f0u,
 			   MATP cx, MATP cu);
@@ -104,9 +93,10 @@ class Hqp_Docp: public Hqp_SqpProgram {
 			    const VECP rf, const VECP rc,
 			    MATP Lxx, MATP Luu, MATP Lxu);
 
-  // setup_vars() calls alloc_vars() to allocate variables and bounds
-  //----------------------------------------------------------------------
-  void	alloc_vars(VECP v, VECP vmin, VECP vmax, int n);
+  //@}
+
+  /// setup_vars() should call alloc_vars() to allocate variables and bounds
+  void	alloc_vars(VECP v, VECP v_min, VECP v_max, IVECP v_int, int n);
 
   /**
    * @name Member access methods.
@@ -162,6 +152,7 @@ class Hqp_Docp: public Hqp_SqpProgram {
   IVECP _nxs;			// number of states per k
   IVECP _nus;			// number of controls per k
   VECP	_xus_init;		// initial values for x and u per k
+  IVECP _xus_integer; 		// integer settings for x and u per k
   int	_granul;		// amount for growing _x_start during setup
   
   // objective

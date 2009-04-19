@@ -1,13 +1,13 @@
-/*
- * Hqp_DocpWrapper.h --
- * Implement an Hqp_Docp and connect it to Hqp_DocpSpec.
+/**
+ * @file Hqp_DocpWrapper.h
+ *   Implement an Hqp_Docp and connect it to Hqp_DocpSpec.
  *
  * rf, 10/31/00
  *
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -71,14 +71,14 @@ public:
 
   //----------------------------------------------------------
   void setup_vars(int k,
-		  VECP x, VECP xmin, VECP xmax,
-		  VECP u, VECP umin, VECP umax,
-		  VECP c, VECP cmin, VECP cmax)
+		  VECP x, VECP x_min, VECP x_max, IVECP x_int,
+		  VECP u, VECP u_min, VECP u_max, IVECP u_int,
+		  VECP c, VECP c_min, VECP c_max)
   {
     (*_spec.setup_vars)(_clientdata, k,
-			x, xmin, xmax,
-			u, umin, umax,
-			c, cmin, cmax);
+			x, x_min, x_max, x_int,
+			u, u_min, u_max, u_int,
+			c, c_min, c_max);
   }
 
   //----------------------------------------------------------

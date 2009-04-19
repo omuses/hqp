@@ -175,6 +175,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_active)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_integer)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u0_nfixed)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_decimation)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
@@ -541,6 +542,8 @@ void Prg_SFunctionOpt::setup(int k,
           x.max[i] = _mdl_uf.max[idx] / _mdl_u_nominal[idx];
 	else if (_mdl_u.max[idx] < Inf)
 	  x.max[i] = _mdl_u.max[idx] / _mdl_u_nominal[idx];
+        // integer variables
+        x.integer[i] = _mdl_u.integer[idx];
       }
       if (!_multistage && k < _K) {
 	// treat control bounds via general constraints

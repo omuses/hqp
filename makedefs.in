@@ -94,6 +94,8 @@ RKSUITE_O = @RKSUITE_O@
 # Interfaces to other packages
 #
 
+LPSOLVE_SRCS = @LPSOLVE_SRCS@
+
 CUTE_SRCS = @CUTE_SRCS@
 
 ASCEND_SRCS = @ASCEND_SRCS@

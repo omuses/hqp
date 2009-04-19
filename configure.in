@@ -5,8 +5,8 @@ AC_INIT(hqp/Hqp.h)
 
 MAJOR_VERSION=1
 MINOR_VERSION=9
-PATCHLEVEL_BASE=5
-DEVELOPMENT_VERSION=no
+PATCHLEVEL_BASE=6
+DEVELOPMENT_VERSION=yes
 # note: PATCHLEVEL is formed by appending to PATCHLEVEL_BASE the
 # modification date of ChangeLog if DEVELOPMENT_VERSION = yes
 
@@ -756,6 +756,29 @@ if test "$GMALLOC_O" != ""; then
 fi
 
 AC_SUBST(GMALLOC_O)
+
+# -----------------------------------------------------------------------
+# 	Configure support for lp_solve
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--enable-lpsolve])
+AC_ARG_ENABLE(lpsolve,
+    [  --enable-lpsolve     include mixed integer solver lp_solve with HQP],
+    [hqp_lpsolve=$enableval], [hqp_lpsolve=no])
+AC_MSG_RESULT($hqp_lpsolve)
+
+if test "$hqp_lpsolve" != no; then
+  LPSOLVE_INCDIR="-I../lp_solve_5.5"
+  LPSOLVE_SRCS="Hqp_LPSolve.C"
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_LPSOLVE=1"
+  HQP_MACH_OBJS="$HQP_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+else
+  LPSOLVE_INCDIR=""
+  LPSOLVE_SRCS=""
+fi
+AC_SUBST(LPSOLVE_INCDIR)
+AC_SUBST(LPSOLVE_SRCS)
 
 # -----------------------------------------------------------------------
 # 	Configure support for CUTE

@@ -50,8 +50,8 @@ Omu_Integrator::Omu_Integrator()
   _m = 0;
   _stepsize = 0.0;
   _min_stepsize = 0.0;
-  _rtol = 1e-8;
-  _atol = 1e-8;
+  _rtol = 1e-7;
+  _atol = 1e-7;
   _res_evals = 0;
   _sen_evals = 0;
   _jac_evals = 0;

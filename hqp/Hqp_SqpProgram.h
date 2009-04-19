@@ -1,13 +1,12 @@
 /**
  *  @file Hqp_SqpProgram.h
- *     Interface for a nonlinear program that shall be treated with 
- *     a Hqp_SqpSolver.
+ *     Interface for a nonlinear program.
  *
  * rf, 6/6/94
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -38,8 +37,7 @@
 IF_BASE_DECLARE(Hqp_SqpProgram);
 
 /**
- *  Base class for formulating nonlinear programs as required by
- *  sequential quadratic programming.
+ *  Base class for formulating nonlinear programs.
  */
 class Hqp_SqpProgram {
 
@@ -103,6 +101,10 @@ class Hqp_SqpProgram {
   /** current value of objective function */
   virtual Real f() const {return _f;}
   virtual void set_f(Real f) {_f = f;} ///< set objective function value
+
+  /** current violation of constraints */
+  virtual Real norm_inf() const;
+
   //@}
 
   virtual char *name()=0; 	///< program name

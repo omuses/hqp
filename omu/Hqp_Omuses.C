@@ -161,9 +161,9 @@ void Hqp_Omuses::setup_horizon(int &k0, int &kf)
 
 //--------------------------------------------------------------------------
 void Hqp_Omuses::setup_vars(int k,
-			    VECP x, VECP xmin, VECP xmax,
-			    VECP u, VECP umin, VECP umax,
-			    VECP c, VECP cmin, VECP cmax)
+			    VECP x, VECP x_min, VECP x_max, IVECP x_int,
+			    VECP u, VECP u_min, VECP u_max, IVECP u_int,
+			    VECP c, VECP c_min, VECP c_max)
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_Omuses::setup_vars");
@@ -190,22 +190,24 @@ void Hqp_Omuses::setup_vars(int k,
   ck.c_setup = false;
 
   nx = xk->dim - xk.nv;
-  alloc_vars(x, xmin, xmax, nx);
+  alloc_vars(x, x_min, x_max, x_int, nx);
   for (i = 0; i < nx; i++) {
     x[i] = xk.initial[i];
-    xmin[i] = xk.min[i];
-    xmax[i] = xk.max[i];
+    x_min[i] = xk.min[i];
+    x_max[i] = xk.max[i];
+    x_int[i] = xk.integer[i];
   }
 
-  alloc_vars(u, umin, umax, uk->dim);
+  alloc_vars(u, u_min, u_max, u_int, uk->dim);
   v_copy(uk.initial, u);
-  v_copy(uk.min, umin);
-  v_copy(uk.max, umax);
+  v_copy(uk.min, u_min);
+  v_copy(uk.max, u_max);
+  iv_copy(uk.integer, u_int);
 
-  alloc_vars(c, cmin, cmax, ck->dim);
+  alloc_vars(c, c_min, c_max, IVNULL, ck->dim);
   v_copy(ck.initial, c);
-  v_copy(ck.min, cmin);
-  v_copy(ck.max, cmax);
+  v_copy(ck.min, c_min);
+  v_copy(ck.max, c_max);
 }
 
 //--------------------------------------------------------------------------
