@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2006  Ruediger Franke
+    Copyright (C) 1997--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -357,6 +357,16 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   IVECP 	_mdl_u_decimation;
 
   /**
+   * Periodic controls, i.e.~first and last value are equal
+   */
+  IVECP 	_mdl_u_periodic;
+
+  /**
+   * Periodic states, i.e.~first and last value are equal
+   */
+  IVECP 	_mdl_x_periodic;
+
+  /**
    * @name Implementation of predefined methods.
    * @see Omu_Program
    */
@@ -530,6 +540,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// nominal input values (for scaling)
   const VECP mdl_u_nominal() const {return _mdl_u_nominal;}
 
+  /// first and last value are equal (default: false)
+  const IVECP mdl_u_periodic() const {return _mdl_u_periodic;}
+
   /// lower bounds for optimized model inputs
   const VECP mdl_u_min() const {return _mdl_u.min;}
 
@@ -562,6 +575,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// nominal state values (for scaling)
   const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
+
+  /// first and last value are equal (default: false)
+  const IVECP mdl_x_periodic() const {return _mdl_x_periodic;}
 
   /// lower bounds on states at stage boundaries (default: -Inf)
   const VECP mdl_x_min() const {return _mdl_x.min;}
@@ -722,6 +738,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set nominal inputs
   void set_mdl_u_nominal(const VECP v) {v_copy_elements(v, _mdl_u_nominal);}
 
+  /// set periodic congtrols
+  void set_mdl_u_periodic(const IVECP v) {iv_copy_elements(v, _mdl_u_periodic);}
+
   /// set lower bounds for model inputs
   void set_mdl_u_min(const VECP v) {v_copy_elements(v, _mdl_u.min);}
 
@@ -757,6 +776,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set nominal states
   void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
 
+  /// set periodic states
+  void set_mdl_x_periodic(const IVECP v) {iv_copy_elements(v, _mdl_x_periodic);}
   /// set lower bounds on states
   void set_mdl_x_min(const VECP v)
   {v_copy_elements(v, _mdl_x.min);}

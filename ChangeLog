@@ -1,3 +1,8 @@
+2009-04-20  <rfranke>
+
+	* Prg_SFunctionOpt.[hC]:
+          - introduce mdl_x_periodic and mdl_u_periodic
+
 2009-04-19  <rfranke>
 
 	* Hqp_MipSolver.[hC], Hqp_LPSolve.[hC],

@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2007  Ruediger Franke
+    Copyright (C) 1997--2009  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -123,6 +123,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_x_nominal = v_get(_mdl_nx);
   _mdl_y_nominal = v_get(_mdl_ny);
+  _mdl_u_periodic = iv_get(_mdl_nu);
+  _mdl_x_periodic = iv_get(_mdl_nx);
   _t_nominal = 1.0;
   _mdl_y_bias = v_get(_mdl_ny);
   v_set(_mdl_x0, 0.0);
@@ -135,6 +137,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
+  iv_set(_mdl_u_periodic, 0);
+  iv_set(_mdl_x_periodic, 0);
   v_set(_mdl_y_bias, 0.0);
 
   // numbers of optimization variables
@@ -179,6 +183,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u0_nfixed)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_decimation)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_periodic)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_ref)));
@@ -194,6 +199,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 					   mdl_der_u_weight2)));
 
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_periodic)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_max)));
 
@@ -238,6 +244,8 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   m_free(_mdl_xs);
   m_free(_mdl_us);
   v_free(_mdl_y_bias);
+  iv_free(_mdl_x_periodic);
+  iv_free(_mdl_u_periodic);
   v_free(_mdl_y_nominal);
   v_free(_mdl_x_nominal);
   v_free(_mdl_u_nominal);
@@ -280,6 +288,8 @@ void Prg_SFunctionOpt::setup_model()
   v_resize(_mdl_u_nominal, _mdl_nu);
   v_resize(_mdl_x_nominal, _mdl_nx);
   v_resize(_mdl_y_nominal, _mdl_ny);
+  iv_resize(_mdl_u_periodic, _mdl_nu);
+  iv_resize(_mdl_x_periodic, _mdl_nx);
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_set(_mdl_x0_active, 0);
   v_set(_mdl_der_x0_min, -Inf);
@@ -290,6 +300,8 @@ void Prg_SFunctionOpt::setup_model()
   v_set(_mdl_u_nominal, 1.0);
   v_set(_mdl_x_nominal, 1.0);
   v_set(_mdl_y_nominal, 1.0);
+  iv_set(_mdl_u_periodic, 0);
+  iv_set(_mdl_x_periodic, 0);
   v_set(_mdl_y_bias, 0.0);
 }
 
@@ -475,7 +487,8 @@ void Prg_SFunctionOpt::setup(int k,
       if (_mdl_u.active[idx]) {
 	x.initial[i] = _mdl_us[0][idx] / _mdl_u_nominal[idx];
 	if (_mdl_u0_nfixed[idx] > 1 - _mdl_u_order[idx])
-	  x.min[i] = x.max[i] = x.initial[i];
+          // fixed initial value
+	  x.min[i] = x.max[i] = x.initial[i]; 
 	else if (_mdl_u0_nfixed[idx] > 0 && _mdl_u_order[idx] == 0) {
 	  // apply rate of change bounds to initial step for zero order hold
 	  if (_mdl_der_u.min[idx] > -Inf)
@@ -490,7 +503,10 @@ void Prg_SFunctionOpt::setup(int k,
     }
     for (i = _nu; i < _nx; i++) {
       x.initial[i] = _mdl_xs[ks(0)][i-_nu] / _mdl_x_nominal[i-_nu];
-      if (_mdl_x0_active[i-_nu]) {
+      if (_mdl_x_periodic[i-_nu])
+        // indicate periodic state to Hqp_Docp
+        x.min[i] = x.max[i] = Inf;
+      else if (_mdl_x0_active[i-_nu]) {
 	if (!_multistage)
 	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
 		  "mdl_x0_active=1 requires prg_multistage=true");
@@ -528,15 +544,20 @@ void Prg_SFunctionOpt::setup(int k,
       if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1
           || !_multistage && k == 0 && _mdl_u0_nfixed[idx] == 0) {
 	// control bounds
-        // at k==0, use the more restrictive bound of u0_min/max and u_min/max
-        if (k == 0 && _mdl_u0.min[idx] > _mdl_u.min[idx])
+        if (k==0 && _mdl_u_periodic[idx])
+          // indicate periodic state to Hqp_Docp
+          x.min[i] = Inf;
+        else if (k == 0 && _mdl_u0.min[idx] > _mdl_u.min[idx])
+          // at k==0, use more restrictive bound of u0_min/max and u_min/max
           x.min[i] = _mdl_u0.min[idx] / _mdl_u_nominal[idx];
-        // at k==_K, use the more restrictive bound of uf_min/max and u_min/max
         else if (k == _K && _mdl_uf.min[idx] > _mdl_u.min[idx])
+          // at k==_K, use more restrictive bound of uf_min/max and u_min/max
           x.min[i] = _mdl_uf.min[idx] / _mdl_u_nominal[idx];
 	else if (_mdl_u.min[idx] > -Inf)
 	  x.min[i] = _mdl_u.min[idx] / _mdl_u_nominal[idx];
-        if (k == 0 && _mdl_u0.max[idx] < _mdl_u.max[idx])
+        if (k==0 && _mdl_u_periodic[idx])
+          x.max[i] = Inf;
+        else if (k == 0 && _mdl_u0.max[idx] < _mdl_u.max[idx])
           x.max[i] = _mdl_u0.max[idx] / _mdl_u_nominal[idx];
         else if (k == _K && _mdl_uf.max[idx] < _mdl_u.max[idx])
           x.max[i] = _mdl_uf.max[idx] / _mdl_u_nominal[idx];
