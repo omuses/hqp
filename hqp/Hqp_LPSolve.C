@@ -71,7 +71,7 @@ Hqp_LPSolve::Hqp_LPSolve()
   _logging = LPSOLVE::get_verbose(_lp);
   _dump_format = strdup("lp");
 
-  _ifList.append(new If_Int(GET_SET_CB(int, "mip_", timeout)));
+  _ifList.append(new If_Real(GET_SET_CB(double, "mip_", timeout)));
   _ifList.append(new If_Real(GET_SET_CB(double, "mip_", gap)));
   _ifList.append(new If_Int(GET_SET_CB(int, "mip_", logging)));
   _ifList.append(new If_String(GET_SET_CB(const char *, "mip_", dump_format)));
@@ -183,7 +183,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
   if (ret == 0) {
     for (i = 0; i < (int)qp->b->dim; i++) {
       sprow = qp->A->row + i;
-      val = 0.0;
+      val = -qp->b[i];
       jdx = 0;
       for (j = 0; j < (int)sprow->len; j++) {
         elt = sprow->elt + j;
@@ -194,7 +194,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
         }
       }
       // add the row to lpsolve
-      if(!LPSOLVE::add_constraintex(_lp, jdx, row, colno, EQ, val - qp->b[i])) {
+      if(!LPSOLVE::add_constraintex(_lp, jdx, row, colno, EQ, val)) {
         ret = 3;
         if (retString)
           *retString = "Failed to add an equality constraint row";
@@ -208,7 +208,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
   if (ret == 0) {
     for (i = 0; i < (int)qp->d->dim; i++) {
       sprow = qp->C->row + i;
-      val = 0.0;
+      val = -qp->d[i];
       jdx = 0;
       for (j = 0; j < (int)sprow->len; j++) {
         elt = sprow->elt + j;
@@ -223,18 +223,16 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
         // just a bound
         if (row[0] > 0.0) {
           LPSOLVE::set_lowbo(_lp, colno[0],
-                             max(val - qp->d[i],
-                                 LPSOLVE::get_lowbo(_lp, colno[0])));
+                             max(val/row[0], LPSOLVE::get_lowbo(_lp, colno[0])));
         }
         else {
           LPSOLVE::set_upbo(_lp, colno[0],
-                            min(qp->d[i] - val,
-                                LPSOLVE::get_upbo(_lp, colno[0])));
+                            min(val/row[0], LPSOLVE::get_upbo(_lp, colno[0])));
         }
       }
       else {
         // general constraint
-        if(!LPSOLVE::add_constraintex(_lp, jdx, row, colno, GE, val - qp->d[i])) {
+        if(!LPSOLVE::add_constraintex(_lp, jdx, row, colno, GE, val)) {
           ret = 3;
           if (retString)
             *retString = "Failed to add an inequality constraint row";

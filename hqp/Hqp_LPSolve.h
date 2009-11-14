@@ -68,9 +68,9 @@ class Hqp_LPSolve : public Hqp_MipSolver {
   void set_gap(double value) {_gap = value;}
 
   /// timeout for solver in seconds
-  int timeout() const {return _timeout;}
+  double timeout() const {return (double)_timeout;}
   /// set timeout
-  void set_timeout(int value) {_timeout = value;}
+  void set_timeout(double value) {_timeout = value > 0? max((int)value, 1): 0;}
 
   /// verbose level for log messages
   /// (0: neutral, 1: critical, 2: severe, 3: important, 4: normal, 5: detailed, 6: full)
