@@ -1,3 +1,9 @@
+2009-11-14  <rfranke>
+
+	* Prg_SFunctionOpt.C:
+          - bug fix for soft constraints avoiding stall during solution
+          - bug fix for rate-of-change constraints and fixed initial values
+
 2009-04-20  <rfranke>
 
 	* Prg_SFunctionOpt.[hC]:

@@ -451,7 +451,12 @@ void Prg_SFunctionOpt::setup(int k,
       spsk = _sps;
       upsk = 1;
       x.alloc(_nx);
-      u.alloc(_nu + spsk*_ns);
+      if (k == _K-1)
+        // Note: allocate additional us for slacks at final time
+        //       as the final states must have state equations
+        u.alloc(_nu + spsk*_ns + _nsf);
+      else
+        u.alloc(_nu + spsk*_ns);
       if (k == 0)
 	c.alloc(spsk*(_nc+_nsc) + _nc0);
       else
@@ -478,71 +483,27 @@ void Prg_SFunctionOpt::setup(int k,
       c.alloc(spsk*(_nc+_nsc) + _nc0 + _ncf + _nscf);
   }
 
-  // setup initial states
-  if (k == 0) {
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
-      if (_mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
-	m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
-		"mdl_u_order must be 0 or 1");
-      if (_mdl_u.active[idx]) {
-	x.initial[i] = _mdl_us[0][idx] / _mdl_u_nominal[idx];
-	if (_mdl_u0_nfixed[idx] > 1 - _mdl_u_order[idx])
-          // fixed initial value
-	  x.min[i] = x.max[i] = x.initial[i]; 
-	else if (_mdl_u0_nfixed[idx] > 0 && _mdl_u_order[idx] == 0) {
-	  // apply rate of change bounds to initial step for zero order hold
-	  if (_mdl_der_u.min[idx] > -Inf)
-	    x.min[i] = x.initial[i]
-	      + _mdl_der_u.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
-	  if (_mdl_der_u.max[idx] < Inf)
-	    x.max[i] = x.initial[i]
-	      + _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
-	}
-        i++;
-      }
-    }
-    for (i = _nu; i < _nx; i++) {
-      x.initial[i] = _mdl_xs[ks(0)][i-_nu] / _mdl_x_nominal[i-_nu];
-      if (_mdl_x_periodic[i-_nu])
-        // indicate periodic state to Hqp_Docp
-        x.min[i] = x.max[i] = Inf;
-      else if (_mdl_x0_active[i-_nu]) {
-	if (!_multistage)
-	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
-		  "mdl_x0_active=1 requires prg_multistage=true");
-        // use the more restrictive bound of x0_min/max and x_min/max
-        if (_mdl_x0.min[i-_nu] > _mdl_x.min[i-_nu])
-          x.min[i] = _mdl_x0.min[i-_nu] / _mdl_x_nominal[i-_nu];
-        else
-          x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
-        if (_mdl_x0.max[i-_nu] < _mdl_x.max[i-_nu])
-          x.max[i] = _mdl_x0.max[i-_nu] / _mdl_x_nominal[i-_nu];
-        else
-          x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
-      }
-      else
-	x.min[i] = x.max[i] = x.initial[i];
-    }
-  }
-  // setup states of subsequent stages
-  else {
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++)
-      if (_mdl_u.active[idx]) {
-	x.initial[i] = _mdl_us[ks(k)][idx] / _mdl_u_nominal[idx];
-	i++;
-      }
-    for (i = _nu; i < _nx; i++) {
-      x.initial[i] = _mdl_xs[ks(k)][i-_nu] / _mdl_x_nominal[i-_nu];
-      x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
-      x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
-    }
-  }
-
-  // setup control inputs
+  // setup states
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    if (k == 0 && _mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
+      m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+              "mdl_u_order must be 0 or 1");
     if (_mdl_u.active[idx]) {
-      if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1
-          || !_multistage && k == 0 && _mdl_u0_nfixed[idx] == 0) {
+      x.initial[i] = _mdl_us[ks(k)][idx] / _mdl_u_nominal[idx];
+      if (k == 0 && _mdl_u0_nfixed[idx] > 1 - _mdl_u_order[idx])
+        // fixed initial value
+        x.min[i] = x.max[i] = x.initial[i]; 
+      else if (k == 0 && _mdl_u0_nfixed[idx] > 0 && _mdl_u_order[idx] == 0) {
+        // apply rate of change bounds to initial step for zero order hold
+        if (_mdl_der_u.min[idx] > -Inf)
+          x.min[i] = x.initial[i]
+            + _mdl_der_u.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
+        if (_mdl_der_u.max[idx] < Inf)
+          x.max[i] = x.initial[i]
+            + _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
+      }
+      else if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1
+               || !_multistage && k == 0 && _mdl_u0_nfixed[idx] == 0) {
 	// control bounds
         if (k==0 && _mdl_u_periodic[idx])
           // indicate periodic state to Hqp_Docp
@@ -566,6 +527,41 @@ void Prg_SFunctionOpt::setup(int k,
         // integer variables
         x.integer[i] = _mdl_u.integer[idx];
       }
+      i++;
+    }
+  }
+  for (i = _nu; i < _nx; i++) {
+    x.initial[i] = _mdl_xs[ks(k)][i-_nu] / _mdl_x_nominal[i-_nu];
+    if (k == 0) {
+      if (_mdl_x_periodic[i-_nu])
+        // indicate periodic state to Hqp_Docp
+        x.min[i] = x.max[i] = Inf;
+      else if (_mdl_x0_active[i-_nu]) {
+	if (!_multistage)
+	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+		  "mdl_x0_active=1 requires prg_multistage=true");
+        // use the more restrictive bound of x0_min/max and x_min/max
+        if (_mdl_x0.min[i-_nu] > _mdl_x.min[i-_nu])
+          x.min[i] = _mdl_x0.min[i-_nu] / _mdl_x_nominal[i-_nu];
+        else
+          x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
+        if (_mdl_x0.max[i-_nu] < _mdl_x.max[i-_nu])
+          x.max[i] = _mdl_x0.max[i-_nu] / _mdl_x_nominal[i-_nu];
+        else
+          x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
+      }
+      else
+	x.min[i] = x.max[i] = x.initial[i];
+    }
+    else {
+      x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
+      x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
+    }
+  }
+
+  // setup control inputs
+  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    if (_mdl_u.active[idx]) {
       if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
@@ -874,6 +870,8 @@ void Prg_SFunctionOpt::update(int kk,
     if (kk == _KK-1) {
       for (; i < _nx + _ns; i++)
 	f[i] = u[upsk*_nu + (i-_nx+1)*spsk-1];
+      for (; i < _nx + _ns + _nsf; i++)
+	f[i] = u[upsk*_nu + spsk*_ns + i - _nx - _ns];
     }
   }
 
@@ -1404,6 +1402,8 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	// note: f.Jxf has only _nx columns, but _nx+_ns rows
 	// that is why don't set f.Jxf[i][i] = 0.0;
 	f.Ju[i][upsk*_nu + (i-_nx+1)*spsk-1] = 1.0;
+      for (; i < _nx + _ns; i++)
+	f.Ju[i][upsk*_nu + spsk*_ns + i - _nx - _ns] = 1.0;
     }
   }
 
@@ -1657,6 +1657,12 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
       xt[_nu + i] = x[_nu + i];
     else
       xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
+  }
+
+  // take over slack variables from optimizer at final time
+  if (kk == _KK) {
+    for (i = 0; i < _ns+_nsf; i++)
+      xt[_nx + i] = x[_nx + i];
   }
 }
 
