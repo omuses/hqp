@@ -114,3 +114,11 @@ extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
 
   return TCL_OK;
 }
+
+//--------------------------------------------------------------------------
+extern "C" int OMU_API Omu_Unload(Tcl_Interp *interp, int flags)
+{
+  // do package specific unloads
+
+  return TCL_OK;
+}

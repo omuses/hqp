@@ -133,8 +133,8 @@ if test "$CC" = "cl -nologo"; then
   fi
   CXX=$CC
   # note: -TP to enable C++
-  #       -GX to enable exception handling for Std C++ lib, e.g. iostream
-  CXXFLAGS="-TP -GX $CXXFLAGS"
+  #       -EHsc to enable exception handling for Std C++ lib, e.g. iostream
+  CXXFLAGS="-TP -EHsc $CXXFLAGS"
 fi
 
 AC_SUBST(WFLAG)

@@ -1,3 +1,11 @@
+2010-05-30  <e_arnold>
+
+	* configure, configure.in, hqp/Meschach.h, omu/Omu_Program.h:
+	  - minor changes for gcc 4.4.3, cl 9.0
+	
+	* hxi/Hxi_SimStruct.C:
+	  - modify for gcc 4.3 (thanks to Benjamin Kern)
+	
 2009-11-14  <rfranke>
 
 	* Prg_SFunctionOpt.C:

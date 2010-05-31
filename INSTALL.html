@@ -13,7 +13,7 @@ $ ./configure
 $ make
 </code><br>
 Basically two libraries are built: hqp and omu.
-Furthermore an example is created in ./hqp_docp, tesing HQP alone,
+Furthermore an example is created in ./hqp_docp, testing HQP alone,
 and a demo collection in ./odc, testing HQP together with the front-end Omuses.
 
 <p>
@@ -228,11 +228,11 @@ Gernerally for using an other compiler, say cl, invoke
 <li>
    the automatically generated file makedirs
    may need to be customized manually with drive names for absolute paths
-   (e.g. insead of "/Programs/Tcl/lib" write "c:/Programs/Tcl/lib"
+   (e.g. instead of "/Programs/Tcl/lib" write "c:/Programs/Tcl/lib"
 </li>
 <li>
    cl does work for ADOL-C used in the front-end Omuses.
-   That is why --disable-adolc must be specfied for configure.
+   That is why --disable-adolc must be specified for configure.
 </li>
 <li>
    dynamic link libraries are not yet installed automatically
@@ -345,6 +345,11 @@ supported by Matlab(R)) work.
 <li>
   mkdirhier and gunzip are not included in the standard MinGW/MSYS
   installation
+</li>
+<li>
+  eventually, libtclstub8x.a has to be built from source for generating
+  DDLs correctly with 
+  <A HREF="http://www.activestate.com/activetcl">ActiveTcl</A>
 </li>
 </ul>
 

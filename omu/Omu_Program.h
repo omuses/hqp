@@ -29,10 +29,25 @@
 #define Omu_Program_H
 
 #ifdef OMU_WITH_ADOLC
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 #include <adolc/adouble.h>
 #else
   typedef double adouble;
   typedef double* adoublev;
+#endif
+#if !defined(max)
+#define	max(a,b)	((a) > (b) ? (a) : (b))
+#endif
+#if !defined(min)
+#define	min(a,b)	((a) < (b) ? (a) : (b))
+#endif
+#if !defined(max)
+#define	max(a,b)	((a) > (b) ? (a) : (b))
 #endif
 #include <Meschach.h>
 #include "Omu_Variables.h"

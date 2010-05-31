@@ -28,7 +28,22 @@
 #if !defined(Meschach_H)
 #define Meschach_H
 
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 #include <limits> // for NaN
+#if !defined(max)
+#define	max(a,b)	((a) > (b) ? (a) : (b))
+#endif
+#if !defined(min)
+#define	min(a,b)	((a) < (b) ? (a) : (b))
+#endif
+#if !defined(max)
+#define	max(a,b)	((a) > (b) ? (a) : (b))
+#endif
 #include <string.h> // for sscanf
 
 #include <assert.h>

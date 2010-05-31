@@ -28,7 +28,14 @@
  */
 
 #include <assert.h>
+#include <malloc.h>
 
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 #include <vector>
 #include <string>
 using namespace std;
