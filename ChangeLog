@@ -1,3 +1,8 @@
+2010-07-15  <rfranke>
+
+	* Prg_SFunctionOpt.C:
+          - bug fix for initialization of active outputs after warm start
+
 2010-05-30  <e_arnold>
 
 	* configure, configure.in, hqp/Meschach.h, omu/Omu_Program.h:
