@@ -402,6 +402,8 @@ void Prg_SFunctionOpt::setup(int k,
 	_mdl_y.active[idx] = 1;
 	_nc++;
       }
+      else
+        _mdl_y.active[idx] = 0;
       if ((_mdl_y_soft.min[idx] > -Inf || _mdl_y_soft.max[idx] < Inf) 
 	  && (_mdl_y_soft.weight1[idx] != 0.0 || _mdl_y_soft.weight2[idx] != 0.0)) {
 	_mdl_y_soft.active[idx] = 1;
@@ -413,6 +415,8 @@ void Prg_SFunctionOpt::setup(int k,
           _nsc++;
         }
       }
+      else
+        _mdl_y_soft.active[idx] = 0;
       if (_mdl_y0.min[idx] > -Inf || _mdl_y0.max[idx] < Inf
 	  || _mdl_y0.weight1[idx] != 0.0 || _mdl_y0.weight2[idx] != 0.0) {
 	if (!_multistage)
@@ -421,6 +425,8 @@ void Prg_SFunctionOpt::setup(int k,
 	_mdl_y0.active[idx] = 1;
 	_nc0++;
       }
+      else
+        _mdl_y0.active[idx] = 0;
       // Note: constraints at final time require _K > 0
       //       as not both: initial and final constraints are treated for _K == 0
       if (_K > 0 && (_mdl_yf.min[idx] > -Inf || _mdl_yf.max[idx] < Inf
@@ -428,6 +434,8 @@ void Prg_SFunctionOpt::setup(int k,
 	_mdl_yf.active[idx] = 1;
 	_ncf++;
       }
+      else
+        _mdl_yf.active[idx] = 0;
       if (_K > 0 && (_mdl_yf_soft.min[idx] > -Inf || _mdl_yf_soft.max[idx] < Inf) 
 	  && (_mdl_yf_soft.weight1[idx] != 0.0 || _mdl_yf_soft.weight2[idx] != 0.0)) {
 	_mdl_yf_soft.active[idx] = 1;
@@ -439,6 +447,8 @@ void Prg_SFunctionOpt::setup(int k,
           _nscf++;
         }
       }
+      else
+        _mdl_yf_soft.active[idx] = 0;
     }
     // initialize nominal time
     _t_nominal = (ts(_KK) - ts(0)) / _KK;
