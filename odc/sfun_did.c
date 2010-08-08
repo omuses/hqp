@@ -115,6 +115,9 @@ static void mdlInitializeSizes(SimStruct *S)
     ssSetNumModes(S, 0);
     ssSetNumNonsampledZCs(S, 0);
 
+    /* Setup Jacobian */
+    ssSetJacobianNzMax(S, 7);
+
     /* Take care when specifying exception free code - see sfuntmpl_doc.c */
     ssSetOptions(S, SS_OPTION_EXCEPTION_FREE_CODE);
 }
@@ -190,6 +193,47 @@ static void mdlUpdate(SimStruct *S, int_T tid)
     x[1] = tempX[1];
 }
 
+
+#define MDL_JACOBIAN
+/* Function: mdlJacobian =================================================
+ * Abstract:
+ *    J = d(dxc,xd,y)/d(xc,xd,u)
+ *	=	x1	x2	u
+ *	x1	1	0	dt
+ *	x2	dt	1	0.5*dt*dt
+ *	y1	1	0	0
+ *	y2	0	1	0
+ */
+static void mdlJacobian(SimStruct *S)
+{
+  real_T *pr; /* Jacobian elements */
+  int_T *ir;  /* row indices */
+  int_T *jc;  /* start index for each column */
+  int_T j;    /* column number */
+  int_T idx;  /* index into data vectors pr and ir */
+  real_T dt = ssGetSampleTime(S, 0);
+
+  pr = ssGetJacobianPr(S);
+  ir = ssGetJacobianIr(S);
+  jc = ssGetJacobianJc(S);
+  j = 0;
+  idx = 0;
+  /* first column */
+  jc[j++] = idx;
+  ir[idx] = 0; pr[idx] = 1.0; idx++;
+  ir[idx] = 1; pr[idx] = dt; idx++;
+  ir[idx] = 2; pr[idx] = 1.0; idx++;
+  /* second column */
+  jc[j++] = idx;
+  ir[idx] = 1; pr[idx] = 1.0; idx++;
+  ir[idx] = 3; pr[idx] = 1.0; idx++;
+  /* third column */
+  jc[j++] = idx;
+  ir[idx] = 0; pr[idx] = dt; idx++;
+  ir[idx] = 1; pr[idx] = 0.5*dt*dt; idx++;
+  /* end marker */
+  jc[j] = idx;
+}
 
 
 /* Function: mdlTerminate =====================================================
