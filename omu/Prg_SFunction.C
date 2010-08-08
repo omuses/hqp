@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -43,23 +43,24 @@
 // Call an S-function method and check for errors.
 // Throw E_FORMAT as errors occuring during initialization done here
 // are generally due to wrong configuration data (e.g. bad mdl_args).
-#define SMETHOD_CALL(method, S) \
+#define SMETHOD_CALL(method, S) { \
   ssSetErrorStatus(S, NULL); \
   method(S); \
   if (ssGetErrorStatus(S)) { \
     fprintf(stderr, "Error from " #method ": %s\n", \
 	    ssGetErrorStatus(S)); \
     m_error(E_FORMAT, ssGetErrorStatus(S)); \
-  }
-
-#define SMETHOD_CALL2(method, S, tid) \
+  } \
+}
+#define SMETHOD_CALL2(method, S, tid) { \
   ssSetErrorStatus(S, NULL); \
   method(S, tid); \
   if (ssGetErrorStatus(S)) { \
     fprintf(stderr, "Error from " #method ": %s\n", \
 	    ssGetErrorStatus(S)); \
     m_error(E_FORMAT, ssGetErrorStatus(S)); \
-  }
+  } \
+}
 
 //--------------------------------------------------------------------------
 Prg_SFunction::Prg_SFunction()
@@ -77,6 +78,7 @@ Prg_SFunction::Prg_SFunction()
   _SS = NULL;
 
   _mdl_np = 0;
+  _mdl_nd = 0;
   _mdl_nx = 0;
   _mdl_nu = 0;
   _mdl_ny = 0;
@@ -197,6 +199,32 @@ void Prg_SFunction::write_mx_args(VECP p)
 }
 
 //--------------------------------------------------------------------------
+bool Prg_SFunction::setContinuousTask(bool val)
+{
+  bool hasContinuousSampleTime = false;
+  for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
+    if (ssGetSampleTime(_SS, i) == CONTINUOUS_SAMPLE_TIME) {
+      ssGetSampleHitPtr(_SS)[ssGetSampleTimeTaskID(_SS, i)] = val;
+      hasContinuousSampleTime = val;
+    }
+  }
+  return hasContinuousSampleTime;
+}
+
+//--------------------------------------------------------------------------
+bool Prg_SFunction::setSampleHit(bool val)
+{
+  bool hasDiscreteSampleTime = false;
+  for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
+    if (ssGetSampleTime(_SS, i) != CONTINUOUS_SAMPLE_TIME) {
+      ssGetSampleHitPtr(_SS)[ssGetSampleTimeTaskID(_SS, i)] = val;
+      hasDiscreteSampleTime = val;
+    }
+  }
+  return hasDiscreteSampleTime;
+}
+
+//--------------------------------------------------------------------------
 void Prg_SFunction::setup_model()
 {
   int i;
@@ -242,7 +270,8 @@ void Prg_SFunction::setup_model()
   }
 
   // obtain model sizes
-  _mdl_nx = ssGetNumContStates(_SS);
+  _mdl_nd = ssGetNumDiscStates(_SS);
+  _mdl_nx = _mdl_nd + ssGetNumContStates(_SS);
   // count inputs of ports as long as they are contiguous in memory
   // (this limitation is because later on we will only access port 0)
   _mdl_nu = 0;
@@ -276,11 +305,9 @@ void Prg_SFunction::setup_model()
 
   // initialize and check sample times of model
   mdlInitializeSampleTimes(_SS);
-  assert(ssGetNumSampleTimes(_SS) > 0);
-  assert(value(ssGetSampleTime(_SS, 0)) == CONTINUOUS_SAMPLE_TIME);
-  if (ssGetNumSampleTimes(_SS) > 1)
+  if (ssGetNumSampleTimes(_SS) < 1)
     m_warning(WARN_UNKNOWN,
-	      "Prg_SFunction::setup_model: ignoring multiple sample times");
+	      "Prg_SFunction::setup_model: no sample times initialized");
 
   // start using S-function
   if (ssGetmdlStart(_SS) != NULL)
@@ -306,10 +333,13 @@ void Prg_SFunction::setup_model()
   if (ssGetmdlInitializeConditions(_SS) != NULL) {
     SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
-  real_T *mdl_x = ssGetContStates(_SS);
+  real_T *mdl_xd = ssGetDiscStates(_SS);
+  real_T *mdl_xc = ssGetContStates(_SS);
   v_resize(_mdl_x0, _mdl_nx);
-  for (i = 0; i < _mdl_nx; i++)
-    _mdl_x0[i] = mdl_x[i];
+  for (i = 0; i < _mdl_nd; i++)
+    _mdl_x0[i] = mdl_xd[i];
+  for (i = _mdl_nd; i < _mdl_nx; i++)
+    _mdl_x0[i] = mdl_xc[i - _mdl_nd];
 
   _mdl_needs_setup = false;
 }

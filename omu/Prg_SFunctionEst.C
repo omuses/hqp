@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -50,24 +50,24 @@
 // Call an S-function method and check for errors.
 // Throw E_CONV as errors occuring during solution are generally
 // due to bad values and need to be treated (esp. during stepsize check).
-#define SMETHOD_CALL(method, S) \
+#define SMETHOD_CALL(method, S) { \
   ssSetErrorStatus(S, NULL); \
   method(S); \
   if (ssGetErrorStatus(S)) { \
     fprintf(stderr, "Error from " #method ": %s\n", \
 	    ssGetErrorStatus(S)); \
     m_error(E_CONV, ssGetErrorStatus(S)); \
-  }
-
-#define SMETHOD_CALL2(method, S, tid) \
+  } \
+}
+#define SMETHOD_CALL2(method, S, tid) { \
   ssSetErrorStatus(S, NULL); \
   method(S, tid); \
   if (ssGetErrorStatus(S)) { \
     fprintf(stderr, "Error from " #method ": %s\n", \
 	    ssGetErrorStatus(S)); \
     m_error(E_CONV, ssGetErrorStatus(S)); \
-  }
-
+  } \
+}
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -499,13 +499,13 @@ void Prg_SFunctionEst::setup_struct(int k,
 
     if (ex == ex1) {
       // explicit ODE for continuous-time equations
-      for (i = 0; i < _np; i++) {
+      for (i = 0; i < _np + _mdl_nd; i++) {
 	for (j = 0; j < _nx; j++)
 	  F.Jx[i][j] = 0.0;
       }
 
       m_zero(F.Jdx);
-      for (i = _np; i < _nx; i++)
+      for (i = _np + _mdl_nd; i < _nx; i++)
 	F.Jdx[i][i] = -1.0;
       F.set_linear(Omu_Dependent::WRT_dx);
     }
@@ -516,22 +516,24 @@ void Prg_SFunctionEst::setup_struct(int k,
     }
     m_zero(F.Ju);
 
-    // f in update depends linearly on x for discrete-time states (parameters)
-    m_zero(f.Jx);
-    for (i = 0; i < _np; i++)
-      f.Jx[i][i] = 1.0;
-    f.set_linear(Omu_Dependent::WRT_x);
+    if (_mdl_nd == 0) {
+      // f in update depends linearly on x for parameters
+      m_zero(f.Jx);
+      for (i = 0; i < _np; i++)
+        f.Jx[i][i] = 1.0;
+      f.set_linear(Omu_Dependent::WRT_x);
 
-    // f does not depend on u
-    m_zero(f.Ju);
+      // f does not depend on u
+      m_zero(f.Ju);
 
-    // all results of update depend linearly (or not) on xf
-    m_zero(f.Jxf);
-    if (ex == ex1) {
-      for (i = _np; i < _nx; i++)
-	f.Jxf[i][i] = 1.0;
+      // all results of update depend linearly (or not) on xf
+      m_zero(f.Jxf);
+      if (ex == ex1) {
+        for (i = _np; i < _nx; i++)
+          f.Jxf[i][i] = 1.0;
+      }
+      f.set_linear(Omu_Dependent::WRT_xf);
     }
-    f.set_linear(Omu_Dependent::WRT_xf);
     v_zero(f0.gxf);
     f0.set_linear(Omu_Dependent::WRT_xf);
     m_zero(c.Jxf);
@@ -573,9 +575,9 @@ void Prg_SFunctionEst::update(int kk,
   for (idx = 0; idx < _mdl_nu; idx++)
     mdl_u[idx] = _mdl_us[kk][idx];
 
-  // initialize model
-  // (this is required here as active parameters change,
-  //  e.g. for numerical approximation of Jacobian)
+  // pass optimized parameters to model
+  // Note: this is done in any call for numerical approximation of Jacobian
+  // Note: initialization is required if model copies mx_args to private memory
   if (_np > 0) {
     write_active_mx_args(x);
     //if (ssGetmdlInitializeConditions(_SS) != NULL)
@@ -583,15 +585,19 @@ void Prg_SFunctionEst::update(int kk,
   }
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_SS);
+  real_T *mdl_xd = ssGetDiscStates(_SS);
+  real_T *mdl_xc = ssGetContStates(_SS);
   if (kk == 0 || !new_experiment) {
-    for (idx = 0; idx < _mdl_nx; idx++)
-      mdl_x[idx] = x[_np + idx] * _mdl_x_nominal[idx];
+    for (i = 0; i < _mdl_nd; i++)
+      mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
+    for (i = _mdl_nd; i < _mdl_nx; i++)
+      mdl_xc[i - _mdl_nd] = x[_np + i] * _mdl_x_nominal[i];
   }
   else {
-    // control parameters contain initial states for new experiments
-    for (idx = 0; idx < _mdl_nx; idx++)
-      mdl_x[idx] = u[idx] * _mdl_x_nominal[idx];
+    for (i = 0; i < _mdl_nd; i++)
+      mdl_xd[i] = u[i] * _mdl_x_nominal[i];
+    for (i = _mdl_nd; i < _mdl_nx; i++)
+      mdl_xc[i - _mdl_nd] = u[i] * _mdl_x_nominal[i];
   }
 
   // obtain model outputs
@@ -630,25 +636,46 @@ void Prg_SFunctionEst::update(int kk,
     }
   }
 
-  if (kk < _KK) {
-    // discrete-time state equations for parameters
-    for (i = 0; i < _np; i++)
-      f[i] = x[i];
-
-    // junction conditions for state equations
-    if (ex == _exs[kk+1]) {
-      for (i = _np; i < _nx; i++)
-	f[i] = xf[i];
-    }
-  }
-
   // store values of model states
-  for (idx = 0; idx < _mdl_nx; idx++)
-    _mdl_xs[kk][idx] = value(mdl_x[idx]);
+  for (idx = 0; idx < _mdl_nd; idx++)
+    _mdl_xs[kk][idx] = value(mdl_xd[idx]);
+  for (idx = _mdl_nd; idx < _mdl_nx; idx++)
+    _mdl_xs[kk][idx] = value(mdl_xc[idx - _mdl_nd]);
 
   // store values of model outputs
   for (idx = 0; idx < _mdl_ny; idx++)
     _mdl_ys[kk][idx] = value(mdl_y[idx]);
+
+  if (new_experiment) {
+    // store initial model states
+    for (idx = 0; idx < _mdl_nd; idx++)
+      _mdl_x0s[ex][idx] = mdl_xd[idx];
+    for (idx = _mdl_nd; idx < _mdl_nx; idx++)
+      _mdl_x0s[ex][idx] = mdl_xc[idx - _mdl_nd];
+  }
+
+  if (kk < _KK) {
+    // discrete-time state equations for parameters
+    for (i = 0; i < _np; i++)
+      f[i] = x[i];
+    if (ex == _exs[kk+1]) {
+      if (_mdl_nd > 0) {
+        setContinuousTask(false);
+        setSampleHit(true);
+        // call mdlUpdate to get discrete events processed
+        if (ssGetmdlUpdate(_SS) != NULL) {
+          SMETHOD_CALL2(mdlUpdate, _SS, 0);
+        }
+        // read discrete states from model
+        for (i = 0; i < _mdl_nd; i++) {
+          f[_np + i] = mdl_xd[i];
+        }
+      }
+      // junction conditions for continuous-time state equations
+      for (i = _np + _mdl_nd; i < _nx; i++)
+	f[i] = xf[i];
+    }
+  }
 
   // obtain Jacobians if required
   if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
@@ -657,12 +684,6 @@ void Prg_SFunctionEst::update(int kk,
     if (kk == 0) {
       // store model parameters
       read_mx_args(_mdl_p);
-    }
-    if (new_experiment) {
-      // store model states
-      real_T *mdl_x = ssGetContStates(_SS);
-      for (idx = 0; idx < _mdl_nx; idx++)
-	_mdl_x0s[ex][idx] = mdl_x[idx];
     }
 
     // call predefined update for numerical differentiation
@@ -821,54 +842,86 @@ void Prg_SFunctionEst::consistic(int kk, double t,
   for (i = 0; i < _mdl_nu; i++)
     mdl_u[i] = _mdl_us[kk][i];
 
+  // pass optimized parameters to model
+  // Note: this is done in any call for numerical approximation of Jacobian
+  // Note: initialization is required if model copies mx_args to private memory
+  if (_np > 0) {
+    write_active_mx_args(x);
+    //if (ssGetmdlInitializeConditions(_SS) != NULL)
+    //  SMETHOD_CALL(mdlInitializeConditions, _SS);
+  }
   // initialize model in first stage
   // This way model initial conditions get applied as functions of parameters.
   // Don't initialize if time changed, e.g. for subsequent simulation calls
   if (kk == 0 && t == _t0_setup_model
       && ssGetmdlInitializeConditions(_SS) != NULL) {
-    // pass estimated parameters to model
-    write_active_mx_args(x);
-    // initialize model
     SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
-  // pass states from optimizer to model
-  real_T *mdl_x = ssGetContStates(_SS);
-  if (kk == 0 || !new_experiment) {
-    for (i = 0; i < _mdl_nx; i++)
-      mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
+  // disable discrete sample times
+  setSampleHit(false);
+  // mark continuous sample time and process mdlUpdate in case of success
+  if (setContinuousTask(true)) {
+    // pass states from optimizer to model
+    real_T *mdl_xd = ssGetDiscStates(_SS);
+    real_T *mdl_xc = ssGetContStates(_SS);
+    if (kk == 0 || !new_experiment) {
+      for (i = 0; i < _mdl_nd; i++)
+        mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
+      for (i = _mdl_nd; i < _mdl_nx; i++)
+        mdl_xc[i - _mdl_nd] = x[_np + i] * _mdl_x_nominal[i];
+    }
+    else {
+      for (i = 0; i < _mdl_nd; i++)
+        mdl_xd[i] = u[i] * _mdl_x_nominal[i];
+      for (i = _mdl_nd; i < _mdl_nx; i++)
+        mdl_xc[i - _mdl_nd] = u[i] * _mdl_x_nominal[i];
+    }
+
+    // call mdlUpdate to get discrete events processed
+    // Note: this is done once at the beginning of a sample interval;
+    // no event processing takes place during the integration.
+    if (ssGetmdlUpdate(_SS) != NULL) {
+      // also call mdlOutputs as done by Simulink before each mdlUpdate
+      SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+      SMETHOD_CALL2(mdlUpdate, _SS, 0);
+    }
+
+    // take over estimated parameters from optimizer
+    for (i = 0; i < _np; i++)
+      xt[i] = x[i];
+
+    // read back states from model
+    // Note: take estimated initial states from the optimizer
+    // to prevent their overriding by the model, e.g. from parameters;
+    // they are read once in Prg_SFunction::setup_model() instead.
+    for (i = 0; i < _mdl_nx; i++) {
+      if (new_experiment && _mdl_x0_active[i]) {
+        if (kk == 0)
+          xt[_np + i] = x[_np + i];
+        else
+          xt[_np + i] = u[i];
+      }
+      else {
+        if (i < _mdl_nd)
+          xt[_np + i] = mdl_xd[i] / _mdl_x_nominal[i];
+        else
+          xt[_np + i] = mdl_xc[i - _mdl_nd] / _mdl_x_nominal[i];
+      }
+    }
   }
   else {
-    for (i = 0; i < _mdl_nx; i++)
-      mdl_x[i] = u[i] * _mdl_x_nominal[i];
-  }
-
-  // call mdlUpdate to get discrete events processed
-  // Note: this is done once at the beginning of a sample interval;
-  // no event processing takes place during the integration.
-  if (ssGetmdlUpdate(_SS) != NULL) {
-    // also call mdlOutputs as done by Simulink before each mdlUpdate
-    SMETHOD_CALL2(mdlOutputs, _SS, 0); 
-    SMETHOD_CALL2(mdlUpdate, _SS, 0);
-  }
-
-  // take over estimated parameters from optimizer
-  for (i = 0; i < _np; i++)
-    xt[i] = x[i];
-
-  // read back states from model
-  // Note: take estimated initial states from the optimizer
-  // to prevent their overriding by the model, e.g. from parameters;
-  // they are read once in Prg_SFunction::setup_model() instead.
-  for (i = 0; i < _mdl_nx; i++) {
-    if (new_experiment && _mdl_x0_active[i]) {
-      if (kk == 0)
-        xt[_np + i] = x[_np + i];
+    // take over estimated parameters from optimizer
+    for (i = 0; i < _np; i++)
+      xt[i] = x[i];
+    for (; i < _nx; i++) {
+      // estimated initial states
+      if (new_experiment && kk > 0 && _mdl_x0_active[i - _np])
+        xt[i] = u[i - _np];
+      // regular states
       else
-        xt[_np + i] = u[i];
+        xt[i] = x[i];
     }
-    else
-      xt[_np + i] = mdl_x[i] / _mdl_x_nominal[i];
   }
 }
 
@@ -898,9 +951,9 @@ void Prg_SFunctionEst::continuous(int kk, double t,
       mdl_u[i] = _mdl_us[kk][i] * (1 - rt) + _mdl_us[kk+1][i] * rt;
   }
 
-  // initialize model
-  // (this is required here as active parameters change,
-  //  e.g. for numerical approximation of Jacobian)
+  // pass optimized parameters to model
+  // Note: this is done in any call for numerical approximation of Jacobian
+  // Note: initialization is required if model copies mx_args to private memory
   if (_np > 0) {
     write_active_mx_args(x);
     //if (ssGetmdlInitializeConditions(_SS) != NULL)
@@ -908,9 +961,12 @@ void Prg_SFunctionEst::continuous(int kk, double t,
   }
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_SS);
-  for (i = 0; i < _mdl_nx; i++)
-    mdl_x[i] = x[_np + i] * _mdl_x_nominal[i];
+  real_T *mdl_xd = ssGetDiscStates(_SS);
+  real_T *mdl_xc = ssGetContStates(_SS);
+  for (i = 0; i < _mdl_nd; i++)
+    mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
+  for (i = _mdl_nd; i < _mdl_nx; i++)
+    mdl_xc[i - _mdl_nd] = x[_np + i] * _mdl_x_nominal[i];
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
@@ -921,8 +977,8 @@ void Prg_SFunctionEst::continuous(int kk, double t,
 
   // get model derivatives and change to residual form
   real_T *mdl_dx = ssGetdX(_SS);
-  for (i = 0; i < _mdl_nx; i++)
-    F[_np + i] = mdl_dx[i]/_mdl_x_nominal[i] - dx[_np + i];
+  for (i = _mdl_nd; i < _mdl_nx; i++)
+    F[_np + i] = mdl_dx[i - _mdl_nd]/_mdl_x_nominal[i] - dx[_np + i];
 
   // obtain Jacobians if required
   if (F.is_required_J()) {

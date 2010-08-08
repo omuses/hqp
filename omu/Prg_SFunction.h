@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -50,7 +50,8 @@ class Prg_SFunction: public Omu_Program {
 
   double 	_t0_setup_model;///< time used for initialization of model
   int		_mdl_np;	///< number of model parameters
-  int		_mdl_nx;	///< number of model states
+  int		_mdl_nd;	///< number of discrete-time states
+  int		_mdl_nx;	///< number of model states (incl. discrete)
   int		_mdl_nu;	///< number of model inputs
   int		_mdl_ny;	///< number of model outputs
 
@@ -70,6 +71,18 @@ class Prg_SFunction: public Omu_Program {
   //@{
   void read_mx_args(VECP p); ///< read _mx_args into vector p
   void write_mx_args(VECP p); ///< write vector p to _mx_args
+  //@}
+
+  /**
+   * @name Helper methods for treatment of sample times
+   */
+  //@{
+  /// enable continuous sample time;
+  /// return true if a continuous sample time exists and has been enabled
+  bool setContinuousTask(bool val);
+  /// enable hit for all discrete sample times;
+  /// return true if a discrete sample time exists and has been enabled
+  bool setSampleHit(bool val);
   //@}
 
  public:

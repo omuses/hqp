@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2005  Ruediger Franke
+    Copyright (C) 1994--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -449,20 +449,21 @@ void Hxi_MEX_SFunction_init(SimStruct *S)
 
   // allocate memory for int_T
   mxFree(ssGetIWork(S));
-  int_T *iptr = (int_T *)mxCalloc(sizeof(int_T), niw + 2*nst
+  int_T *iptr = (int_T *)mxCalloc(sizeof(int_T), niw + 2*nst + 1
 				  + njacel + njacjc);
   ssSetIWork(S, iptr);
   iptr += niw;
 
   // allocate and setup times
   ssSetSampleHitPtr(S, iptr);
-  if (nst > 0)
-    iptr[0] = 1; // required for ssIsContinuousTask(0) == true
-  iptr += nst;
+  iptr += nst + 1;
   ssSetSampleTimeTaskIDPtr(S, iptr);
-  for (i = 0; i < nst; i++)
-    *iptr++ = i; // task id and sample time index are identical
-
+  for (i = 0; i < nst; i++) {
+    if (ssGetSampleTime(S, i) == CONTINUOUS_SAMPLE_TIME)
+      *iptr++ = 0; // fixed index for continuous sample time
+    else
+      *iptr++ = i + 1; // sample time indices for discrete sample times
+  }
   mxFree(ssGetTPtr(S));
   time_T *tptr = (time_T *)mxCalloc(sizeof(time_T), 3*nst);
   ssSetTPtr(S, tptr);

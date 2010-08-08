@@ -1,3 +1,16 @@
+
+2010-08-08  <rfranke>
+
+        * omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+          - add support for discrete sample times
+
+	* hxi/Hxi_MEX_SFunction.C, hxi/Hxi_SimStruct.[hC], hxi/Hxi_SimStruct_methods.h:
+          - add support for discrete sample times
+            (ssIsSampleHit, ssGetSampleTimeTaskID, ssGetSampleHitPtr)
+
+        * odc/sfun_did.c:
+          - add analytic mdlJacobian
+
 2010-07-15  <rfranke>
 
 	* Prg_SFunctionOpt.C:

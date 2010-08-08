@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2005  Ruediger Franke
+    Copyright (C) 1994--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -129,6 +129,8 @@ protected:
 
   vector<REAL_T> _st_period;	///< sample time period 
   vector<REAL_T> _st_offset;	///< sample time offset
+  vector<int_T>  _st_taskID; 	///< sample time task id
+  vector<int_T>  _st_hit; 	///< vector of hits per sample time task id
   vector<REAL_T> _zc_signals; 	///< values of zero crossings
 
   vector<REAL_T> _jacobianPr; 	///< Jacobian elements
@@ -398,6 +400,8 @@ public:
   int_T setNumSampleTimes(int_T nst) {
     _st_period.resize(nst, _dummy);
     _st_offset.resize(nst, _dummy);
+    _st_taskID.resize(nst);
+    _st_hit.resize(nst + 1);
     return _st_period.size();
   }
   /** Get number of sample times. */
@@ -406,6 +410,7 @@ public:
   }
   /** Set sample time period for given st_index. */
   REAL_T setSampleTime(int_T st_index, REAL_T period) {
+    _st_taskID[st_index] = period == 0.0? 0: st_index + 1;
     return _st_period[st_index] = period;
   }
   /** Get sample time period for given st_index. */
@@ -420,9 +425,21 @@ public:
   REAL_T getOffsetTime(int_T st_index) {
     return _st_offset[st_index];
   }
+  /** get task id for sample time id */
+  int_T getSampleTimeTaskID(int_T sti) {
+    return _st_taskID[sti];
+  }
+  /** get pointer to array of sample hits per task id */
+  int_T *getSampleHitPtr() {
+    return HXI_VECADDR(_st_hit);
+  }
   /** Test for continuous task. */
-  int_T isContinuousTask(int_T tid) {
-    return (getSampleTime(tid) == 0.0 && getOffsetTime(tid) == 0.0);
+  int_T isContinuousTask(int_T) {
+    return _st_hit[0];
+  }
+  /** Test for sample hit. */
+  int_T isSampleHit(int_T st_index, int_T) {
+    return _st_hit[_st_taskID[st_index]];
   }
 
   /** Set number of signals for which zero crossings may occur. */
@@ -825,6 +842,13 @@ public:
 ///  Inlined S-functions are supported with the Hxi implementation;
 ///  external S-functions are supported with both, MEX and Hxi.
 //@{
+#define HXI_SS_IS0(ITEM) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S) { \
+    if (isHxiSimStruct(S)) \
+      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(); \
+    else \
+      return ssIs##ITEM(S); \
+  }
 #define HXI_SS_NOSET0(ITEM)
 #define HXI_SS_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE ARG) { \
@@ -854,12 +878,12 @@ public:
     else \
       return ssGet##ITEM(S); \
   }
-#define HXI_SS_IS1(ITEM) \
-  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S) { \
+#define HXI_SS_IS1(ITEM, TYPE1, ARG1) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(); \
+      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1); \
     else \
-      return ssIs##ITEM(S); \
+      return ssIs##ITEM(S, ARG1); \
   }
 
 #define HXI_SS_SETGET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
@@ -891,12 +915,12 @@ public:
     else \
       return ssGet##ITEM(S, ARG1); \
   }
-#define HXI_SS_IS2(ITEM, TYPE1, ARG1) \
-  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
+#define HXI_SS_IS2(ITEM, TYPE1, ARG1, TYPE2, ARG2) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1, TYPE2 ARG2) { \
     if (isHxiSimStruct(S)) \
-      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1); \
+      return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1, ARG2); \
     else \
-      return ssIs##ITEM(S, ARG1); \
+      return ssIs##ITEM(S, ARG1, ARG2); \
   }
 //@}
 
@@ -924,6 +948,13 @@ public:
     else \
       mxDestroy##WHAT(a); \
   }
+#define HXI_MX_IS0(ITEM) \
+  HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
+    if (isHxiMxArray(a)) \
+      return ((Hxi::mxArray<real_T>*)a)->is##ITEM(); \
+    else \
+      return mxIs##ITEM(a); \
+  }
 #define HXI_MX_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN void hmxSet##ITEM(mxArray *a, TYPE ARG) { \
     if (isHxiMxArray(a)) \
@@ -945,13 +976,6 @@ public:
     else \
       return mxGet##ITEM(a); \
   }
-#define HXI_MX_IS1(ITEM) \
-  HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
-    if (isHxiMxArray(a)) \
-      return ((Hxi::mxArray<real_T>*)a)->is##ITEM(); \
-    else \
-      return mxIs##ITEM(a); \
-  }
 #define HXI_MX_TO1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxArrayTo##ITEM(const mxArray *a) { \
     if (isHxiMxArray(a)) \
@@ -964,6 +988,10 @@ public:
 #else // defined(HXI_WITH_MEX) && !defined(HXI_INLINE_S_FUNCTION)
 /// @name Implementation of S-function methods accessing an Hxi::SimStruct.
 //@{
+#define HXI_SS_IS0(ITEM) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S) { \
+    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(); \
+  }
 #define HXI_SS_NOSET0(ITEM)
 #define HXI_SS_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN TYPE hssSet##ITEM(SimStruct *S, TYPE ARG) { \
@@ -981,9 +1009,9 @@ public:
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S) { \
     return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(); \
   }
-#define HXI_SS_IS1(ITEM) \
-  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S) { \
-    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(); \
+#define HXI_SS_IS1(ITEM, TYPE1, ARG1) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
+    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1); \
   }
 
 #define HXI_SS_SETGET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
@@ -1003,9 +1031,9 @@ public:
   HXI_EXTERN TYPE hssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
     return ((Hxi::SimStruct<real_T>*)S)->get##ITEM(ARG1); \
   }
-#define HXI_SS_IS2(ITEM, TYPE1, ARG1) \
-  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
-    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1); \
+#define HXI_SS_IS2(ITEM, TYPE1, ARG1, TYPE2, ARG2) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1, TYPE2 ARG2) { \
+    return ((Hxi::SimStruct<real_T>*)S)->is##ITEM(ARG1, ARG2); \
   }
 //@}
 
@@ -1023,6 +1051,10 @@ public:
   HXI_EXTERN void hmxDestroy##WHAT(mxArray *a) { \
     delete (Hxi::mxArray<real_T>*)a; \
   }
+#define HXI_MX_IS0(ITEM) \
+  HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
+    return ((Hxi::mxArray<real_T>*)a)->is##ITEM(); \
+  }
 #define HXI_MX_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN void hmxSet##ITEM(mxArray *a, TYPE ARG) { \
     ((Hxi::mxArray<real_T>*)a)->set##ITEM(ARG); \
@@ -1034,10 +1066,6 @@ public:
 #define HXI_MX_GET1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxGet##ITEM(const mxArray *a) { \
     return ((Hxi::mxArray<real_T>*)a)->get##ITEM(); \
-  }
-#define HXI_MX_IS1(ITEM) \
-  HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a) { \
-    return ((Hxi::mxArray<real_T>*)a)->is##ITEM(); \
   }
 #define HXI_MX_TO1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxArrayTo##ITEM(const mxArray *a) { \

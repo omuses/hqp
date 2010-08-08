@@ -43,7 +43,10 @@ HXI_SS_NOSET2(OutputPortOptimOpts, int_T, port, int_T, val);
 HXI_SS_SETGET1(NumSampleTimes, int_T, nst);
 HXI_SS_SETGET2(SampleTime, int_T, idx, real_T, val);
 HXI_SS_SETGET2(OffsetTime, int_T, idx, real_T, val);
-HXI_SS_IS2(ContinuousTask, int_T, tid);
+HXI_SS_GET1(SampleHitPtr, int_T*);
+HXI_SS_GET2(SampleTimeTaskID, int_T, sti, int_T);
+HXI_SS_IS1(ContinuousTask, int_T, tid);
+HXI_SS_IS2(SampleHit, int_T, st_index, int_T, tid);
 HXI_SS_SETGET1(NumNonsampledZCs, int_T, nzcs);
 HXI_SS_GET1(NonsampledZCs, real_T*);
 
@@ -82,10 +85,10 @@ HXI_SS_NOSET1(Checksum3, uint_T, val);
 /** @name Macros for specifying solver information */
 /*@{*/
 HXI_SS_SET1(MinorTimeStep, int_T, step);
-HXI_SS_IS1(MinorTimeStep);
-HXI_SS_IS1(MajorTimeStep);
+HXI_SS_IS0(MinorTimeStep);
+HXI_SS_IS0(MajorTimeStep);
 HXI_SS_SET1(VariableStepSolver, int_T, val);
-HXI_SS_IS1(VariableStepSolver);
+HXI_SS_IS0(VariableStepSolver);
 HXI_SS_SETGET1(SolverMaxOrder, int_T, order);
 HXI_SS_SETGET1(SolverName, const char_T*, name);
 HXI_SS_NOSET0(SolverNeedsReset);
@@ -115,10 +118,10 @@ HXI_MX_GET1(NumberOfElements, int_T);
 HXI_MX_SETGET1(M, int_T, m);
 HXI_MX_SETGET1(N, int_T, n);
 HXI_MX_GET1(Pr, real_T*);
-HXI_MX_IS1(Empty);
-HXI_MX_IS1(Char);
-HXI_MX_IS1(Double);
-HXI_MX_IS1(Sparse);
-HXI_MX_IS1(Complex);
-HXI_MX_IS1(Numeric);
+HXI_MX_IS0(Empty);
+HXI_MX_IS0(Char);
+HXI_MX_IS0(Double);
+HXI_MX_IS0(Sparse);
+HXI_MX_IS0(Complex);
+HXI_MX_IS0(Numeric);
 /*@}*/

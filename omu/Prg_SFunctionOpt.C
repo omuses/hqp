@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2009  Ruediger Franke
+    Copyright (C) 1997--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -49,24 +49,24 @@
 // Call an S-function method and check for errors.
 // Throw E_CONV as errors occuring during solution are generally
 // due to bad values and need to be treated (esp. during stepsize check).
-#define SMETHOD_CALL(method, S) \
+#define SMETHOD_CALL(method, S) { \
   ssSetErrorStatus(S, NULL); \
   method(S); \
   if (ssGetErrorStatus(S)) { \
     fprintf(stderr, "Error from " #method ": %s\n", \
 	    ssGetErrorStatus(S)); \
     m_error(E_CONV, ssGetErrorStatus(S)); \
-  }
-
-#define SMETHOD_CALL2(method, S, tid) \
+  } \
+}
+#define SMETHOD_CALL2(method, S, tid) { \
   ssSetErrorStatus(S, NULL); \
   method(S, tid); \
   if (ssGetErrorStatus(S)) { \
     fprintf(stderr, "Error from " #method ": %s\n", \
 	    ssGetErrorStatus(S)); \
     m_error(E_CONV, ssGetErrorStatus(S)); \
-  }
-
+  } \
+}
 IF_CLASS_DEFINE("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -264,7 +264,8 @@ void Prg_SFunctionOpt::setup_model()
   Prg_SFunction::setup_model();
 
   // check for optional S-function methods that are required
-  assert(ssGetmdlDerivatives(_SS) != NULL);
+  if (_mdl_nx > _mdl_nd)
+    assert(ssGetmdlDerivatives(_SS) != NULL);
 
   // adapt sizes of model vectors
   _mdl_x0.alloc(_mdl_nx);
@@ -494,7 +495,7 @@ void Prg_SFunctionOpt::setup(int k,
   }
 
   // setup states
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (k == 0 && _mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
       m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
               "mdl_u_order must be 0 or 1");
@@ -540,32 +541,38 @@ void Prg_SFunctionOpt::setup(int k,
       i++;
     }
   }
-  for (i = _nu; i < _nx; i++) {
-    x.initial[i] = _mdl_xs[ks(k)][i-_nu] / _mdl_x_nominal[i-_nu];
+  for (idx = 0, i = 0; i < _nx; idx++, i++) {
+    if (i == _mdl_nd) {
+      // skip control states
+      i += _nu - 1;
+      idx--;
+      continue;
+    }
+    x.initial[i] = _mdl_xs[ks(k)][idx] / _mdl_x_nominal[idx];
     if (k == 0) {
-      if (_mdl_x_periodic[i-_nu])
+      if (_mdl_x_periodic[idx])
         // indicate periodic state to Hqp_Docp
         x.min[i] = x.max[i] = Inf;
-      else if (_mdl_x0_active[i-_nu]) {
+      else if (_mdl_x0_active[idx]) {
 	if (!_multistage)
 	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
 		  "mdl_x0_active=1 requires prg_multistage=true");
         // use the more restrictive bound of x0_min/max and x_min/max
-        if (_mdl_x0.min[i-_nu] > _mdl_x.min[i-_nu])
-          x.min[i] = _mdl_x0.min[i-_nu] / _mdl_x_nominal[i-_nu];
+        if (_mdl_x0.min[idx] > _mdl_x.min[idx])
+          x.min[i] = _mdl_x0.min[idx] / _mdl_x_nominal[idx];
         else
-          x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
-        if (_mdl_x0.max[i-_nu] < _mdl_x.max[i-_nu])
-          x.max[i] = _mdl_x0.max[i-_nu] / _mdl_x_nominal[i-_nu];
+          x.min[i] = _mdl_x.min[idx] / _mdl_x_nominal[idx];
+        if (_mdl_x0.max[idx] < _mdl_x.max[idx])
+          x.max[i] = _mdl_x0.max[idx] / _mdl_x_nominal[idx];
         else
-          x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
+          x.max[i] = _mdl_x.max[idx] / _mdl_x_nominal[idx];
       }
       else
 	x.min[i] = x.max[i] = x.initial[i];
     }
     else {
-      x.min[i] = _mdl_x.min[i-_nu] / _mdl_x_nominal[i-_nu];
-      x.max[i] = _mdl_x.max[i-_nu] / _mdl_x_nominal[i-_nu];
+      x.min[i] = _mdl_x.min[idx] / _mdl_x_nominal[idx];
+      x.max[i] = _mdl_x.max[idx] / _mdl_x_nominal[idx];
     }
   }
 
@@ -753,25 +760,30 @@ void Prg_SFunctionOpt::setup_struct(int k,
   m_zero(xt.Ju);
   xt.set_linear();
 
-  // explicit ODE for continuous-time equations
-  m_ident(F.Jdx);
-  sm_mlt(-1.0, F.Jdx, F.Jdx);
-  F.set_linear(Omu_Dependent::WRT_dx);
-
-  // setup struct of Jacobians for wrt. active inputs
+  // setup struct of Jacobians for wrt. states and active inputs
   if (k < _K) {
+    m_zero(F.Jdx);
     m_zero(F.Ju);
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+
+    for (i = 0; i < _mdl_nd; i++) {
+      // no dependency of discrete states on states 
+      for (j = 0; j < _nx; j++)
+        F.Jx[i][j] = 0.0;
+    }
+
+    for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx]) {
-	// no dependency on states for active inputs
+	// no dependency of active inputs on states
 	for (j = 0; j < _nx; j++)
 	  F.Jx[i][j] = 0.0;
 	if (_mdl_u_order[idx] == 0) {
-	  // no dependecy on time derivative for zero order hold
-	  F.Jdx[i][i] = 0.0;
+	  // generally no dependecy on time derivative for zero order hold
+          // it is still integrated to get contiguous vector though
+	  F.Jdx[i][i] = -1.0;
 	  // F.Ju is zero for zero order hold
 	}
         else {
+          F.Jdx[i][i] = -1.0; // continuous integration for first order hold
 	  if (_multistage) {
 	    // F.Ju is constant for multistage and not _t_active
 	    F.Ju[i][i] = 1.0/_t_nominal;
@@ -790,6 +802,11 @@ void Prg_SFunctionOpt::setup_struct(int k,
     }
     if (_multistage && !_t_active)
       F.set_linear(Omu_Dependent::WRT_u);
+
+    // explicit ODE for continuous-time equations
+    for (i = _mdl_nd + _nu; i < _nx; i++)
+      F.Jdx[i][i] = -1.0;
+    F.set_linear(Omu_Dependent::WRT_dx);
   }
 
   // constraints c in update do not depend on xf
@@ -844,46 +861,10 @@ void Prg_SFunctionOpt::update(int kk,
   int i, idx, is, isc, isf, iscf;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
-  double tscale_1 = _t_active? x[_t_scale_i]* _t_scale_nominal: 1.0;
+  double tscale_1 = _t_active? x[_mdl_nd + _t_scale_i]* _t_scale_nominal: 1.0;
   double tscale = _t_active && kk < _KK?
-    (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
+    (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
   double help;
-
-  // junction conditions for continuous-time equations
-  if (kk < _KK) {
-    // controlled inputs
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
-      if (_mdl_u.active[idx]) {
-	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0)) {
-	  // zero order hold at end of stage:
-	  // apply step in u for subsequent stage
-          help = ((ts(kk+1) - ts(kk-spsk/upsk+1))/_t_nominal
-                  * u[i*upsk + kk%upsk]);
-          if (_t_active && i != _t_scale_i)
-            f[i] = x[i] + tscale * help;
-          else
-            f[i] = x[i] + help;
-        }
-	else
-	  // piecewise linear interpolation or within stage with zoh
-	  f[i] = xf[i];
-	i++;
-      }
-    }
-    assert(i == _nu); // problem structure must not have changed
-    // states
-    for (; i < _nx; i++)
-      f[i] = xf[i];
-    // re-use slack variables of last but one sample period at final time
-    // note: this is only because no control parameters allowed at fineal time
-    // and because states need to be defined with state equations
-    if (kk == _KK-1) {
-      for (; i < _nx + _ns; i++)
-	f[i] = u[upsk*_nu + (i-_nx+1)*spsk-1];
-      for (; i < _nx + _ns + _nsf; i++)
-	f[i] = u[upsk*_nu + spsk*_ns + i - _nx - _ns];
-    }
-  }
 
   // initialize model inputs
   real_T *mdl_u = NULL;
@@ -893,23 +874,22 @@ void Prg_SFunctionOpt::update(int kk,
     else
       mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       _mdl_us[kk][idx] = x[i++] * _mdl_u_nominal[idx];
     mdl_u[idx] = _mdl_us[kk][idx];
   }
 
-  // obtain scaled simulation time
-  if (kk < _KK)
-    _taus[kk+1] = _taus[kk] + tscale * (ts(kk+1) - ts(kk));
-
   // set simulation time
   ssSetT(_SS, _taus[kk]);
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_SS);
-  for (i = 0; i < _mdl_nx; i++)
-    mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
+  real_T *mdl_xd = ssGetDiscStates(_SS);
+  real_T *mdl_xc = ssGetContStates(_SS);
+  for (i = 0; i < _mdl_nd; i++)
+    mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+  for (i = _mdl_nd; i < _mdl_nx; i++)
+    mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
   // call mdlOutputs
   SMETHOD_CALL2(mdlOutputs, _SS, 0); 
@@ -1009,13 +989,15 @@ void Prg_SFunctionOpt::update(int kk,
   if (kk == 0) {
     i = spsk*(_nc+_nsc);
     // constraints on derivatives of initial states
-    SMETHOD_CALL(mdlDerivatives, _SS);
-    real_T *mdl_dx = ssGetdX(_SS);
-    for (idx = 0; idx < _mdl_nx; idx++) {
-      if (_mdl_x0_active[idx]
-          && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
-        c[i] = tscale * mdl_dx[idx] / _mdl_x_nominal[idx];
-        i++;
+    if (_mdl_nx > _mdl_nd) {
+      SMETHOD_CALL(mdlDerivatives, _SS);
+      real_T *mdl_dx = ssGetdX(_SS);
+      for (idx = 0; idx < _mdl_nx; idx++) {
+        if (_mdl_x0_active[idx]
+            && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
+          c[i] = tscale * mdl_dx[idx] / _mdl_x_nominal[idx];
+          i++;
+        }
       }
     }
     for (idx = 0; idx < _mdl_ny; idx++) {
@@ -1068,8 +1050,10 @@ void Prg_SFunctionOpt::update(int kk,
   }
 
   // store values of model states
-  for (i = 0; i < _mdl_nx; i++)
-    _mdl_xs[kk][i] = value(mdl_x[i]);
+  for (i = 0; i < _mdl_nd; i++)
+    _mdl_xs[kk][i] = value(mdl_xd[i]);
+  for (; i < _mdl_nx; i++)
+    _mdl_xs[kk][i] = value(mdl_xc[i - _mdl_nd]);
 
   // store values of model outputs
   for (i = 0; i < _mdl_ny; i++)
@@ -1077,8 +1061,10 @@ void Prg_SFunctionOpt::update(int kk,
 
   // store initial and final values
   if (kk == 0) {
-    for (i = 0; i < _mdl_nx; i++)
-      _mdl_x0[i] = value(mdl_x[i]);
+    for (i = 0; i < _mdl_nd; i++)
+      _mdl_x0[i] = value(mdl_xd[i]);
+    for (; i < _mdl_nx; i++)
+      _mdl_x0[i] = value(mdl_xc[i - _mdl_nd]);
     for (i = 0; i < _mdl_nu; i++)
       _mdl_u0[i] = value(mdl_u[i]);
     for (i = 0; i < _mdl_ny; i++)
@@ -1091,9 +1077,58 @@ void Prg_SFunctionOpt::update(int kk,
       _mdl_yf[i] = value(mdl_y[i]);
   }
 
+  // junction conditions for subsequent stage
+  if (kk < _KK) {
+    if (_mdl_nd > 0) {
+      setContinuousTask(false);
+      setSampleHit(true);
+      // call mdlUpdate to get discrete events processed
+      if (ssGetmdlUpdate(_SS) != NULL) {
+        SMETHOD_CALL2(mdlUpdate, _SS, 0);
+      }
+      // read discrete states from model
+      for (i = 0; i < _mdl_nd; i++) {
+        f[i] = mdl_xd[i];
+      }
+    }
+    // update controlled inputs from optimizer
+    for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
+      if (_mdl_u.active[idx]) {
+	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0)) {
+	  // zero order hold at end of stage:
+	  // apply step in u for subsequent stage
+          help = ((ts(kk+1) - ts(kk-spsk/upsk+1))/_t_nominal
+                  * u[(i-_mdl_nd)*upsk + kk%upsk]);
+          if (_t_active && i-_mdl_nd != _t_scale_i)
+            f[i] = x[i] + tscale * help;
+          else
+            f[i] = x[i] + help;
+        }
+	else
+	  // piecewise linear interpolation or within stage with zoh
+	  f[i] = xf[i];
+	i++;
+      }
+    }
+    assert(i == _mdl_nd + _nu); // problem structure must not have changed
+    // read continuous states from model
+    for (; i < _nx; i++)
+      f[i] = xf[i]; //mdl_xc[i - _mdl_nd - _nu];
+    // re-use slack variables of last but one sample period at final time
+    // note: this is only because no control parameters allowed at final time
+    // and because states need to be defined with state equations
+    if (kk == _KK-1) {
+      for (; i < _nx + _ns; i++)
+	f[i] = u[upsk*_nu + (i-_nx+1)*spsk-1];
+      for (; i < _nx + _ns + _nsf; i++)
+	f[i] = u[upsk*_nu + spsk*_ns + i - _nx - _ns];
+    }
+  }
+
   // obtain Jacobians if required
-  if (f.is_required_J() || f0.is_required_g() || c.is_required_J())
+  if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
     update_grds(kk, x, u, xf, f, f0, c);
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -1104,40 +1139,54 @@ void Prg_SFunctionOpt::update_grds(int kk,
 				   Omu_DependentVec  &c)
 {
   int i, idx, ii, iidx0, iidx, isc, iscdx, is, j, jdx, rdx;
-  int isf, iscf, iscfdx;
+  int isf, iscf, iscfdx, ixf;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
-  double tscale_1 = _t_active? x[_t_scale_i]* _t_scale_nominal: 1.0;
+  double tscale_1 = _t_active? x[_mdl_nd + _t_scale_i]* _t_scale_nominal: 1.0;
   double tscale = _t_active && kk < _KK?
-    (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
+    (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
   int t_scale_iu = _t_scale_i*upsk + kk%upsk;
+  int t_scale_ix = _mdl_nd + _t_scale_i;
   double help;
 
   if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
-    // call predefined update for numerical differentiation
+    // call predefined update_grds for numerical differentiation
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
   }
   else {
     // exploit mdlJacobian to obtain c.Jx
     int mdl_u_idx, mdl_x_idx, mdl_dx_idx, mdl_y_idx;
+    int mdl_nc = _mdl_nx - _mdl_nd; // number of continuous states
     real_T *pr = ssGetJacobianPr(_SS);
     int_T *ir = ssGetJacobianIr(_SS);
     int_T *jc = ssGetJacobianJc(_SS);
+
+    // restore states after mdlUpdate has been processed
+    // call mdlOutputs
+    real_T *mdl_xd = ssGetDiscStates(_SS);
+    real_T *mdl_xc = ssGetContStates(_SS);
+    for (i = 0; i < _mdl_nd; i++)
+      mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+    for (i = _mdl_nd; i < _mdl_nx; i++)
+      mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
+    SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
     mdlJacobian(_SS);
 
     m_zero(c.Jx);
     m_zero(c.Ju);
-    // Jacobian wrt S-function states (ddxdy/dx)
-    for (j = _nu, jdx = 0; jdx < _mdl_nx; jdx++, j++) {
-      mdl_x_idx = jdx;
+    m_zero(f.Jx);
+    // Jacobian wrt S-function states (ddxdy/dxcxd)
+    for (jdx = 0; jdx < _mdl_nx; jdx++) {
+      j = jdx < mdl_nc? _mdl_nd + _nu + jdx: jdx - mdl_nc;
+      mdl_x_idx = jdx < mdl_nc? _mdl_nd + jdx: jdx - mdl_nc;
       for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
              iscf = spsk*(_nc+_nsc) + _ncf, iscfdx = _mdl_nx,
 	     ii = _nc+_nsc, iidx0 = 0, iidx = _mdl_nx,
 	     rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
-        if (ir[rdx] < _mdl_nx) {
-          mdl_dx_idx = ir[rdx];
+        if (ir[rdx] < mdl_nc) {
+          mdl_dx_idx = _mdl_nd + ir[rdx];
 	  // constraints on derivatives for initial states
 	  if (kk == 0 && _mdl_x0_active[mdl_dx_idx]
               && (_mdl_der_x0_min[mdl_dx_idx] > -Inf
@@ -1153,7 +1202,13 @@ void Prg_SFunctionOpt::update_grds(int kk,
 	      _mdl_x_nominal[mdl_dx_idx] * _mdl_x_nominal[mdl_x_idx];
 	  }
         }
-        else {
+        else if (ir[rdx] < _mdl_nx && kk < _KK) {
+          // junction conditions for discrete states
+          ixf = ir[rdx] - mdl_nc;
+          f.Jx[ixf][j] = pr[rdx] /
+            _mdl_x_nominal[ixf] * _mdl_x_nominal[mdl_x_idx];
+        }
+        else if (ir[rdx] >= _mdl_nx) {
 	  mdl_y_idx = ir[rdx] - _mdl_nx;
 	  if (_mdl_y.active[mdl_y_idx]) {
 	    // need to loop through idx to obtain i considering active outputs
@@ -1233,15 +1288,15 @@ void Prg_SFunctionOpt::update_grds(int kk,
     }
     // Jacobian wrt S-function inputs (ddxdy/du)
     // (note: these are states for the optimizer)
-    for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
+    for (j = _mdl_nd, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
       mdl_u_idx = jdx - _mdl_nx;
       if (_mdl_u.active[mdl_u_idx]) {
 	for (i = 0, idx = _mdl_nx, isc = spsk*_nc, iscdx = _mdl_nx,
                iscf = spsk*(_nc+_nsc) + _ncf, iscfdx = _mdl_nx,
 	       ii = _nc+_nsc, iidx0 = 0, iidx = _mdl_nx,
 	       rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
-          if (ir[rdx] < _mdl_nx) {
-            mdl_dx_idx = ir[rdx];
+          if (ir[rdx] < mdl_nc) {
+            mdl_dx_idx = _mdl_nd + ir[rdx];
             // constraints on derivatives for initial states
             if (kk == 0 && _mdl_x0_active[mdl_dx_idx]
                 && (_mdl_der_x0_min[mdl_dx_idx] > -Inf
@@ -1257,7 +1312,13 @@ void Prg_SFunctionOpt::update_grds(int kk,
                 _mdl_x_nominal[mdl_dx_idx] * _mdl_u_nominal[mdl_u_idx];
             }
           }
-	  else {
+	  else if (ir[rdx] < _mdl_nx && kk < _KK) {
+            // junction conditions for discrete states
+            ixf = ir[rdx] - mdl_nc;
+            f.Jx[ixf][j] = pr[rdx] /
+              _mdl_x_nominal[ixf] * _mdl_u_nominal[mdl_u_idx];
+          }
+	  else if (ir[rdx] >= _mdl_nx) {
 	    mdl_y_idx = ir[rdx] - _mdl_nx;
 	    if (_mdl_y.active[mdl_y_idx]) {
 	      // need to loop to obtain i considering active outputs
@@ -1381,31 +1442,35 @@ void Prg_SFunctionOpt::update_grds(int kk,
   }
 
   // junction conditions for continuous-time equations
+  // Note: f.Jx for discrete states is filled above
   if (kk < _KK) {
     // default values
     m_zero(f.Ju);
-    m_zero(f.Jx);
-    m_ident(f.Jxf);
+    m_zero(f.Jxf);
     // modifications for controlled inputs with zero order hold
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx]) {
 	if (_mdl_u_order[idx] == 0 && (!_multistage || (kk+1)%spsk == 0)) {
 	  // zero order hold at end of stage:
 	  // apply step in u for subsequent stage
-	  f.Jxf[i][i] = 0.0;
 	  f.Jx[i][i] = 1.0;
           help = (ts(kk+1) - ts(kk-spsk/upsk+1))/_t_nominal;
-          if (_t_active && i != _t_scale_i) {
-            f.Ju[i][i*upsk + kk%upsk] = tscale*help;
-            f.Jx[i][_t_scale_i] = _t_scale_nominal*help*u[i*upsk + kk%upsk];
-            f.Ju[i][t_scale_iu] = f.Jx[i][_t_scale_i];
+          if (_t_active && i-_mdl_nd != _t_scale_i) {
+            f.Ju[i][(i-_mdl_nd)*upsk + kk%upsk] = tscale*help;
+            f.Jx[i][t_scale_ix] = _t_scale_nominal*help*u[(i-_mdl_nd)*upsk + kk%upsk];
+            f.Ju[i][t_scale_iu] = f.Jx[i][t_scale_ix];
           }
           else
-            f.Ju[i][i*upsk + kk%upsk] = help;
+            f.Ju[i][(i-_mdl_nd)*upsk + kk%upsk] = help;
 	}
 	i++;
       }
     }
+    assert(i == _mdl_nd + _nu); // problem structure must not have changed
+    // continuous states
+    for (; i < _nx; i++)
+      f.Jxf[i][i] = 1.0;
+
     if (kk == _KK-1) {
       // slack variables at final time
       for (i = _nx; i < _nx + _ns; i++)
@@ -1457,7 +1522,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   v_zero(f0.gx);
   v_zero(f0.gu);
   // controlled inputs
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     // contribution of objective term
     if (_mdl_u.active[idx]) {
       // controlled inputs
@@ -1467,16 +1532,16 @@ void Prg_SFunctionOpt::update_grds(int kk,
       f0.gx[i] += dtu * _mdl_u.weight2[idx] * 2.0 * help;
       if (_t_active) {
         if (_mdl_u_order[idx] == 0) {
-          f0.gx[_t_scale_i] += ddt0 * _mdl_u.weight1[idx] * help;
-          f0.gx[_t_scale_i] += ddt0 * _mdl_u.weight2[idx] * help*help;
+          f0.gx[t_scale_ix] += ddt0 * _mdl_u.weight1[idx] * help;
+          f0.gx[t_scale_ix] += ddt0 * _mdl_u.weight2[idx] * help*help;
           if (kk < _KK) {
             f0.gu[t_scale_iu] += ddt0 * _mdl_u.weight1[idx] * help;
             f0.gu[t_scale_iu] += ddt0 * _mdl_u.weight2[idx] * help*help;
           }
         }
         else if (_mdl_u_order[idx] > 0) {
-          f0.gx[_t_scale_i] += ddtx * _mdl_u.weight1[idx] * help;
-          f0.gx[_t_scale_i] += ddtx * _mdl_u.weight2[idx] * help*help;
+          f0.gx[t_scale_ix] += ddtx * _mdl_u.weight1[idx] * help;
+          f0.gx[t_scale_ix] += ddtx * _mdl_u.weight2[idx] * help*help;
           if (kk < _KK) {
             f0.gu[t_scale_iu] += ddtu * _mdl_u.weight1[idx] * help;
             f0.gu[t_scale_iu] += ddtu * _mdl_u.weight2[idx] * help*help;
@@ -1485,14 +1550,13 @@ void Prg_SFunctionOpt::update_grds(int kk,
       }
       // rates of change
       if (kk < _KK) {
-	help = u[i*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
+	help = u[(i-_mdl_nd)*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
 	  / _mdl_u_nominal[idx];
-	f0.gu[i*upsk + kk%upsk] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
-	f0.gu[i*upsk + kk%upsk] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal *
-	  2.0 * help;
+	f0.gu[(i-_mdl_nd)*upsk + kk%upsk] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
+	f0.gu[(i-_mdl_nd)*upsk + kk%upsk] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal * 2.0 * help;
         if (_t_active) {
-          f0.gx[_t_scale_i] += ddt0 * _mdl_der_u.weight1[idx] * help;
-          f0.gx[_t_scale_i] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
+          f0.gx[t_scale_ix] += ddt0 * _mdl_der_u.weight1[idx] * help;
+          f0.gx[t_scale_ix] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
           f0.gu[t_scale_iu] += ddt0 * _mdl_der_u.weight1[idx] * help;
           f0.gu[t_scale_iu] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
         }
@@ -1509,7 +1573,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
         for (j = 0; j < _nx; j++)
           f0.gx[j] += dt * _mdl_y.weight1[idx] * c.Jx[i + kk%spsk][j];
         if (_t_active) {
-          f0.gx[_t_scale_i] += ddtx * _mdl_y.weight1[idx] * help;
+          f0.gx[t_scale_ix] += ddtx * _mdl_y.weight1[idx] * help;
           if (kk < _KK)
             f0.gu[t_scale_iu] += ddtu * _mdl_y.weight1[idx] * help;
         }
@@ -1519,7 +1583,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
           f0.gx[j] += dt * _mdl_y.weight2[idx] *
             2.0 * help * c.Jx[i + kk%spsk][j];
         if (_t_active) {
-          f0.gx[_t_scale_i] += ddtx * _mdl_y.weight2[idx] * help*help;
+          f0.gx[t_scale_ix] += ddtx * _mdl_y.weight2[idx] * help*help;
           if (kk < _KK)
             f0.gu[t_scale_iu] += ddtu * _mdl_y.weight2[idx] * help*help;
         }
@@ -1543,7 +1607,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
         
       }
       if (_t_active) {
-        f0.gx[_t_scale_i] += ddtx * (_mdl_y_soft.weight1[idx]*help
+        f0.gx[t_scale_ix] += ddtx * (_mdl_y_soft.weight1[idx]*help
                                      + _mdl_y_soft.weight2[idx]*help*help);
         if (kk < _KK)
           f0.gu[t_scale_iu] += ddtu * (_mdl_y_soft.weight1[idx]*help
@@ -1615,7 +1679,7 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
     else
       mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
     else
@@ -1626,7 +1690,7 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   if (kk == 0 || _t_scale_idx < 0)
     _taus[kk] = ts(kk);
   else
-    _taus[kk] = _taus[kk-1] +  mdl_u[_t_scale_idx] * (ts(kk) - ts(kk-1));
+    _taus[kk] = _taus[kk-1] +  _mdl_us[kk-1][_t_scale_idx] * (ts(kk) - ts(kk-1));
 
   // set simulation time
   ssSetT(_SS, _taus[kk]);
@@ -1640,33 +1704,52 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
     SMETHOD_CALL(mdlInitializeConditions, _SS);
   }
 
-  // pass states from optimizer to model
-  real_T *mdl_x = ssGetContStates(_SS);
-  for (i = 0; i < _mdl_nx; i++)
-    mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
+  // disable discrete sample times
+  setSampleHit(false);
+  // mark continuous sample time and process mdlUpdate in case of success
+  if (setContinuousTask(true)) {
+    // pass states from optimizer to model
+    real_T *mdl_xd = ssGetDiscStates(_SS);
+    real_T *mdl_xc = ssGetContStates(_SS);
+    for (i = 0; i < _mdl_nd; i++)
+      mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+    for (i = _mdl_nd; i < _mdl_nx; i++)
+      mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
-  // call mdlUpdate to get discrete events processed
-  // Note: this is done once at the beginning of a sample interval;
-  // no event processing takes place during the integration.
-  if (ssGetmdlUpdate(_SS) != NULL) {
-    // also call mdlOutputs as done by Simulink before each mdlUpdate
-    SMETHOD_CALL2(mdlOutputs, _SS, 0); 
-    SMETHOD_CALL2(mdlUpdate, _SS, 0);
+    // call mdlUpdate to get discrete events processed
+    // Note: this is done once at the beginning of a sample interval;
+    // no event processing takes place during the integration.
+    if (ssGetmdlUpdate(_SS) != NULL) {
+      // also call mdlOutputs as done by Simulink before each mdlUpdate
+      SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+      SMETHOD_CALL2(mdlUpdate, _SS, 0);
+    }
+
+    // take over optimized control inputs from optimizer
+    for (i = 0; i < _nu; i++)
+      xt[_mdl_nd + i] = x[_mdl_nd + i];
+
+    // read back states from model
+    // Note: take optimized initial states from the optimizer
+    // to prevent their overriding by the model, e.g. from parameters;
+    // they are read once in Prg_SFunction::setup_model() instead.
+    for (i = 0; i < _mdl_nd; i++) {
+      if (kk == 0 && _mdl_x0_active[i])
+        xt[i] = x[i];
+      else
+        xt[i] = mdl_xd[i] / _mdl_x_nominal[i];
+    }
+    for (i = _mdl_nd; i < _mdl_nx; i++) {
+      if (kk == 0 && _mdl_x0_active[i])
+        xt[_nu + i] = x[_nu + i];
+      else
+        xt[_nu + i] = mdl_xc[i - _mdl_nd] / _mdl_x_nominal[i];
+    }
   }
-
-  // take over optimized control inputs from optimizer
-  for (i = 0; i < _nu; i++)
-    xt[i] = x[i];
-
-  // read back states from model
-  // Note: take optimized initial states from the optimizer
-  // to prevent their overriding by the model, e.g. from parameters;
-  // they are read once in Prg_SFunction::setup_model() instead.
-  for (i = 0; i < _mdl_nx; i++) {
-    if (kk == 0 && _mdl_x0_active[i])
-      xt[_nu + i] = x[_nu + i];
-    else
-      xt[_nu + i] = mdl_x[i] / _mdl_x_nominal[i];
+  else {
+    // take over states from optimizer
+    for (i = 0; i < _nx; i++)
+      xt[i] = x[i];
   }
 
   // take over slack variables from optimizer at final time
@@ -1695,7 +1778,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
     else
       mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
     else if (_mdl_u_order[i] == 0)
@@ -1713,9 +1796,12 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   ssSetT(_SS, tau);
 
   // pass current states to model
-  real_T *mdl_x = ssGetContStates(_SS);
-  for (i = 0; i < _mdl_nx; i++)
-    mdl_x[i] = x[_nu + i] * _mdl_x_nominal[i];
+  real_T *mdl_xd = ssGetDiscStates(_SS);
+  real_T *mdl_xc = ssGetContStates(_SS);
+  for (i = 0; i < _mdl_nd; i++)
+    mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+  for (i = _mdl_nd; i < _mdl_nx; i++)
+    mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
@@ -1723,12 +1809,13 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
   // evaluate continuous model equations
-  SMETHOD_CALL(mdlDerivatives, _SS);
+  if (_mdl_nx > _mdl_nd)
+    SMETHOD_CALL(mdlDerivatives, _SS);
 
   // get model derivatives and change to residual form
   real_T *mdl_dx = ssGetdX(_SS);
-  for (i = 0; i < _mdl_nx; i++)
-    F[_nu + i] = tscale*mdl_dx[i]/_mdl_x_nominal[i] - dx[_nu + i];
+  for (i = _mdl_nd; i < _mdl_nx; i++)
+    F[_nu + i] = tscale*mdl_dx[i - _mdl_nd]/_mdl_x_nominal[i] - dx[_nu + i];
 
   // model equations for controlled inputs
   for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
@@ -1765,6 +1852,7 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
     // exploit mdlJacobian
     int i, idx, j, jdx, rdx;
     int mdl_u_idx, mdl_x_idx;
+    int mdl_nc = _mdl_nx - _mdl_nd; // number of continuous states
     real_T *pr = ssGetJacobianPr(_SS);
     int_T *ir = ssGetJacobianIr(_SS);
     int_T *jc = ssGetJacobianJc(_SS);
@@ -1773,31 +1861,31 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
 
     // obtain Jx
     m_zero(F.Jx);
-    // Jacobian wrt S-function states (ddx/dx)
+    // Jacobian wrt S-function states (ddxc/dxcxd)
     for (jdx = 0; jdx < _mdl_nx; jdx++) {
-      mdl_x_idx = jdx;
+      mdl_x_idx = jdx < mdl_nc? _mdl_nd + jdx: jdx - mdl_nc;
       for (rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	idx = ir[rdx];
-	if (idx >= _mdl_nx)
+	if (idx >= mdl_nc)
 	  break;
-	i = _nu + idx;
-	j = _nu + jdx;
+	i = _mdl_nd + _nu + idx;
+	j = jdx < mdl_nc? _mdl_nd + _nu + jdx: jdx - mdl_nc;
 	F.Jx[i][j] = pr[rdx] /
-	  _mdl_x_nominal[idx] * _mdl_x_nominal[mdl_x_idx];
+	  _mdl_x_nominal[_mdl_nd + idx] * _mdl_x_nominal[mdl_x_idx];
       }
     }
-    // Jacobian wrt S-function inputs (ddx/du)
+    // Jacobian wrt S-function inputs (ddxc/du)
     // (note: these are states for the optimizer)
-    for (j = 0, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
+    for (j = _mdl_nd, jdx = _mdl_nx; jdx < _mdl_nx + _mdl_nu; jdx++) {
       mdl_u_idx = jdx - _mdl_nx;
       if (_mdl_u.active[mdl_u_idx]) {
 	for (rdx = jc[jdx]; rdx < jc[jdx+1]; rdx++) {
 	  idx = ir[rdx];
-	  if (idx >= _mdl_nx)
+	  if (idx >= mdl_nc)
 	    break;
-	  i = _nu + idx;
+	  i = _mdl_nd + _nu + idx;
 	  F.Jx[i][j] = pr[rdx] /
-	    _mdl_x_nominal[i-_nu] * _mdl_u_nominal[mdl_u_idx];
+	    _mdl_x_nominal[_mdl_nd + idx] * _mdl_u_nominal[mdl_u_idx];
 	}
 	j++;
       }

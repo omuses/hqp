@@ -114,6 +114,11 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
 
 /** @name Declaration of S-function methods. */ 
 /*@{*/
+#define HXI_SS_IS0(ITEM) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S); \
+  inline int_T ssIs##ITEM(SimStruct *S) { \
+    return hssIs##ITEM(S); \
+  }
 #define HXI_SS_NOSET0(ITEM) \
   inline void ssSet##ITEM(SimStruct *S) { \
   }
@@ -140,10 +145,10 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   inline TYPE ssGet##ITEM(SimStruct *S) { \
     return hssGet##ITEM(S); \
   }
-#define HXI_SS_IS1(ITEM) \
-  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S); \
-  inline int_T ssIs##ITEM(SimStruct *S) { \
-    return hssIs##ITEM(S); \
+#define HXI_SS_IS1(ITEM, TYPE1, ARG1) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1); \
+  inline int_T ssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
+    return hssIs##ITEM(S, ARG1); \
   }
 
 #define HXI_SS_SETGET2(ITEM, TYPE1, ARG1, TYPE, ARG) \
@@ -176,10 +181,10 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   inline TYPE ssGet##ITEM(SimStruct *S, TYPE1 ARG1) { \
     return hssGet##ITEM(S, ARG1); \
   }
-#define HXI_SS_IS2(ITEM, TYPE1, ARG1) \
-  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1); \
-  inline int_T ssIs##ITEM(SimStruct *S, TYPE1 ARG1) { \
-    return hssIs##ITEM(S, ARG1); \
+#define HXI_SS_IS2(ITEM, TYPE1, ARG1, TYPE2, ARG2) \
+  HXI_EXTERN int_T hssIs##ITEM(SimStruct *S, TYPE1 ARG1, TYPE2 ARG2); \
+  inline int_T ssIs##ITEM(SimStruct *S, TYPE1 ARG1, TYPE2 ARG2) { \
+    return hssIs##ITEM(S, ARG1, ARG2); \
   }
 /*@}*/
 
@@ -200,6 +205,11 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   inline void mxDestroy##WHAT(mxArray *a) { \
     hmxDestroy##WHAT(a); \
   }
+#define HXI_MX_IS0(ITEM) \
+  HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a); \
+  inline int_T mxIs##ITEM(const mxArray *a) { \
+    return hmxIs##ITEM(a); \
+  }
 #define HXI_MX_SETGET1(ITEM, TYPE, ARG) \
   HXI_EXTERN void hmxSet##ITEM(mxArray *a, TYPE ARG); \
   inline void mxSet##ITEM(mxArray *a, TYPE ARG) { \
@@ -214,11 +224,6 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
   inline TYPE mxGet##ITEM(const mxArray *a) { \
     return hmxGet##ITEM(a); \
   }
-#define HXI_MX_IS1(ITEM) \
-  HXI_EXTERN int_T hmxIs##ITEM(const mxArray *a); \
-  inline int_T mxIs##ITEM(const mxArray *a) { \
-    return hmxIs##ITEM(a); \
-  }
 #define HXI_MX_TO1(ITEM, TYPE) \
   HXI_EXTERN TYPE hmxArrayTo##ITEM(const mxArray *a); \
   inline TYPE mxArrayTo##ITEM(const mxArray *a) { \
@@ -231,6 +236,7 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
 #if defined(HXI_INLINE_S_FUNCTION)
 /* include implementation file for inline S-function */
 
+#undef HXI_SS_IS0
 #undef HXI_SS_NOSET0
 #undef HXI_SS_SETGET1
 #undef HXI_SS_SET1
@@ -247,9 +253,9 @@ HXI_EXTERN void Hxi_mdlTerminate(SimStruct *S);
 #undef HXI_MX_CREATE1
 #undef HXI_MX_CREATE3
 #undef HXI_MX_DESTROY
+#undef HXI_MX_IS0
 #undef HXI_MX_SETGET1
 #undef HXI_MX_GET1
-#undef HXI_MX_IS1
 #undef HXI_MX_TO1
 
 #include "Hxi_SimStruct.C"
