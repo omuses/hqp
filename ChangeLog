@@ -1,4 +1,10 @@
 
+2010-08-09  <rfranke>
+
+        * omu/Prg_SFunctionOpt.[hC]:
+          - add support for integer-valued states (mdl_x_integer)
+          - bug fix Jacobian for junction conditions (introduced 2010-08-08)
+
 2010-08-08  <rfranke>
 
         * omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:

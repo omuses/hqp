@@ -198,6 +198,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
 					   mdl_der_u_weight2)));
 
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_integer)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_periodic)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
@@ -566,6 +567,8 @@ void Prg_SFunctionOpt::setup(int k,
           x.max[i] = _mdl_x0.max[idx] / _mdl_x_nominal[idx];
         else
           x.max[i] = _mdl_x.max[idx] / _mdl_x_nominal[idx];
+        // integer variables
+        x.integer[i] = _mdl_x.integer[idx];
       }
       else
 	x.min[i] = x.max[i] = x.initial[i];
@@ -573,6 +576,8 @@ void Prg_SFunctionOpt::setup(int k,
     else {
       x.min[i] = _mdl_x.min[idx] / _mdl_x_nominal[idx];
       x.max[i] = _mdl_x.max[idx] / _mdl_x_nominal[idx];
+      // integer variables
+      x.integer[i] = _mdl_x.integer[idx];
     }
   }
 
@@ -1463,6 +1468,9 @@ void Prg_SFunctionOpt::update_grds(int kk,
           else
             f.Ju[i][(i-_mdl_nd)*upsk + kk%upsk] = help;
 	}
+        else {
+          f.Jxf[i][i] = 1.0;
+        }
 	i++;
       }
     }

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2009  Ruediger Franke
+    Copyright (C) 1997--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -573,6 +573,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_der_u_weight2() const {return _mdl_der_u.weight2;}
 
+  /// indicate integer valued states
+  const IVECP mdl_x_integer() const {return _mdl_x.integer;}
+
   /// nominal state values (for scaling)
   const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
 
@@ -772,6 +775,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set quadratic weight
   void set_mdl_der_u_weight2(const VECP v)
   {v_copy_elements(v, _mdl_der_u.weight2);}
+
+  /// set integer valued states
+  void set_mdl_x_integer(const IVECP v) {iv_copy_elements(v, _mdl_x.integer);}
 
   /// set nominal states
   void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
