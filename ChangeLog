@@ -1,3 +1,8 @@
+2010-08-14  <rfranke>
+
+	* hqp/Hqp_IpPardiso.[hC], hqp/Hqp_DynLoad.[hC], hqp/Makefile:
+	  - include Pardiso solver interface with regular build
+	    using dynamic load of solver lib at runtime
 
 2010-08-09  <rfranke>
 

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,12 +26,19 @@
  */
 
 #include "Hqp_DynLoad.h"
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
+
+#include "Hqp.h";
 
 //------------------------------------------------------------------------
 Hqp_DynLoad::Hqp_DynLoad()
 {
-  _handle = 0;
+  _handle = NULL;
 }
 
 //------------------------------------------------------------------------
@@ -42,28 +49,47 @@ Hqp_DynLoad::~Hqp_DynLoad()
 }
 
 //------------------------------------------------------------------------
-bool Hqp_DynLoad::open(const char *pathname)
+void Hqp_DynLoad::open(const char *pathname)
 {
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  _handle = (void *)LoadLibrary(pathname);
+  if (!_handle) {
+    m_error(E_INPUT, pathname);
+  }
+#else
   _handle = dlopen(pathname, RTLD_LAZY);
-  return _handle? true: false;
+  if (!_handle) {
+    m_error(E_INPUT, dlerror());
+  }
+#endif
 }
 
 //------------------------------------------------------------------------
 void *Hqp_DynLoad::symbol(const char *name)
 {
-  return dlsym(_handle, name);
-}
-
-//------------------------------------------------------------------------
-const char *Hqp_DynLoad::errmsg()
-{
-  return dlerror();
+  void *sym = NULL;
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  sym = GetProcAddress((HMODULE)_handle, name);
+  if (!sym)
+    m_error(E_NULL, name);
+#else
+  sym = dlsym(_handle, name);
+  if (!sym)
+    m_error(E_NULL, dlerror());
+#endif
+  return sym;
 }
 
 //------------------------------------------------------------------------
 void Hqp_DynLoad::close()
 {
-  dlclose(_handle);
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  if (_handle)
+    FreeLibrary((HMODULE)_handle);
+#else
+  if (_handle)
+    dlclose(_handle);
+#endif
 }
 
 

@@ -1,7 +1,7 @@
-/*
- * Hqp_IpPardiso.h --
- *   - manage the Jacobian matrix of Interior Point algorithms
- *   - use sparse matrix and symmetric BKP factorization
+/**
+ * @file Hqp_IpPardiso.h 
+ *   solve the Jacobian matrix of Interior Point algorithms using
+ *   the Parallel direct solver Pardiso
  *
  * hl, 2006/11/22
  *
@@ -32,20 +32,44 @@
 #define Hqp_IpPardiso_H
 
 #include "Hqp_IpMatrix.h"
+#include "Hqp_DynLoad.h"
 
+/** Signature of used PARDISO function (version 3) */
+typedef int (pardiso_ft)
+	(void *, int *, int *, int *, int *, int *,
+	double *, int *, int *, int *, int *, int *,
+	int *, double *, double *, int *);
 
+/**
+   Solve the Jacobian matrix of Interior Point algorithms 
+   using the Pardiso solver. 
+
+   The solver is loaded dynamically at runtime from the 
+   Intel Math Kernel Library per default (tested with MKL 10.2.5.035).
+   The library containing the solver and the function name can be
+   configured using mat_pardiso_libname and mat_pardiso_fname, respectively.
+ */
 class Hqp_IpPardiso: public Hqp_IpMatrix {
 
  protected:
-  int		_n, _me, _m, _nnz;  	// dimensions
-  int		_sbw;		            // semi band width of _J
-  Real		_tol;		            // tolerance for fill-in vs. stability
+  int		_n, _me, _m, _nnz; ///< dimensions
+  int		_sbw;           ///< semi band width of _J
+  Real		_tol;           ///< tolerance for fill-in vs. stability
   PERM		*_pivot;
   VEC		*_scale;
   VEC		*_r123;
   VEC		*_xyz;
 
-  // parameters of PARDISO solver
+  /**
+   * @name Parameters of PARDISO solver
+   */
+  //@{
+
+  Hqp_DynLoad 	_dl;            ///< dynamic load of solver library
+  char          *_pardiso_libname; ///< name of library containing solver
+  char          *_pardiso_fname;///< name of Pardiso function
+  pardiso_ft    *_pardiso_fp;   ///< pointer to Pardiso function
+  int 		_nparallel;     ///< number of processor cores to use
 
   void	        *_pardiso_pt[64];
   int           _pardiso_parm[64];
@@ -57,14 +81,16 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   VEC           *_v;
   VEC           *_v_raw;
 
-  int           _maxfct;        // Maximum number of numerical factorizations
-  int           _mnum;          // Which factorization to use
-  int           _msglvl;        // Print statistical information in file
-  int           _error;         // Initialize error flag
-  int           _mtype;         // Real symmetric matrix
-  int           _nrhs;          // Number of right hand sides
-  int           _phase;         // solution phase of the PARDISO solver
-  int           _dim;           // dimension of  equation system 
+  int           _maxfct;        ///< Maximum number of numerical factorizations
+  int           _mnum;          ///< Which factorization to use
+  int           _msglvl;        ///< Print statistical information in file
+  int           _error;         ///< Initialize error flag
+  int           _mtype;         ///< Real symmetric matrix
+  int           _nrhs;          ///< Number of right hand sides
+  int           _phase;         ///< solution phase of the PARDISO solver
+  int           _dim;           ///< dimension of  equation system 
+
+  //@}
 
   void          free_pardiso();
   void          reinit_pardiso();
@@ -80,6 +106,28 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   void	step(const Hqp_Program *, const VEC *z, const VEC *w,
 	     const VEC *r1, const VEC *r2, const VEC *r3, const VEC *r4,
 	     VEC *dx, VEC *dy, VEC *dz, VEC *dw);
+
+  /**
+   * @name Member access methods
+   */
+  //@{
+
+  /// library containing solver
+  const char *pardiso_libname() const {return _pardiso_libname;}
+  /// set library containing solver
+  void set_pardiso_libname(const char *value);
+
+  /// name of pardiso function
+  const char *pardiso_fname() const {return _pardiso_fname;}
+  /// set name of pardiso function
+  void set_pardiso_fname(const char *value);
+
+  /// number of processor cores to use
+  int nparallel() const {return _nparallel;}
+  /// set number of processor cores to use
+  void set_nparallel(int value) {_nparallel = value;}
+
+  //@}
 
   char	*name() {return "Pardiso";}
 };

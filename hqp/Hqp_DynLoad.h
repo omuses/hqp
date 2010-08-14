@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2010  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -37,9 +37,8 @@ public:
   Hqp_DynLoad();
   ~Hqp_DynLoad();
 
-  bool open(const char *pathname);
+  void open(const char *pathname);
   void *symbol(const char *name);
-  const char *errmsg();
   void close();
 };
 

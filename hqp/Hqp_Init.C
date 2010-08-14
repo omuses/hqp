@@ -88,6 +88,7 @@ Hqp_MipSolver *theMipSolver = NULL;
 #include "Hqp_IpSpBKP.h"
 #include "Hqp_IpLQDOCP.h"
 #include "Hqp_IpSpSC.h"
+#include "Hqp_IpPardiso.h"
 #include "Hqp_IpsFranke.h"
 #include "Hqp_IpsMehrotra.h"
 #include "Hqp_Client.h"
@@ -97,6 +98,7 @@ static void Hqp_ClassAlloc()
   IF_CLASS_ALLOC("Client", Hqp_Client, Hqp_Solver);
   IF_CLASS_ALLOC("Mehrotra", Hqp_IpsMehrotra, Hqp_Solver);
   IF_CLASS_ALLOC("Franke", Hqp_IpsFranke, Hqp_Solver);
+  IF_CLASS_ALLOC("Pardiso", Hqp_IpPardiso, Hqp_IpMatrix);
   IF_CLASS_ALLOC("SpSC", Hqp_IpSpSC, Hqp_IpMatrix);
   IF_CLASS_ALLOC("LQDOCP", Hqp_IpLQDOCP, Hqp_IpMatrix);
   IF_CLASS_ALLOC("SpBKP", Hqp_IpSpBKP, Hqp_IpMatrix);

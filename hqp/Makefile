@@ -17,6 +17,7 @@ SRCS = 	Hqp_Init.C \
         matBKP.C \
         bdBKP.C \
 	Hqp_impl.C \
+	Hqp_DynLoad.C \
 	Hqp_Program.C \
 	Hqp_Solver.C \
 	Hqp_Client.C \
@@ -26,6 +27,7 @@ SRCS = 	Hqp_Init.C \
 	Hqp_IpSpBKP.C \
 	Hqp_IpRedSpBKP.C \
 	Hqp_IpLQDOCP.C \
+	Hqp_IpPardiso.C \
 	t_mesch.C \
 	Hqp_IpSpSC.C \
 	meschext_hl.C \
