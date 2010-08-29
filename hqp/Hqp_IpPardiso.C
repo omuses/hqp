@@ -33,7 +33,7 @@
 #include <math.h>
 #include <time.h>
 
-//#include <omp.h> // Note: need automatic configuration if available
+//#include <omp.h> // Note: need automatic configuration
 //extern "C" int omp_get_max_threads();
 
 extern "C" {
@@ -67,7 +67,7 @@ Hqp_IpPardiso::Hqp_IpPardiso()
   _xyz = VNULL;
 
   _pardiso_libname = strdup("mkl_core"); // MKL 10.2.5.035
-  _pardiso_fname = strdup("mkl_pds_pardiso"); // MKL 10.2.5.035
+  _pardiso_funcname = strdup("mkl_pds_pardiso"); // MKL 10.2.5.035
   _pardiso_fp = NULL;
   _nparallel = 2; // Note: could use omp_get_max_threads();
 
@@ -82,7 +82,7 @@ Hqp_IpPardiso::Hqp_IpPardiso()
   _ifList.append(new If_Real("mat_tol", &_tol));
   _ifList.append(new If_Int(GET_SET_CB(int, "mat_", nparallel)));
   _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_libname)));
-  _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_fname)));
+  _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_funcname)));
 }
 
 //--------------------------------------------------------------------------
@@ -102,7 +102,7 @@ Hqp_IpPardiso::~Hqp_IpPardiso()
   iv_free(_jv);
 
   free(_pardiso_libname);
-  free(_pardiso_fname);
+  free(_pardiso_funcname);
 }
 
 //--------------------------------------------------------------------------
@@ -164,11 +164,11 @@ void Hqp_IpPardiso::set_pardiso_libname(const char *value)
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::set_pardiso_fname(const char *value)
+void Hqp_IpPardiso::set_pardiso_funcname(const char *value)
 {
-  if (strcmp(value, _pardiso_fname) != 0) {
-    free(_pardiso_fname);
-    _pardiso_fname = strdup(value);
+  if (strcmp(value, _pardiso_funcname) != 0) {
+    free(_pardiso_funcname);
+    _pardiso_funcname = strdup(value);
     _pardiso_fp = NULL; // needs to be loaded in Hqp_IpPardiso::init
   }
 }
@@ -181,7 +181,7 @@ void Hqp_IpPardiso::init(const Hqp_Program *qp)
   // load solver
   if (!_pardiso_fp) {
     _dl.open(_pardiso_libname);
-    _pardiso_fp = (pardiso_ft*)_dl.symbol(_pardiso_fname);
+    _pardiso_fp = (pardiso_ft*)_dl.symbol(_pardiso_funcname);
   }
   if (!_pardiso_fp)
     m_error(E_NULL, "Hqp_IpPardiso::init");

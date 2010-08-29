@@ -1,3 +1,8 @@
+2010-08-29  <rfranke>
+
+	* hqp/Hqp_IpPardiso.[hC]:
+	  - rename mat_fname to mat_funcname
+
 2010-08-14  <rfranke>
 
 	* hqp/Hqp_IpPardiso.[hC], hqp/Hqp_DynLoad.[hC], hqp/Makefile:

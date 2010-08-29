@@ -47,7 +47,7 @@ typedef int (pardiso_ft)
    The solver is loaded dynamically at runtime from the 
    Intel Math Kernel Library per default (tested with MKL 10.2.5.035).
    The library containing the solver and the function name can be
-   configured using mat_pardiso_libname and mat_pardiso_fname, respectively.
+   configured using mat_pardiso_libname and mat_pardiso_funcname, respectively.
  */
 class Hqp_IpPardiso: public Hqp_IpMatrix {
 
@@ -67,7 +67,7 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
 
   Hqp_DynLoad 	_dl;            ///< dynamic load of solver library
   char          *_pardiso_libname; ///< name of library containing solver
-  char          *_pardiso_fname;///< name of Pardiso function
+  char          *_pardiso_funcname;///< name of Pardiso function
   pardiso_ft    *_pardiso_fp;   ///< pointer to Pardiso function
   int 		_nparallel;     ///< number of processor cores to use
 
@@ -118,9 +118,9 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   void set_pardiso_libname(const char *value);
 
   /// name of pardiso function
-  const char *pardiso_fname() const {return _pardiso_fname;}
+  const char *pardiso_funcname() const {return _pardiso_funcname;}
   /// set name of pardiso function
-  void set_pardiso_fname(const char *value);
+  void set_pardiso_funcname(const char *value);
 
   /// number of processor cores to use
   int nparallel() const {return _nparallel;}
