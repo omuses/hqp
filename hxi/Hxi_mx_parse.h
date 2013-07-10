@@ -159,7 +159,7 @@ static const char *mx_count_dimensions(const char *arg, int &m, int &n)
 /**
  * Parse one argument and return a dynamically allocated mxArray.
  * The function recognizes 
- *   - strings delimited by '\''
+ *   - strings delimited by '\'' or '"'
  *   - scalar doubles
  *   - matrices of doubles
  *   - cell arrays enclosed by '{' '}' are parsed as strings
@@ -171,13 +171,13 @@ static mxArray *mx_parse_argument(SimStruct *S, const char *arg)
   int m, n, i, j;
   mxArray *mxa = NULL;
 
-  if (*str == '\'') {
+  if (*str == '\'' || *str == '"') {
     char *arg_str, c, c_old;
     int idx;
     // obtain end of string argument
     str1 = mx_forward_argument(str);
     str++; // step into string
-    while (*str1 != '\'' && str1 > str)
+    while (*str1 != '\'' && *str1 != '"' && str1 > str)
       str1--;
     // create string
     // note: we need to check for quotes on quotes
