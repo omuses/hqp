@@ -1,3 +1,11 @@
+2013-07-10  <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - introduce mdl_der_u_soft_min/max/weight1/weight2
+
+	* hxi/Hxi_mx_parse.h:
+	  - accept double quotes as string delimiters, besides single quotes
+
 2010-08-29  <rfranke>
 
 	* hqp/Hqp_IpPardiso.[hC]:

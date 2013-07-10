@@ -32,7 +32,7 @@
 
 #include <If_Command.h>
 
-#include <Hxi_SFunction.h>
+#include "Hxi_SFunction.h"
 
 /**
  * Basic functionality for formulating an optimization problem for

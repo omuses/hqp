@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2010  Ruediger Franke
+    Copyright (C) 1997--2013  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -147,6 +147,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _nc = 0;
   _ns = 0;
   _nsc = 0;
+  _nsu = 0;
+  _nsuc = 0;
   _ncf = 0;
   _nsf = 0;
   _nscf = 0;
@@ -197,6 +199,15 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 					   mdl_der_u_weight1)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
 					   mdl_der_u_weight2)));
+
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+                                           mdl_der_u_soft_min)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+                                           mdl_der_u_soft_max)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+					   mdl_der_u_soft_weight1)));
+  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
+					   mdl_der_u_soft_weight2)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_integer)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
@@ -274,6 +285,7 @@ void Prg_SFunctionOpt::setup_model()
   _mdl_y0.resize(_mdl_ny);
   _mdl_u.resize(_mdl_nu);
   _mdl_der_u.resize(_mdl_nu);
+  _mdl_der_u_soft.resize(_mdl_nu);
   _mdl_x.alloc(_mdl_nx);
   _mdl_y.resize(_mdl_ny);
   _mdl_y_soft.resize(_mdl_ny);
@@ -366,11 +378,29 @@ void Prg_SFunctionOpt::setup(int k,
 
     // obtain numbers of optimization variables (active model variables)
     _nu = 0;
+    _nsu = 0;
+    _nsuc = 0;
     for (idx = 0; idx < _mdl_nu; idx++) {
       if (idx == _t_scale_idx)
         _t_scale_i = _nu;
       if (_mdl_u.active[idx])
 	_nu++;
+      // count soft constraints for u, i.e. rate-of-change
+      if ((_mdl_der_u_soft.min[idx] > -Inf || _mdl_der_u_soft.max[idx] < Inf) 
+	  && (_mdl_der_u_soft.weight1[idx] != 0.0
+              || _mdl_der_u_soft.weight2[idx] != 0.0)
+          && _mdl_u.active[idx]) {
+	_mdl_der_u_soft.active[idx] = 1;
+	_nsu++;
+        if (_mdl_der_u_soft.min[idx] > -Inf) {
+          _nsuc++;
+        }
+        if (_mdl_der_u_soft.max[idx] < Inf) {
+          _nsuc++;
+        }
+      }
+      else
+        _mdl_der_u_soft.active[idx] = 0;
     }
     // initialize time scaling
     if (_t_scale_idx >= 0) {
@@ -466,20 +496,20 @@ void Prg_SFunctionOpt::setup(int k,
       if (k == _K-1)
         // Note: allocate additional us for slacks at final time
         //       as the final states must have state equations
-        u.alloc(_nu + spsk*_ns + _nsf);
+        u.alloc(_nu + _nsu + spsk*_ns + _nsf);
       else
-        u.alloc(_nu + spsk*_ns);
+        u.alloc(_nu + _nsu + spsk*_ns);
       if (k == 0)
-	c.alloc(spsk*(_nc+_nsc) + _nc0);
+	c.alloc(spsk*(_nc+_nsc) + _nsuc + _nc0);
       else
-	c.alloc(spsk*(_nc+_nsc));
+	c.alloc(spsk*(_nc+_nsc) + _nsuc);
     }
     else {
       spsk = _KK;
       upsk = _KK;
       x.alloc(_nu, _nx);
-      u.alloc(upsk*_nu + spsk*_ns);
-      c.alloc(spsk*(_nc+_nsc) + upsk*_nu);
+      u.alloc(upsk*(_nu+_nsu) + spsk*_ns);
+      c.alloc(spsk*(_nc+_nsc) + upsk*(_nsuc+_nu));
     }
   }
   else {
@@ -543,7 +573,7 @@ void Prg_SFunctionOpt::setup(int k,
     }
   }
   for (idx = 0, i = 0; i < _nx; idx++, i++) {
-    if (i == _mdl_nd) {
+    if (i == _mdl_nd && _nu > 0) {
       // skip control states
       i += _nu - 1;
       idx--;
@@ -582,18 +612,18 @@ void Prg_SFunctionOpt::setup(int k,
   }
 
   // setup control inputs
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = 0, isc = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
       if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
 	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
-	    c.min[spsk*(_nc+_nsc) + i + j] =
+	    c.min[spsk*(_nc+_nsc) + upsk*_nsuc + i + j] =
 	      _mdl_u.min[idx] / _mdl_u_nominal[idx];
 	}
 	if (_mdl_u.max[idx] < Inf) {
 	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
-	    c.max[spsk*(_nc+_nsc) + i + j] =
+	    c.max[spsk*(_nc+_nsc) + upsk*_nsuc + i + j] =
 	      _mdl_u.max[idx] / _mdl_u_nominal[idx];
 	}
       }
@@ -609,6 +639,21 @@ void Prg_SFunctionOpt::setup(int k,
 	    u.max[i+j] =
 	      _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
 	}
+        // rate of change soft bounds
+        if (_mdl_der_u_soft.active[idx]) {
+          if (_mdl_der_u_soft.min[idx] > -Inf) {
+            for (j = 0; j < upsk; j++)
+              c.min[spsk*(_nc+_nsc) + isc + j] =
+                _mdl_der_u_soft.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
+            isc += upsk;
+          }
+          if (_mdl_der_u_soft.max[idx] < Inf) {
+            for (j = 0; j < upsk; j++)
+              c.max[spsk*(_nc+_nsc) + isc + j] =
+                _mdl_der_u_soft.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
+            isc += upsk;
+          }
+        }
 	// initial guess
 	if (_multistage) {
 	  u.initial[i] =
@@ -689,7 +734,7 @@ void Prg_SFunctionOpt::setup(int k,
 
   // setup slack variables for soft constraints
   if (k < _K)
-    for (i = upsk*_nu; i < upsk*_nu + spsk*_ns; i++) {
+    for (i = upsk*_nu; i < upsk*(_nu+_nsu) + spsk*_ns; i++) {
       u.min[i] = 0.0;
       u.initial[i] = 0.0;
     }
@@ -701,7 +746,7 @@ void Prg_SFunctionOpt::setup(int k,
 
   // setup state and output constraints at initial time
   if (k == 0) {
-    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_nx; idx++) {
+    for (i = spsk*(_nc+_nsc) + upsk*_nsuc, idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
         if (_mdl_der_x0_min[idx] > -Inf)
@@ -931,7 +976,7 @@ void Prg_SFunctionOpt::update(int kk,
   }
 
   // contribution of controlled inputs
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = 0, is = 0, isc = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
       // control inputs
       dtu = (_mdl_u_order[idx] == 0)? dt0: dt;
@@ -940,10 +985,26 @@ void Prg_SFunctionOpt::update(int kk,
       f0 += dtu * _mdl_u.weight2[idx] * help*help;
       // rates of change
       if (kk < _KK) {
+        _mdl_der_u[idx] = u[i*upsk + kk%upsk]*_mdl_u_nominal[idx]/_t_nominal;
 	help = u[i*upsk + kk%upsk]/_t_nominal - _mdl_der_u.ref[idx]
 	  / _mdl_u_nominal[idx];
 	f0 += dt0 * _mdl_der_u.weight1[idx] * help;
 	f0 += dt0 * _mdl_der_u.weight2[idx] * help*help;
+        // soft constraints on rates of change
+        if (_mdl_der_u_soft.active[idx]) {
+          help = u[upsk*_nu + is + kk%upsk]/_t_nominal;
+          f0 += dt0 * (_mdl_der_u_soft.weight1[idx]*help
+                       + _mdl_der_u_soft.weight2[idx]*help*help);
+          if (_mdl_der_u_soft.min[idx] > -Inf) {
+            c[spsk*(_nc+_nsc) + isc + kk%upsk] = u[i*upsk + kk%upsk]/_t_nominal + help;
+            isc += upsk;
+          }
+          if (_mdl_der_u_soft.max[idx] < Inf) {
+            c[spsk*(_nc+_nsc) + isc + kk%upsk] = u[i*upsk + kk%upsk]/_t_nominal - help;
+            isc += upsk;
+          }
+          is += upsk;
+        }
       }
       i++;
     }
@@ -971,7 +1032,7 @@ void Prg_SFunctionOpt::update(int kk,
     // consider soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
       if (kk < _KK)
-	help = u[upsk*_nu + is + kk%spsk];
+	help = u[upsk*(_nu+_nsu) + is + kk%spsk];
       else
 	help = x[_nx + is + kk%spsk];
 
@@ -992,7 +1053,7 @@ void Prg_SFunctionOpt::update(int kk,
 
   // additional terms at initial time
   if (kk == 0) {
-    i = spsk*(_nc+_nsc);
+    i = spsk*(_nc+_nsc) + upsk*_nsuc;
     // constraints on derivatives of initial states
     if (_mdl_nx > _mdl_nd) {
       SMETHOD_CALL(mdlDerivatives, _SS);
@@ -1124,9 +1185,9 @@ void Prg_SFunctionOpt::update(int kk,
     // and because states need to be defined with state equations
     if (kk == _KK-1) {
       for (; i < _nx + _ns; i++)
-	f[i] = u[upsk*_nu + (i-_nx+1)*spsk-1];
+	f[i] = u[upsk*(_nu+_nsu) + (i-_nx+1)*spsk-1];
       for (; i < _nx + _ns + _nsf; i++)
-	f[i] = u[upsk*_nu + spsk*_ns + i - _nx - _ns];
+	f[i] = u[upsk*(_nu+_nsu) + spsk*_ns + i - _nx - _ns];
     }
   }
 
@@ -1153,6 +1214,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   int t_scale_iu = _t_scale_i*upsk + kk%upsk;
   int t_scale_ix = _mdl_nd + _t_scale_i;
   double help;
+  int analyticJac = 0;
 
   if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
@@ -1160,6 +1222,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
   }
   else {
+    analyticJac = 1;
     // exploit mdlJacobian to obtain c.Jx
     int mdl_u_idx, mdl_x_idx, mdl_dx_idx, mdl_y_idx;
     int mdl_nc = _mdl_nx - _mdl_nd; // number of continuous states
@@ -1409,14 +1472,14 @@ void Prg_SFunctionOpt::update_grds(int kk,
       if (_mdl_y_soft.active[idx] == 1) {
 	if (_mdl_y_soft.min[idx] > -Inf) {
 	  if (kk < _KK)
-	    c.Ju[isc + kk%spsk][upsk*_nu + is + kk%spsk] += 1.0;
+	    c.Ju[isc + kk%spsk][upsk*(_nu+_nsu) + is + kk%spsk] += 1.0;
 	  else
 	    c.Jx[isc + kk%spsk][_nx + is + kk%spsk] += 1.0;
 	  isc += spsk;
 	}
 	if (_mdl_y_soft.max[idx] < Inf) {
 	  if (kk < _KK)
-	    c.Ju[isc + kk%spsk][upsk*_nu + is + kk%spsk] -= 1.0;
+	    c.Ju[isc + kk%spsk][upsk*(_nu+_nsu) + is + kk%spsk] -= 1.0;
 	  else
 	    c.Jx[isc + kk%spsk][_nx + is + kk%spsk] -= 1.0;
 	  isc += spsk;
@@ -1484,13 +1547,14 @@ void Prg_SFunctionOpt::update_grds(int kk,
       for (i = _nx; i < _nx + _ns; i++)
 	// note: f.Jxf has only _nx columns, but _nx+_ns rows
 	// that is why don't set f.Jxf[i][i] = 0.0;
-	f.Ju[i][upsk*_nu + (i-_nx+1)*spsk-1] = 1.0;
+	f.Ju[i][upsk*(_nu+_nsu) + (i-_nx+1)*spsk-1] = 1.0;
       for (; i < _nx + _ns; i++)
-	f.Ju[i][upsk*_nu + spsk*_ns + i - _nx - _ns] = 1.0;
+	f.Ju[i][upsk*(_nu+_nsu) + spsk*_ns + i - _nx - _ns] = 1.0;
     }
   }
 
-  // apply chain rule to calculate gradient of f0 
+  // apply chain rule to calculate gradient of f0
+  // (and Jacobian for soft constraints on rates of change)
   // (do this as well if Omu_Program::update_grds was used, as complete
   //  numeric differentiation gives bad results for quadratic terms)
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
@@ -1530,7 +1594,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   v_zero(f0.gx);
   v_zero(f0.gu);
   // controlled inputs
-  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, is = 0, isc = 0, idx = 0; idx < _mdl_nu; idx++) {
     // contribution of objective term
     if (_mdl_u.active[idx]) {
       // controlled inputs
@@ -1568,6 +1632,33 @@ void Prg_SFunctionOpt::update_grds(int kk,
           f0.gu[t_scale_iu] += ddt0 * _mdl_der_u.weight1[idx] * help;
           f0.gu[t_scale_iu] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
         }
+        // soft constraints on rates of change
+        if (_mdl_der_u_soft.active[idx]) {
+          help = u[upsk*_nu + is + kk%upsk]/_t_nominal;
+          f0.gu[upsk*_nu + is + kk%upsk] += dt0 * _mdl_der_u_soft.weight1[idx]/_t_nominal;
+          f0.gu[upsk*_nu + is + kk%upsk] += dt0 * _mdl_der_u_soft.weight2[idx]/_t_nominal * 2.0 * help;
+          if (_t_active) {
+            f0.gx[t_scale_ix] += ddt0 * _mdl_der_u_soft.weight1[idx] * help;
+            f0.gx[t_scale_ix] += ddt0 * _mdl_der_u_soft.weight2[idx] * help*help;
+            f0.gu[t_scale_iu] += ddt0 * _mdl_der_u_soft.weight1[idx] * help;
+            f0.gu[t_scale_iu] += ddt0 * _mdl_der_u_soft.weight2[idx] * help*help;
+          }
+          if (analyticJac && _mdl_der_u_soft.min[idx] > -Inf) {
+            c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][i*upsk + kk%upsk]
+              += 1.0/_t_nominal;
+            c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][upsk*_nu + is + kk%upsk]
+              += 1.0/_t_nominal;
+            isc += upsk;
+          }
+          if (analyticJac && _mdl_der_u_soft.max[idx] < Inf) {
+            c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][i*upsk + kk%upsk]
+              += 1.0/_t_nominal;
+            c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][upsk*_nu + is + kk%upsk]
+              -= 1.0/_t_nominal;
+            isc += upsk;
+          }
+          is += upsk;
+        }
       }
       i++;
     }
@@ -1602,8 +1693,8 @@ void Prg_SFunctionOpt::update_grds(int kk,
     // contribution of soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
       if (kk < _KK) {
-        help = u[upsk*_nu + is + kk%spsk];
-	f0.gu[upsk*_nu + is + kk%spsk]
+        help = u[upsk*(_nu+_nsu) + is + kk%spsk];
+	f0.gu[upsk*(_nu+_nsu) + is + kk%spsk]
 	  += dt * (_mdl_y_soft.weight1[idx]
 		   + 2.0*_mdl_y_soft.weight2[idx]*help);
       }
@@ -1627,7 +1718,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
 
   // additional terms at initial time
   if (kk == 0) {
-    for (i = spsk*(_nc+_nsc), idx = 0; idx < _mdl_ny; idx++) {
+    for (i = spsk*(_nc+_nsc) + upsk*_nsuc, idx = 0; idx < _mdl_ny; idx++) {
       // contributions of final objective terms
       if (_mdl_y0.active[idx]) {
         if (_mdl_y0.weight1[idx] != 0.0) {

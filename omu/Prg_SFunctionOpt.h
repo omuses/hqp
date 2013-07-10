@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2010  Ruediger Franke
+    Copyright (C) 1997--2013  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -296,6 +296,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs
   Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
+  Omu_OptVarVec _mdl_der_u_soft;///< relaxed rates of change of inputs
   Omu_VariableVec _mdl_x;	///< state bounds
   Omu_OptVarVec _mdl_y; 	///< model outputs
   Omu_OptVarVec _mdl_y_soft; 	///< attributes for relaxed output constraints
@@ -324,6 +325,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_ncf;	///< number of constrained/used outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
+  int		_nsu;	///< number of slack variables for soft cns on inputs
+  int		_nsuc;	///< number of soft constraints on inputs
   int		_nsf;	///< number of slacks for soft constraints at final time
   int		_nscf;	///< number of soft constraints at final time
   int 		_multistage; 	///< treat as multistage problem
@@ -573,6 +576,18 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// weight for quadratic objective term (default: 0)
   const VECP mdl_der_u_weight2() const {return _mdl_der_u.weight2;}
 
+  /// soft lower bounds for rates of change of optimized model inputs
+  const VECP mdl_der_u_soft_min() const {return _mdl_der_u_soft.min;}
+
+  /// soft upper bounds for rates of change of optimized model inputs
+  const VECP mdl_der_u_soft_max() const {return _mdl_der_u_soft.max;}
+
+  /// weight for linear objective term (default: 0)
+  const VECP mdl_der_u_soft_weight1() const {return _mdl_der_u_soft.weight1;}
+
+  /// weight for quadratic objective term (default: 0)
+  const VECP mdl_der_u_soft_weight2() const {return _mdl_der_u_soft.weight2;}
+
   /// indicate integer valued states
   const IVECP mdl_x_integer() const {return _mdl_x.integer;}
 
@@ -775,6 +790,22 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set quadratic weight
   void set_mdl_der_u_weight2(const VECP v)
   {v_copy_elements(v, _mdl_der_u.weight2);}
+
+  /// set soft lower bounds for rates of change of model inputs
+  void set_mdl_der_u_soft_min(const VECP v)
+  {v_copy_elements(v, _mdl_der_u_soft.min);}
+
+  /// set soft upper bounds for rates of change of model inputs
+  void set_mdl_der_u_soft_max(const VECP v)
+  {v_copy_elements(v, _mdl_der_u_soft.max);}
+
+  /// set linear weight
+  void set_mdl_der_u_soft_weight1(const VECP v)
+  {v_copy_elements(v, _mdl_der_u_soft.weight1);}
+
+  /// set quadratic weight
+  void set_mdl_der_u_soft_weight2(const VECP v)
+  {v_copy_elements(v, _mdl_der_u_soft.weight2);}
 
   /// set integer valued states
   void set_mdl_x_integer(const IVECP v) {iv_copy_elements(v, _mdl_x.integer);}
