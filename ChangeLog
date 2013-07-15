@@ -1,3 +1,8 @@
+2013-07-15  <rfranke>
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  - bug fixes for discrete-time states
+
 2013-07-10  <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]:

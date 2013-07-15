@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2010  Ruediger Franke
+    Copyright (C) 1997--2013  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -668,7 +668,7 @@ void Prg_SFunctionEst::update(int kk,
         }
         // read discrete states from model
         for (i = 0; i < _mdl_nd; i++) {
-          f[_np + i] = mdl_xd[i];
+          f[_np + i] = mdl_xd[i] / _mdl_x_nominal[i];
         }
       }
       // junction conditions for continuous-time state equations

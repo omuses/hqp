@@ -836,7 +836,7 @@ void Prg_SFunctionOpt::setup_struct(int k,
           F.Jdx[i][i] = -1.0; // continuous integration for first order hold
 	  if (_multistage) {
 	    // F.Ju is constant for multistage and not _t_active
-	    F.Ju[i][i] = 1.0/_t_nominal;
+	    F.Ju[i][i-_mdl_nd] = 1.0/_t_nominal;
             // an additional element needs to be allocated for _t_active
             if (_t_active)
               F.Ju[i][_t_scale_i] = 1.0;
@@ -1154,7 +1154,7 @@ void Prg_SFunctionOpt::update(int kk,
       }
       // read discrete states from model
       for (i = 0; i < _mdl_nd; i++) {
-        f[i] = mdl_xd[i];
+        f[i] = mdl_xd[i] / _mdl_x_nominal[i];
       }
     }
     // update controlled inputs from optimizer
@@ -1867,7 +1867,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   int upsk = _multistage? 1: _KK;
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
   double tscale = _t_active?
-    (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
+    (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
 
   // initialize model inputs
   real_T *mdl_u = NULL;
@@ -1880,7 +1880,7 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
-    else if (_mdl_u_order[i] == 0)
+    else if (_mdl_u_order[idx] == 0)
       mdl_u[idx] = _mdl_us[kk][idx];
     else
       mdl_u[idx] = _mdl_us[kk][idx] * (1 - rt) + _mdl_us[kk+1][idx] * rt;
@@ -1917,18 +1917,18 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
     F[_nu + i] = tscale*mdl_dx[i - _mdl_nd]/_mdl_x_nominal[i] - dx[_nu + i];
 
   // model equations for controlled inputs
-  for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+  for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
       if (_mdl_u_order[idx] == 0)
 	// zero order hold
 	F[i] = 0.0 - dx[i];
       else
 	// piecewise linear interpolation
-	F[i] = tscale*u[i*upsk + kk%upsk]/_t_nominal - dx[i];
+	F[i] = tscale*u[(i-_mdl_nd)*upsk + kk%upsk]/_t_nominal - dx[i];
       i++;
     }
   }
-  assert(i == _nu); // problem structure must not have changed
+  assert(i == _mdl_nd + _nu); // problem structure must not have changed
 
   // obtain Jacobians if required
   if (F.is_required_J())
@@ -1999,16 +1999,16 @@ void Prg_SFunctionOpt::continuous_grds(int kk, double t,
     int i, idx;
     int upsk = _multistage? 1: _KK;
     double tscale = _t_active?
-      (x[_t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
+      (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
     m_zero(F.Ju);
-    for (i = 0, idx = 0; idx < _mdl_nu; idx++) {
+    for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_u.active[idx]) {
         if (_mdl_u_order[idx] > 0) {
           // piecewise linear interpolation
-          F.Ju[i][i*upsk + kk%upsk] = tscale/_t_nominal;
+          F.Ju[i][(i-_mdl_nd)*upsk + kk%upsk] = tscale/_t_nominal;
           if (_t_active)
             F.Ju[i][_t_scale_i*upsk + kk%upsk] =
-              _t_scale_nominal * u[i*upsk + kk%upsk]/_t_nominal;
+              _t_scale_nominal * u[(i-_mdl_nd)*upsk + kk%upsk]/_t_nominal;
         }
         i++;
       }
