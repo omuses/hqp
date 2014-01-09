@@ -26,7 +26,7 @@ INC_DIR_ROOT = $(INSTALL_PREFIX)/include
 INC_DIR = $(INC_DIR_ROOT)/hqp
 install::
 	@PWD=`pwd`
-	if test ! -d $(INSTALL_PREFIX); then mkdirhier $(INSTALL_PREFIX); fi
+	if test ! -d $(INSTALL_PREFIX); then mkdir -p $(INSTALL_PREFIX); fi
 # install libhqp
 	@if test ! -d $(LIB_DIR_ROOT); then mkdir $(LIB_DIR_ROOT); fi
 	$(INSTALL) lib/$(LIB_PREFIX)hqp$(LIB_SUFFIX) \

@@ -69,7 +69,7 @@ void *Hqp_DynLoad::symbol(const char *name)
 {
   void *sym = NULL;
 #if defined(_MSC_VER) || defined(__MINGW32__)
-  sym = GetProcAddress((HMODULE)_handle, name);
+  sym = (void *)GetProcAddress((HMODULE)_handle, name);
   if (!sym)
     m_error(E_NULL, name);
 #else

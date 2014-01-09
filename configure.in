@@ -717,6 +717,7 @@ AC_SUBST(RKSUITE_O)
 if test "$hqp_libs_resolved" = "yes"; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(FORTRAN_LIBS)"
 else
+  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(FORTRAN_LIBS)"
   ODC_MACH_OBJS="$ODC_MACH_OBJS \$(FORTRAN_LIBS)"
 fi
 
