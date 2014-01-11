@@ -26,7 +26,7 @@ Furthermore Omuses provides numerical solvers for differential equations definin
 problems. Besides own implementations (Dopri5, Euler, GRK4, IMP, OdeTs, SDIRK, RK4), the following additional software packages are currently integrated:
 
 - [DASPK](http://www.engineering.ucsb.edu/~cse/software.html): solution of implicit and stiff differential equations
-- [RKsuite](http://www.netlib.org"): solution of explicit differential equations
+- [RKsuite](http://www.netlib.org/ode/rksuite/): solution of explicit differential equations
 
 Please note that the integrated software packages underly copyright restrictions of their respective authors. That is why the DASPK software is not included, though an interface is provided. 
 
