@@ -53,10 +53,15 @@ if test ! -z "${with_tcl}"; then
   eval TCL_PREFIX=${TCL_PREFIX}
   eval TCL_EXEC_PREFIX=${TCL_EXEC_PREFIX}
   eval TCL_LIB_FILE=${TCL_LIB_FILE}
-  # TCL_LIB_SPEC overrides TCL_LIBS as defined below
+  # TCL_LIB/INCLUDE_SPEC override TCL_LIBS/INCLUDE as defined below
   eval TCL_LIB_SPEC='${TCL_LIB_SPEC}'
+  eval TCL_INCLUDE_SPEC='${TCL_INCLUDE_SPEC}'
   
+  # guess tclsh
   TCLSH=${TCL_EXEC_PREFIX}/bin/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}
+  if test ! -f "${TCLSH}"; then
+    TCLSH=${TCL_EXEC_PREFIX}/bin/tclsh${TCL_VERSION}
+  fi
 
 else
   # check for tclsh in PATH (only if no --with-tcl given)
@@ -539,8 +544,18 @@ AC_MSG_RESULT([$with_tclinclude])
 AC_MSG_CHECKING([for tcl.h])
 
 if test -z "${with_tclinclude}"; then
-  # guess standard location
-  with_tclinclude=${TCL_PREFIX}/include
+  if test ! -z "$TCL_INCLUDE_SPEC"; then
+    # strip prefix like -I
+    TCL_IS=`expr index "$TCL_INCLUDE_SPEC" "$TCL_PREFIX"`
+    TCL_IE=`expr length "$TCL_INCLUDE_SPEC"`
+    with_tclinclude=`expr substr "$TCL_INCLUDE_SPEC" "$TCL_IS" "$TCL_IE"`
+  else
+    # guess location
+    with_tclinclude=${TCL_PREFIX}/include
+    if test ! -f ${with_tclinclude}/tcl.h; then
+      with_tclinclude=${with_tclinclude}/tcl${TCL_VERSION}
+    fi
+  fi
 fi
 
 if test -f ${with_tclinclude}/tcl.h; then
