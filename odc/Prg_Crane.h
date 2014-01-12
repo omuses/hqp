@@ -56,7 +56,7 @@ class Prg_Crane: public Omu_Program {
 
   Prg_Crane();
 
-  char *name() {return "Crane";}
+  const char *name() {return "Crane";}
 };  
 
 #endif

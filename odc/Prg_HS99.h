@@ -24,7 +24,7 @@ class Prg_HS99: public Omu_Program {
 
  public:
 
-  char *name() {return "HS99";}
+  const char *name() {return "HS99";}
 };  
 
 #endif

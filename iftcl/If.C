@@ -179,7 +179,7 @@ extern "C" int If_GetString(const char *name, const char *&val)
 }
 
 //-----------------------------------------------------------------------
-extern "C" int If_Eval(char *command)
+extern "C" int If_Eval(const char *command)
 {
   if (!theInterp)
     return IF_ERROR;

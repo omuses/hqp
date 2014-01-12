@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -50,7 +50,7 @@ class Hqp_Client: public Hqp_Solver {
   int	step(IF_DEF_ARGS);
   int 	solve(IF_DEF_ARGS);
 
-  char	*name() {return "Client";}
+  const char *name() {return "Client";}
 };  
 
 #endif

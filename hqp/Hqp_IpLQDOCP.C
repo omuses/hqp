@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1996--2002  Eckhard Arnold
+    Copyright (C) 1996--2014  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -590,11 +590,11 @@ void Hqp_IpLQDOCP::myfree()
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpLQDOCP::dump(char *fname)
+void Hqp_IpLQDOCP::dump(const char *fname)
 {
   int k;
   FILE *fp;
-  char *s1 = "==========";
+  const char *s1 = "==========";
 
   fp = fopen(fname, "w");
   fprintf(fp, "%s%s   Hqp_IpLQDOCP::dump  %s%s\n", s1, s1, s1, s1);
@@ -986,7 +986,7 @@ void Hqp_IpLQDOCP::Residuum(const VEC *r1, const VEC *r2, const VEC *r3,
 			    const VEC *dz, const VEC *dw, const int dump)
 {
   FILE *fp = NULL;
-  char *fname = "dump_residuum.dat";
+  const char *fname = "dump_residuum.dat";
 
   if ( dump ) 
     fp = fopen(fname, "w");

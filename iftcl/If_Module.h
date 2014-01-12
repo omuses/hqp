@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -49,7 +49,7 @@ class If_Module: public If_Element {
   /** create requested module */
   int invoke(Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
   {
-    char *fallback;
+    const char *fallback;
 
     if (objc == 1) {
       if (*_module)

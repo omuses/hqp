@@ -13,7 +13,7 @@
  */
 
 /*
-    Copyright (C) 1999--2003  Eckhard Arnold
+    Copyright (C) 1999--2014  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -50,7 +50,7 @@ class Omu_IntIMP: public Omu_Integrator {
     Omu_IntIMP();     ///< constructor
     ~Omu_IntIMP();    ///< destructor
 
-    char *name() {return "IMP";}
+    const char *name() {return "IMP";}
 
     // interface routines
     virtual void init(int k,

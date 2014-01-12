@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -47,7 +47,7 @@ class Omu_IntRKsuite: public Omu_IntODE {
 
   //@{
 
-  char *name() {return "RKsuite";}
+  const char *name() {return "RKsuite";}
 
   void ode_solve(double tstart, VECP y, const VECP u, double tend);
 

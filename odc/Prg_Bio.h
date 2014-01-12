@@ -16,7 +16,7 @@
  */
 
 /*
-    Copyright (C) 1996--2003  Eckhard Arnold
+    Copyright (C) 1996--2014  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -77,7 +77,7 @@ class Prg_Bio: public Omu_Program {
     Prg_Bio();
     ~Prg_Bio();
 
-    char *name() {return "Bio";}
+    const char *name() {return "Bio";}
 };  
 
 #endif

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -49,7 +49,7 @@ class Hqp_HL_DScale: public Hqp_HL {
   void setup(Hqp_SqpProgram *);
   void update(const VEC *s, const VEC *u, Real alpha, Hqp_SqpProgram *);
 
-  char *name() {return "DScale";}
+  const char *name() {return "DScale";}
 };  
 
 

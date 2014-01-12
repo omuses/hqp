@@ -19,7 +19,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -276,7 +276,7 @@ int Hqp_IpsFranke::hot_start(IF_CMD_ARGS)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::step(int, char *[], char **ret)
+int Hqp_IpsFranke::step(int, const char *[], const char **)
 {
   int	i, i_end;
   Real 	mu;
@@ -388,7 +388,7 @@ int Hqp_IpsFranke::step(int, char *[], char **ret)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::solve(int, char *[], char **ret)
+int Hqp_IpsFranke::solve(int, const char *[], const char ** /*ret*/)
 {
   Real 	gap1 = 0.0;
 

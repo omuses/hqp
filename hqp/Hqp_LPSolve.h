@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -85,7 +85,7 @@ class Hqp_LPSolve : public Hqp_MipSolver {
 
   //@}
 
-  virtual char *name() {return "LPSolve";} ///< solver name
+  const char *name() {return "LPSolve";} ///< solver name
 };  
 
 

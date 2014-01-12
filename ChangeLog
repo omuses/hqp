@@ -1,5 +1,8 @@
 2014-01-11  <rfranke>
 
+	* iftcl, hqp, omu, odc:
+	  - clean up pointers to string constants
+
 	* configure.in, configure:
 	  - improve autoconf of tcl.h
 

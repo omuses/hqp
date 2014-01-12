@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -294,7 +294,7 @@ class Prg_SFunctionEst: public Prg_SFunction {
   Prg_SFunctionEst();		///< constructor
   ~Prg_SFunctionEst();		///< destructor
 
-  char *name() {return "SFunctionEst";} ///< name SFunctionEst
+  const char *name() {return "SFunctionEst";} ///< name SFunctionEst
 
   /**
    * @name Access methods for program specific members (If prefix: prg_)

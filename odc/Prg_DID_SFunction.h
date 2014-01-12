@@ -44,7 +44,7 @@ class Prg_DID_SFunction: public Omu_Program {
   Prg_DID_SFunction();
   ~Prg_DID_SFunction();
 
-  char *name() {return "DID_SFunction";}
+  const char *name() {return "DID_SFunction";}
 };  
 
 #endif

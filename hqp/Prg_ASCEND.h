@@ -120,7 +120,7 @@ class Prg_ASCEND: public Hqp_SqpProgram {
   void	update_fbd();
   void	update(const VECP y, const VECP z);
 
-  char *name() {return "ASCEND";}
+  const char *name() {return "ASCEND";}
 };  
 
 

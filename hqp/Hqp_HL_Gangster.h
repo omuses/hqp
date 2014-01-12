@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -47,7 +47,7 @@ class Hqp_HL_Gangster: public Hqp_HL {
 
   void update_Q(const VEC *s, const VEC *u, Hqp_SqpProgram *);
 
-  char *name() {return "Gangster";}
+  const char *name() {return "Gangster";}
 };  
 
 

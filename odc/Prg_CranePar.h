@@ -56,7 +56,7 @@ class Prg_CranePar: public Omu_Program {
 
   int disturb(IF_DEF_ARGS);		// method to be called trough Tcl
 
-  char *name() {return "CranePar";}
+  const char *name() {return "CranePar";}
 };  
 
 #endif

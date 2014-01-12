@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -128,7 +128,7 @@ class Prg_CUTE_ST: public Hqp_SqpProgram {
 
   int	write_soln(IF_DEF_ARGS);	// write the solution
 
-  char *name() {return "CUTE_ST";}
+  const char *name() {return "CUTE_ST";}
 };  
 
 

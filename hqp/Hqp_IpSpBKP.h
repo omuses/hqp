@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -58,7 +58,7 @@ class Hqp_IpSpBKP: public Hqp_IpMatrix {
 	     const VEC *r1, const VEC *r2, const VEC *r3, const VEC *r4,
 	     VEC *dx, VEC *dy, VEC *dz, VEC *dw);
 
-  char	*name() {return "SpBKP";}
+  const char *name() {return "SpBKP";}
 };
 
 #endif

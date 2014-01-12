@@ -30,7 +30,7 @@ class Prg_HS99omu: public Omu_Program {
 
  public:
 
-  char *name() {return "HS99omu";}
+  const char *name() {return "HS99omu";}
 };  
 
 #endif

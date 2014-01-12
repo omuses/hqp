@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2004  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -91,7 +91,7 @@ extern "C" {
   IF_API int If_GetString(const char *name, const char *&val);
 
   /** Evaluate a command. */
-  IF_API int If_Eval(char *command);
+  IF_API int If_Eval(const char *command);
 
   /** Return the result string produced by the last If function call.
       After a failed calculation, the corresponding error message

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2008  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -187,7 +187,7 @@ class Omu_Integrator {
   //@}
 
   /** Name of a specific integrator. */
-  virtual char *name() = 0;
+  virtual const char *name() = 0;
 
  protected:
 

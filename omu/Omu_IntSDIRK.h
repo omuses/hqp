@@ -52,7 +52,7 @@ class Omu_IntSDIRK: public Omu_Integrator {
 
   //@{ 
 
-  char *name() {return "SDIRK";}
+  const char *name() {return "SDIRK";}
 
   // interface routine from Omu_Integrator
   virtual void init(int k,

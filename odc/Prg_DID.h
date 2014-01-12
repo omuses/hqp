@@ -33,7 +33,7 @@ class Prg_DID: public Omu_Program {
 
   Prg_DID();
 
-  char *name() {return "DID";}
+  const char *name() {return "DID";}
 };  
 
 #endif

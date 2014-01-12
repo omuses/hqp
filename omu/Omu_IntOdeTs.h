@@ -54,7 +54,7 @@ class Omu_IntOdeTs: public Omu_Integrator {
 
   //@{
 
-  char *name() {return "OdeTs";}
+  const char *name() {return "OdeTs";}
 
   void init_stage(int k, const Omu_VariableVec &x, 
 		  const Omu_VariableVec &u,

@@ -129,7 +129,7 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
 
   //@}
 
-  char	*name() {return "Pardiso";}
+  const char *name() {return "Pardiso";}
 };
 
 #endif

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -67,7 +67,7 @@ class Hqp_SqpSchittkowski: public Hqp_SqpSolver {
 
   int	init(IF_DEF_ARGS);
   
-  char	*name() {return "Schittkowski";}
+  const char *name() {return "Schittkowski";}
 };  
 
 

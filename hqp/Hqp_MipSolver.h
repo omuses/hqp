@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -61,7 +61,7 @@ class Hqp_MipSolver {
   /** initialize and solve a MIP for an optimization problem given in _prg */
   virtual int solve(IF_DEF_ARGS) = 0;
 
-  virtual char *name() = 0; 	///< name of mixed integer solver
+  virtual const char *name() = 0; ///< name of mixed integer solver
 };  
 
 

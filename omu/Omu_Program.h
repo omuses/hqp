@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2006  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -246,7 +246,7 @@ class Omu_Program {
   /**
    * Textual name of a problem definition.
    */
-  virtual char *name() = 0;
+  virtual const char *name() = 0;
 
   /**
    * @name Depreciated methods

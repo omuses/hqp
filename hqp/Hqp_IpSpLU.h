@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -65,7 +65,7 @@ class Hqp_IpSpLU: public Hqp_IpMatrix {
   virtual Real	solve(const VEC *r1, const VEC *r2, const VEC *r3,
 		      VEC *dx, VEC *dy, VEC *dz);
 
-  char	*name() {return "SpLU";}
+  const char *name() {return "SpLU";}
 };
 
 #endif

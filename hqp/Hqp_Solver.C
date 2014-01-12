@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -63,9 +63,9 @@ Hqp_Solver::~Hqp_Solver()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_Solver::result_str(int, char *[], char **result)
+int Hqp_Solver::result_str(int, const char *[], const char **result)
 {
-  *result = (char *)hqp_result_strings[_result];
+  *result = hqp_result_strings[_result];
   return IF_OK;
 }
 

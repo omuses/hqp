@@ -13,7 +13,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -89,7 +89,7 @@ class Hqp_IpsFranke: public Hqp_Solver {
   Real		gap() {return _gap;}
   Real		zeta() {return _zeta;}
 
-  char	*name() {return "Franke";}
+  const char *name() {return "Franke";}
 };  
 
 #endif

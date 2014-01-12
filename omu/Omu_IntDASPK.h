@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1996--2003  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2014  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -63,7 +63,7 @@ class Omu_IntDASPK: public Omu_Integrator {
 
   //@{
 
-  char *name() {return "DASPK";}
+  const char *name() {return "DASPK";}
 
   virtual void init(int k,
 		    const Omu_StateVec &xc, const Omu_Vec &q,

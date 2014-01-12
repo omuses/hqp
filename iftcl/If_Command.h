@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2001  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,8 +30,9 @@
 
 #include "If_Element.h"
 
-#define IF_CMD_ARGS	int, char *[], char **
-#define IF_DEF_ARGS	int argc=0, char *argv[]=NULL, char **result=NULL
+#define IF_CMD_ARGS int, const char *[], const char **
+#define IF_DEF_ARGS int argc=0, const char *argv[]=NULL, \
+                    const char **result=NULL
 
 
 //-----------------------------------

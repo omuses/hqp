@@ -35,7 +35,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002   Eckhard Arnold
+    Copyright (C) 1997--2014   Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -66,7 +66,7 @@ class Omu_IntDopri5: public Omu_IntODE {
   Omu_IntDopri5();
   ~Omu_IntDopri5();
 
-  char *name() {return "Dopri5";}
+  const char *name() {return "Dopri5";}
 
   // interface routine
   void ode_solve(double tstart, VECP y, const VECP u, double tend);

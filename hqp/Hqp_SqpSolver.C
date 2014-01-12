@@ -12,7 +12,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -205,7 +205,7 @@ int Hqp_SqpSolver::init(IF_CMD_ARGS)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::qp_update(int, char *[], char **)
+int Hqp_SqpSolver::qp_update(IF_CMD_ARGS)
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::qp_update");
@@ -271,7 +271,7 @@ int Hqp_SqpSolver::qp_update(int, char *[], char **)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::qp_solve(int, char *[], char **)
+int Hqp_SqpSolver::qp_solve(IF_CMD_ARGS)
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::qp_solve");
@@ -308,7 +308,7 @@ int Hqp_SqpSolver::qp_solve(int, char *[], char **)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::hela_restart(int, char *[], char **)
+int Hqp_SqpSolver::hela_restart(IF_CMD_ARGS)
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::hela_restart");
@@ -326,7 +326,7 @@ int Hqp_SqpSolver::hela_restart(int, char *[], char **)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::qp_reinit_bd(int, char *[], char **)
+int Hqp_SqpSolver::qp_reinit_bd(IF_CMD_ARGS)
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::qp_reinit_bd");
@@ -379,7 +379,7 @@ void Hqp_SqpSolver::feasible_vals()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::step(int, char *[], char **)
+int Hqp_SqpSolver::step(IF_CMD_ARGS)
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::step");
@@ -417,7 +417,7 @@ int Hqp_SqpSolver::step(int, char *[], char **)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::solve(int, char *[], char **ret)
+int Hqp_SqpSolver::solve(int, const char *[], const char **ret)
 {
   init();
 

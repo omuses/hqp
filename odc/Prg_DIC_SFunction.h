@@ -46,7 +46,7 @@ class Prg_DIC_SFunction: public Omu_Program {
   Prg_DIC_SFunction();
   ~Prg_DIC_SFunction();
 
-  char *name() {return "DIC_SFunction";}
+  const char *name() {return "DIC_SFunction";}
 };  
 
 #endif

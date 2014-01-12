@@ -93,7 +93,7 @@ class Hqp_IpRedPardiso: public Hqp_IpMatrix {
 	     const VEC *r1, const VEC *r2, const VEC *r3, const VEC *r4,
 	     VEC *dx, VEC *dy, VEC *dz, VEC *dw);
 
-  char	*name() {return "RedPardiso";}
+  const char *name() {return "RedPardiso";}
 };
 
 #endif

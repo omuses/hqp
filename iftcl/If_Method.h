@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -43,7 +43,7 @@ class If_Method: public If_Element {
 
 #if defined(IF_METHOD_WITH_DEPRECATED)
   /** deprecated pointer to a method taking argc/argv arguments */
-  int	(ClassType::*_dep_method)(int, char *[], char **);
+  int	(ClassType::*_dep_method)(int, const char *[], const char **);
 #endif
 
   /** invoke callback method */
@@ -55,7 +55,7 @@ class If_Method: public If_Element {
     }
 #if defined(IF_METHOD_WITH_DEPRECATED)
     if (_dep_method) {
-      return (_object->*_dep_method)(0, NULL, &interp->result);
+      return (_object->*_dep_method)(0, NULL, (const char **)&interp->result);
     }
 #endif
     (_object->*_method)();
@@ -81,7 +81,8 @@ class If_Method: public If_Element {
       argv == NULL; result can be used as before. Please redefine methods
       to not having call arguments and to throw errors with m_error(). */
   If_Method(const char *ifName,
-	    int (ClassType::*method)(int argc, char *argv[], char **result),
+	    int (ClassType::*method)(int argc, const char *argv[],
+				     const char **result),
 	    ClassType *object)
     :If_Element(ifName) {
     _object = object;

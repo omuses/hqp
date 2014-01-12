@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1996--1998  Hartmut Linke
+    Copyright (C) 1996--2014  Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -80,7 +80,7 @@ class Hqp_IpSpSC: public Hqp_IpMatrix {
 	      const VEC *r1, const VEC *r2, const VEC *r3, const VEC *r4,
 	      VEC *dx, VEC *dy, VEC *dz, VEC *dw);
 
-  char	*name() {return "SpSC";}
+  const char *name() {return "SpSC";}
 };
 
 #endif

@@ -19,7 +19,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -75,7 +75,7 @@ class Hqp_HL {
   void est_y(Hqp_SqpProgram *, VEC *);
   virtual void	posdef(Hqp_SqpProgram *);
 
-  virtual char *name() = 0;
+  virtual const char *name() = 0;
 };  
 
 

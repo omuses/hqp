@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2013  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -434,7 +434,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Prg_SFunctionOpt();		///< constructor
   ~Prg_SFunctionOpt();		///< destructor
 
-  char *name() {return "SFunctionOpt";} ///< name SFunctionOpt
+  const char *name() {return "SFunctionOpt";} ///< name SFunctionOpt
 
   /**
    * @name Access methods for program specific members (If prefix: prg_)

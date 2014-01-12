@@ -30,7 +30,7 @@
  */
 
 /*
-    Copyright (C) 2000-2003   Eckhard Arnold
+    Copyright (C) 2000-2014   Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -67,7 +67,7 @@ class Omu_IntGRK4: public Omu_Integrator {
     Omu_IntGRK4();     ///< constructor
     ~Omu_IntGRK4();    ///< destructor
 
-    char *name() {return "GRK4";}
+    const char *name() {return "GRK4";}
 
     // interface routines
     virtual void init(int k,

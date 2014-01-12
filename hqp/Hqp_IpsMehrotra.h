@@ -13,7 +13,7 @@
  */
 
 /*
-    Copyright (C) 1994--2006  Eckhard Arnold and Ruediger Franke
+    Copyright (C) 1994--2014  Eckhard Arnold and Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -96,7 +96,7 @@ class Hqp_IpsMehrotra: public Hqp_Solver {
   Real		gap() {return _gap;}
   //  Real		zeta() {return _zeta;}
 
-  char	*name() {return "Mehrotra";}
+  const char *name() {return "Mehrotra";}
 };  
 
 #endif

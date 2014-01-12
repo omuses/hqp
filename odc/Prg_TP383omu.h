@@ -26,7 +26,7 @@ class Prg_TP383omu: public Omu_Program {
 
  public:
 
-  char *name() {return "TP383omu";}
+  const char *name() {return "TP383omu";}
 };  
 
 #endif

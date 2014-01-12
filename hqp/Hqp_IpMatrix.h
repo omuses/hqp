@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1994--2000  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -87,7 +87,7 @@ class Hqp_IpMatrix {
 		     const VEC *r4,
 		     VEC *dx, VEC *dy, VEC *dz, VEC *dw);
 
-  virtual char	*name()=0;
+  virtual const char *name()=0;
 };
 
 #endif

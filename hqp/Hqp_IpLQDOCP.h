@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1996--2002  Eckhard Arnold
+    Copyright (C) 1996--2014  Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -159,7 +159,7 @@ class Hqp_IpLQDOCP: public Hqp_IpMatrix {
   void Get_Constr_Dim(const Hqp_Program *);
   void resize();
   void myfree();
-  void dump(char *);
+  void dump(const char *);
   void dump() { dump("dump.dat"); }
   void init(const Hqp_Program *);
   void update(const Hqp_Program *);
@@ -181,7 +181,7 @@ class Hqp_IpLQDOCP: public Hqp_IpMatrix {
   void ExRiccatiFactorSc(void);
   void ExRiccatiSolveSc(void);
 
-  char	*name() {return "LQDOCP";}
+  const char *name() {return "LQDOCP";}
 };
 
 #endif

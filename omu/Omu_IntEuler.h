@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2002  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -49,7 +49,7 @@ class Omu_IntEuler: public Omu_IntODE {
 
   //@{
 
-  char *name() {return "Euler";}
+  const char *name() {return "Euler";}
 
   void ode_solve(double tstart, VECP y, const VECP u, double tend);
 

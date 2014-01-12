@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -35,7 +35,7 @@
 IF_CLASS_DEFINE("Client", Hqp_Client, Hqp_Solver);
 
 //--------------------------------------------------------------------------
-int Hqp_Client::step(int, char *[], char **result)
+int Hqp_Client::step(int, const char *[], const char **result)
 {
   *result = "Hqp_Client::step not implemented";
   return IF_ERROR;

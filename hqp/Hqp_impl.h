@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2004  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -43,7 +43,7 @@ enum Hqp_Result {
 };
 
 /** array of result strings for Hqp_Result */
-extern char *hqp_result_strings[];
+extern const char *hqp_result_strings[];
 
 
 #endif
