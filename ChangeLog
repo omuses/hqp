@@ -1,7 +1,12 @@
-2014-01-11  <rfranke>
+2014-01-12  <rfranke>
+
+	* odc/Prg_BatchReactor.[hC], odc/Prg_BatchReactor_bare.[hC]:
+	  - add batch reactor example
 
 	* iftcl, hqp, omu, odc:
 	  - clean up pointers to string constants
+
+2014-01-11  <rfranke>
 
 	* configure.in, configure:
 	  - improve autoconf of tcl.h

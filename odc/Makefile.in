@@ -72,7 +72,9 @@ ASRCS = Prg_Crane.C \
 	Prg_Bio.C \
 	Prg_DID.C \
 	Prg_DID_SFunction.C \
-	Prg_DIC_SFunction.C
+	Prg_DIC_SFunction.C \
+	Prg_BatchReactor.C \
+	Prg_BatchReactor_bare.C
 
 SRCS = 	Odc_Init.C @ASRCS@
 
