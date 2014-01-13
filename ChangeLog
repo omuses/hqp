@@ -1,3 +1,8 @@
+2014-01-13  <rfranke>
+
+	* odc/batchreactor.tcl, odc/runall
+	  - update tests for batch reactor example
+
 2014-01-12  <rfranke>
 
 	* odc/Prg_BatchReactor.[hC], odc/Prg_BatchReactor_bare.[hC]:
