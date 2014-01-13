@@ -2281,12 +2281,12 @@ C  the machine and installation dependent quantities are specified correctly.
 C  If you pass copies of RKSUITE on to others, please give them the whole
 C  distribution version of RKSUITE, and in particular, give them a version 
 C  of ENVIRN that does not have the following six statements Commented out.
-C      WRITE(*,*) ' Before using RKSUITE, you must verify that the  '
-C      WRITE(*,*) ' machine- and installation-dependent quantities  '
-C      WRITE(*,*) ' specified in the subroutine ENVIRN are correct, '
-C      WRITE(*,*) ' and then Comment these WRITE statements and the '
-C      WRITE(*,*) ' STOP statement out of ENVIRN.                   '
-C      STOP
+      WRITE(*,*) ' Before using RKSUITE, you must verify that the  '
+      WRITE(*,*) ' machine- and installation-dependent quantities  '
+      WRITE(*,*) ' specified in the subroutine ENVIRN are correct, '
+      WRITE(*,*) ' and then Comment these WRITE statements and the '
+      WRITE(*,*) ' STOP statement out of ENVIRN.                   '
+      STOP
 C
 C  The following values are appropriate to IEEE arithmetic with the typical
 C  standard output channel.
