@@ -1,5 +1,8 @@
 2014-01-13  <rfranke>
 
+	* rksuite/rksuite.f
+	  - merge rksuite.org.f into rksuite.f
+
 	* odc/batchreactor.tcl, odc/runall
 	  - update tests for batch reactor example
 
