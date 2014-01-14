@@ -43,7 +43,7 @@
  */
 
 /*
-    Copyright (C) 1994--2006  Eckhard Arnold and Ruediger Franke
+    Copyright (C) 1994--2014  Eckhard Arnold and Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -215,6 +215,16 @@ int Hqp_IpsMehrotra::cold_start(IF_CMD_ARGS)
   int  i, izmin, iwmin, code;
   Real delz, delw, residuum;
 
+  _iter = 0;
+  v_zero(_phimin);
+  _alpha = 1.0;
+
+  _hot_started = 0;
+  _result = Hqp_Infeasible;
+
+  if ( _logging )
+    printf("\nHqp_IpsMehrotra::cold_start\n");
+
   if ( _m > 0 ) {
 
     // initialization of _z and _w
@@ -319,22 +329,22 @@ int Hqp_IpsMehrotra::cold_start(IF_CMD_ARGS)
     v_zero(_y);
   }
 
-  _iter = 0;
-  v_zero(_phimin);
-  _alpha = 1.0;
-
-  _hot_started = 0;
-  _result = Hqp_Infeasible;
-
-  if ( _logging )
-    printf("\nHqp_IpsMehrotra::cold_start\n");
-
   return IF_OK;
 }
 
 //--------------------------------------------------------------------------
 int Hqp_IpsMehrotra::hot_start(IF_CMD_ARGS)
 {
+  _iter = 0;
+  v_zero(_phimin);
+  _alpha = 1.0;
+
+  _hot_started = 1;
+  _result = Hqp_Infeasible;
+
+  if ( _logging )
+    printf("\nHqp_IpsMehrotra::hot_start\n");
+
   if (_m > 0) {  
     v_copy(_z_hot, _z); // it is not necessary to correct _z or _w because of
     v_copy(_w_hot, _w); // Mehrotra's adaptive step size!
@@ -345,16 +355,6 @@ int Hqp_IpsMehrotra::hot_start(IF_CMD_ARGS)
     v_zero(_qp->x);
     v_zero(_y);
   }
-
-  _iter = 0;
-  v_zero(_phimin);
-  _alpha = 1.0;
-
-  _hot_started = 1;
-  _result = Hqp_Infeasible;
-
-  if ( _logging )
-    printf("\nHqp_IpsMehrotra::hot_start\n");
 
   return IF_OK;
 }

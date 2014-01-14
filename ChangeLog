@@ -1,3 +1,8 @@
+2014-01-14    <rfranke>
+
+	* hqp/Hqp_IpsMehrotra.C:
+	  - initialize status variables before possible error break
+
 2014-01-13  <rfranke>
 
 	* rksuite/rksuite.f
