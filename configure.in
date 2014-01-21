@@ -609,7 +609,8 @@ if test "$omu_adolc" = yes; then
   tar xzf adolc-1.9.0-PL2.tar.gz;
   mv adolc-1.9.0 adol-c;
   patch -p0 -N -s < hqp_adolc.patch;
-  cd adol-c; ./configure; cd ..;
+  # Note: ADOL-C 1.9.0 configures PICFLAG wrong under Linux and MinGW (gcc 4.8)
+  cd adol-c; ./configure --with-cflags="$CFLAGS" --with-cxxflags="$CXXFLAGS"; cd ..;
   cd ..
   ASRCS="\$(ASRCS)"
   ADOLCDEF="-DOMU_WITH_ADOLC=1"

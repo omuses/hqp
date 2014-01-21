@@ -1,3 +1,10 @@
+2014-01-21  <rfranke>
+
+	* adol-c/hqp_adolc.patch:
+	  - clean up pointer to string constants
+	* configure.in, configure:
+	  - correct PIC flag for ADOL-C (thanks to Vitalij Ruge)
+
 2014-01-14    <rfranke>
 
 	* hqp/Hqp_IpsMehrotra.C:

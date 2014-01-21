@@ -215,3 +215,23 @@ diff -cr adolc-1.9.0/Makefile.in adol-c/Makefile.in
   	  && gtags -i $(GTAGS_ARGS) $$here
   
   distclean-tags:
+diff -cr adolc-1.9.0/adolc/avector.h adol-c/adolc/avector.h
+*** adolc-1.9.0/adolc/avector.h	2014-01-20 20:32:13.796505484 +0100
+--- adol-c/adolc/avector.h	2014-01-20 20:32:22.241271430 +0100
+***************
+*** 52,58 ****
+  class err_retu
+  { char* message;
+   public:
+!   err_retu(char* x){printf("%s \n",x);};
+  };
+  
+  
+--- 52,58 ----
+  class err_retu
+  { char* message;
+   public:
+!   err_retu(const char* x){printf("%s \n",x);};
+  };
+  
+  
