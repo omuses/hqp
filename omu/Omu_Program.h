@@ -1,7 +1,7 @@
 /**
- *  @file Omu_Program.h
- *     interface for a multistage optimization problem
- *     described by algebraic and differential equations
+ * @file Omu_Program.h
+ *   Interface for a multistage optimization problem
+ *   described by algebraic and differential equations
  *
  * rf, 16/1/97
  */

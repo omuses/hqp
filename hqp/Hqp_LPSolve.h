@@ -1,5 +1,5 @@
 /**
- * @file Hqp_LPSolve.h -- 
+ * @file Hqp_LPSolve.h 
  *    Interface to lp_solve for the solution of linear mixed integer programs
  *     (see: http://lpsolve.sourceforge.net/5.5).
  *

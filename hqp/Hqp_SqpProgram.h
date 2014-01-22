@@ -1,6 +1,6 @@
 /**
- *  @file Hqp_SqpProgram.h
- *     Interface for a nonlinear program.
+ * @file Hqp_SqpProgram.h
+ *   Interface for a nonlinear program
  *
  * rf, 6/6/94
  */

@@ -124,13 +124,21 @@ public:
    \end{array}
    @f]
    subject to the model given with the S-function methods
-   mdlDerivatives @f$f@f$ and mdlOutputs @f$g,\ t\in[t_0,t_f]@f$
-   and with parameterized time @f$\tau@f$
+   mdlDerivatives @f$f@f$, mdlOutputs @f$g@f$ and mdlUpdate
+   @f$h,\ t\in[t_0,t_f]@f$, as well as with parameterized time @f$\tau@f$
    @f[
    \begin{array}{l}
-    \displaystyle \quad\ \dot{\tau}(t) = t_{scale}(t), \\[3ex]
-    \displaystyle \dot{x}(\tau(t)) = 
-     \frac{f[x_{nominal}\,x(\tau(t)),\ u_{nominal}\,u(\tau(t))]}{x_{nominal}}, \\[3ex]
+    \displaystyle \quad\ \frac{d\tau(t)}{dt} = t_{scale}(t), \\[3ex]
+    \displaystyle x(\tau(t)) =
+    \left[\begin{array}{ll}
+      x_d^{kk}, & t\in[t^{kk},t^{kk+1}),\ kk=0,\ldots,KK \\ x_c(\tau(t))
+    \end{array}\right], \\[3ex]
+    \displaystyle x_d^{kk} =
+     \frac{h[x_{nominal}\,x(\tau(t^-)),\ u_{nominal}\,u(\tau(t^-))]}
+          {x_{nominal_d}},\quad t=t^{kk},\ kk=1,\ldots,KK,\\[3ex]
+    \displaystyle \frac{dx_c(\tau(t))}{d\tau(t)} =
+     \frac{f[x_{nominal}\,x(\tau(t)),\ u_{nominal}\,u(\tau(t))]}
+          {x_{nominal_c}}, \\[3ex]
     \displaystyle y(\tau(t)) = 
      \frac{g[x_{nominal}\,x(\tau(t)),\ u_{nominal}\,u(\tau(t))]}{y_{nominal}}
       \ +\ \frac{y_{bias}}{y_{nominal}},
@@ -140,15 +148,16 @@ public:
    using optimized control parameters @f$du^k@f$ or given inputs @f$us@f$ 
    @f[
    \begin{array}{ll}
-    \left\{ u(t) = u(t^{k-1}) +
-      \left\{\begin{array}{ll}
-      (t^{k}-t^{k-1})du^{k-1}, & i = t\_scale\_idx \\[1ex]
-      (t^{k}-t^{k-1})du^{k-1}t_{scale}^k, & \mbox{else}
-      \end{array}\right.
-    \rule{0ex}{5.5ex}\right\}_i,
+    \left\{ u(t) = u(t^{k-1}) + \Delta u(t^{k-1}) \right\}_i,
     & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=0), \\[1ex]
-    & t\in[t^{k},t^{k+1}),\ k=1,\ldots,K-1, \\[3ex]
-    \left\{ \dot{u}(\tau(t)) = du^{k} \right\}_i,
+    & t\in[t^{k},t^{k+1}),\ k=1,\ldots,K-1, \\[1ex]
+    \ \ \Delta u(t^{k-1}) =
+      \left\{\begin{array}{ll}
+        (t^{k}-t^{k-1})du^{k-1}, & i = t\_scale\_idx \\[1ex]
+        (t^{k}-t^{k-1})du^{k-1}t_{scale}^k, & \mbox{else}
+      \end{array}\right.
+    & k=1,\ldots,K-1, \\[3ex]
+    \left\{ \frac{du(\tau(t))}{d\tau(t)} = du^{k} \right\}_i,
     & i \in \mbox{find}(u_{active}\ \mbox{and}\ u_{order}=1), \\[1ex]
     & t\in[t^{k},t^{k+1}),\ k=0,\ldots,K-1, \\[3ex]
     \left\{ u(t) = \displaystyle \frac{us^{kk}}{u_{nominal}} \right\}_i, &
@@ -164,7 +173,7 @@ public:
    and subject to the constraints at initial and final time
    @f[
    \begin{array}{rcccll}
-    \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}} \}_i, 
+    \displaystyle && \{ x(t^0) &=& \displaystyle \frac{x^0}{x_{nominal}}\}_i,
         \quad & i\notin\mbox{find}(x_{0\_active}), \\[3ex]
     \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right.
         &\le& x(t^{0}) &\le& 

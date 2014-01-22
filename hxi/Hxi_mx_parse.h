@@ -27,7 +27,6 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/** Avoid multiple inclusion */
 #if !defined(Hxi_mx_parse_H)
 #define Hxi_mx_parse_H
 
@@ -36,6 +35,7 @@
 
 #include <Meschach.h> // sscan_real
 
+/** Hqp eXternal Interfaces */
 namespace Hxi {
 
 /**

@@ -1,5 +1,5 @@
 /**
- * @file Omu_IntIMP.h --
+ * @file Omu_IntIMP.h 
  *    integrate an ODE over a stage using the implicit midpoint rule
  *
  * E. Arnold   1999-04-12

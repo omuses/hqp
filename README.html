@@ -1,8 +1,8 @@
+/* Note: the HTML code is embedded in C comments for Doxygen */
+
 /** @mainpage HQP: a solver for sparse nonlinear optimization
 
-<p>
-
-HQP is a solver for nonlinearly constrained large-scale optimization. It is intended for problems with sufficient regular sparsity structure. Such optimization problems arise e.g. from the numerical treatment of optimal control problems. External interfaces allow the formulation of optimization problems based on widely used model formats.
+<p>HQP is a solver for nonlinearly constrained large-scale optimization. It is intended for problems with sufficient regular sparsity structure. Such optimization problems arise e.g. from the numerical treatment of optimal control problems. External interfaces allow the formulation of optimization problems based on widely used model formats.</p>
 
 <h2>Overview</h2>
 
@@ -10,34 +10,26 @@ HQP (Huge Quadratic Programming) consists of mainly two parts: the actual HQP op
 
 <h3>HQP</h3>
 
-The actual HQP optimizer treats nonlinearly constrained problems with
-a sequential quadratic programming (SQP) algorithm. An interior-point method is applied to the solution of convex quadratic subproblems.
+<p>The actual HQP optimizer treats nonlinearly constrained problems with
+a sequential quadratic programming (SQP) algorithm. An interior-point method is applied to the solution of convex quadratic subproblems.</p>
 
-<p>
-
-The implementation is based on sparse matrix codes of the 
-<A HREF="http://www.netlib.org/c/meschach">Meschach
-library for matrix computations in C</A>. The matrix library was
+<p>The implementation is based on sparse matrix codes of the 
+<a href="http://www.netlib.org/c/meschach">Meschach
+library for matrix computations in C</a>. The matrix library was
 extended with additional routines for the analysis and direct solution
-of sparse equation systems.  
+of sparse equation systems.</p>
 
-<p>
-
-The tool command language <A HREF="http://www.tcl.tk">Tcl</A>
+<p>The tool command language <a href="http://www.tcl.tk">Tcl</a>
 is used for selecting solver modules, configuring parameters and for
-controlling the execution.
+controlling the execution.</p>
 
 <h3>Omuses</h3>
 
-The front-end Omuses provides additional support for the efficient problem formulation. This is possible thanks to the availability of great software packages that have been integrated with Omuses. 
+<p>The front-end Omuses provides additional support for the efficient problem formulation. This is possible thanks to the availability of great software packages that have been integrated with Omuses.</p>
 
-<p>
-
-<A HREF="https://projects.coin-or.org/ADOL-C">ADOL-C</A>
+<p><a href="https://projects.coin-or.org/ADOL-C">ADOL-C</a>
 is exploited for the automatic differentiation and structural analysis of model
-equations.
-
-<p>
+equations.</p>
 
 Furthermore Omuses provides numerical solvers for differential
 equations defining constraints in dynamic optimization
@@ -49,11 +41,10 @@ the following additional software packages are currently integrated:
   solution of implicit and stiff differential equations.
 </li>
 <li>
-<a href="http://www.netlib.org">RKsuite</a>:
+<a href="http://www.netlib.org/ode/rksuite">RKsuite</a>:
   solution of explicit differential equations
 </li>
 </ul>
-<p>
 Please note that the integrated software packages underly copyright restrictions of their respective authors. That is why the DASPK software is not included, though an interface is provided. HQP is available under the GNU Library (or Lesser) General Public License.
 
 <h2>Interfaces for formulating optimization problems</h2>
@@ -89,51 +80,76 @@ Hqp_SqpProgram: large-scale nonlinear optimization problem, as actually being tr
 </li>
 </ul>
 
+<h2>Documentation</h2>
+
+Besides this source code documentation, there finds:
+
+<p>R. Franke. Omuses, a tool for the optimization of multistage systems,
+and HQP, a solver for sparse nonlinear optimization. Technical Report. TU Ilmenau, 1998 (see omuses.ps.gz).</p>
+
 <h2>Distribution and License</h2>
 
-HQP is hosted at SourceForge.
+HQP is hosted at GitHub.
 <ul>
 <li>
-<a href="http://sourceforge.net/projects/hqp/">HQP Project Page</a>:
-  CVS repository, Download area, etc.
+<a href="http://omuses.github.io/hqp/">HQP Project Pages</a>:
+  Overview and reference documentation
+</li>
+<li>
+<a href="https://github.com/omuses/hqp/">Repository</a>
 </li>
 </ul>
 This software is free according to the conditions of the GNU LIBRARY GENERAL PUBLIC LICENSE, Version 2 (see COPYING.LIB).
 
-<h2>References</h2>
+*/
 
-<h3>Applications</h3>
+/** @page references References
 
-The most interesting applications, where HQP is running round-the-clock to help optimizing our world, include
+<h2>Applications</h2>
+
+HQP software is running round-the-clock to help optimizing our world in a couple of applications, including
 <ul>
 <li>
-start-up optimization of steam power plants
+energy management of virtual power plants
+</li>
+<li>
+anti-sway control of boom cranes
+</li>
+<li>
+online optimization of power generation units
 </li>
 <li>
 water management in a large canal system
 </li>
 </ul>
 
-See:
+<h3>See</h3>
 <p>
-R. Franke and B. Weidmann.
-Steaming ahead with optimizing power plant boiler startup.
-<i>Power Engineering International -- PEi</i>, 15(6), 2007.
-<p>
+R. Franke, HJ. Sch&ouml;nung, M. Blaumann, A. Frick, and S. Kautsch:
+Real-time and Intraday Optimization of Multiple Power Generation Units.
+<i>PowerGen Europe</i>, 2013.
+</p><p>
+J. Neupert, E. Arnold, O. Sawodny, and K. Schneider:
+Tracking and anti-sway control for boom cranes.
+<i>Control Engineering Practice</i>, 18(1):31--44, 2010.
+</p><p>
 R. Franke and L. Vogelbacher.
 Nonlinear model predictive control for cost optimal startup of steam
   power plants.
 <i>at -- Automatisierungstechnik</i>, 54(12):630--637, 2006.
-<p>
+</p><p>
 H. Linke, E. Arnold, and R. Franke.
 Optimal water management of a canal system.
 In J.C. Refsgaard and E.A. Karalis, editors, <i>Operational Water Management</i>, pages 211--218. Balkema, Rotterdam, 1997.
-<p>
+</p>
 
-<h3>Research Applications</h3>
+<h2>Research</h2>
 
-Furthermore, there finds several applications to the research on
+Furthermore, there finds several research applications to
 <ul>
+<li>
+wind turbine control
+</li>
 <li>
 batch process control
 </li>
@@ -145,125 +161,39 @@ water systems
 </li>
 </ul>
 
-See:
+<h3>See</h3>
 <p>
+D. Schlipf, D.J. Schlipf, M. K&uuml;hn:
+Nonlinear model predictive control of wind turbines using LIDAR.
+<i>Wind Energy</i>, 16(7):1107 -- 1129, 2013.
+</p><p>
 Z.K. Nagy, B. Mahn, R. Franke, and F. Allg&ouml;wer.
 Evaluation study of an efficient output feedback nonlinear model
   predictive control for temperature tracking in an industrial batch reactor.
 <i>Control Engineering Practice</i>, 15(7):839 -- 850, 2007.
-<p>
+</p><p>
 C. Hoffmann and H. Puta.
 Dynamic optimization of energy supply systems with Modelica models.
 In <i>Proceedings of the 5th International Modelica Conference.</i>
   Modelica Association, Vienna, Austria, September 2006.
-<p>
+</p><p>
 H. Linke.
 <i>Wasserbewirtschaftung von Binnenschiffahrtsgew&auml;ssern auf Basis
   einer modellgest&uuml;tzten Vorhersage des Systemverhaltens.</i>
 Dissertation, Cuvillier Verlag, G&ouml;ttingen, 2006.
-<p>
+</p><p>
 G. Reichl.
 <i>Optimierte Bewirtschaftung von Kl&auml;ranlagen basierend auf der Modellierung mit Modelica.</i>
 Dissertation, Cuvillier Verlag, G&ouml;ttingen, 2005.
-<p>
+</p><p>
 R. Nystr&ouml;m, R. Franke, I. Harjunkowski, and A. Kroll.
 Production campaign planning including grade transition sequencing and dynamic optimization.
 <i>Computers and Chemical Engineering</i>, 29:2163--2179, 2005.
-<p>
+</p><p>
 R. Franke.
 Integrierte dynamische Modellierung und Optimierung von Systemen mit saisonaler W&auml;rmespeicherung, Dissertation, 
  volume 394 of <i>Fortschritt-Berichte VDI</i>, series 6.
  VDI-Verlag, D&uuml;sseldorf, 1998.
-<p>
-
-*/
-
-/** @page structure Directory structure of HQP distribution
-
-<p>
-The HQP distribution contains the following sub-directories:
-
-<h3>Main modules</h3>
-<dl>
-<dt>hqp</dt>
-<dd>
-The actual solver for sparse nonlinear optimization
-
-</dd>
-<dt>omu</dt>
-<dd>
- Front-end Omuses for treating dynamic optimization problems
-</dd>
-</dl>
-
-<h3>Examples</h3>
-<dl>
-<dt>odc</dt>
-<dd>
- Omuses Demo Collection (examples using the front-end Omuses)
-</dd>
-
-<dt>hqp_docp</dt>
-<dd>
- Example for directly using the DOCP interface of HQP
-</dd>
-</dl>
-
-<h3>External model interfaces</h3>
-<dl>
-<dt>hxi</dt>
-<dd>
-  Hqp eXternal Interfaces (currently S-function)
-</dd>
-
-<dt>hqp_cute</dt>
-<dd>
-Files required to run HQP with CUTE
-</dd>
-</dl>
-
-<h3>Additional differential equation solvers</h3>
-<dl>
-<dt>daspk</dt>
-<dd>
-  Place holder for DASPK differential-algebraic equation solver
-</dd>
-
-<dt>rksuite</dt>
-<dd>
-  RKsuite differential equation solvers (by R.W. Brankin et al)
-</dd>
-</dl>
-
-<h3>Base modules</h3>
-<dl>
-<dt>meschach</dt>
-<dd>
-  Matrix library (by D.E. Steward and Z. Leyk)
-</dd>
-
-<dt>adol-c</dt>
-<dd>
-  Automatic differentiation code (by A. Griewank et al)
-</dd>
-
-<dt>iftcl</dt>
-<dd>
-Interface wrapping Tcl (Tool Command Language; used for configuring solver options and for controlling the execution)
-</dd>
-
-<dt>malloc</dt>
-<dd>
-  GNU malloc library (HQP may be configured to use GNU malloc instead of the system malloc)
-</dd>
-</dl>
-
-<h3>Documentation</h3>
-<dl>
-<dt>doc</dt>
-<dd>
-Doxygen input file for generating reference documentation. Please see also the separately available <a href="ftp://ftp.systemtechnik.tu-ilmenau.de/pub/reports/omuses.ps.gz">Users Manual</a>, including explanation of simple examples.
-</dd>
-</dl>
+</p>
 
 */

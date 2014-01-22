@@ -1,3 +1,13 @@
+2014-01-22  <rfranke>
+
+	* README.html, README.md, INSTALL.html, Makefile, doc/Doxyfile.in:
+	  - update docu
+	  - use MathJax instead of LaTeX/png for math typesetting
+	  - use svg instead of png for class graphs
+	  - disable generation of LaTeX/PDF source code docu
+	* hqp, hxi, omu:
+	  - fix doc comments to avoid errors from LaTeX
+
 2014-01-21  <rfranke>
 
 	* adol-c/hqp_adolc.patch:

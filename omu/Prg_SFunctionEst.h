@@ -60,13 +60,20 @@
    \end{array}
    @f]
    subject to the model given with the S-function methods
-   mdlDerivatives @f$f@f$ and mdlOutputs  @f$g@f$
+   mdlDerivatives @f$f@f$, mdlOutputs  @f$g@f$ and mdlUpdate  @f$h@f$
    @f[
    \begin{array}{l}
-    \displaystyle \dot{x}(t) = 
-     \frac{f[p,\ x_{nominal}\,x(t),\ u(t)]}
-          {x_{nominal}}, \\[3ex]
-    \displaystyle y(t) = 
+    \displaystyle x(t) =
+    \left[\begin{array}{ll}
+      x_d^{kk}, & t\in[t^{kk},t^{kk+1}),\ kk=0,\ldots,KK \\ x_c(t)
+    \end{array}\right], \\[3ex]
+    \displaystyle x_d^{kk} =
+     \frac{h[x_{nominal}\,x(t^-),\ u_{nominal}\,u(t^-)]}
+          {x_{nominal_d}},\quad t=t^{kk},\ kk=1,\ldots,KK,\\[3ex]
+    \displaystyle \frac{dx_c(t)}{dt} =
+     \frac{f[x_{nominal}\,x(t),\ u_{nominal}\,u(t)]}
+          {x_{nominal_c}}, \\[3ex]
+    \displaystyle y(t) =
      \frac{g[p,\ x_{nominal}\,x(t),\ u(t)]}
           {y_{nominal}}
    \end{array}

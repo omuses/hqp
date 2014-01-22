@@ -30,7 +30,7 @@ test:
 
 doc::
 	cd doc; doxygen; cd ..
-	cd doc/latex; $(MAKE) refman.pdf; mv refman.pdf ..; cd ../..
+#	cd doc/latex; $(MAKE) refman.pdf; mv refman.pdf ..; cd ../..
 
 clean:
 	cd odc; $(MAKE) clean; cd ..
