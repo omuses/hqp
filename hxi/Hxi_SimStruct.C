@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright (C) 1994--2010  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -1134,6 +1134,11 @@ HXI_EXTERN void Hxi_SimStruct_destroy(SimStruct *S) {
   else
 #endif
     delete (Hxi::SimStruct<real_T>*)S;
+}
+
+/* Free memory allocated through mx methods, e.g. mxArrayToString. */
+HXI_EXTERN void mxFree(void *p) {
+  free(p);
 }
 
 #if !defined(HXI_INLINE_S_FUNCTION)

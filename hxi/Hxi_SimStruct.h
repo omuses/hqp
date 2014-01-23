@@ -40,9 +40,6 @@
 /** @name Definitions used outside S-functions as well */
 /*@{*/
 #define CONTINUOUS_SAMPLE_TIME 			0.0
-
-/** Free memory allocated though mx methods, e.g. mxArrayToString. */
-#define mxFree(p)	free(p)
 /*@}*/
 
 /* forward declare SimStruct and mxArray */
@@ -74,6 +71,9 @@ HXI_EXTERN SimStruct *Hxi_SimStruct_create(const char *path);
 
 /** Delete a SimStruct. */
 HXI_EXTERN void Hxi_SimStruct_destroy(SimStruct *S);
+
+/** Free memory allocated though mx methods, e.g. mxArrayToString. */
+HXI_EXTERN void mxFree(void *p);
 
 #if !defined(HXI_INLINE_S_FUNCTION)
 /** @name Supported S-function methods. */

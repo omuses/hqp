@@ -1,3 +1,8 @@
+2014-01-23  <rfranke>
+
+	* hxi/Hxi_SimStruct.[hC]:
+	  - move mxFree into the compilation unit that allocates memory
+
 2014-01-22  <rfranke>
 
 	* README.html, README.md, INSTALL.html, Makefile, doc/Doxyfile.in:
