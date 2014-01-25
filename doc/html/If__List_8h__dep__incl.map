@@ -1,0 +1,10 @@
+<map id="If_List.h" name="If_List.h">
+<area shape="rect" id="node3" href="$Hqp__SqpProgram_8h.html" title="Interface for a nonlinear program. " alt="" coords="9,83,145,112"/>
+<area shape="rect" id="node9" href="$Hqp__MipSolver_8h.html" title="Interface for a solver for mixed integer problems. " alt="" coords="169,83,292,112"/>
+<area shape="rect" id="node13" href="$Hqp__Omuses_8h.html" title="multi stage optimal control problems described by DAE&#39;s " alt="" coords="316,83,428,112"/>
+<area shape="rect" id="node15" href="$Omu__Integrator_8h.html" title="interface for integrating continuous&#45;time system equations " alt="" coords="452,83,575,112"/>
+<area shape="rect" id="node5" href="$Hqp__Docp_8h.html" title="base class for formulating Discrete&#45;time Optimal Control Programs " alt="" coords="31,160,124,189"/>
+<area shape="rect" id="node7" href="$Hqp__DocpWrapper_8h.html" title="Implement an Hqp_Docp and connect it to Hqp_DocpSpec. " alt="" coords="5,237,149,267"/>
+<area shape="rect" id="node11" href="$Hqp__LPSolve_8h.html" title="Interface to lp_solve for the solution of linear mixed integer programs (see: http://lpsolve.sourceforge.net/5.5). " alt="" coords="175,160,287,189"/>
+<area shape="rect" id="node17" href="$Omu__IntIMP_8h.html" title="integrate an ODE over a stage using the implicit midpoint rule " alt="" coords="460,160,567,189"/>
+</map>

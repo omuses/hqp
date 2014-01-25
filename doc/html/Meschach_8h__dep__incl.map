@@ -1,0 +1,36 @@
+<map id="Meschach.h" name="Meschach.h">
+<area shape="rect" id="node3" href="$If_8h.html" title="public declarations of the interface library " alt="" coords="521,83,561,112"/>
+<area shape="rect" id="node13" href="$If__RealMat_8h.html" title="Interface variables for matrices of reals (currently Mesch::MATP) " alt="" coords="5,315,101,344"/>
+<area shape="rect" id="node15" href="$If__RealVec_8h.html" title="Interface variables for vectors of reals (currently Mesch::VECP) " alt="" coords="533,315,632,344"/>
+<area shape="rect" id="node19" href="$If__IntVec_8h.html" title="Interface variables for integer vectors of the Meschach library. " alt="" coords="656,315,741,344"/>
+<area shape="rect" id="node30" href="$Hqp_8h.html" title="declaration of external API for HQP (Huge Quadratic Programming) " alt="" coords="948,83,1004,112"/>
+<area shape="rect" id="node52" href="$Omu__Dependents_8h.html" title="Dependent variables (single and vector, including Jacobians). " alt="" coords="1247,160,1385,189"/>
+<area shape="rect" id="node60" href="$Omu__Program_8h.html" title="Interface for a multistage optimization problem described by algebraic and differential equations..." alt="" coords="1408,237,1525,267"/>
+<area shape="rect" id="node69" href="$Omu__Vec_8h.html" title="Vector with automatic construction and destruction. " alt="" coords="1271,83,1361,112"/>
+<area shape="rect" id="node81" href="$Hxi__mx__parse_8h.html" title="Parse an argument string passed to a Simulink S&#45;function and create according mxArrays. " alt="" coords="1460,83,1577,112"/>
+<area shape="rect" id="node5" href="$If__Element_8h.html" title="interface element to Tcl " alt="" coords="477,160,573,189"/>
+<area shape="rect" id="node7" href="$If__Variable_8h.html" title="base classes for interface variables " alt="" coords="301,237,395,267"/>
+<area shape="rect" id="node23" href="$If__Method_8h.html" title="binds a pointer to a method to an interface element " alt="" coords="419,237,509,267"/>
+<area shape="rect" id="node25" href="$If__Procedure_8h.html" title="binds a function pointer to an interface element " alt="" coords="533,237,640,267"/>
+<area shape="rect" id="node9" href="$If__Bool_8h.html" title="Interface variable for booleans. " alt="" coords="336,315,411,344"/>
+<area shape="rect" id="node11" href="$If__Real_8h.html" title="Interface variable for doubles. " alt="" coords="435,315,509,344"/>
+<area shape="rect" id="node17" href="$If__Int_8h.html" title="Interface variable for integers. " alt="" coords="125,315,187,344"/>
+<area shape="rect" id="node21" href="$If__StdString_8h.html" title="If_Variable for standard C++ string type. " alt="" coords="211,315,312,344"/>
+<area shape="rect" id="node32" href="$Hqp__impl_8h.html" title="internal declarations for HQP (Huge Quadratic Programming) " alt="" coords="932,160,1020,189"/>
+<area shape="rect" id="node38" href="$Hqp__DocpWrapper_8h.html" title="Implement an Hqp_Docp and connect it to Hqp_DocpSpec. " alt="" coords="789,469,933,499"/>
+<area shape="rect" id="node48" href="$Hqp__DocpStub_8h.html" title="client stub for Hqp_Docp interface " alt="" coords="1063,160,1185,189"/>
+<area shape="rect" id="node34" href="$Hqp__SqpProgram_8h.html" title="Interface for a nonlinear program. " alt="" coords="955,315,1091,344"/>
+<area shape="rect" id="node40" href="$Hqp__Program_8h.html" title="Optimization program for sparse quadratic programming. " alt="" coords="1013,237,1125,267"/>
+<area shape="rect" id="node43" href="$Hqp__MipSolver_8h.html" title="Interface for a solver for mixed integer problems. " alt="" coords="816,237,939,267"/>
+<area shape="rect" id="node36" href="$Hqp__Docp_8h.html" title="base class for formulating Discrete&#45;time Optimal Control Programs " alt="" coords="897,392,991,421"/>
+<area shape="rect" id="node45" href="$Hqp__LPSolve_8h.html" title="Interface to lp_solve for the solution of linear mixed integer programs (see: http://lpsolve.sourceforge.net/5.5). " alt="" coords="819,315,931,344"/>
+<area shape="rect" id="node50" href="$Hqp__Omuses_8h.html" title="multi stage optimal control problems described by DAE&#39;s " alt="" coords="1149,237,1261,267"/>
+<area shape="rect" id="node54" href="$Omu__Deps_8h.html" title="Extensions for managing dependent variables internally. " alt="" coords="1285,237,1384,267"/>
+<area shape="rect" id="node56" href="$Omu__Integrator_8h.html" title="interface for integrating continuous&#45;time system equations " alt="" coords="1405,315,1528,344"/>
+<area shape="rect" id="node58" href="$Omu__IntIMP_8h.html" title="integrate an ODE over a stage using the implicit midpoint rule " alt="" coords="1413,392,1520,421"/>
+<area shape="rect" id="node63" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="1717,315,1835,344"/>
+<area shape="rect" id="node65" href="$Prg__SFunctionEst_8h.html" title="Estimation of initial states and parameters for a model given as MEX S&#45;function. " alt="" coords="1617,392,1756,421"/>
+<area shape="rect" id="node67" href="$Prg__SFunctionOpt_8h.html" title="Optimal control problem for a model given as MEX S&#45;function. " alt="" coords="1795,392,1933,421"/>
+<area shape="rect" id="node72" href="$Omu__Variables_8h.html" title="Independent variables for Omuses problem setup. " alt="" coords="1535,160,1657,189"/>
+<area shape="rect" id="node75" href="$Omu__Vars_8h.html" title="extensions for managing independent variables " alt="" coords="1549,237,1643,267"/>
+</map>

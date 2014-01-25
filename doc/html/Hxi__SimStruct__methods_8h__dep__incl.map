@@ -1,0 +1,10 @@
+<map id="Hxi_SimStruct_methods.h" name="Hxi_SimStruct_methods.h">
+<area shape="rect" id="node3" href="$Hxi__SimStruct_8h.html" title="Declaration of Simulink(R) S&#45;function methods supported by Hqp. " alt="" coords="195,83,312,112"/>
+<area shape="rect" id="node5" href="$Hxi__SFunction_8h.html" title="Interface to a Simulink(R) S&#45;function given as binary object. " alt="" coords="115,160,232,189"/>
+<area shape="rect" id="node13" href="$simstruc_8h.html" title="S&#45;function SimStruct include file for treating an S&#45;function either as external MEX object or inlined..." alt="" coords="275,160,357,189"/>
+<area shape="rect" id="node7" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="97,237,215,267"/>
+<area shape="rect" id="node9" href="$Prg__SFunctionEst_8h.html" title="Estimation of initial states and parameters for a model given as MEX S&#45;function. " alt="" coords="5,315,144,344"/>
+<area shape="rect" id="node11" href="$Prg__SFunctionOpt_8h.html" title="Optimal control problem for a model given as MEX S&#45;function. " alt="" coords="168,315,307,344"/>
+<area shape="rect" id="node15" href="$Hxi__MEX__SFunction_8h.html" title="Interface to a Simulink(R) S&#45;function given as binary MEX object. " alt="" coords="239,237,393,267"/>
+<area shape="rect" id="node17" href="$Hxi__mx__parse_8h.html" title="Parse an argument string passed to a Simulink S&#45;function and create according mxArrays. " alt="" coords="417,237,535,267"/>
+</map>

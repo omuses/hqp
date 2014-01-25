@@ -1,0 +1,9 @@
+<map id="Omu_Variables.h" name="Omu_Variables.h">
+<area shape="rect" id="node3" href="$Omu__Program_8h.html" title="Interface for a multistage optimization problem described by algebraic and differential equations..." alt="" coords="213,83,331,112"/>
+<area shape="rect" id="node11" href="$Prg__SFunctionEst_8h.html" title="Estimation of initial states and parameters for a model given as MEX S&#45;function. " alt="" coords="136,237,275,267"/>
+<area shape="rect" id="node13" href="$Prg__SFunctionOpt_8h.html" title="Optimal control problem for a model given as MEX S&#45;function. " alt="" coords="299,237,437,267"/>
+<area shape="rect" id="node15" href="$Omu__Vars_8h.html" title="extensions for managing independent variables " alt="" coords="39,83,132,112"/>
+<area shape="rect" id="node5" href="$Omu__Integrator_8h.html" title="interface for integrating continuous&#45;time system equations " alt="" coords="16,160,139,189"/>
+<area shape="rect" id="node9" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="213,160,331,189"/>
+<area shape="rect" id="node7" href="$Omu__IntIMP_8h.html" title="integrate an ODE over a stage using the implicit midpoint rule " alt="" coords="5,237,112,267"/>
+</map>

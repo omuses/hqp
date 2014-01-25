@@ -1,0 +1,5 @@
+<map id="Hxi_SFunction.h" name="Hxi_SFunction.h">
+<area shape="rect" id="node3" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="97,83,215,112"/>
+<area shape="rect" id="node5" href="$Prg__SFunctionEst_8h.html" title="Estimation of initial states and parameters for a model given as MEX S&#45;function. " alt="" coords="5,160,144,189"/>
+<area shape="rect" id="node7" href="$Prg__SFunctionOpt_8h.html" title="Optimal control problem for a model given as MEX S&#45;function. " alt="" coords="168,160,307,189"/>
+</map>

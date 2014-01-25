@@ -1,0 +1,12 @@
+<map id="If_SetIf&lt; VarType &gt;" name="If_SetIf&lt; VarType &gt;">
+<area shape="rect" id="node3" href="$classIf__SetCb.html" title="Write callback for specific class type. " alt="" coords="313,5,460,35"/>
+<area shape="rect" id="node5" href="$classIf__SetPt.html" title="Write callback directly accessing through a pointer. " alt="" coords="316,59,457,88"/>
+<area shape="rect" id="node7" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_RealMat_t \&gt;" alt="" coords="305,112,468,141"/>
+<area shape="rect" id="node9" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_Bool_t \&gt;" alt="" coords="316,165,457,195"/>
+<area shape="rect" id="node11" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_RealVec_t \&gt;" alt="" coords="304,219,469,248"/>
+<area shape="rect" id="node13" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_StdString_t \&gt;" alt="" coords="303,272,471,301"/>
+<area shape="rect" id="node15" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_String_t \&gt;" alt="" coords="312,325,461,355"/>
+<area shape="rect" id="node17" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_IntVec_t \&gt;" alt="" coords="311,379,463,408"/>
+<area shape="rect" id="node19" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_Int_t \&gt;" alt="" coords="321,432,452,461"/>
+<area shape="rect" id="node21" href="$classIf__SetIf.html" title="If_SetIf\&lt; If_Real_t \&gt;" alt="" coords="316,485,457,515"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="If_IntVec" name="If_IntVec">
+<area shape="rect" id="node2" href="$classIf__Variable.html" title="If_Variable\&lt; If_IntVec_t \&gt;" alt="" coords="5,261,176,291"/>
+<area shape="rect" id="node4" href="$classIf__Element.html" title="Abstract base class for interface elements to Tcl, like variables and procedures. ..." alt="" coords="24,85,109,115"/>
+<area shape="rect" id="node8" href="$classIf__Variable.html" title="Interface variable of abstract type VarType managing callbacks for reading and writing. " alt="" coords="88,165,245,195"/>
+<area shape="rect" id="node6" href="$classIf__ListElement.html" title="Element of a twice concatenated If_List. " alt="" coords="13,5,120,35"/>
+</map>

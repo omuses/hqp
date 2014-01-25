@@ -1,0 +1,11 @@
+<map id="Hqp.h" name="Hqp.h">
+<area shape="rect" id="node3" href="$Hqp__impl_8h.html" title="internal declarations for HQP (Huge Quadratic Programming) " alt="" coords="105,83,193,112"/>
+<area shape="rect" id="node9" href="$Hqp__DocpWrapper_8h.html" title="Implement an Hqp_Docp and connect it to Hqp_DocpSpec. " alt="" coords="164,392,308,421"/>
+<area shape="rect" id="node19" href="$Hqp__DocpStub_8h.html" title="client stub for Hqp_Docp interface " alt="" coords="356,83,479,112"/>
+<area shape="rect" id="node5" href="$Hqp__SqpProgram_8h.html" title="Interface for a nonlinear program. " alt="" coords="7,237,143,267"/>
+<area shape="rect" id="node11" href="$Hqp__Program_8h.html" title="Optimization program for sparse quadratic programming. " alt="" coords="23,160,135,189"/>
+<area shape="rect" id="node14" href="$Hqp__MipSolver_8h.html" title="Interface for a solver for mixed integer problems. " alt="" coords="159,160,281,189"/>
+<area shape="rect" id="node7" href="$Hqp__Docp_8h.html" title="base class for formulating Discrete&#45;time Optimal Control Programs " alt="" coords="108,315,201,344"/>
+<area shape="rect" id="node16" href="$Hqp__LPSolve_8h.html" title="Interface to lp_solve for the solution of linear mixed integer programs (see: http://lpsolve.sourceforge.net/5.5). " alt="" coords="167,237,279,267"/>
+<area shape="rect" id="node21" href="$Hqp__Omuses_8h.html" title="multi stage optimal control problems described by DAE&#39;s " alt="" coords="361,160,473,189"/>
+</map>

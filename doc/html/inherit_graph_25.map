@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classIf__SetIf.html" title="Interface for a write callback. " alt="" coords="5,44,144,73"/>
+<area shape="rect" id="node3" href="$classIf__SetCb.html" title="Write callback for specific class type. " alt="" coords="195,5,333,51"/>
+<area shape="rect" id="node5" href="$classIf__SetPt.html" title="Write callback directly accessing through a pointer. " alt="" coords="193,75,335,104"/>
+</map>

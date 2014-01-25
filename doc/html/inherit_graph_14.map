@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classIf__GetIf.html" title="Interface for a read callback. " alt="" coords="5,75,144,104"/>
+<area shape="rect" id="node3" href="$classIf__GetCb.html" title="Read callback for specific class type. " alt="" coords="195,5,333,51"/>
+<area shape="rect" id="node5" href="$classIf__GetPt.html" title="Read callback directly accessing through a pointer. " alt="" coords="192,75,336,104"/>
+<area shape="rect" id="node7" href="$classIf__GetPt2.html" title="Read callback directly accessing through a pointer of different type. " alt="" coords="193,127,335,174"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="Omu_Program.h" name="Omu_Program.h">
+<area shape="rect" id="node3" href="$Omu__Integrator_8h.html" title="interface for integrating continuous&#45;time system equations " alt="" coords="5,83,128,112"/>
+<area shape="rect" id="node7" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="153,83,271,112"/>
+<area shape="rect" id="node5" href="$Omu__IntIMP_8h.html" title="integrate an ODE over a stage using the implicit midpoint rule " alt="" coords="12,160,119,189"/>
+<area shape="rect" id="node9" href="$Prg__SFunctionEst_8h.html" title="Estimation of initial states and parameters for a model given as MEX S&#45;function. " alt="" coords="143,160,281,189"/>
+<area shape="rect" id="node11" href="$Prg__SFunctionOpt_8h.html" title="Optimal control problem for a model given as MEX S&#45;function. " alt="" coords="305,160,444,189"/>
+</map>

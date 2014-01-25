@@ -1,0 +1,12 @@
+<map id="Prg_SFunctionOpt.h" name="Prg_SFunctionOpt.h">
+<area shape="rect" id="node3" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="163,83,280,112"/>
+<area shape="rect" id="node19" href="$Omu__Variables_8h.html" title="Independent variables for Omuses problem setup. " alt="" coords="5,237,128,267"/>
+<area shape="rect" id="node5" href="$Omu__Program_8h.html" title="Interface for a multistage optimization problem described by algebraic and differential equations..." alt="" coords="163,160,280,189"/>
+<area shape="rect" id="node28" href="$Hxi__SFunction_8h.html" title="Interface to a Simulink(R) S&#45;function given as binary object. " alt="" coords="419,160,536,189"/>
+<area shape="rect" id="node7" href="$Meschach_8h.html" title="Meschach declarations and some extensions. " alt="" coords="203,392,296,421"/>
+<area shape="rect" id="node24" href="$Omu__Dependents_8h.html" title="Dependent variables (single and vector, including Jacobians). " alt="" coords="152,237,291,267"/>
+<area shape="rect" id="node21" href="$Omu__Vec_8h.html" title="Vector with automatic construction and destruction. " alt="" coords="121,315,212,344"/>
+<area shape="rect" id="node30" href="$Hxi__SimStruct_8h.html" title="Declaration of Simulink(R) S&#45;function methods supported by Hqp. " alt="" coords="535,237,652,267"/>
+<area shape="rect" id="node36" href="$Hxi__sfun__types_8h.html" title="Native type definitions required to compile a Simulink(R) S&#45;function with Hqp. " alt="" coords="736,315,859,344"/>
+<area shape="rect" id="node38" href="$Hxi__SimStruct__methods_8h.html" title="Simulink(R) S&#45;function methods supported by Hqp. " alt="" coords="365,315,539,344"/>
+</map>

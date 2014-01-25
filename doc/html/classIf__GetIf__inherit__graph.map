@@ -1,0 +1,13 @@
+<map id="If_GetIf&lt; VarType &gt;" name="If_GetIf&lt; VarType &gt;">
+<area shape="rect" id="node3" href="$classIf__GetCb.html" title="Read callback for specific class type. " alt="" coords="313,5,460,35"/>
+<area shape="rect" id="node5" href="$classIf__GetPt.html" title="Read callback directly accessing through a pointer. " alt="" coords="315,59,459,88"/>
+<area shape="rect" id="node7" href="$classIf__GetPt2.html" title="Read callback directly accessing through a pointer of different type. " alt="" coords="312,112,461,141"/>
+<area shape="rect" id="node9" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_RealMat_t \&gt;" alt="" coords="304,165,469,195"/>
+<area shape="rect" id="node11" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_Bool_t \&gt;" alt="" coords="316,219,457,248"/>
+<area shape="rect" id="node13" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_RealVec_t \&gt;" alt="" coords="304,272,469,301"/>
+<area shape="rect" id="node15" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_StdString_t \&gt;" alt="" coords="301,325,472,355"/>
+<area shape="rect" id="node17" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_String_t \&gt;" alt="" coords="312,379,461,408"/>
+<area shape="rect" id="node19" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_IntVec_t \&gt;" alt="" coords="309,432,464,461"/>
+<area shape="rect" id="node21" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_Int_t \&gt;" alt="" coords="321,485,452,515"/>
+<area shape="rect" id="node23" href="$classIf__GetIf.html" title="If_GetIf\&lt; If_Real_t \&gt;" alt="" coords="316,539,457,568"/>
+</map>

@@ -1,0 +1,23 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classIf__ListElement.html" title="Element of a twice concatenated If_List. " alt="" coords="5,272,112,301"/>
+<area shape="rect" id="node3" href="$classIf__Element.html" title="Abstract base class for interface elements to Tcl, like variables and procedures. ..." alt="" coords="160,272,245,301"/>
+<area shape="rect" id="node5" href="$classIf__Method.html" title="Interface method. " alt="" coords="305,5,471,35"/>
+<area shape="rect" id="node7" href="$classIf__Procedure.html" title="Interface procedure. " alt="" coords="340,59,436,88"/>
+<area shape="rect" id="node9" href="$classIf__Variable.html" title="Interface variable of abstract type VarType managing callbacks for reading and writing. " alt="" coords="309,112,467,141"/>
+<area shape="rect" id="node11" href="$classIf__Variable.html" title="If_Variable\&lt; If_Bool_t \&gt;" alt="" coords="308,165,468,195"/>
+<area shape="rect" id="node15" href="$classIf__Variable.html" title="If_Variable\&lt; If_Int_t \&gt;" alt="" coords="313,219,463,248"/>
+<area shape="rect" id="node19" href="$classIf__Variable.html" title="If_Variable\&lt; If_IntVec_t \&gt;" alt="" coords="303,272,473,301"/>
+<area shape="rect" id="node23" href="$classIf__Variable.html" title="If_Variable\&lt; If_Real_t \&gt;" alt="" coords="308,325,468,355"/>
+<area shape="rect" id="node27" href="$classIf__Variable.html" title="If_Variable\&lt; If_RealMat_t \&gt;" alt="" coords="297,379,479,408"/>
+<area shape="rect" id="node31" href="$classIf__Variable.html" title="If_Variable\&lt; If_RealVec_t \&gt;" alt="" coords="296,432,480,461"/>
+<area shape="rect" id="node35" href="$classIf__Variable.html" title="If_Variable\&lt; If_StdString_t \&gt;" alt="" coords="295,485,481,515"/>
+<area shape="rect" id="node39" href="$classIf__Variable.html" title="If_Variable\&lt; If_String_t \&gt;" alt="" coords="304,539,472,568"/>
+<area shape="rect" id="node13" href="$classIf__Bool.html" title="Interface variable of boolean type. " alt="" coords="545,165,607,195"/>
+<area shape="rect" id="node17" href="$classIf__Int.html" title="Interface variable of integer type. " alt="" coords="551,219,601,248"/>
+<area shape="rect" id="node21" href="$classIf__IntVec.html" title="Interface variable of integer vector type. " alt="" coords="539,272,613,301"/>
+<area shape="rect" id="node25" href="$classIf__Real.html" title="Interface variable of real type. " alt="" coords="544,325,608,355"/>
+<area shape="rect" id="node29" href="$classIf__RealMat.html" title="Interface variable of real matrix type. " alt="" coords="533,379,619,408"/>
+<area shape="rect" id="node33" href="$classIf__RealVec.html" title="Interface variable of real vector type. " alt="" coords="533,432,619,461"/>
+<area shape="rect" id="node37" href="$classIf__StdString.html" title="Interface variable of standard string type. " alt="" coords="531,485,621,515"/>
+<area shape="rect" id="node41" href="$classIf__String.html" title="Interface variable of C string type. " alt="" coords="541,539,611,568"/>
+</map>

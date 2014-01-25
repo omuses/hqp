@@ -1,0 +1,12 @@
+<map id="Mesch::VECP" name="Mesch::VECP">
+<area shape="rect" id="node3" href="$classOmu__Gradient.html" title="Vector extended with structural information for a gradient. " alt="" coords="55,83,161,112"/>
+<area shape="rect" id="node5" href="$classOmu__Vec.html" title="Avoid multiple inclusion. " alt="" coords="185,83,265,112"/>
+<area shape="rect" id="node7" href="$classOmu__DependentVec.html" title="Vector of dependent variables. " alt="" coords="5,160,147,189"/>
+<area shape="rect" id="node11" href="$classOmu__StateVec.html" title="Vector of state variables, including sensitivity matrices Sx, Su and Sq that hold sensitivities wrt i..." alt="" coords="171,160,280,189"/>
+<area shape="rect" id="node15" href="$classOmu__VariableVec.html" title="Vector of optimization variables, including min, max and initial attributes. " alt="" coords="304,160,429,189"/>
+<area shape="rect" id="node9" href="$classOmu__DepVec.html" title="Internally used vector of dependent variables. " alt="" coords="24,237,128,267"/>
+<area shape="rect" id="node13" href="$classOmu__SVec.html" title="Internally used vector of state variables. " alt="" coords="181,237,269,267"/>
+<area shape="rect" id="node17" href="$classOmu__OptVarVec.html" title="Extend Omu_VariableVec with attributes for optimization criterion. " alt="" coords="300,237,420,267"/>
+<area shape="rect" id="node19" href="$classOmu__VarVec.html" title="Internally used vector of optimization variables. " alt="" coords="444,237,543,267"/>
+<area shape="rect" id="node21" href="$classOmu__SVarVec.html" title="Depreciated: Internally used vector of state optimization variables holding additional structural inf..." alt="" coords="439,315,548,344"/>
+</map>

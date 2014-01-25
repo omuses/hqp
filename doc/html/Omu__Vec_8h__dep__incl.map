@@ -1,0 +1,12 @@
+<map id="Omu_Vec.h" name="Omu_Vec.h">
+<area shape="rect" id="node3" href="$Omu__Dependents_8h.html" title="Dependent variables (single and vector, including Jacobians). " alt="" coords="104,83,243,112"/>
+<area shape="rect" id="node20" href="$Omu__Variables_8h.html" title="Independent variables for Omuses problem setup. " alt="" coords="267,83,389,112"/>
+<area shape="rect" id="node5" href="$Omu__Deps_8h.html" title="Extensions for managing dependent variables internally. " alt="" coords="5,160,104,189"/>
+<area shape="rect" id="node11" href="$Omu__Program_8h.html" title="Interface for a multistage optimization problem described by algebraic and differential equations..." alt="" coords="128,160,245,189"/>
+<area shape="rect" id="node7" href="$Omu__Integrator_8h.html" title="interface for integrating continuous&#45;time system equations " alt="" coords="93,237,216,267"/>
+<area shape="rect" id="node9" href="$Omu__IntIMP_8h.html" title="integrate an ODE over a stage using the implicit midpoint rule " alt="" coords="100,315,207,344"/>
+<area shape="rect" id="node14" href="$Prg__SFunction_8h.html" title="Basic functionality for formulating an optimization problem for a model given as MEX S&#45;function..." alt="" coords="241,237,359,267"/>
+<area shape="rect" id="node16" href="$Prg__SFunctionEst_8h.html" title="Estimation of initial states and parameters for a model given as MEX S&#45;function. " alt="" coords="393,315,532,344"/>
+<area shape="rect" id="node18" href="$Prg__SFunctionOpt_8h.html" title="Optimal control problem for a model given as MEX S&#45;function. " alt="" coords="231,315,369,344"/>
+<area shape="rect" id="node23" href="$Omu__Vars_8h.html" title="extensions for managing independent variables " alt="" coords="269,160,363,189"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="If_Variable.h" name="If_Variable.h">
+<area shape="rect" id="node3" href="$If__Bool_8h.html" title="Interface variable for booleans. " alt="" coords="5,83,80,112"/>
+<area shape="rect" id="node5" href="$If__Real_8h.html" title="Interface variable for doubles. " alt="" coords="104,83,179,112"/>
+<area shape="rect" id="node7" href="$If__RealMat_8h.html" title="Interface variables for matrices of reals (currently Mesch::MATP) " alt="" coords="203,83,299,112"/>
+<area shape="rect" id="node9" href="$If__RealVec_8h.html" title="Interface variables for vectors of reals (currently Mesch::VECP) " alt="" coords="323,83,421,112"/>
+<area shape="rect" id="node11" href="$If__Int_8h.html" title="Interface variable for integers. " alt="" coords="445,83,507,112"/>
+<area shape="rect" id="node13" href="$If__IntVec_8h.html" title="Interface variables for integer vectors of the Meschach library. " alt="" coords="531,83,616,112"/>
+<area shape="rect" id="node15" href="$If__StdString_8h.html" title="If_Variable for standard C++ string type. " alt="" coords="640,83,741,112"/>
+</map>

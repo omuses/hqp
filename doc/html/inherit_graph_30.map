@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classMesch_1_1VECP.html" title="Wrapper for Meschach VEC*. " alt="" coords="5,32,112,61"/>
+<area shape="rect" id="node3" href="$classOmu__Gradient.html" title="Vector extended with structural information for a gradient. " alt="" coords="160,5,267,35"/>
+<area shape="rect" id="node5" href="$classOmu__Vec.html" title="Avoid multiple inclusion. " alt="" coords="173,59,253,88"/>
+<area shape="rect" id="node7" href="$classOmu__DependentVec.html" title="Vector of dependent variables. " alt="" coords="316,5,457,35"/>
+<area shape="rect" id="node11" href="$classOmu__StateVec.html" title="Vector of state variables, including sensitivity matrices Sx, Su and Sq that hold sensitivities wrt i..." alt="" coords="332,59,441,88"/>
+<area shape="rect" id="node15" href="$classOmu__VariableVec.html" title="Vector of optimization variables, including min, max and initial attributes. " alt="" coords="324,112,449,141"/>
+<area shape="rect" id="node9" href="$classOmu__DepVec.html" title="Internally used vector of dependent variables. " alt="" coords="516,5,620,35"/>
+<area shape="rect" id="node13" href="$classOmu__SVec.html" title="Internally used vector of state variables. " alt="" coords="524,59,612,88"/>
+<area shape="rect" id="node17" href="$classOmu__OptVarVec.html" title="Extend Omu_VariableVec with attributes for optimization criterion. " alt="" coords="508,112,628,141"/>
+<area shape="rect" id="node19" href="$classOmu__VarVec.html" title="Internally used vector of optimization variables. " alt="" coords="519,165,617,195"/>
+<area shape="rect" id="node21" href="$classOmu__SVarVec.html" title="Depreciated: Internally used vector of state optimization variables holding additional structural inf..." alt="" coords="677,165,787,195"/>
+</map>

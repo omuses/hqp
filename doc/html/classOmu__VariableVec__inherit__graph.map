@@ -1,0 +1,7 @@
+<map id="Omu_VariableVec" name="Omu_VariableVec">
+<area shape="rect" id="node7" href="$classOmu__OptVarVec.html" title="Extend Omu_VariableVec with attributes for optimization criterion. " alt="" coords="5,237,125,267"/>
+<area shape="rect" id="node9" href="$classOmu__VarVec.html" title="Internally used vector of optimization variables. " alt="" coords="149,237,248,267"/>
+<area shape="rect" id="node2" href="$classOmu__Vec.html" title="Avoid multiple inclusion. " alt="" coords="92,83,172,112"/>
+<area shape="rect" id="node4" href="$classMesch_1_1VECP.html" title="Wrapper for Meschach VEC*. " alt="" coords="79,5,185,35"/>
+<area shape="rect" id="node11" href="$classOmu__SVarVec.html" title="Depreciated: Internally used vector of state optimization variables holding additional structural inf..." alt="" coords="144,315,253,344"/>
+</map>

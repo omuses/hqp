@@ -1,0 +1,8 @@
+<map id="Hqp_impl.h" name="Hqp_impl.h">
+<area shape="rect" id="node3" href="$Hqp__SqpProgram_8h.html" title="Interface for a nonlinear program. " alt="" coords="9,160,145,189"/>
+<area shape="rect" id="node9" href="$Hqp__Program_8h.html" title="Optimization program for sparse quadratic programming. " alt="" coords="72,83,184,112"/>
+<area shape="rect" id="node12" href="$Hqp__MipSolver_8h.html" title="Interface for a solver for mixed integer problems. " alt="" coords="208,83,331,112"/>
+<area shape="rect" id="node5" href="$Hqp__Docp_8h.html" title="base class for formulating Discrete&#45;time Optimal Control Programs " alt="" coords="31,237,124,267"/>
+<area shape="rect" id="node7" href="$Hqp__DocpWrapper_8h.html" title="Implement an Hqp_Docp and connect it to Hqp_DocpSpec. " alt="" coords="5,315,149,344"/>
+<area shape="rect" id="node14" href="$Hqp__LPSolve_8h.html" title="Interface to lp_solve for the solution of linear mixed integer programs (see: http://lpsolve.sourceforge.net/5.5). " alt="" coords="213,160,325,189"/>
+</map>

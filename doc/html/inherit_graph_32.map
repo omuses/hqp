@@ -1,0 +1,12 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classOmu__Integrator.html" title="Interface for a solver for differential (algebraic) equations. " alt="" coords="5,139,117,168"/>
+<area shape="rect" id="node3" href="$classOmu__IntDASPK.html" title="Solve differential&#45;algebraic equation system using DASPK. " alt="" coords="167,5,284,35"/>
+<area shape="rect" id="node5" href="$classOmu__IntGRK4.html" title="Integrator for (stiff) ordinary differential equations (ODEs). " alt="" coords="172,59,279,88"/>
+<area shape="rect" id="node7" href="$classOmu__IntIMP.html" title="Integrator for (stiff) ordinary differential equations (ODEs). " alt="" coords="177,112,273,141"/>
+<area shape="rect" id="node9" href="$classOmu__IntODE.html" title="Interface for standard solvers for Ordinary Differential Equations (ODE) hiding details of sensitivit..." alt="" coords="175,165,276,195"/>
+<area shape="rect" id="node17" href="$classOmu__IntOdeTs.html" title="Solving autonomous ordinary differential equations using Taylor series expansion. ..." alt="" coords="171,219,280,248"/>
+<area shape="rect" id="node19" href="$classOmu__IntSDIRK.html" title="Singly diagonally implizit Runge Kutta method for (stiff) ordinary differential equations (ODEs)..." alt="" coords="168,272,283,301"/>
+<area shape="rect" id="node11" href="$classOmu__IntEuler.html" title="Explicit, fixed step size integrator implementing the Euler algorithm. " alt="" coords="343,112,444,141"/>
+<area shape="rect" id="node13" href="$classOmu__IntRK4.html" title="Explicit, fixed step size integrator implementing a Runge Kutta algorithm of 4th order. " alt="" coords="344,165,443,195"/>
+<area shape="rect" id="node15" href="$classOmu__IntRKsuite.html" title="Solve ordinary differential equations using RKsuite. " alt="" coords="335,219,452,248"/>
+</map>

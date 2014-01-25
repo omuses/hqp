@@ -1,0 +1,6 @@
+<map id="Omu_SVarVec" name="Omu_SVarVec">
+<area shape="rect" id="node2" href="$classOmu__VarVec.html" title="Internally used vector of optimization variables. " alt="" coords="19,237,117,267"/>
+<area shape="rect" id="node4" href="$classOmu__VariableVec.html" title="Vector of optimization variables, including min, max and initial attributes. " alt="" coords="5,160,131,189"/>
+<area shape="rect" id="node6" href="$classOmu__Vec.html" title="Avoid multiple inclusion. " alt="" coords="28,83,108,112"/>
+<area shape="rect" id="node8" href="$classMesch_1_1VECP.html" title="Wrapper for Meschach VEC*. " alt="" coords="15,5,121,35"/>
+</map>
