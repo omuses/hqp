@@ -2202,7 +2202,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 MAJOR_VERSION=1
 MINOR_VERSION=9
 PATCHLEVEL_BASE=6
-DEVELOPMENT_VERSION=yes
+DEVELOPMENT_VERSION=no
 # note: PATCHLEVEL is formed by appending to PATCHLEVEL_BASE the
 # modification date of ChangeLog if DEVELOPMENT_VERSION = yes
 
@@ -4903,7 +4903,7 @@ if test "$omu_adolc" = yes; then
   tar xzf adolc-1.9.0-PL2.tar.gz;
   mv adolc-1.9.0 adol-c;
   patch -p0 -N -s < hqp_adolc.patch;
-  # Note: ADOL-C 1.9.0 configures PICFLAG wrong und Linux and MinGW with gcc 4.8
+  # Note: ADOL-C 1.9.0 configures PICFLAG wrong under Linux and MinGW (gcc 4.8)
   cd adol-c; ./configure --with-cflags="$CFLAGS" --with-cxxflags="$CXXFLAGS"; cd ..;
   cd ..
   ASRCS="\$(ASRCS)"

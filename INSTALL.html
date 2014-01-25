@@ -72,33 +72,35 @@ Following options can be specified:
 
 <p><b>Feature options:</b></p>
 <dl>
- <dt>--enable-adolc</dt>
+ <dt><pre>--enable-adolc</pre></dt>
      <dd>Unpack and build the contained ADOL-C for automatic differentiation 
      as part of Omuses. This simplifies the manual implementation of 
      optimization programs. See the Odc demo collection, 
      e.g. ./odc/Prg_BatchReactor.[hC] using ADOL-C vs. 
      ./odc/Prg_BatchReactor_bare.[hC] accessing lower level interfaces.</dd>
- <dt>--enable-fortran</dt>
+ <dt><pre>--enable-fortran</pre></dt>
      <dd>Include the numerical integration routines RKsuite and 
      optionally DASPK with libomu (see also daspk/README).
      This requires an f77 compiler on your machine.
-     Note: The automatic settings done by ./configure are only guesses. 
+     Note: The automatic settings done by ./configure are for gfortran. 
      Please check the variables FORTRAN_* in ./makedefs.</dd>
- <dt>--enable-mex</dt>
-     <dd>Include MEX S-function interface with Omuses. This requires MATLAB(R)
-     and Simulink(R) on your machine for include files declaring data
+ <dt><pre>--enable-mex</pre></dt>
+     <dd>Include MEX S-function interface with Omuses. This requires MATLAB&reg;
+     and Simulink&reg; on your machine for include files declaring data
      structures and for runtime libs implementing mxArray.<br>
-     Additionally you may specify:<br>
-     --with-matlab<br>
-       Root directory of MATLAB(R) installation, e.g.
-       --with-matlab=/usr/local/matlab<br>
-     --with-matlab-libs<br>
-       Directory containing MATLAB(R) runtime libraries, e.g.
-       --with-matlab-libs=/usr/local/matlab/extern/lib/glnx86<br>
-    Note: see "Problems with MEX" below, if this feature does not work</dd>
- <dt>--enable-cute</dt>
+     Additionally you may specify:
+     <dl>
+     <dt><pre>--with-matlab</pre></dt>
+       <dd>Root directory of MATLAB&reg; installation, e.g.
+       <pre>--with-matlab=/usr/local/matlab</pre></dd>
+     <dt><pre>--with-matlab-libs</pre></dt>
+       <dd>Directory containing MATLAB&reg; runtime libraries, e.g.
+       <pre>--with-matlab-libs=/usr/local/matlab/extern/lib/glnx86</pre></dd>
+     </dl>
+    </dd>
+ <dt><pre>--enable-cute</pre></dt>
      <dd>Include CUTE interface with HQP.</dd>
- <dt>--enable-ascend</dt>
+ <dt><pre>--enable-ascend</pre></dt>
      <dd>Include current preliminary version of an interface to Ascend4.
      This requires that this distribution is unpacked in the directory of
      the Ascend distribution, e.g. in /home/myname/ascendiv-0.9
@@ -107,20 +109,20 @@ Following options can be specified:
 
 <p><b>Installation options:</b></p>
 <dl>
- <dt>--prefix=PATH</dt>
+ <dt><pre>--prefix=PATH</dt>
      <dd>Path where you'd like to install the libraries and include files
      (default is /usr/local).</dd>
 </dl>
 
 <p>Build options:</p>
 <dl>
- <dt>--disable-shared (--enable-shared)</dt>
+ <dt><pre>--disable-shared</pre> (<pre>--enable-shared</pre>)</dt>
      <dd>Build shared (static) libraries. Shared is default, except for Windows,
      where building a DLL is somewhat tricky. Shared libraries are required
      if Hqp/Omuses shall be used as package extending a Tcl application.</dd>
- <dt>--enable-symbols</dt>
+ <dt><pre>--enable-symbols</pre></dt>
      <dd>build debug version, including symbolic information</dd>
- <dt>--enable-gmalloc</dt>
+ <dt><pre>--enable-gmalloc</pre></dt>
      <dd>Use GNU malloc instead of the system routines. Gmalloc will be enabled
      automatically if your system malloc doesn't work properly (e.g. under
      DEC OSF). According to the authors experience gmalloc doesn't work on 
@@ -129,10 +131,10 @@ Following options can be specified:
 
 <p><b>Use a specific Tcl installation, which is not found automatically:</b></p>
 <dl>
- <dt>--with-tcl</dt>
+ <dt><pre>--with-tcl</pre></dt>
      <dd>Directory containing Tcl configuration file tclConfig.sh, e.g.
-     --with-tcl=/usr/local/lib</dd>
- <dt>--with-tclinclude</dt>
+     <pre>--with-tcl=/usr/local/lib</pre></dd>
+ <dt><pre>--with-tclinclude</pre></dt>
      <dd>Directory containing include file tcl.h.</dd>
 </dl>
 </li>
@@ -204,9 +206,17 @@ Gernerally for using an other compiler, say cl, invoke
 
 <h3>Hints for compiling under Windows</h3>
 
-<p>The POSIX/GNU build tools are still needed (tar, gzip, sh, make, patch). They are provided by <a href="http://www.mingw.org">MinGW</a> or <a href="http://www.cygwin.com">Cygwin</a>. These environments also include gcc and tcl, besides more.</p>
+<p>The POSIX/GNU build tools are still needed (tar, gzip, sh, make, patch).
+They are provided for Windows by <a href="http://www.mingw.org">MinGW</a> or
+<a href="http://www.cygwin.com">Cygwin</a>.
+These environments also include gcc and tcl, besides more.</p>
 
-<p>Alternatively the native Windows compiler cl can be configured for the actual compilation (see above), provided it finds in the PATH environment -- the Visual Studio Command Prompt that comes with Visual Studio Tools sets the path. The POSIX shell for building HQP might be started from there. Tcl should be installed from a binary distribution available for Windows in this case and configured via --with-tcl (see above).</p>
+<p>Alternatively the native Windows compiler cl can be configured for the
+actual compilation (CC=cl ./configure), provided it finds in the PATH
+environment -- the Visual Studio Command Prompt that comes with
+Visual Studio Tools sets the path; the POSIX shell for building HQP might be
+started from there. Tcl should be installed from a binary distribution
+available for Windows in this case and configured via <code>--with-tcl</code> (see above).</p>
 
 */
 

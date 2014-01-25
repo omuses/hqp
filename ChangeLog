@@ -1,3 +1,9 @@
+2014-01-25  <rfranke>
+
+	* README.md, INSTALL.html, configure.in, configure:
+	  - release 1.9.6
+	  - add online docu in branch gh-pages
+
 2014-01-23  <rfranke>
 
 	* hxi/Hxi_SimStruct.[hC]:
