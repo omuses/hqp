@@ -1,3 +1,0 @@
-# load Hqp (and Omuses) assuming that the libs are in the parent directory
-package ifneeded Hqp @VERSION@ [list load [file join [file dirname $dir] @LIB_PREFIX@hqp-@VERSION@@LIB_SUFFIX@]]
-package ifneeded Omuses @VERSION@ [list load [file join [file dirname $dir] @LIB_PREFIX@omu-@VERSION@@LIB_SUFFIX@]]
