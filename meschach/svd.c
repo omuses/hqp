@@ -59,7 +59,7 @@ MAT	*U, *V;
 	{
 	    d->ve[i] = - d->ve[i];
 	    if ( U != MNULL )
-		for ( j = 0; j < U->m; j++ )
+		  for ( j = 0; j < (int) U->m; j++ )
 		    U->me[i][j] = - U->me[i][j];
 	}
 
@@ -88,14 +88,14 @@ MAT	*U, *V;
 		tmp = d->ve[i];	  d->ve[i] = d->ve[j];	d->ve[j] = tmp;
 		/* swap rows of U & V as well */
 		if ( U != MNULL )
-		    for ( k = 0; k < U->n; k++ )
+		    for ( k = 0; k < (int) U->n; k++ )
 		    {
 			tmp = U->me[i][k];
 			U->me[i][k] = U->me[j][k];
 			U->me[j][k] = tmp;
 		    }
 		if ( V != MNULL )
-		    for ( k = 0; k < V->n; k++ )
+		    for ( k = 0; k < (int) V->n; k++ )
 		    {
 			tmp = V->me[i][k];
 			V->me[i][k] = V->me[j][k];
@@ -104,14 +104,14 @@ MAT	*U, *V;
 	    }
 	    tmp = d->ve[i];    d->ve[i] = d->ve[r];    d->ve[r] = tmp;
 	    if ( U != MNULL )
-		for ( k = 0; k < U->n; k++ )
+		for ( k = 0; k < (int) U->n; k++ )
 		{
 		    tmp = U->me[i][k];
 		    U->me[i][k] = U->me[r][k];
 		    U->me[r][k] = tmp;
 		}
 	    if ( V != MNULL )
-		for ( k = 0; k < V->n; k++ )
+		for ( k = 0; k < (int) V->n; k++ )
 		{
 		    tmp = V->me[i][k];
 		    V->me[i][k] = V->me[r][k];
@@ -151,7 +151,7 @@ MAT	*U, *V;
 	if ( d->dim != f->dim + 1 )
 		m_error(E_SIZES,"bisvd");
 	n = d->dim;
-	if ( ( U && U->n < n ) || ( V && V->m < n ) )
+	if ( ( U && (int) U->n < n ) || ( V && (int) V->m < n ) )
 		m_error(E_SIZES,"bisvd");
 	if ( ( U && U->m != U->n ) || ( V && V->m != V->n ) )
 		m_error(E_SQUARE,"bisvd");
@@ -308,14 +308,14 @@ MAT	*A, *U, *V;
 	MEM_STAT_REG(tmp2,TYPE_VEC);
 
 	if ( A->m >= A->n )
-	    for ( k = 0; k < A->n; k++ )
+	    for ( k = 0; k < (int) A->n; k++ )
 	    {
 		get_col(A,k,tmp1);
 		hhvec(tmp1,k,&beta,tmp1,&(A->me[k][k]));
 		hhtrcols(A,k,k+1,tmp1,beta);
 		if ( U )
 		    hhtrcols(U,k,0,tmp1,beta);
-		if ( k+1 >= A->n )
+		if ( k+1 >= (int) A->n )
 		    continue;
 		get_row(A,k,tmp2);
 		hhvec(tmp2,k+1,&beta,tmp2,&(A->me[k][k+1]));
@@ -324,7 +324,7 @@ MAT	*A, *U, *V;
 		    hhtrcols(V,k+1,0,tmp2,beta);
 	    }
 	else
-	    for ( k = 0; k < A->m; k++ )
+	    for ( k = 0; k < (int) A->m; k++ )
 	    {
 		get_row(A,k,tmp2);
 		hhvec(tmp2,k,&beta,tmp2,&(A->me[k][k]));

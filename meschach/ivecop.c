@@ -104,10 +104,10 @@ int	new_dim;
    if ( ! iv )
      return iv_get(new_dim);
    
-   if (new_dim == iv->dim)
+   if (new_dim == (int) iv->dim)
      return iv;
 
-   if ( new_dim > iv->max_dim )
+   if ( new_dim > (int) iv->max_dim )
    {
       if (mem_info_is_on()) {
 	 mem_bytes(TYPE_IVEC,iv->max_dim*sizeof(int),
@@ -118,7 +118,7 @@ int	new_dim;
 	m_error(E_MEM,"iv_resize");
       iv->max_dim = new_dim;
    }
-   if ( iv->dim <= new_dim )
+   if ( (int) iv->dim <= new_dim )
      for ( i = iv->dim; i < new_dim; i++ )
        iv->ive[i] = 0;
    iv->dim = new_dim;
@@ -137,7 +137,7 @@ IVEC       *out;
    if ( ! in )
      m_error(E_NULL,"iv_copy");
    out = iv_resize(out,in->dim);
-   for ( i = 0; i < in->dim; i++ )
+   for ( i = 0; i < (int) in->dim; i++ )
      out->ive[i] = in->ive[i];
    
    return out;
@@ -155,10 +155,10 @@ int	   i0, dim0, i1;
     if ( ! in )
 	m_error(E_NULL,"iv_move");
     if ( i0 < 0 || dim0 < 0 || i1 < 0 ||
-	 i0+dim0 > in->dim )
+	 i0+dim0 > (int) in->dim )
 	m_error(E_BOUNDS,"iv_move");
 
-    if ( (! out) || i1+dim0 > out->dim )
+    if ( (! out) || i1+dim0 > (int) out->dim )
 	out = iv_resize(out,i1+dim0);
 
     MEM_COPY(&(in->ive[i0]),&(out->ive[i1]),dim0*sizeof(int));
@@ -232,7 +232,7 @@ const IVEC *iv;
       return;
    }
    fprintf(fp,"dim: %d\n",iv->dim);
-   for ( i = 0; i < iv->dim; i++ )
+   for ( i = 0; i < (int) iv->dim; i++ )
    {
       if ( (i+1) % 8 )
 	fprintf(fp,"%8d ",iv->ive[i]);
@@ -340,7 +340,7 @@ const IVEC *iv;
    }
    fprintf(fp,"dim: %d, max_dim: %d\n",iv->dim,iv->max_dim);
    fprintf(fp,"ive @ 0x%lx\n",(long)(iv->ive));
-   for ( i = 0; i < iv->max_dim; i++ )
+   for ( i = 0; i < (int) iv->max_dim; i++ )
    {
       if ( (i+1) % 8 )
 	fprintf(fp,"%8d ",iv->ive[i]);

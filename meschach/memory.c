@@ -149,7 +149,7 @@ int	size;
    return (vector);
 }
 
-/* m_free -- returns MAT & asoociated memory back to memory heap */
+/* m_free -- returns MAT & associated memory back to memory heap */
 int	m_free(mat)
 MAT	*mat;
 {
@@ -276,7 +276,7 @@ int	new_m, new_n;
      return A;
 
    old_m = A->m;	old_n = A->n;
-   if ( new_m > A->max_m )
+   if ( new_m > (int) A->max_m )
    {	/* re-allocate A->me */
       if (mem_info_is_on()) {
 	 mem_bytes(TYPE_MAT,A->max_m*sizeof(Real *),
@@ -292,7 +292,7 @@ int	new_m, new_n;
    
 #ifndef SEGMENTED
    new_size = new_max_m*new_max_n;
-   if ( new_size > A->max_size )
+   if ( new_size > (int) A->max_size )
    {	/* re-allocate A->base */
       if (mem_info_is_on()) {
 	 mem_bytes(TYPE_MAT,A->max_m*A->max_n*sizeof(Real),
@@ -408,10 +408,10 @@ int	new_size;
      return px_get(new_size);
    
    /* nothing is changed */
-   if (new_size == px->size)
+   if (new_size == (int) px->size)
      return px;
 
-   if ( new_size > px->max_size )
+   if ( new_size > (int) px->max_size )
    {
       if (mem_info_is_on()) {
 	 mem_bytes(TYPE_PERM,px->max_size*sizeof(u_int),
@@ -422,7 +422,7 @@ int	new_size;
 	m_error(E_MEM,"px_resize");
       px->max_size = new_size;
    }
-   if ( px->size <= new_size )
+   if ( (int) px->size <= new_size )
      /* extend permutation */
      for ( i = px->size; i < new_size; i++ )
        px->pe[i] = i;
@@ -449,13 +449,13 @@ int	new_dim;
      return v_get(new_dim);
 
    /* nothing is changed */
-   if (new_dim == x->dim)
+   if (new_dim == (int) x->dim)
      return x;
 
    if ( x->dim > 0 && x->max_dim == 0 )	/* assume that it's from sub_vec */
      return v_get(new_dim);
    
-   if ( new_dim > x->max_dim )
+   if ( new_dim > (int) x->max_dim )
    {
       if (mem_info_is_on()) { 
 	 mem_bytes(TYPE_VEC,x->max_dim*sizeof(Real),
@@ -468,7 +468,7 @@ int	new_dim;
       x->max_dim = new_dim;
    }
    
-   if ( new_dim > x->dim )
+   if ( new_dim > (int) x->dim )
      __zero__(&(x->ve[x->dim]),new_dim - x->dim);
    x->dim = new_dim;
    

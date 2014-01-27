@@ -60,7 +60,7 @@ PERM       *out;
 	    k = n;
 	    while (TRUE)
 	    {
-		if ( i < 0 || i >= out->size )
+		if ( i < 0 || i >= (int) out->size )
 		    m_error(E_BOUNDS,"px_inv");
 		j = p[i];	p[i] = -1 - k;
 		if ( j == n )
@@ -357,7 +357,7 @@ MAT        *out;
 {
 	int	i, j, m, n, px_j;
 	Real	**A_me, **out_me;
-	MAT	*m_get(int, int);
+	/*MAT	*m_get(int, int);*/
 
 	if ( ! A || ! px )
 		m_error(E_NULL,"px_cols");
@@ -367,7 +367,7 @@ MAT        *out;
 		m_error(E_INSITU,"px_cols");
 	m = A->m;	n = A->n;
 	if ( ! out || out->m != m || out->n != n )
-		out = m_get(m,n);
+		out = m_resize(out,m,n);
 	A_me = A->me;	out_me = out->me;
 
 	for ( j = 0; j < n; j++ )
@@ -391,7 +391,7 @@ MAT        *out;
 {
 	int	i, j, m, n, px_i;
 	Real	**A_me, **out_me;
-	MAT	*m_get(int, int);
+	/*MAT	*m_get(int, int);*/
 
 	if ( ! A || ! px )
 		m_error(E_NULL,"px_rows");
@@ -401,7 +401,7 @@ MAT        *out;
 		m_error(E_INSITU,"px_rows");
 	m = A->m;	n = A->n;
 	if ( ! out || out->m != m || out->n != n )
-		out = m_get(m,n);
+		out = m_resize(out,m,n);
 	A_me = A->me;	out_me = out->me;
 
 	for ( i = 0; i < m; i++ )

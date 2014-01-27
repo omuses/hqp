@@ -341,31 +341,31 @@ MESCH_API IVEC	*iv_zero MESCH__P((IVEC *));
 
 /* Basic vector operations */
 
-MESCH_API VEC	*sv_mlt MESCH__P((double, const VEC *, VEC *));
+MESCH_API VEC	*sv_mlt MESCH__P((Real, const VEC *, VEC *));
 MESCH_API VEC	*mv_mlt MESCH__P((const MAT *, const VEC *, VEC *));
 MESCH_API VEC	*vm_mlt MESCH__P((const MAT *, const VEC *,VEC *));
 MESCH_API VEC	*v_add MESCH__P((const VEC *, const VEC *, VEC *));
 MESCH_API VEC	*v_sub MESCH__P((const VEC *, const VEC *, VEC *));
 MESCH_API VEC	*px_vec MESCH__P((const PERM *, const VEC *, VEC *));
 MESCH_API VEC	*pxinv_vec MESCH__P((const PERM *,const VEC *,VEC *));
-MESCH_API VEC	*v_mltadd MESCH__P((const VEC *, const VEC *, double, VEC *));
+MESCH_API VEC	*v_mltadd MESCH__P((const VEC *, const VEC *, Real, VEC *));
 
 #ifdef HAVE_PROTOTYPES_IN_STRUCT
-MESCH_API VEC	*v_map MESCH__P((double (*f) MESCH__P((double)), 
+MESCH_API VEC	*v_map MESCH__P((Real (*f) MESCH__P((Real)), 
 				 const VEC *, VEC *));
-MESCH_API VEC	*_v_map MESCH__P((double (*f) MESCH__P((void *, double)), 
+MESCH_API VEC	*_v_map MESCH__P((Real (*f) MESCH__P((void *, Real)), 
 				  void *, const VEC *, VEC *));
 #else
-MESCH_API VEC	*v_map MESCH__P((double (*f)(), const VEC *, VEC *));
-MESCH_API VEC	*_v_map MESCH__P((double (*f)(), void *, const VEC *, VEC *));
+MESCH_API VEC	*v_map MESCH__P((Real (*f)(), const VEC *, VEC *));
+MESCH_API VEC	*_v_map MESCH__P((Real (*f)(), void *, const VEC *, VEC *));
 #endif
 
 MESCH_API VEC	*v_lincomb MESCH__P((int, const VEC *[], const Real *, VEC *));
-MESCH_API VEC	*v_linlist MESCH__P((VEC *out, const VEC *v1, double a1, ...));
+MESCH_API VEC	*v_linlist MESCH__P((VEC *out, const VEC *v1, Real a1, ...));
 
-MESCH_API double	v_min MESCH__P((const VEC *, int *));
-MESCH_API double	v_max MESCH__P((const VEC *, int *));
-MESCH_API double	v_sum MESCH__P((const VEC *));
+MESCH_API Real	v_min MESCH__P((const VEC *, int *));
+MESCH_API Real	v_max MESCH__P((const VEC *, int *));
+MESCH_API Real	v_sum MESCH__P((const VEC *));
 
 /* Hadamard product: out[i] <- x[i].y[i] */
 MESCH_API VEC	*v_star MESCH__P((const VEC *, const VEC *, VEC *));
@@ -375,17 +375,17 @@ MESCH_API VEC	*v_slash MESCH__P((const VEC *, const VEC *, VEC *));
 MESCH_API VEC	*v_sort MESCH__P((VEC *, PERM *));
 
 /* returns inner product starting at component i0 */
-MESCH_API double	_in_prod MESCH__P((const VEC *x, const VEC *y, 
+MESCH_API Real	_in_prod MESCH__P((const VEC *x, const VEC *y, 
 					   u_int i0));
 
 /* returns sum_{i=0}^{len-1} x[i].y[i] */
-MESCH_API double	__ip__ MESCH__P((const Real *, const Real *, int));
+MESCH_API Real	__ip__ MESCH__P((const Real *, const Real *, int));
 
 /* see v_mltadd(), v_add(), v_sub() and v_zero() */
-MESCH_API void	__mltadd__ MESCH__P((const Real *, Real *, double, int));
+MESCH_API void	__mltadd__ MESCH__P((const Real *, Real *, Real, int));
 MESCH_API void	__add__ MESCH__P((const Real *, const Real *, Real *, int));
 MESCH_API void	__sub__ MESCH__P((const Real *, const Real *, Real *, int));
-MESCH_API void	__smlt__ MESCH__P((const Real *, double, Real *, int));
+MESCH_API void	__smlt__ MESCH__P((const Real *, Real, Real *, int));
 MESCH_API void	__zero__ MESCH__P((Real *,int));
 
 
@@ -396,14 +396,14 @@ MESCH_API void	__zero__ MESCH__P((Real *,int));
 /* Norms */
 
 /* scaled vector norms -- scale == NULL implies unscaled */
-MESCH_API double	_v_norm1 MESCH__P((const VEC *x, const VEC *scale));
-MESCH_API double	_v_norm2 MESCH__P((const VEC *x, const VEC *scale));
-MESCH_API double	_v_norm_inf MESCH__P((const VEC *x, const VEC *scale));
+MESCH_API Real	_v_norm1 MESCH__P((const VEC *x, const VEC *scale));
+MESCH_API Real	_v_norm2 MESCH__P((const VEC *x, const VEC *scale));
+MESCH_API Real	_v_norm_inf MESCH__P((const VEC *x, const VEC *scale));
 
 /* unscaled matrix norms */
-MESCH_API double	m_norm1 MESCH__P((const MAT *A));
-MESCH_API double	m_norm_inf MESCH__P((const MAT *A));
-MESCH_API double	m_norm_frob MESCH__P((const MAT *A));
+MESCH_API Real	m_norm1 MESCH__P((const MAT *A));
+MESCH_API Real	m_norm_inf MESCH__P((const MAT *A));
+MESCH_API Real	m_norm_frob MESCH__P((const MAT *A));
 
 /* MACROS */
 /* unscaled vector norms */
@@ -412,7 +412,7 @@ MESCH_API double	m_norm_frob MESCH__P((const MAT *A));
 #define	v_norm_inf(x)	_v_norm_inf(x,VNULL)
 
 /* Basic matrix operations */
-MESCH_API MAT	*sm_mlt MESCH__P((double s, const MAT *A, MAT *out));
+MESCH_API MAT	*sm_mlt MESCH__P((Real s, const MAT *A, MAT *out));
 MESCH_API MAT	*m_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
 MESCH_API MAT	*mmtr_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
 MESCH_API MAT	*mtrm_mlt MESCH__P((const MAT *A, const MAT *B, MAT *out));
@@ -421,7 +421,7 @@ MESCH_API MAT	*m_sub MESCH__P((const MAT *A, const MAT *B, MAT *out));
 MESCH_API MAT	*sub_mat MESCH__P((const MAT *A, u_int, u_int, u_int, u_int, 
 				   MAT *out));
 MESCH_API MAT	*m_transp MESCH__P((const MAT *A, MAT *out));
-MESCH_API MAT	*ms_mltadd MESCH__P((const MAT *A, const MAT *B, double s, 
+MESCH_API MAT	*ms_mltadd MESCH__P((const MAT *A, const MAT *B, Real s, 
 				     MAT *out));
 
 MESCH_API BAND	*bd_transp MESCH__P((const BAND *in, BAND *out));
@@ -439,9 +439,9 @@ MESCH_API VEC	*get_row MESCH__P((const MAT *, u_int, VEC *));
 MESCH_API VEC	*get_col MESCH__P((const MAT *, u_int, VEC *));
 MESCH_API VEC	*sub_vec MESCH__P((const VEC *, int, int, VEC *));
 MESCH_API VEC	*mv_mltadd MESCH__P((const VEC *x, const VEC *y, 
-				     const MAT *A, double s, VEC *out));
+				     const MAT *A, Real s, VEC *out));
 MESCH_API VEC	*vm_mltadd MESCH__P((const VEC *x, const VEC *y, 
-				     const MAT *A, double s, VEC *out));
+				     const MAT *A, Real s, VEC *out));
 
 
 /* MACROS */
@@ -470,9 +470,9 @@ MESCH_API IVEC	*iv_sort MESCH__P((IVEC *ix, PERM *order));
 
 /* miscellaneous functions */
 
-MESCH_API double	square MESCH__P((double x));
-/*MESCH_API double	cube MESCH__P((double x)); */
-MESCH_API double	mrand MESCH__P((void));
+MESCH_API Real	square MESCH__P((Real x));
+/*MESCH_API Real	cube MESCH__P((Real x)); */
+MESCH_API Real	mrand MESCH__P((void));
 MESCH_API void	smrand MESCH__P((int seed));
 MESCH_API void	mrandlist MESCH__P((Real *x, int len));
 

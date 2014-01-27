@@ -1,3 +1,14 @@
+2014-01-27  <e-arnold>
+
+	* meschach/*.c:
+	  - improved loop unrolling (machine.c):
+	    __sub__, __add__, __smlt__, __mltadd__, __ip__, __zero__
+	  - bug fixes:
+	    bd_resize, bd_transp, m_move, ifft, m_save, swap_rows, swap_cols,
+	    QRcondest, Dsolve, v_mltadd
+	  - memory leak fixes:
+	    m_inverse, px_cols, px_rows
+
 2014-01-25  <rfranke>
 
 	* README.md, INSTALL.html, configure.in, configure:

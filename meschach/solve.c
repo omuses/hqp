@@ -46,7 +46,7 @@ static	char	rcsid[] = "$Id: solve.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 VEC	*Usolve(matrix,b,out,diag)
 MAT	*matrix;
 VEC	*b, *out;
-double	diag;
+Real	diag;
 {
 	u_int	dim /* , j */;
 	int	i, i_lim;
@@ -97,7 +97,7 @@ double	diag;
 VEC	*Lsolve(matrix,b,out,diag)
 MAT	*matrix;
 VEC	*b,*out;
-double	diag;
+Real	diag;
 {
 	u_int	dim, i, i_lim /* , j */;
 	Real	**mat_ent, *mat_row, *b_ent, *out_ent, *out_col, sum;
@@ -149,7 +149,7 @@ double	diag;
 VEC	*UTsolve(U,b,out,diag)
 MAT	*U;
 VEC	*b,*out;
-double	diag;
+Real	diag;
 {
     u_int	dim, i, i_lim;
     Real	**U_me, *b_ve, *out_ve, tmp, invdiag;
@@ -211,7 +211,7 @@ VEC	*b,*x;
 	m_error(E_SIZES,"Dsolve");
     x = v_resize(x,A->n);
     
-    dim = b->dim;
+    /*dim = b->dim;*/
     for ( i=0; i<dim; i++ )
 	if ( A->me[i][i] == 0.0 )
 	    m_error(E_SING,"Dsolve");
@@ -227,7 +227,7 @@ VEC	*b,*x;
 VEC	*LTsolve(L,b,out,diag)
 MAT	*L;
 VEC	*b, *out;
-double	diag;
+Real	diag;
 {
     u_int	dim;
     int		i, i_lim;

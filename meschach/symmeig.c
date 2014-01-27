@@ -198,7 +198,7 @@ VEC	*out;
 	if ( Q )
 		makeHQ(tmp,diag,beta,Q);
 
-	for ( i = 0; i < A->m - 1; i++ )
+	for ( i = 0; i < (int) A->m - 1; i++ )
 	{
 		out->ve[i] = tmp->me[i][i];
 		b->ve[i] = tmp->me[i][i+1];

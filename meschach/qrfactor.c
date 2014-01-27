@@ -193,7 +193,7 @@ VEC	*diag /* ,*beta */ , *b, *x, *tmp;
     dynamic = FALSE;
     if ( ! QR || ! diag || ! b )
 	m_error(E_NULL,"_Qsolve");
-    if ( diag->dim < limit || b->dim != QR->m )
+    if ( (int) diag->dim < limit || b->dim != QR->m )
 	m_error(E_SIZES,"_Qsolve");
     x = v_resize(x,QR->m);
     if ( tmp == VNULL )
@@ -247,7 +247,7 @@ VEC	*diag /* , *beta */;
     for ( i=0; i<QR->m ; i++ )
     {	/* get i-th column of Q */
 	/* set up tmp1 as i-th basis vector */
-	for ( j=0; j<QR->m ; j++ )
+	for ( j=0; j<(int) QR->m ; j++ )
 	    tmp1->ve[j] = 0.0;
 	tmp1->ve[i] = 1.0;
 	
@@ -301,7 +301,7 @@ VEC	*diag /* , *beta */ , *b, *x;
     if ( ! QR || ! diag || ! b )
 	m_error(E_NULL,"QRsolve");
     limit = min(QR->m,QR->n);
-    if ( diag->dim < limit || b->dim != QR->m )
+    if ( (int) diag->dim < limit || b->dim != QR->m )
 	m_error(E_SIZES,"QRsolve");
     tmp = v_resize(tmp,limit);
     MEM_STAT_REG(tmp,TYPE_VEC);
@@ -350,7 +350,7 @@ VEC	*x, *out;
     limit = min(U->m,U->n);
     if ( limit != x->dim )
 	m_error(E_SIZES,"Umlt");
-    if ( out == VNULL || out->dim < limit )
+    if ( out == VNULL || (int) out->dim < limit )
 	out = v_resize(out,limit);
 
     for ( i = 0; i < limit; i++ )
@@ -369,7 +369,7 @@ VEC	*x, *out;
     if ( U == MNULL || x == VNULL )
 	m_error(E_NULL,"UTmlt");
     limit = min(U->m,U->n);
-    if ( out == VNULL || out->dim < limit )
+    if ( out == VNULL || (int) out->dim < limit )
 	out = v_resize(out,limit);
 
     for ( i = limit-1; i >= 0; i-- )
@@ -445,15 +445,18 @@ VEC *diag, *c, *sc;
 	-- if the matrix is exactly singular, HUGE is returned
 	-- note that QRcondest() is likely to be more reliable for
 		matrices factored using QRCPfactor() */
-double	QRcondest(QR)
+Real	QRcondest(QR)
 MAT	*QR;
 {
     static	VEC	*y=VNULL;
-    Real	norm1, norm2, sum, tmp1, tmp2;
+    Real	norm1, norm2, sum, tmp1=0.0, tmp2=0.0;
     int		i, j, limit;
 
     if ( QR == MNULL )
 	m_error(E_NULL,"QRcondest");
+
+    if ( QR->n > QR->m )
+	m_error(E_SIZES,"QRcondest");
 
     limit = min(QR->m,QR->n);
     for ( i = 0; i < limit; i++ )

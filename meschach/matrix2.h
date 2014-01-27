@@ -58,11 +58,11 @@ MESCH_API MAT	*BKPfactor(MAT *A,PERM *pivot,PERM *blocks),
                 /* modified Cholesky factorisation of A;
                         actually factors A+D, D diagonal with no
                         diagonal entry in the factor < sqrt(tol) */
-                *MCHfactor(MAT *A,double tol),
+                *MCHfactor(MAT *A,Real tol),
 		*m_inverse(MAT *A,MAT *out);
 
                 /* returns condition estimate for A after LUfactor() */
-MESCH_API double	LUcondest(MAT *A,PERM *pivot),
+MESCH_API Real	LUcondest(MAT *A,PERM *pivot),
                 /* returns condition estimate for Q after QRfactor() */
                 QRcondest(MAT *A);
 
@@ -80,7 +80,7 @@ MESCH_API MAT	*makeQ(MAT *A,VEC *diag,MAT *Qout),
 		*makeH(MAT *A,MAT *Hout);
 
                 /* updates L.D.L^T factorisation for A <- A + alpha.u.u^T */
-MESCH_API MAT	*LDLupdate(MAT *A,VEC *u,double alpha),
+MESCH_API MAT	*LDLupdate(MAT *A,VEC *u,Real alpha),
                 /* updates QR factorisation for QR <- Q.(R+u.v^T)
 		   Note: we need explicit Q & R matrices,
                         from makeQ() and makeR() */
@@ -109,11 +109,11 @@ MESCH_API VEC	*BKPsolve(MAT *A,PERM *pivot,PERM *blocks,VEC *b,VEC *x),
         U for upper triangular, L for lower traingular, D for diagonal
         if diag_val == 0.0 use that values in the matrix */
 
-		*Usolve(MAT *A,VEC *b,VEC *x,double diag_val),
-		*Lsolve(MAT *A,VEC *b,VEC *x,double diag_val),
+		*Usolve(MAT *A,VEC *b,VEC *x,Real diag_val),
+		*Lsolve(MAT *A,VEC *b,VEC *x,Real diag_val),
 		*Dsolve(MAT *A,VEC *b,VEC *x),
-		*LTsolve(MAT *A,VEC *b,VEC *x,double diag_val),
-		*UTsolve(MAT *A,VEC *b,VEC *x,double diag_val),
+		*LTsolve(MAT *A,VEC *b,VEC *x,Real diag_val),
+		*UTsolve(MAT *A,VEC *b,VEC *x,Real diag_val),
                 *LUTsolve(MAT *A,PERM *,VEC *,VEC *),
                 *QRCPsolve(MAT *QR,VEC *diag,PERM *pivot,VEC *b,VEC *x);
 
@@ -125,14 +125,14 @@ MESCH_API VEC     *bdLUsolve(BAND *A,PERM *pivot,VEC *b,VEC *x),
 
 
 MESCH_API VEC	*hhvec(VEC *,u_int,Real *,VEC *,Real *);
-MESCH_API VEC	*hhtrvec(VEC *,double,u_int,VEC *,VEC *);
-MESCH_API MAT	*hhtrrows(MAT *,u_int,u_int,VEC *,double);
-MESCH_API MAT	*hhtrcols(MAT *,u_int,u_int,VEC *,double);
+MESCH_API VEC	*hhtrvec(VEC *,Real,u_int,VEC *,VEC *);
+MESCH_API MAT	*hhtrrows(MAT *,u_int,u_int,VEC *,Real);
+MESCH_API MAT	*hhtrcols(MAT *,u_int,u_int,VEC *,Real);
 
-MESCH_API void	givens(double,double,Real *,Real *);
-MESCH_API VEC	*rot_vec(VEC *,u_int,u_int,double,double,VEC *); /* in situ */
-MESCH_API MAT	*rot_rows(MAT *,u_int,u_int,double,double,MAT *); /* in situ */
-MESCH_API MAT	*rot_cols(MAT *,u_int,u_int,double,double,MAT *); /* in situ */
+MESCH_API void	givens(Real,Real,Real *,Real *);
+MESCH_API VEC	*rot_vec(VEC *,u_int,u_int,Real,Real,VEC *); /* in situ */
+MESCH_API MAT	*rot_rows(MAT *,u_int,u_int,Real,Real,MAT *); /* in situ */
+MESCH_API MAT	*rot_cols(MAT *,u_int,u_int,Real,Real,MAT *); /* in situ */
 
 
 /* eigenvalue routines */
@@ -168,8 +168,8 @@ MESCH_API VEC	*bisvd(VEC *a,VEC *b,MAT *U,MAT *V),
 /* matrix powers and exponent */
 MESCH_API MAT  *_m_pow(MAT *,int,MAT *,MAT *);
 MESCH_API MAT  *m_pow(MAT *,int, MAT *);
-MESCH_API MAT  *m_exp(MAT *,double,MAT *);
-MESCH_API MAT  *_m_exp(MAT *,double,MAT *,int *,int *);
+MESCH_API MAT  *m_exp(MAT *,Real,MAT *);
+MESCH_API MAT  *_m_exp(MAT *,Real,MAT *,int *,int *);
 MESCH_API MAT  *m_poly(MAT *,VEC *,MAT *);
 
 /* FFT */

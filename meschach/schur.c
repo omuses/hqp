@@ -40,7 +40,7 @@ static char rcsid[] = "$Id: schur.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 
-static	void	hhldr3(double x, double y, double z,
+static	void	hhldr3(Real x, Real y, Real z,
 		       Real *nu1, Real *beta, Real *newval)
 {
 	Real	alpha;
@@ -54,13 +54,13 @@ static	void	hhldr3(double x, double y, double z,
 	*newval = alpha;
 }
 
-static	void	hhldr3cols(MAT *A, int k, int j0, double beta,
-			   double nu1, double nu2, double nu3)
+static	void	hhldr3cols(MAT *A, int k, int j0, Real beta,
+			   Real nu1, Real nu2, Real nu3)
 {
 	Real	**A_me, ip, prod;
 	int	j, n;
 
-	if ( k < 0 || k+3 > A->m || j0 < 0 )
+	if ( k < 0 || k+3 > (int) A->m || j0 < 0 )
 		m_error(E_BOUNDS,"hhldr3cols");
 	A_me = A->me;		n = A->n;
 
@@ -96,15 +96,15 @@ static	void	hhldr3cols(MAT *A, int k, int j0, double beta,
 	/* putc('\n',stdout); */
 }
 
-static	void	hhldr3rows(MAT *A, int k, int i0, double beta,
-			   double nu1, double nu2, double nu3)
+static	void	hhldr3rows(MAT *A, int k, int i0, Real beta,
+			   Real nu1, Real nu2, Real nu3)
 {
 	Real	**A_me, ip, prod;
 	int	i, m;
 
 	/* printf("hhldr3rows:(l.%d) A at 0x%lx\n", __LINE__, (long)A); */
 	/* printf("hhldr3rows: k = %d\n", k); */
-	if ( k < 0 || k+3 > A->n )
+	if ( k < 0 || k+3 > (int) A->n )
 		m_error(E_BOUNDS,"hhldr3rows");
 	A_me = A->me;		m = A->m;
 	i0 = min(i0,m-1);
@@ -166,7 +166,7 @@ MAT	*A, *Q;
     while ( k_min < n )
     {
 	Real	a00, a01, a10, a11;
-	double	scale, t, numer, denom;
+	Real	scale, t, numer, denom;
 
 	/* find k_max to suit:
 	   submatrix k_min..k_max should be irreducible */
@@ -500,9 +500,9 @@ MAT	*T, *Q, *X_re, *X_im;
 
 	T_me = T->me;
 	i = 0;
-	while ( i < T->m )
+	while ( i < (int) T->m )
 	{
-	    if ( i+1 < T->m && T->me[i+1][i] != 0.0 )
+	    if ( i+1 < (int) T->m && T->me[i+1][i] != 0.0 )
 	    {	/* complex eigenvalue */
 		sum  = 0.5*(T_me[i][i]+T_me[i+1][i+1]);
 		diff = 0.5*(T_me[i][i]-T_me[i+1][i+1]);

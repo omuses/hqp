@@ -101,10 +101,10 @@ int new_lb,new_ub,new_n;
      m_error(E_NEG,"bd_resize");
    if ( ! A )
      return bd_get(new_lb,new_ub,new_n);
-    if ( A->lb+A->ub+1 > A->mat->m )
+    if ( A->lb+A->ub+1 > (int) A->mat->m )
 	m_error(E_INTERN,"bd_resize");
 
-   if ( A->lb == new_lb && A->ub == new_ub && A->mat->n == new_n )
+   if ( A->lb == new_lb && A->ub == new_ub && (int) A->mat->n == new_n )
 	return A;
 
    lb = A->lb;
@@ -115,7 +115,7 @@ int new_lb,new_ub,new_n;
     /* ensure that unused triangles at edges are zero'd */
 
    for ( i = 0; i < lb; i++ )
-      for ( j = A->mat->n - lb + i; j < A->mat->n; j++ )
+      for ( j = (int) A->mat->n - lb + i; j < (int) A->mat->n; j++ )
 	Av[i][j] = 0.0;  
     for ( i = lb+1,l=1; l <= umin; i++,l++ )
       for ( j = 0; j < l; j++ )
@@ -123,7 +123,8 @@ int new_lb,new_ub,new_n;
 
    new_lb = A->lb = min(new_lb,new_n-1);
    new_ub = A->ub = min(new_ub,new_n-1);
-   A->mat = m_resize(A->mat,new_lb+new_ub+1,new_n);
+   umin = min(ub,new_ub);
+   A->mat = m_resize(A->mat,max(new_lb+new_ub+1,lb+ub+1),new_n);
    Av = A->mat->me;
 
    /* if new_lb != lb then move the rows to get the main diag 
@@ -137,14 +138,17 @@ int new_lb,new_ub,new_n;
       for (l=shift-1; l >= 0; l--)
 	__zero__(Av[l],new_n);
    }
-   else { /* new_lb < lb */
+   else if (new_lb < lb)
+   { 
       shift = lb - new_lb;
 
       for (i=shift, l=0; i <= lb+umin; i++,l++)
 	MEM_COPY(Av[i],Av[l],new_n*sizeof(Real));
-      for (i=lb+umin+1; i <= new_lb+new_ub; i++)
+      for (i=lb+umin-shift+1; i < new_lb+new_ub+1; i++)
 	__zero__(Av[i],new_n);
    }
+
+   A->mat = m_resize(A->mat,new_lb+new_ub+1,new_n);
 
    return A;
 }
@@ -284,7 +288,7 @@ BAND       *out;
       for (i=0, l=lub, k=lb-i; i <= lub; i++,l--,k--) {
 	 sh_in = max(-k,0);
 	 sh_out = max(k,0);
-	 MEM_COPY(&(in_v[i][sh_in]),&(out_v[l][sh_out]),n-sh_in-sh_out);
+	 MEM_COPY(&(in_v[i][sh_in]),&(out_v[l][sh_out]),(n-sh_in-sh_out)*sizeof(Real));
 	 /**********************************
 	 for (j=n1-sh_out, jj=n1-sh_in; j >= sh_in; j--,jj--) {
 	    out_v[l][jj] = in_v[i][j];

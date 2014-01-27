@@ -183,7 +183,7 @@ MAT	*A, *out;
 	if ( ! out || out->m < A->m || out->n < A->n )
 	    out = m_resize(out,A->m,A->n);
 
-	A_cp = m_copy(A,MNULL);
+	A_cp = m_copy(A,A_cp);
 	tmp = v_resize(tmp,A->m);
 	tmp2 = v_resize(tmp2,A->m);
 	pivot = px_resize(pivot,A->m);
@@ -192,7 +192,7 @@ MAT	*A, *out;
 	MEM_STAT_REG(tmp2,TYPE_VEC);
 	MEM_STAT_REG(pivot,TYPE_PERM);
 	m_tracecatch(LUfactor(A_cp,pivot),"m_inverse");
-	for ( i = 0; i < A->n; i++ )
+	for ( i = 0; i < (int) A->n; i++ )
 	{
 	    v_zero(tmp);
 	    tmp->ve[i] = 1.0;
@@ -205,7 +205,7 @@ MAT	*A, *out;
 
 /* LUcondest -- returns an estimate of the condition number of LU given the
 	LU factorisation in compact form */
-double	LUcondest(LU,pivot)
+Real	LUcondest(LU,pivot)
 MAT	*LU;
 PERM	*pivot;
 {

@@ -104,7 +104,7 @@ PERM       *out;
 */
 
 /* m_move -- copies selected pieces of a matrix
-	-- moves the m0 x n0 submatrix with top-left cor-ordinates (i0,j0)
+	-- moves the m0 x n0 submatrix with top-left co-ordinates (i0,j0)
 	   to the corresponding submatrix of out with top-left co-ordinates
 	   (i1,j1)
 	-- out is resized (& created) if necessary */
@@ -118,12 +118,16 @@ int	  i0, j0, m0, n0, i1, j1;
     if ( ! in )
 	m_error(E_NULL,"m_move");
     if ( i0 < 0 || j0 < 0 || i1 < 0 || j1 < 0 || m0 < 0 || n0 < 0 ||
-	 i0+m0 > in->m || j0+n0 > in->n )
+	 i0+m0 > (int) in->m || j0+n0 > (int) in->n )
 	m_error(E_BOUNDS,"m_move");
+
+    if ( in == out && i0 <= i1  && i0+m0-1 >= i1 && 
+	 ( (j0 <= j1 && j0+n0-1 >= j1) || (j0 <= j1+n0-1 && j0 >= j1) ) ) 
+        m_error(E_INSITU, "m_move");
 
     if ( ! out )
 	out = m_resize(out,i1+m0,j1+n0);
-    else if ( i1+m0 > out->m || j1+n0 > out->n )
+    else if ( i1+m0 > (int) out->m || j1+n0 > (int) out->n )
 	out = m_resize(out,max(out->m,i1+m0),max(out->n,j1+n0));
 
     for ( i = 0; i < m0; i++ )
@@ -145,10 +149,10 @@ int	  i0, dim0, i1;
     if ( ! in )
 	m_error(E_NULL,"v_move");
     if ( i0 < 0 || dim0 < 0 || i1 < 0 ||
-	 i0+dim0 > in->dim )
+	 i0+dim0 > (int) in->dim )
 	m_error(E_BOUNDS,"v_move");
 
-    if ( (! out) || i1+dim0 > out->dim )
+    if ( (! out) || i1+dim0 > (int) out->dim )
 	out = v_resize(out,i1+dim0);
 
     MEM_COPY(&(in->ve[i0]),&(out->ve[i1]),dim0*sizeof(Real));
@@ -171,11 +175,11 @@ int	  i0, j0, m0, n0, i1;
     if ( ! in )
 	m_error(E_NULL,"mv_move");
     if ( i0 < 0 || j0 < 0 || m0 < 0 || n0 < 0 || i1 < 0 ||
-	 i0+m0 > in->m || j0+n0 > in->n )
+	 i0+m0 > (int) in->m || j0+n0 > (int) in->n )
 	m_error(E_BOUNDS,"mv_move");
 
     dim1 = m0*n0;
-    if ( (! out) || i1+dim1 > out->dim )
+    if ( (! out) || i1+dim1 > (int) out->dim )
 	out = v_resize(out,i1+dim1);
 
     for ( i = 0; i < m0; i++ )
@@ -199,7 +203,7 @@ int	  i0, i1, j1, m1, n1;
     if ( ! in )
 	m_error(E_NULL,"vm_move");
     if ( i0 < 0 || i1 < 0 || j1 < 0 || m1 < 0 || n1 < 0 ||
-	 i0+m1*n1 > in->dim )
+	 i0+m1*n1 > (int) in->dim )
 	m_error(E_BOUNDS,"vm_move");
 
     if ( ! out )

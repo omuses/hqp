@@ -150,8 +150,8 @@ MAT       *OUT;
 		OUT = m_resize(OUT,A->m,B->m);
 
 	limit = A->n;
-	for ( i = 0; i < A->m; i++ )
-		for ( j = 0; j < B->m; j++ )
+	for ( i = 0; i < (int) A->m; i++ )
+		for ( j = 0; j < (int) B->m; j++ )
 		{
 		    OUT->me[i][j] = __ip__(A->me[i],B->me[j],(int)limit);
 		    /**************************************************
@@ -187,8 +187,8 @@ MAT       *OUT;
 
 	limit = B->n;
 	m_zero(OUT);
-	for ( k = 0; k < A->m; k++ )
-		for ( i = 0; i < A->n; i++ )
+	for ( k = 0; k < (int) A->m; k++ )
+		for ( i = 0; i < (int) A->n; i++ )
 		{
 		    if ( A->me[k][i] != 0.0 )
 			__mltadd__(OUT->me[i],B->me[k],A->me[k][i],(int)limit);
@@ -244,7 +244,7 @@ VEC       *out;
 
 /* sm_mlt -- scalar-matrix multiply -- may be in-situ */
 MAT	*sm_mlt(scalar,matrix,out)
-double	  scalar;
+Real	  scalar;
 const MAT *matrix;
 MAT       *out;
 {
@@ -256,7 +256,7 @@ MAT       *out;
 		out = m_resize(out,matrix->m,matrix->n);
 	m = matrix->m;	n = matrix->n;
 	for ( i=0; i<m; i++ )
-		__smlt__(matrix->me[i],(double)scalar,out->me[i],(int)n);
+		__smlt__(matrix->me[i],(Real)scalar,out->me[i],(int)n);
 		/**************************************************
 		for ( j=0; j<n; j++ )
 			out->me[i][j] = scalar*matrix->me[i][j];
@@ -321,11 +321,11 @@ MAT       *out;
 		out = m_resize(out,in->n,in->m);
 
 	if ( ! in_situ )
-		for ( i = 0; i < in->m; i++ )
-			for ( j = 0; j < in->n; j++ )
+		for ( i = 0; i < (int) in->m; i++ )
+			for ( j = 0; j < (int) in->n; j++ )
 				out->me[j][i] = in->me[i][j];
 	else
-		for ( i = 1; i < in->m; i++ )
+		for ( i = 1; i < (int) in->m; i++ )
 			for ( j = 0; j < i; j++ )
 			{	tmp = in->me[i][j];
 				in->me[i][j] = in->me[j][i];
@@ -345,7 +345,7 @@ int	i, j, lo, hi;
 
 	if ( ! A )
 		m_error(E_NULL,"swap_rows");
-	if ( i < 0 || j < 0 || i >= A->m || j >= A->m )
+	if ( i < 0 || j < 0 || i >= (int) A->m || j >= (int) A->m )
 		m_error(E_SIZES,"swap_rows");
 	lo = max(0,lo);
 	hi = min(hi,A->n-1);
@@ -353,9 +353,9 @@ int	i, j, lo, hi;
 
 	for ( k = lo; k <= hi; k++ )
 	{
-		tmp = A_me[k][i];
-		A_me[k][i] = A_me[k][j];
-		A_me[k][j] = tmp;
+		tmp = A_me[i][k];
+		A_me[i][k] = A_me[j][k];
+		A_me[j][k] = tmp;
 	}
 	return A;
 }
@@ -370,7 +370,7 @@ int	i, j, lo, hi;
 
 	if ( ! A )
 		m_error(E_NULL,"swap_cols");
-	if ( i < 0 || j < 0 || i >= A->n || j >= A->n )
+	if ( i < 0 || j < 0 || i >= (int) A->n || j >= (int) A->n )
 		m_error(E_SIZES,"swap_cols");
 	lo = max(0,lo);
 	hi = min(hi,A->m-1);
@@ -378,9 +378,9 @@ int	i, j, lo, hi;
 
 	for ( k = lo; k <= hi; k++ )
 	{
-		tmp = A_me[i][k];
-		A_me[i][k] = A_me[j][k];
-		A_me[j][k] = tmp;
+		tmp = A_me[k][i];
+		A_me[k][i] = A_me[k][j];
+		A_me[k][j] = tmp;
 	}
 	return A;
 }
@@ -391,7 +391,7 @@ int	i, j, lo, hi;
 MAT	*ms_mltadd(A1,A2,s,out)
 const MAT *A1, *A2;
 MAT       *out;
-double	  s;
+Real	  s;
 {
 	/* register Real	*A1_e, *A2_e, *out_e; */
 	/* register int	j; */
@@ -440,7 +440,7 @@ VEC	*mv_mltadd(v1,v2,A,alpha,out)
 const VEC *v1, *v2;
 VEC       *out;
 const MAT *A;
-double	  alpha;
+Real	  alpha;
 {
 	/* register	int	j; */
 	int	i, m, n;
@@ -461,6 +461,13 @@ double	  alpha;
 	if ( alpha == 0.0 )
 	    return out;
 
+	if ( alpha == 1.0 )
+	  for ( i = 0; i < m; i++ )
+	    out_ve[i] += __ip__(A->me[i],v2_ve,(int)n);
+	else if ( alpha == -1.0 )
+	  for ( i = 0; i < m; i++ )
+	    out_ve[i] -= __ip__(A->me[i],v2_ve,(int)n);
+	else 
 	for ( i = 0; i < m; i++ )
 	{
 		out_ve[i] += alpha*__ip__(A->me[i],v2_ve,(int)n);
@@ -483,7 +490,7 @@ VEC	*vm_mltadd(v1,v2,A,alpha,out)
 const VEC *v1, *v2;
 VEC       *out;
 const MAT *A;
-double	  alpha;
+Real	  alpha;
 {
 	int	/* i, */ j, m, n;
 	Real	tmp, /* *A_e, */ *out_ve;

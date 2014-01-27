@@ -115,7 +115,7 @@ double	beta;
 	if ( beta == 0.0 )	return (M);
 
 	/* for each row ... */
-	for ( i = i0; i < M->m; i++ )
+	for ( i = i0; i < (int) M->m; i++ )
 	{	/* compute inner product */
 		ip = __ip__(&(M->me[i][j0]),&(hh->ve[j0]),(int)(M->n-j0));
 		/**************************************************
@@ -165,11 +165,11 @@ double	beta;
 	MEM_STAT_REG(w,TYPE_VEC);
 	v_zero(w);
 
-	for ( i = i0; i < M->m; i++ )
+	for ( i = i0; i < (int) M->m; i++ )
 	    if ( hh->ve[i] != 0.0 )
 		__mltadd__(&(w->ve[j0]),&(M->me[i][j0]),hh->ve[i],
 							(int)(M->n-j0));
-	for ( i = i0; i < M->m; i++ )
+	for ( i = i0; i < (int) M->m; i++ )
 	    if ( hh->ve[i] != 0.0 )
 		__mltadd__(&(M->me[i][j0]),&(w->ve[j0]),-beta*hh->ve[i],
 							(int)(M->n-j0));

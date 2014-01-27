@@ -199,7 +199,7 @@
 #define	M_MAX_INT 2147483647
 #ifdef	M_MAX_INT
 #ifndef MAX_RAND
-#define	MAX_RAND ((double)(M_MAX_INT))
+#define	MAX_RAND ((Real)(M_MAX_INT))
 #endif
 #endif
 

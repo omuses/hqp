@@ -98,6 +98,22 @@ void	m_version()
 	printf("\tmachine.h: call memmove and memset only for block sizes > 0\n");
 	printf("\tmatrix.h: re-allocate blocks to at least size 1\n");
 	printf("\tsparse.c: fix memory leak in sp_free and truncation in sp_resize\n");
+	/* E. Arnold, 2014-01-02
+         *  thanks to U. Schaper, M. Richter, M. Sonntag, S. Kuechler, M. Herzog         */
+	printf("\tbdfactor.c: bd_resize, bd_transp\n");
+	printf("\tcopy.c: check for in-situ in m_move\n");
+	printf("\tfft.c: correct scaling factor in ifft\n");
+	printf("\tinit.c: use __zero__ in m_zero\n");
+	printf("\tlufactor.c: fix memory leak in m_inverse\n");
+	printf("\tmachine.c: new loop unrolling implementation for __sub__, __add__, __smlt__, __mltadd__, __ip__, __zero__\n");
+	printf("\tmatlab.c: correct m_save for ORDER==COL_ORDER\n");
+	printf("\tmatop.c: swap rows in swap_rows, swap columns in swap_cols\n");
+	printf("\tpxop.c: fix memory leaks in px_cols, px_rows\n");
+	printf("\tqrfactor.c: add matrix size check in QRcondest\n");
+	printf("\tsolve.c: correct loop end condition in Dsolve\n");
+	printf("\tvecop.c: handle in-situ case v1==v2==out in v_mltadd\n");
+	printf("\t(various): replace double by Real\n");
+	printf("\t(various): explicit typecast (int)\n");
 	printf("\n");
 }
 

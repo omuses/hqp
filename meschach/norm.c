@@ -35,7 +35,7 @@ static	char	rcsid[] = "$Id: norm.c,v 1.3 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 /* _v_norm1 -- computes (scaled) 1-norms of vectors */
-double	_v_norm1(x,scale)
+Real	_v_norm1(x,scale)
 const VEC *x, *scale;
 {
 	int	i, dim;
@@ -49,7 +49,7 @@ const VEC *x, *scale;
 	if ( scale == (VEC *)NULL )
 		for ( i = 0; i < dim; i++ )
 			sum += fabs(x->ve[i]);
-	else if ( scale->dim < dim )
+	else if ( (int) scale->dim < dim )
 		m_error(E_SIZES,"_v_norm1");
 	else
 		for ( i = 0; i < dim; i++ )
@@ -61,19 +61,19 @@ const VEC *x, *scale;
 }
 
 /* square -- returns x^2 */
-double	square(x)
-double	x;
+Real	square(x)
+Real	x;
 {	return x*x;	}
 
 #if 0
 /* cube -- returns x^3 */
-double cube(x)
-double x;
+Real cube(x)
+Real x;
 {  return x*x*x;   }
 #endif
 
 /* _v_norm2 -- computes (scaled) 2-norm (Euclidean norm) of vectors */
-double	_v_norm2(x,scale)
+Real	_v_norm2(x,scale)
 const VEC *x, *scale;
 {
 	int	i, dim;
@@ -87,7 +87,7 @@ const VEC *x, *scale;
 	if ( scale == (VEC *)NULL )
 		for ( i = 0; i < dim; i++ )
 			sum += square(x->ve[i]);
-	else if ( scale->dim < dim )
+	else if ( (int) scale->dim < dim )
 		m_error(E_SIZES,"_v_norm2");
 	else
 		for ( i = 0; i < dim; i++ )
@@ -100,7 +100,7 @@ const VEC *x, *scale;
 }
 
 /* _v_norm_inf -- computes (scaled) infinity-norm (supremum norm) of vectors */
-double	_v_norm_inf(x,scale)
+Real	_v_norm_inf(x,scale)
 const VEC *x, *scale;
 {
 	int	i, dim;
@@ -116,7 +116,7 @@ const VEC *x, *scale;
 		{	tmp = fabs(x->ve[i]);
 			maxval = max(maxval,tmp);
 		}
-	else if ( scale->dim < dim )
+	else if ( (int) scale->dim < dim )
 		m_error(E_SIZES,"_v_norm_inf");
 	else
 		for ( i = 0; i < dim; i++ )
@@ -129,7 +129,7 @@ const VEC *x, *scale;
 }
 
 /* m_norm1 -- compute matrix 1-norm -- unscaled */
-double	m_norm1(A)
+Real	m_norm1(A)
 const MAT *A;
 {
 	int	i, j, m, n;
@@ -153,7 +153,7 @@ const MAT *A;
 }
 
 /* m_norm_inf -- compute matrix infinity-norm -- unscaled */
-double	m_norm_inf(A)
+Real	m_norm_inf(A)
 const MAT *A;
 {
 	int	i, j, m, n;
@@ -177,7 +177,7 @@ const MAT *A;
 }
 
 /* m_norm_frob -- compute matrix frobenius-norm -- unscaled */
-double	m_norm_frob(A)
+Real	m_norm_frob(A)
 const MAT *A;
 {
 	int	i, j, m, n;

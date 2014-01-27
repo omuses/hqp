@@ -112,10 +112,10 @@ VEC	*diag, *beta;
 	MEM_STAT_REG(tmp1,TYPE_VEC);
 	MEM_STAT_REG(tmp2,TYPE_VEC);
 
-	for ( i = 0; i < H->m; i++ )
+	for ( i = 0; i < (int) H->m; i++ )
 	{
 		/* tmp1 = i'th basis vector */
-		for ( j = 0; j < H->m; j++ )
+		for ( j = 0; j < (int) H->m; j++ )
 			/* tmp1->ve[j] = 0.0; */
 		    v_set_val(tmp1,j,0.0);
 		/* tmp1->ve[i] = 1.0; */

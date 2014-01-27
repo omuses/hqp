@@ -42,8 +42,8 @@ static	char	rcsid[] = "$Id: bkpfacto.c,v 1.3 2006/02/21 14:08:56 rfranke Exp $";
 #define alpha	0.6403882032022076 /* = (1+sqrt(17))/8 */
 
 /* sqr -- returns square of x -- utility function */
-static double	sqr(x)
-double	x;
+static Real	sqr(x)
+Real	x;
 {	return x*x;	}
 
 /* interchange -- a row/column swap routine */
@@ -218,7 +218,7 @@ dopivot:
 	}
 
 	/* set lower triangular half */
-	for ( i = 0; i < A->m; i++ )
+	for ( i = 0; i < (int) A->m; i++ )
 	    for ( j = 0; j < i; j++ )
 		m_set_val(A,i,j,m_entry(A,j,i));
 
@@ -254,7 +254,7 @@ VEC	*b, *x;
 	for ( i = 0; i < n; i++ )
 	{
 		sum = v_entry(tmp,i);
-		if ( block->pe[i] < i )
+		if ( (int) block->pe[i] < i )
 		    for ( j = 0; j < i-1; j++ )
 			sum -= m_entry(A,i,j)*v_entry(tmp,j);
 		else
@@ -294,7 +294,7 @@ VEC	*b, *x;
 	for ( i = n-1; i >= 0; i-- )
 	{	/* use symmetry of factored form to get stride 1 */
 		sum = v_entry(tmp,i);
-		if ( block->pe[i] > i )
+		if ( (int) block->pe[i] > i )
 		    for ( j = i+2; j < n; j++ )
 			sum -= m_entry(A,i,j)*v_entry(tmp,j);
 		else

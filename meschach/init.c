@@ -59,7 +59,7 @@ IVEC	*ix;
    if ( ix == IVNULL )
      m_error(E_NULL,"iv_zero");
    
-   for ( i = 0; i < ix->dim; i++ )
+   for ( i = 0; i < (int) ix->dim; i++ )
      ix->ive[i] = 0; 
    
    return ix;
@@ -70,17 +70,25 @@ IVEC	*ix;
 MAT	*m_zero(A)
 MAT	*A;
 {
+#ifdef SEGMENTED
 	int	i, A_m, A_n;
 	Real	**A_me;
+#endif
 
 	if ( A == MNULL )
 		m_error(E_NULL,"m_zero");
 
+	if ((A->m == 0) || (A->n == 0))
+		return A;
+#ifndef SEGMENTED
+	__zero__(A->me[0],A->max_size);
+#else
 	A_m = A->m;	A_n = A->n;	A_me = A->me;
 	for ( i = 0; i < A_m; i++ )
 		__zero__(A_me[i],A_n);
 		/* for ( j = 0; j < A_n; j++ )
 			A_me[i][j] = 0.0; */
+#endif
 
 	return A;
 }
@@ -141,7 +149,7 @@ static int  inext = 0, inextp = 31;
 
 
 /* mrand -- pseudo-random number generator */
-double mrand(void)
+Real mrand(void)
 {
     long	lval;
     static Real  factor = 1.0/((Real)MODULUS);
@@ -157,7 +165,7 @@ double mrand(void)
 	lval += MODULUS;
     mrand_list[inext] = lval;
     
-    return (double)lval*factor;
+    return (Real)lval*factor;
 }
 
 /* mrandlist -- fills the array a[] with len random numbers */
@@ -236,7 +244,7 @@ MAT	*A;
 	if ( ! A )
 		m_error(E_NULL,"m_rand");
 
-	for ( i = 0; i < A->m; i++ )
+	for ( i = 0; i < (int) A->m; i++ )
 		/* for ( j = 0; j < A->n; j++ ) */
 		    /* A->me[i][j] = rand()/((Real)MAX_RAND); */
 		    /* A->me[i][j] = mrand(); */
@@ -254,7 +262,7 @@ VEC	*x;
 	if ( ! x )
 		m_error(E_NULL,"v_ones");
 
-	for ( i = 0; i < x->dim; i++ )
+	for ( i = 0; i < (int) x->dim; i++ )
 		x->ve[i] = 1.0;
 
 	return x;
@@ -269,8 +277,8 @@ MAT	*A;
 	if ( ! A )
 		m_error(E_NULL,"m_ones");
 
-	for ( i = 0; i < A->m; i++ )
-		for ( j = 0; j < A->n; j++ )
+	for ( i = 0; i < (int) A->m; i++ )
+	  for ( j = 0; j < (int) A->n; j++ )
 		    A->me[i][j] = 1.0;
 
 	return A;
@@ -285,7 +293,7 @@ VEC	*x;
 	if ( ! x )
 	    m_error(E_NULL,"v_count");
 
-	for ( i = 0; i < x->dim; i++ )
+	for ( i = 0; i < (int) x->dim; i++ )
 	    x->ve[i] = (Real)i;
 
 	return x;

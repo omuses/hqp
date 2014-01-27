@@ -169,7 +169,7 @@ VEC	*b, *x;
 /* MCHfactor -- Modified Cholesky L.L' factorisation of A in-situ */
 MAT	*MCHfactor(A,tol)
 MAT	*A;
-double  tol;
+Real	tol;
 {
 	u_int	i, j, k, n;
 	Real	**A_ent, *A_piv, *A_row, sum, tmp;

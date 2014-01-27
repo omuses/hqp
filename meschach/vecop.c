@@ -33,7 +33,7 @@ static	char	rcsid[] = "$Id: vecop.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
 /* _in_prod -- inner product of two vectors from i0 downwards */
-double	_in_prod(a,b,i0)
+Real	_in_prod(a,b,i0)
 const VEC *a,*b;
 u_int	  i0;
 {
@@ -60,7 +60,7 @@ u_int	  i0;
 
 /* sv_mlt -- scalar-vector multiply -- may be in-situ */
 VEC	*sv_mlt(scalar,vector,out)
-double	  scalar;
+Real	  scalar;
 const VEC *vector;
 VEC       *out;
 {
@@ -76,7 +76,7 @@ VEC       *out;
 	if ( scalar == 1.0 )
 		return v_copy(vector,out);
 
-	__smlt__(vector->ve,(double)scalar,out->ve,(int)(vector->dim));
+	__smlt__(vector->ve,(Real)scalar,out->ve,(int)(vector->dim));
 	/**************************************************
 	dim = vector->dim;
 	out_ve = out->ve;	vec_ve = vector->ve;
@@ -118,7 +118,7 @@ VEC       *out;
 VEC	*v_mltadd(v1,v2,scale,out)
 const VEC *v1,*v2;
 VEC       *out;
-double	  scale;
+Real	  scale;
 {
 	/* register u_int	dim, i; */
 	/* Real	*out_ve, *v1_ve, *v2_ve; */
@@ -139,10 +139,14 @@ double	  scale;
 	    /* dim = v1->dim; */
 	    __mltadd__(out->ve,v2->ve,scale,(int)(v1->dim));
 	}
-	else
+	else if ( v1 != out )
 	{
 	    m_tracecatch(out = sv_mlt(scale,v2,out),"v_mltadd");
 	    out = v_add(v1,out,out);
+	}
+	else
+	{
+	    out = sv_mlt((1.0+scale),v1,out);
 	}
 	/************************************************************
 	out_ve = out->ve;	v1_ve = v1->ve;		v2_ve = v2->ve;
@@ -185,9 +189,9 @@ VEC       *out;
 	-- _v_map sets out[i] = f(params,x[i]) */
 VEC	*v_map(f,x,out)
 #ifdef PROTOTYPES_IN_STRUCT
-double	(*f)(double);
+Real	(*f)(Real);
 #else
-double	(*f)();
+Real	(*f)();
 #endif
 const VEC *x;
 VEC       *out;
@@ -209,9 +213,9 @@ VEC       *out;
 
 VEC	*_v_map(f,params,x,out)
 #ifdef PROTOTYPES_IN_STRUCT
-double	(*f)(void *,double);
+Real	(*f)(void *,Real);
 #else
-double	(*f)();
+Real	(*f)();
 #endif
 const VEC *x;
 VEC       *out;
@@ -268,11 +272,11 @@ VEC        *out;
       v_linlist(out,v1,a1,v2,a2,...,vn,an,NULL);
    where vi are vectors (VEC *) and ai are numbers (double)
 */
-VEC  *v_linlist(VEC *out,const VEC *v1,double a1,...)
+VEC  *v_linlist(VEC *out,const VEC *v1,Real a1,...)
 {
    va_list ap;
    VEC *par;
-   double a_par;
+   Real a_par;
 
    if ( ! v1 )
      return VNULL;
@@ -280,8 +284,8 @@ VEC  *v_linlist(VEC *out,const VEC *v1,double a1,...)
    va_start(ap, a1);
    out = sv_mlt(a1,v1,out);
    
-   while ((par = va_arg(ap,VEC *))) {   /* NULL ends the list*/
-      a_par = va_arg(ap,double);
+   while ((par = va_arg(ap,VEC *)) != NULL) {   /* NULL ends the list*/
+      a_par = va_arg(ap,Real);
       if (a_par == 0.0) continue;
       if ( out == par )		
 	m_error(E_INSITU,"v_linlist");
@@ -314,7 +318,7 @@ VEC       *out;
 	m_error(E_SIZES,"v_star");
     out = v_resize(out,x1->dim);
 
-    for ( i = 0; i < x1->dim; i++ )
+    for ( i = 0; i < (int) x1->dim; i++ )
 	out->ve[i] = x1->ve[i] * x2->ve[i];
 
     return out;
@@ -337,7 +341,7 @@ VEC       *out;
 	m_error(E_SIZES,"v_slash");
     out = v_resize(out,x1->dim);
 
-    for ( i = 0; i < x1->dim; i++ )
+    for ( i = 0; i < (int) x1->dim; i++ )
     {
 	tmp = x1->ve[i];
 	if ( tmp == 0.0 )
@@ -350,7 +354,7 @@ VEC       *out;
 
 /* v_min -- computes minimum component of x, which is returned
 	-- also sets min_idx to the index of this minimum */
-double	v_min(x, min_idx)
+Real	v_min(x, min_idx)
 const VEC *x;
 int	  *min_idx;
 {
@@ -363,7 +367,7 @@ int	  *min_idx;
 	m_error(E_SIZES,"v_min");
     i_min = 0;
     min_val = x->ve[0];
-    for ( i = 1; i < x->dim; i++ )
+    for ( i = 1; i < (int) x->dim; i++ )
     {
 	tmp = x->ve[i];
 	if ( tmp < min_val )
@@ -380,7 +384,7 @@ int	  *min_idx;
 
 /* v_max -- computes maximum component of x, which is returned
 	-- also sets max_idx to the index of this maximum */
-double	v_max(x, max_idx)
+Real	v_max(x, max_idx)
 const VEC *x;
 int	  *max_idx;
 {
@@ -393,7 +397,7 @@ int	  *max_idx;
 	m_error(E_SIZES,"v_max");
     i_max = 0;
     max_val = x->ve[0];
-    for ( i = 1; i < x->dim; i++ )
+    for ( i = 1; i < (int) x->dim; i++ )
     {
 	tmp = x->ve[i];
 	if ( tmp > max_val )
@@ -495,7 +499,7 @@ PERM	*order;
 }
 
 /* v_sum -- returns sum of entries of a vector */
-double	v_sum(x)
+Real	v_sum(x)
 const VEC *x;
 {
     int		i;
@@ -505,7 +509,7 @@ const VEC *x;
 	m_error(E_NULL,"v_sum");
 
     sum = 0.0;
-    for ( i = 0; i < x->dim; i++ )
+    for ( i = 0; i < (int) x->dim; i++ )
 	sum += x->ve[i];
 
     return sum;
@@ -526,7 +530,7 @@ VEC	*x1, *x2, *out;
 
     out = v_resize(out,x1->dim + x2->dim - 1);
     v_zero(out);
-    for ( i = 0; i < x1->dim; i++ )
+    for ( i = 0; i < (int) x1->dim; i++ )
 	__mltadd__(&(out->ve[i]),x2->ve,x1->ve[i],x2->dim);
 
     return out;
@@ -548,7 +552,7 @@ VEC	*x1, *x2, *out;
 	return out;
 
     v_zero(out);
-    for ( i = 0; i < x1->dim; i++ )
+    for ( i = 0; i < (int) x1->dim; i++ )
     {
 	__mltadd__(&(out->ve[i]),x2->ve,x1->ve[i],x2->dim - i);
 	if ( i > 0 )

@@ -44,7 +44,7 @@ static char rcsid[] = "$Id: fft.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 void    fft(x_re,x_im)
 VEC     *x_re, *x_im;
 {
-    int         i, ip, j, k, li, n, length;
+    u_int     i, ip, j, k, li, n, length;
     Real      *xr, *xi;
     Real	theta, pi = 3.1415926535897932384;
     Real      w_re, w_im, u_re, u_im, t_re, t_im;
@@ -60,8 +60,8 @@ VEC     *x_re, *x_im;
         n *= 2;
     x_re = v_resize(x_re,n);
     x_im = v_resize(x_im,n);
-    printf("# fft: x_re =\n");  v_output(x_re);
-    printf("# fft: x_im =\n");  v_output(x_im);
+    /* printf("# fft: x_re =\n");  v_output(x_re); */
+    /* printf("# fft: x_im =\n");  v_output(x_im); */
     xr   = x_re->ve;
     xi   = x_im->ve;
 
@@ -140,5 +140,6 @@ VEC	*x_re, *x_im;
 
     sv_mlt(-1.0,x_im,x_im);
     fft(x_re,x_im);
-    sv_mlt(-1.0/((double)(x_re->dim)),x_im,x_im);
+    sv_mlt(-1.0/((Real)(x_re->dim)),x_im,x_im);
+    sv_mlt(-1.0/((Real)(x_re->dim)),x_re,x_re);
 }

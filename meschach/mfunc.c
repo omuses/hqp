@@ -125,7 +125,7 @@ int	p;
 */
 MAT *_m_exp(A,eps,out,q_out,j_out)
 MAT *A,*out;
-double eps;
+Real eps;
 int *q_out, *j_out;
 {
    static MAT *D = MNULL, *Apow = MNULL, *N = MNULL, *Y = MNULL;
@@ -133,7 +133,7 @@ int *q_out, *j_out;
    VEC y0, y1;  /* additional structures */
    static PERM *pivot = PNULL;
    int j, k, l, q, r, s, j2max, t;
-   double inf_norm, eqq, power2, c, sign;
+   Real inf_norm, eqq, power2, c, sign;
    
    if ( ! A )
      m_error(E_SIZES,"_m_exp");
@@ -164,7 +164,7 @@ int *q_out, *j_out;
       return out;
    }
    else {
-      j2max = floor(1+log(inf_norm)/log(2.0));
+      j2max = (int) floor(1+log(inf_norm)/log(2.0));
       j2max = max(0, j2max);
    }
    
@@ -185,12 +185,12 @@ int *q_out, *j_out;
    MEM_STAT_REG(c1,TYPE_VEC);
    c1->ve[0] = 1.0;
    for ( k = 1; k <= q; k++ ) 
-     c1->ve[k] = c1->ve[k-1]*(q-k+1)/((2*q-k+1)*(double)k);
+     c1->ve[k] = c1->ve[k-1]*(q-k+1)/((2*q-k+1)*(Real)k);
    
    tmp = v_resize(tmp,A->n);
    MEM_STAT_REG(tmp,TYPE_VEC);
    
-   s = (int)floor(sqrt((double)q/2.0));
+   s = (int)floor(sqrt((Real)q/2.0));
    if ( s <= 0 )  s = 1;
    _m_pow(A,s,out,Apow);
    r = q/s;
@@ -205,7 +205,7 @@ int *q_out, *j_out;
    m_zero(N);
    m_zero(D);
    
-   for( j = 0; j < A->n; j++ )
+   for( j = 0; j < (int) A->n; j++ )
    {
       if (j > 0)
 	Y->me[0][j-1] = 0.0;
@@ -253,7 +253,7 @@ int *q_out, *j_out;
       after this */
 
    LUfactor(D,pivot);
-   for (k=0; k < A->n; k++)
+   for (k=0; k < (int) A->n; k++)
    {
       y0.ve = N->me[k];
       y1.ve = out->me[k];
@@ -288,7 +288,7 @@ int *q_out, *j_out;
 /* simple interface for _m_exp */
 MAT *m_exp(A,eps,out)
 MAT *A,*out;
-double eps;
+Real eps;
 {
    int q_out, j_out;
 
@@ -325,18 +325,18 @@ VEC *a;
    q = a->dim - 1;
    if ( q == 0 ) {
       m_zero(out);
-      for (j=0; j < out->n; j++)
+      for (j=0; j < (int) out->n; j++)
 	out->me[j][j] = a->ve[0];
       return out;
    }
    else if ( q == 1) {
       sm_mlt(a->ve[1],A,out);
-      for (j=0; j < out->n; j++)
+      for (j=0; j < (int) out->n; j++)
 	out->me[j][j] += a->ve[0];
       return out;
    }
    
-   s = (int)floor(sqrt((double)q/2.0));
+   s = (int)floor(sqrt((Real)q/2.0));
    if ( s <= 0 ) s = 1;
    _m_pow(A,s,out,Apow);
    r = q/s;
@@ -353,7 +353,7 @@ VEC *a;
 #define Z(k)     ((k) & 1 ? tmp : &y0)
 #define ZZ(k)    ((k) & 1 ? tmp->ve : y0.ve)
 
-   for( j = 0; j < A->n; j++)
+   for( j = 0; j < (int) A->n; j++)
    {
       if( j > 0 )
 	Y->me[0][j-1] = 0.0;

@@ -47,7 +47,7 @@ static	char	rcsid[] = "$Id: update.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 MAT	*LDLupdate(CHmat,w,alpha)
 MAT	*CHmat;
 VEC	*w;
-double	alpha;
+Real alpha;
 {
 	u_int	i,j;
 	Real	diag,new_diag,beta,p;
@@ -114,7 +114,7 @@ VEC	*u,*v;
 
 	/* add into R */
 	temp = u->ve[0];
-	for ( j=0; j<R->n; j++ )
+	for ( j=0; j<(int) R->n; j++ )
 		R->me[0][j] += temp*v->ve[j];
 
 	/* transform Hessenberg to upper triangular */

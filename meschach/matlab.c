@@ -45,7 +45,10 @@ FILE    *fp;
 MAT     *A;
 char    *name;
 {
-	int     i;
+    int     i;
+    #if ORDER != ROW_ORDER
+    int j;
+    #endif
 	matlab  mat;
 
 	if ( ! A )
@@ -65,8 +68,14 @@ char    *name;
 	else
 		fwrite(name,sizeof(char),(int)(mat.namlen),fp);
 	/* write actual data */
-	for ( i = 0; i < A->m; i++ )
+#if ORDER == ROW_ORDER
+	for ( i = 0; i < (int) A->m; i++ )
 		fwrite(A->me[i],sizeof(Real),(int)(A->n),fp);
+#else /* column major order: ORDER == COL_ORDER */
+	for ( j = 0; j < (int) A->n; j++ )
+	  for ( i = 0; i < (int) A->m; i++ )
+	    fwrite(&(A->me[i][j]),sizeof(Real),1,fp);
+#endif
 
 	return A;
 }
@@ -165,13 +174,16 @@ char    **name;
 	if ( fread(*name,sizeof(char),(unsigned)(mat.namlen),fp) == 0 )
 		m_error(E_FORMAT,"m_load");
 	A = m_get((unsigned)(mat.m),(unsigned)(mat.n));
-	for ( i = 0; i < A->m*A->n; i++ )
+	for ( i = 0; i < (int) A->m*A->n; i++ )
 	{
-		if ( p_flag == DOUBLE_PREC )
-		    fread(&d_temp,sizeof(double),1,fp);
+		if ( p_flag == DOUBLE_PREC ) {
+		    if (fread(&d_temp,sizeof(double),1,fp) != 1)
+				m_error(E_FORMAT,"m_load");
+		}
 		else
 		{
-		    fread(&f_temp,sizeof(float),1,fp);
+		    if (fread(&f_temp,sizeof(float),1,fp) != 1)
+				m_error(E_FORMAT,"m_load");
 		    d_temp = f_temp;
 		}
 		if ( o_flag == ROW_ORDER )
@@ -183,7 +195,7 @@ char    **name;
 	}
 
 	if ( mat.imag )         /* skip imaginary part */
-	for ( i = 0; i < A->m*A->n; i++ )
+	for ( i = 0; i < (int) A->m*A->n; i++ )
 	{
 		if ( p_flag == DOUBLE_PREC )
 		    fread(&d_temp,sizeof(double),1,fp);
