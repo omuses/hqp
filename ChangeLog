@@ -1,3 +1,13 @@
+2014-01-28  <rfranke>
+
+	* configure, configure.in:
+	  - change to development version 1.9.7
+
+	* iftcl/*.[hC], iftcl/Makefile, hqp/*.[hC], hqp/hqp_solve.tcl,
+	  omu/Prg_SFunction.h, odc/Prg_CranePar.[hC]:
+	  - remove deprecated interface elements in order to support Tcl 8.6
+
+
 2014-01-27  <e-arnold>
 
 	* meschach/*.c:

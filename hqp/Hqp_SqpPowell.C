@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -86,9 +86,9 @@ Hqp_SqpPowell::~Hqp_SqpPowell()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpPowell::init(IF_CMD_ARGS)
+void Hqp_SqpPowell::init()
 {
-  int ret = Hqp_SqpSolver::init();
+  Hqp_SqpSolver::init();
 
   Hqp_Program *qp = _prg->qp();
 
@@ -110,8 +110,6 @@ int Hqp_SqpPowell::init(IF_CMD_ARGS)
 
   _relaxed = false;
   _watchdog_iter = -1;
-
-  return ret;
 }
 
 #if 1

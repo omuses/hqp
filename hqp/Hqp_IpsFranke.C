@@ -117,7 +117,7 @@ Hqp_IpsFranke::~Hqp_IpsFranke()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::init(IF_CMD_ARGS)
+void Hqp_IpsFranke::init()
 {
   assert(_qp != NULL);
 
@@ -145,20 +145,16 @@ int Hqp_IpsFranke::init(IF_CMD_ARGS)
   // fill up internal data
 
   _matrix->init(_qp);
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::update(IF_CMD_ARGS)
+void Hqp_IpsFranke::update()
 {
   _matrix->update(_qp);
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::cold_start(IF_CMD_ARGS)
+void Hqp_IpsFranke::cold_start()
 {
 //  Real Ltilde;
   Real min_d;
@@ -221,15 +217,13 @@ int Hqp_IpsFranke::cold_start(IF_CMD_ARGS)
 
   _hot_started = 0;
   _result = Hqp_Infeasible;
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
 // hot_start:
 //  - just correct slack vectors a1, a2 and a3
 //
-int Hqp_IpsFranke::hot_start(IF_CMD_ARGS)
+void Hqp_IpsFranke::hot_start()
 {
   int i;
 
@@ -271,12 +265,10 @@ int Hqp_IpsFranke::hot_start(IF_CMD_ARGS)
 
   _hot_started = 1;
   _result = Hqp_Infeasible;
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::step(int, const char *[], const char **)
+void Hqp_IpsFranke::step()
 {
   int	i, i_end;
   Real 	mu;
@@ -315,7 +307,7 @@ int Hqp_IpsFranke::step(int, const char *[], const char **)
 				    _r1, _r2, _r3, _r4, _dx, _dy, _dz, _dw),
 	  // catch(E_SING)
 	  _result = Hqp_Degenerate;
-	  return IF_OK);
+	  return);
 
   // step size determination (find maximal feasible step)
 
@@ -361,7 +353,7 @@ int Hqp_IpsFranke::step(int, const char *[], const char **)
 
   if (!is_finite(_gap) || !is_finite(v_norm_inf(_dx))) {
     _result = Hqp_Degenerate;
-    return IF_OK;
+    return;
   }
 
   v_copy(_dx, _qp->x); 
@@ -383,12 +375,10 @@ int Hqp_IpsFranke::step(int, const char *[], const char **)
     //fprintf(stderr, "Res %g\n", residuum);
     _result = Hqp_Optimal;
   }
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsFranke::solve(int, const char *[], const char ** /*ret*/)
+void Hqp_IpsFranke::solve()
 {
   Real 	gap1 = 0.0;
 
@@ -424,16 +414,6 @@ int Hqp_IpsFranke::solve(int, const char *[], const char ** /*ret*/)
   } while (1);
 
   _iter += _fail_iters;
-
-  /*
-  if (_result == Hqp_Insolvable) {
-    if (ret)
-      *ret = hqp_result_strings[_result];
-    return IF_ERROR;
-  }
-  else
-  */
-  return IF_OK;
 }
 
 //==========================================================================

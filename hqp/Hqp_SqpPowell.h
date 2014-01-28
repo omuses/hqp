@@ -67,7 +67,7 @@ class Hqp_SqpPowell: public Hqp_SqpSolver {
   Hqp_SqpPowell();
   ~Hqp_SqpPowell();
 
-  int	init(IF_DEF_ARGS);
+  void	init();
 
   const char *name() {return "Powell";}
 };  

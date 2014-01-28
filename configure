@@ -2201,8 +2201,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 MAJOR_VERSION=1
 MINOR_VERSION=9
-PATCHLEVEL_BASE=6
-DEVELOPMENT_VERSION=no
+PATCHLEVEL_BASE=7
+DEVELOPMENT_VERSION=yes
 # note: PATCHLEVEL is formed by appending to PATCHLEVEL_BASE the
 # modification date of ChangeLog if DEVELOPMENT_VERSION = yes
 

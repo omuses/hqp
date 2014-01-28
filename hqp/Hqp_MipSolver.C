@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,6 +29,11 @@
 
 #include <If_Method.h>
 #include <If_Module.h>
+#include <If_String.h>
+
+#define GET_CB(vartype, name) \
+  #name, \
+  IF_GET_CB(vartype, Hqp_MipSolver, name)
 
 typedef If_Method<Hqp_MipSolver> If_Cmd;
 
@@ -40,8 +45,11 @@ extern Hqp_SqpProgram *theSqpProgram;
 Hqp_MipSolver::Hqp_MipSolver()
 {
   _prg = theSqpProgram;
+  _result = Hqp_Infeasible;
+
   //_ifList.append(new If_Cmd("mip_init", &Hqp_MipSolver::init, this));
   _ifList.append(new If_Cmd("mip_solve", &Hqp_MipSolver::solve, this));
+  _ifList.append(new If_String(GET_CB(const char *, mip_result)));
 }
 
 //--------------------------------------------------------------------------

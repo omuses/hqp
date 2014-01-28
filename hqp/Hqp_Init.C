@@ -154,7 +154,7 @@ static void signal_handler(int code)
     break;
   }
 
-  fprintf(stderr, "%s\n", theInterp->result);
+  fprintf(stderr, "%s\n", Tcl_GetStringResult(theInterp));
   exit(0);
 }
 
@@ -203,14 +203,14 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
   extern char *hqp_solve;
   if (Tcl_Eval(interp, hqp_solve) == TCL_ERROR) {
     fprintf(stderr,
-	    "Evaluation of built-in code failed: %s\n", interp->result);
+	    "Evaluation of built-in code failed: %s\n", Tcl_GetStringResult(interp));
   }
 
   // evaluate file ~/.hqprc if it exists
   if (Tcl_Eval(interp, "if {[file exists ~/.hqprc]} {source ~/.hqprc}")
       != TCL_OK) {
     fprintf(stderr,
-	    "Evaluation of ~/.hqprc failed: %s\n", interp->result);
+	    "Evaluation of ~/.hqprc failed: %s\n", Tcl_GetStringResult(interp));
   }
 
   return TCL_OK;

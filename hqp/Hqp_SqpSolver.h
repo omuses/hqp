@@ -32,7 +32,6 @@
 #define Hqp_SqpSolver_H
 
 #include <If_List.h>
-#include <If_Command.h>
 #include <If_Class.h>
 
 #include "Hqp_impl.h"
@@ -97,16 +96,16 @@ class Hqp_SqpSolver {
   Hqp_SqpProgram *prg() {return _prg;}
   void	set_prg(Hqp_SqpProgram *);
 
-  virtual int	init(IF_DEF_ARGS);
-  virtual int	qp_update(IF_DEF_ARGS);
-  virtual int	qp_solve(IF_DEF_ARGS);
-  virtual int	step(IF_DEF_ARGS);
-  virtual int	hela_restart(IF_DEF_ARGS);
-  virtual int	qp_reinit_bd(IF_DEF_ARGS);
+  virtual void	init();
+  virtual void	qp_update();
+  virtual void	qp_solve();
+  virtual void	step();
+  virtual void	hela_restart();
+  virtual void	qp_reinit_bd();
 
-  virtual int	solve(IF_DEF_ARGS);
+  virtual void	solve();
 
-  virtual const char *name()=0;
+  virtual const char *name() = 0;
 
   // member access methods
 

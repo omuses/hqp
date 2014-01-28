@@ -102,7 +102,7 @@ void Prg_CranePar::setup(int k,
 }
 
 //--------------------------------------------------------------------------
-int Prg_CranePar::disturb(IF_CMD_ARGS)
+void Prg_CranePar::disturb()
 {
   // disturb the recorded data once during the problem setup
   int i, i_end, r;
@@ -112,8 +112,6 @@ int Prg_CranePar::disturb(IF_CMD_ARGS)
   for (i = 0; i < i_end; i++) {
     _s_ref[i] += _maxdev * ((double)rand() / (double)RAND_MAX * 2.0 - 1.0);
   }
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------

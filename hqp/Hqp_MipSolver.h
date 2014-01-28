@@ -29,7 +29,6 @@
 #define Hqp_MipSolver_H
 
 #include <If_List.h>
-#include <If_Command.h>
 #include <If_Class.h>
 
 #include "Hqp_impl.h"
@@ -47,19 +46,24 @@ class Hqp_MipSolver {
   If_List	_ifList; 	///< interface elements
 
   Hqp_SqpProgram *_prg;		///< optimization problem to work on
+  Hqp_Result	_result;	///< current processing state
 
  public:
   Hqp_MipSolver(); 		///< constructor
   virtual ~Hqp_MipSolver(); 	///< destructor
 
+  /** optimization program */
   Hqp_SqpProgram *prg() {return _prg;}
-  void	set_prg(Hqp_SqpProgram *);
+  void	set_prg(Hqp_SqpProgram *); ///< set optimization program
+
+  /** current processing state */
+  const char 	*mip_result() const {return hqp_result_strings[_result];}
 
   /** initialize a MIP for an optimization problem given in _prg */
-  virtual int init(IF_DEF_ARGS) = 0;
+  virtual void init() = 0;
 
   /** initialize and solve a MIP for an optimization problem given in _prg */
-  virtual int solve(IF_DEF_ARGS) = 0;
+  virtual void solve() = 0;
 
   virtual const char *name() = 0; ///< name of mixed integer solver
 };  

@@ -41,14 +41,14 @@ class Hqp_Client: public Hqp_Solver {
 
   // initializing a program (updating for SQP integration)
   // is empty as only complete tasks are processed that time
-  int	init(IF_CMD_ARGS) {return IF_OK;}
-  int	update(IF_CMD_ARGS) {return IF_OK;}
+  void	init() {}
+  void	update() {}
 
   // solving a program (hot start for SQP integration)
-  int	cold_start(IF_CMD_ARGS) {return IF_OK;}
-  int	hot_start(IF_CMD_ARGS) {return IF_OK;}
-  int	step(IF_DEF_ARGS);
-  int 	solve(IF_DEF_ARGS);
+  void	cold_start() {}
+  void	hot_start() {}
+  void	step();
+  void 	solve();
 
   const char *name() {return "Client";}
 };  

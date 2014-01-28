@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -86,7 +86,7 @@ Hqp_LPSolve::~Hqp_LPSolve()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_LPSolve::init(int, char *[], char **retString)
+void Hqp_LPSolve::init()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_LPSolve::init");
@@ -99,10 +99,13 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
   int *colno = NULL, i, j, jdx;
   REAL *row = NULL;
   int ret = 0;
+  const char *retString = NULL;
 
   SPROW *sprow;
   row_elt *elt;
   double val;
+
+  _result = Hqp_Infeasible;
 
   // update the qp
   VECP y = v_zero(v_get(qp->b->dim));
@@ -116,8 +119,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
   _lp = LPSOLVE::make_lp(0, ncols);
   if(_lp == NULL) {
     ret = 1;
-    if (retString)
-      *retString = "Failed to construct a linear program";
+    retString = "Hqp_LPSolve::init: Failed to construct a linear program";
   }
   // initialize solver options
   if (ret == 0) {
@@ -134,8 +136,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
     row = (REAL *) malloc(ncols * sizeof(*row));
     if((colno == NULL) || (row == NULL)) {
       ret = 2;
-      if (retString)
-        *retString = "Failed to allocate memory";
+      retString = "Hqp_LPSolve::init: Failed to allocate memory";
     }
   }
 
@@ -166,8 +167,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
     }
     if(!LPSOLVE::set_obj_fnex(_lp, j, row, colno)) {
       ret = 4;
-      if (retString)
-        *retString = "Failed to set the objective function";
+      retString = "Hqp_LPSolve::init: Failed to set the objective function";
     }
   }
 
@@ -196,8 +196,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
       // add the row to lpsolve
       if(!LPSOLVE::add_constraintex(_lp, jdx, row, colno, EQ, val)) {
         ret = 3;
-        if (retString)
-          *retString = "Failed to add an equality constraint row";
+        retString = "Hqp_LPSolve::init: Failed to add an equality constraint row";
         break;
       }
     }
@@ -234,8 +233,7 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
         // general constraint
         if(!LPSOLVE::add_constraintex(_lp, jdx, row, colno, GE, val)) {
           ret = 3;
-          if (retString)
-            *retString = "Failed to add an inequality constraint row";
+          retString = "Hqp_LPSolve::init: Failed to add an inequality constraint row";
           break;
         }
       }
@@ -252,40 +250,31 @@ int Hqp_LPSolve::init(int, char *[], char **retString)
     free(colno);
 
   if (ret != 0)
-    return IF_ERROR;
-
-  return IF_OK;
+    m_error(E_INTERN, retString);
 }
 
 //--------------------------------------------------------------------------
-int Hqp_LPSolve::solve(int argc, char *argv[], char **retString)
+void Hqp_LPSolve::solve()
 {
   int ret;
 
   // init
-  ret = init(argc, argv, retString);
-  if (ret != IF_OK)
-    return ret;
+  init();
 
   // solve
   ret = LPSOLVE::solve(_lp);
   if(ret != OPTIMAL && ret != SUBOPTIMAL) {
-    if (retString)
-      *retString = "No solution found!";
-    return IF_ERROR;
+    m_error(E_CONV, "Hqp_LPSolve::solve: No solution found!");
   }
 
   // read result
   LPSOLVE::get_variables(_lp, _prg->qp()->x->ve);
   _prg->set_x(_prg->qp()->x);
 
-  if (retString) {
-    if (ret == OPTIMAL) 
-      *retString = "optimal";
-    else
-      *retString = "suboptimal";
-  }
-  return IF_OK;
+  if (ret == OPTIMAL) 
+    _result = Hqp_Optimal;
+  else if (ret == SUBOPTIMAL)
+    _result = Hqp_Suboptimal;
 }
 
 //--------------------------------------------------------------------------

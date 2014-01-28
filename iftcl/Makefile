@@ -13,8 +13,6 @@ SRCS = 	If.C \
 	If_List.C \
 	If_ListElement.C \
 	If_Element.C \
-	If_Command.C \
-	If_Proc.C \
 	If_Procedure.C \
 	If_Int.C \
 	If_IntVec.C \

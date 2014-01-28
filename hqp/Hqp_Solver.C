@@ -29,6 +29,7 @@
 
 #include <If_Int.h>
 #include <If_Real.h>
+#include <If_String.h>
 #include <If_Method.h>
 
 #include "Hqp_Solver.h"
@@ -37,6 +38,10 @@
 IF_BASE_DEFINE(Hqp_Solver);
 
 typedef If_Method<Hqp_Solver> If_Cmd;
+
+#define GET_CB(vartype, name) \
+  #name, \
+  IF_GET_CB(vartype, Hqp_Solver, name)
 
 //--------------------------------------------------------------------------
 Hqp_Solver::Hqp_Solver()
@@ -52,7 +57,7 @@ Hqp_Solver::Hqp_Solver()
   _ifList.append(new If_Int("qp_iter", &_iter));
   _ifList.append(new If_Int("qp_max_iters", &_max_iters));
   _ifList.append(new If_Real("qp_eps", &_eps));
-  _ifList.append(new If_Cmd("qp_result", &Hqp_Solver::result_str, this));
+  _ifList.append(new If_String(GET_CB(const char *, qp_result)));
 }
 
 //--------------------------------------------------------------------------
@@ -63,10 +68,9 @@ Hqp_Solver::~Hqp_Solver()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_Solver::result_str(int, const char *[], const char **result)
+const char *Hqp_Solver::qp_result() const
 {
-  *result = hqp_result_strings[_result];
-  return IF_OK;
+  return hqp_result_strings[_result];
 }
 
 //--------------------------------------------------------------------------

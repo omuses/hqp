@@ -31,7 +31,6 @@
 #define Hqp_Solver_H
 
 #include <If_List.h>
-#include <If_Command.h>
 #include <If_Class.h>
 
 #include "Hqp_impl.h"
@@ -64,17 +63,17 @@ class Hqp_Solver {
   void		qp(Hqp_Program *);
 
   // initializing a program (updating for SQP integration)
-  virtual int	init(IF_DEF_ARGS)=0;
-  virtual int	update(IF_DEF_ARGS)=0;
+  virtual void	init() = 0;
+  virtual void	update() = 0;
 
   // solving a program (hot start for SQP integration)
-  virtual int	cold_start(IF_DEF_ARGS)=0;
-  virtual int	hot_start(IF_DEF_ARGS)=0;
-  virtual int	step(IF_DEF_ARGS)=0;
-  virtual int	solve(IF_DEF_ARGS)=0;
+  virtual void	cold_start() = 0;
+  virtual void	hot_start() = 0;
+  virtual void	step() = 0;
+  virtual void	solve() = 0;
 
   // member access
-  int		result_str(IF_CMD_ARGS);
+  const char 	*qp_result() const;
   Hqp_Result	result() {return _result;}
   int		iter() {return _iter;}
   int		max_iters() {return _max_iters;}

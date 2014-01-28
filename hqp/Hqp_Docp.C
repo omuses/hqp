@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -713,7 +713,7 @@ void Hqp_Docp::init_x()
 }
 
 //-------------------------------------------------------------------------
-int Hqp_Docp::simulate(IF_CMD_ARGS)
+void Hqp_Docp::simulate()
 {
   int k, kxu;
   int nx, nu, nf, nc;
@@ -747,8 +747,6 @@ int Hqp_Docp::simulate(IF_CMD_ARGS)
   }
 
   v_free(c);
-
-  return IF_OK;
 }
 
 //-------------------------------------------------------------------------

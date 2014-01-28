@@ -157,7 +157,7 @@ Hqp_IpsMehrotra::~Hqp_IpsMehrotra()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsMehrotra::init(IF_CMD_ARGS)
+void Hqp_IpsMehrotra::init()
 {
   assert(_qp != NULL);
 
@@ -193,24 +193,20 @@ int Hqp_IpsMehrotra::init(IF_CMD_ARGS)
 
   if ( _logging )
     printf("\nHqp_IpsMehrotra::init\n");
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsMehrotra::update(IF_CMD_ARGS)
+void Hqp_IpsMehrotra::update()
 {
   _matrix->update(_qp);
   _phimin = v_resize(_phimin, _max_iters+1);
 
   if ( _logging )
     printf("\nHqp_IpsMehrotra::update\n");
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsMehrotra::cold_start(IF_CMD_ARGS)
+void Hqp_IpsMehrotra::cold_start()
 {
   int  i, izmin, iwmin, code;
   Real delz, delw, residuum;
@@ -267,7 +263,7 @@ int Hqp_IpsMehrotra::cold_start(IF_CMD_ARGS)
 	      printf("\nHqp_Degenerate: vmin(_z) = %g, vmin(_w) = %g\n", 
 		     v_min(_z, &izmin), v_min(_w, &iwmin));
 	    _result = Hqp_Degenerate;
-	    return IF_OK);
+	    return);
 #else
     _matrix->factor(_qp, _z, _w);
     if ((code = setjmp(restart)) != 0) {
@@ -277,7 +273,7 @@ int Hqp_IpsMehrotra::cold_start(IF_CMD_ARGS)
 	  printf("\nHqp_Degenerate: vmin(_z) = %g, vmin(_w) = %g\n", 
 		 v_min(_z, &izmin), v_min(_w, &iwmin));
 	_result = Hqp_Degenerate;
-	return IF_OK;
+	return;
       }
       else
 	error(code, "Hqp_IpsMehrotra::step");
@@ -328,12 +324,10 @@ int Hqp_IpsMehrotra::cold_start(IF_CMD_ARGS)
     v_zero(_qp->x);
     v_zero(_y);
   }
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsMehrotra::hot_start(IF_CMD_ARGS)
+void Hqp_IpsMehrotra::hot_start()
 {
   _iter = 0;
   v_zero(_phimin);
@@ -355,12 +349,10 @@ int Hqp_IpsMehrotra::hot_start(IF_CMD_ARGS)
     v_zero(_qp->x);
     v_zero(_y);
   }
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
+void Hqp_IpsMehrotra::step()
 {
   int	i, izmin, iwmin;
   Real 	residuum, smm, phi, pcost, norm_r, pm, pm30, t, gamma;
@@ -432,7 +424,7 @@ int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
 
   if ( ( mu <= _eps ) && ( norm_r <= _eps*_norm_data ) ) {
     _result = Hqp_Optimal;
-    return IF_OK;
+    return;
   }
 
   //   check for infeasibility
@@ -444,7 +436,7 @@ int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
     _result = Hqp_Suboptimal;      // should be "infeasible"
     if ( _logging )
       printf("\nHqp_Suboptimal: phi = %g, min(phi) = %g\n", phi, pm);
-    return IF_OK;
+    return;
   }
 
   //   check for slow convergence
@@ -457,7 +449,7 @@ int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
       if ( _logging )
 	printf("\nHqp_Suboptimal: phi = %g, min(phi) = %g, min30(phi) = %g\n",
 	       phi, pm, pm30);
-      return IF_OK;
+      return;
     }
   }
 
@@ -484,7 +476,7 @@ int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
 	    printf("\nHqp_Degenerate: vmin(_z) = %g, vmin(_w) = %g\n", 
 		   v_min(_z, &izmin), v_min(_w, &iwmin));
 	  _result = Hqp_Degenerate;
-	  return IF_OK);
+	  return);
 
 #else
   _matrix->factor(_qp, _z, _w);
@@ -496,7 +488,7 @@ int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
       if ( _logging )
 	printf("\nHqp_Degenerate: vmin(_z) = %g, vmin(_w) = %g\n", 
 	       v_min(_z, &izmin), v_min(_w, &iwmin));
-      return IF_OK;
+      return;
     }
     else
       error(code, "Hqp_IpsMehrotra::step");
@@ -636,17 +628,15 @@ int Hqp_IpsMehrotra::step(IF_CMD_ARGS)
 
     if ( _logging )
       printf("\nHQP_Degenerate: mu = %g, _dx = %g\n", mu, v_norm_inf(_dx));
-    return IF_OK;
+    return;
   }
 
   v_copy(_dx, _qp->x); 
   _iter++;
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_IpsMehrotra::solve(IF_CMD_ARGS)
+void Hqp_IpsMehrotra::solve()
 {
   Real test1 = 0.0;
 
@@ -683,8 +673,6 @@ int Hqp_IpsMehrotra::solve(IF_CMD_ARGS)
   } while (1);
 
   _iter += _fail_iters;
-
-  return IF_OK;
 }
 
 //==========================================================================

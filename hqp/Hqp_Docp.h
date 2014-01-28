@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -50,7 +50,7 @@ class Hqp_Docp: public Hqp_SqpProgram {
   void	setup();		///< init task for given _k0 and _kf
   void	init_x();		///< set start variables
 
-  int simulate(IF_DEF_ARGS);	///< perform a simulation for current _x
+  void simulate();		///< perform a simulation for current _x
 
   /**
    * @name Interface for an optimal control problem.

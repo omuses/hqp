@@ -30,9 +30,6 @@
 
 #include "If_Element.h"
 
-/** Enable old signatures for callback methods. */
-#define IF_METHOD_WITH_DEPRECATED 1
-
 /** Interface method */
 template<class ClassType>
 class If_Method: public If_Element {

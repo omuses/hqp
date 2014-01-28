@@ -51,8 +51,8 @@ class Hqp_LPSolve : public Hqp_MipSolver {
   Hqp_LPSolve(); 		///< constructor
   virtual ~Hqp_LPSolve(); 	///< destructor
 
-  virtual int init(IF_DEF_ARGS);
-  virtual int solve(IF_DEF_ARGS);
+  virtual void init();
+  virtual void solve();
 
   /** Write current linear program to the file mip_dump.lp */
   virtual void dump();

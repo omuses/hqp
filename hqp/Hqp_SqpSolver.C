@@ -170,7 +170,7 @@ Real Hqp_SqpSolver::norm_inf(const Hqp_Program *qp)
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::init(IF_CMD_ARGS)
+void Hqp_SqpSolver::init()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::init");
@@ -200,12 +200,10 @@ int Hqp_SqpSolver::init(IF_CMD_ARGS)
   _alpha = 1.0;
 
   _hot_started = false;
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::qp_update(IF_CMD_ARGS)
+void Hqp_SqpSolver::qp_update()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::qp_update");
@@ -266,12 +264,10 @@ int Hqp_SqpSolver::qp_update(IF_CMD_ARGS)
     _norm_df = fabs(_f_bak - _prg->f());
     _norm_grd_L = v_norm_inf(_grd_L);
   }
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::qp_solve(IF_CMD_ARGS)
+void Hqp_SqpSolver::qp_solve()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::qp_solve");
@@ -303,12 +299,10 @@ int Hqp_SqpSolver::qp_solve(IF_CMD_ARGS)
   _xk = sp_mv_symmlt(qp->Q, qp->x, _xk);
   _sQs = in_prod(_xk, qp->x);
   _norm_dx = v_norm_inf(qp->x);
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::hela_restart(IF_CMD_ARGS)
+void Hqp_SqpSolver::hela_restart()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::hela_restart");
@@ -321,12 +315,10 @@ int Hqp_SqpSolver::hela_restart(IF_CMD_ARGS)
 
   //v_zero(_y);
   //v_zero(_z);
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::qp_reinit_bd(IF_CMD_ARGS)
+void Hqp_SqpSolver::qp_reinit_bd()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::qp_reinit_bd");
@@ -345,8 +337,6 @@ int Hqp_SqpSolver::qp_reinit_bd(IF_CMD_ARGS)
     // restore Hessian of last cold solution
     sp_copy3(_qp_Q_hot, _prg->qp()->Q);
   }
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
@@ -379,7 +369,7 @@ void Hqp_SqpSolver::feasible_vals()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::step(IF_CMD_ARGS)
+void Hqp_SqpSolver::step()
 {
   if (!_prg) {
     m_error(E_NULL, "Hqp_SqpSolver::step");
@@ -412,12 +402,10 @@ int Hqp_SqpSolver::step(IF_CMD_ARGS)
     _inf_iters++;
   else
     _inf_iters = 0;
-
-  return IF_OK;
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSolver::solve(int, const char *[], const char **ret)
+void Hqp_SqpSolver::solve()
 {
   init();
 
@@ -428,20 +416,14 @@ int Hqp_SqpSolver::solve(int, const char *[], const char **ret)
       if (_norm_df < _eps) break;
       if (_norm_dx < _eps) break;
       if (_norm_grd_L < _eps) break;
-      //if (_status == Hqp_Insolvable) return IF_ERROR;
     }
     qp_solve();
     step();
     if (_alpha <= _min_alpha) break;
   } while (1);
 
-  if (_status != Hqp_Optimal) {
-    if (ret)
-      *ret = hqp_result_strings[_status];
-    return IF_ERROR;
-  }
-  else
-    return IF_OK;
+  if (_status != Hqp_Optimal)
+    m_error(E_CONV, hqp_result_strings[_status]);
 }
 
 //--------------------------------------------------------------------------

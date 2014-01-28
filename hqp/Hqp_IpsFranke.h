@@ -76,14 +76,14 @@ class Hqp_IpsFranke: public Hqp_Solver {
   ~Hqp_IpsFranke();
 
   // initializing a program
-  int		init(IF_DEF_ARGS);
-  int		update(IF_DEF_ARGS);
+  void		init();
+  void		update();
 
   // solving a program
-  int		cold_start(IF_DEF_ARGS);
-  int		hot_start(IF_DEF_ARGS);
-  int		step(IF_DEF_ARGS);
-  int	 	solve(IF_DEF_ARGS);
+  void		cold_start();
+  void		hot_start();
+  void		step();
+  void	 	solve();
 
   // member access
   Real		gap() {return _gap;}

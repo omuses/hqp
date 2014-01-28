@@ -256,9 +256,9 @@ proc hqp_solve {{stream stdout} {hot 0}} {
   #
 
   if {[mip_solver] != "None"} {
-    set result [mip_solve]
+    mip_solve
     prg_update_fbd 	;# take over solution
-    return $result
+    return [mip_result]
   }
 
   return optimal

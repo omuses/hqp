@@ -65,7 +65,7 @@ class Hqp_SqpSchittkowski: public Hqp_SqpSolver {
   Hqp_SqpSchittkowski();
   ~Hqp_SqpSchittkowski();
 
-  int	init(IF_DEF_ARGS);
+  void	init();
   
   const char *name() {return "Schittkowski";}
 };  

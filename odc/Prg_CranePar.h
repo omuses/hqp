@@ -9,7 +9,6 @@
 #define Prg_CranePar_H
 
 #include <Omu_Program.h>
-#include <If_Command.h>
 
 //--------------------------------------------------------------------------
 class Prg_CranePar: public Omu_Program {
@@ -54,7 +53,7 @@ class Prg_CranePar: public Omu_Program {
   Prg_CranePar();
   ~Prg_CranePar();
 
-  int disturb(IF_DEF_ARGS);		// method to be called trough Tcl
+  void disturb();		// method to be called trough Tcl
 
   const char *name() {return "CranePar";}
 };  

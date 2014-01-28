@@ -35,14 +35,13 @@
 IF_CLASS_DEFINE("Client", Hqp_Client, Hqp_Solver);
 
 //--------------------------------------------------------------------------
-int Hqp_Client::step(int, const char *[], const char **result)
+void Hqp_Client::step()
 {
-  *result = "Hqp_Client::step not implemented";
-  return IF_ERROR;
+  m_error(E_UNKNOWN, "Hqp_Client::step not implemented");
 }
 
 //--------------------------------------------------------------------------
-int Hqp_Client::solve(IF_CMD_ARGS)
+void Hqp_Client::solve()
 {
   FILE *fp1, *fp2;
 
@@ -64,7 +63,6 @@ int Hqp_Client::solve(IF_CMD_ARGS)
   fclose(fp2);
 
   _result = Hqp_Optimal;
-
-  return IF_OK;
 }
 
+//==========================================================================

@@ -28,7 +28,6 @@
 #define Hqp_SqpProgram_H
 
 #include <If_List.h>
-#include <If_Command.h>
 #include <If_Class.h>
 
 #include "Hqp_impl.h"
@@ -73,11 +72,11 @@ class Hqp_SqpProgram {
 
   /** Update values of objective and constraints in _f, _qp->b, _qp->d
       for current _x. */
-  virtual void 	update_fbd()=0;
+  virtual void 	update_fbd() = 0;
 
   /** Update everything, including values and derivatives, in _f and _qp
       for current _x. */
-  virtual void 	update(const VECP y, const VECP z)=0;
+  virtual void 	update(const VECP y, const VECP z) = 0;
 
   /** Re-initialize constants in constraints (_qp->b, _qp->d)
       for current _x. */

@@ -83,9 +83,9 @@ Hqp_SqpSchittkowski::~Hqp_SqpSchittkowski()
 }
 
 //--------------------------------------------------------------------------
-int Hqp_SqpSchittkowski::init(IF_CMD_ARGS)
+void Hqp_SqpSchittkowski::init()
 {
-  int ret = Hqp_SqpSolver::init();
+  Hqp_SqpSolver::init();
 
   Hqp_Program *qp = _prg->qp();
 
@@ -110,8 +110,6 @@ int Hqp_SqpSchittkowski::init(IF_CMD_ARGS)
   v_ones(_r);
   v_zero(_ve);
   v_zero(_v);
-
-  return ret;
 }
 
 //--------------------------------------------------------------------------
