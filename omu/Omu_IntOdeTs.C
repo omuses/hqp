@@ -32,6 +32,8 @@
 #include <adolc/interfaces.h>
 #include <adolc/adalloc.h>
 #include <adolc/drivers/odedrivers.h>
+#include <adolc/taping.h>
+#include "adoublev.h"
 #endif
 #include "Omu_Program.h"
 
@@ -277,10 +279,14 @@ void Omu_IntOdeTs::solve(int kk, double tstart, double tend,
   multiple_record = true;
   tag = 1;
 
-  adoublev ax(_nd+_n);
-  adoublev axp(_nd+_n);
-  adoublev au(_m);
-  adoublev aF(_nd+_n);
+  //  adoublev ax(_nd+_n);
+  static adoublev ax; ax.alloc(_nd+_n);
+  //  adoublev axp(_nd+_n);
+  static adoublev axp; axp.alloc(_nd+_n);
+  //  adoublev au(_m);
+  static adoublev au; au.alloc(_m);
+  //  adoublev aF(_nd+_n);
+  static adoublev aF; aF.alloc(_nd+_n);
 
   double *f;
 

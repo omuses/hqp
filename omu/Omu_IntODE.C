@@ -28,6 +28,8 @@
 
 #ifdef OMU_WITH_ADOLC
 #include <adolc/interfaces.h>
+#include <adolc/taping.h>
+#include "adoublev.h"
 #endif
 
 #include <If_Class.h>
@@ -274,10 +276,14 @@ void Omu_IntODE::syseq_forward(double t, const VECP y, const VECP u,
   // evaluate residual
   //
 
-  adoublev ax(_nd + _n);
-  adoublev adx(_nd + _n);
-  adoublev au(_nu);
-  adoublev aF(_nd + _n);
+  //  adoublev ax(_nd + _n);
+  static adoublev ax; ax.alloc(_nd + _n);
+  //  adoublev adx(_nd + _n);
+  static adoublev adx; adx.alloc(_nd + _n);
+  //  adoublev au(_nu);
+  static adoublev au; au.alloc(_nu);
+  //  adoublev aF(_nd + _n);
+  static adoublev aF; aF.alloc(_nd + _n);
 
   for (i = 0; i < _nd; i++)
     adx[i] = 0.0;

@@ -603,25 +603,48 @@ AC_ARG_ENABLE(adolc,
     [omu_adolc=$enableval], [omu_adolc=no])
 AC_MSG_RESULT($omu_adolc)
 
-if test "$omu_adolc" = yes; then
-  cd adol-c;
-  if test -d adol-c; then rm -rf adol-c; fi
-  tar xzf adolc-1.9.0-PL2.tar.gz;
-  mv adolc-1.9.0 adol-c;
-  patch -p0 -N -s < hqp_adolc.patch;
-  # Note: ADOL-C 1.9.0 configures PICFLAG wrong under Linux and MinGW (gcc 4.8)
-  cd adol-c; ./configure --with-cflags="$CFLAGS" --with-cxxflags="$CXXFLAGS"; cd ..;
-  cd ..
-  ASRCS="\$(ASRCS)"
-  ADOLCDEF="-DOMU_WITH_ADOLC=1"
+ASRCS=""
+ADOLCDEF=""
+ADOL_INCDIR="."
+ADOL_LIBDIR="."
+
+
+if test "$omu_adolc" != no; then
+
+  AC_MSG_CHECKING([--with-adolc])
+  AC_ARG_WITH(adolc,
+      [  --with-adolc       directory containing ADOL-C installation],
+      [with_adolc=$withval])
+  AC_MSG_RESULT([$with_adolc])
+
+  # try to find ADOL-C automatically if nothing else was specified
+  if test -z "${with_adolc}"; then
+    with_adolc="/usr/local"
+    AC_MSG_RESULT([guessing --with-adolc... $with_adolc])
+  fi
+
+  if test -f ${with_adolc}/include/adolc/adolc.h; then
+    AC_MSG_RESULT([${with_adolc}/include/adolc/adolc.h])
+    ASRCS="\$(ASRCS)"
+    ADOLCDEF="-DOMU_WITH_ADOLC=1"
+    ADOL_INCDIR="$with_adolc/include"
+    ADOL_LIBDIR="$with_adolc/lib"
+  else
+    AC_MSG_RESULT([file not found])
+    AC_MSG_ERROR([Specify path of ADOL-C via --with-adolc])
+  fi
+
   OMU_DEFS="$OMU_DEFS $ADOLCDEF"
   HQP_DEFS="$HQP_DEFS $ADOLCDEF"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adol-c/adolc/*\$O ../adol-c/adol-c/adolc/*/*\$O"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
+  ODC_MACH_OBJS="$ODC_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
 else
   ASRCS=""
   ADOLCDEF=""
 fi
 
+AC_SUBST(ADOL_INCDIR)
+AC_SUBST(ADOL_LIBDIR)
 AC_SUBST(ASRCS)
 AC_SUBST(ADOLCDEF)
 

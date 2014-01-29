@@ -38,7 +38,7 @@ RFLAG = @RFLAG@
 #
 HQP_PREFIX = @prefix@
 
-HQP_INCDIR = -I.. -I../iftcl -I../hqp -I../adol-c/adol-c -I../omu \
+HQP_INCDIR = -I.. -I../iftcl -I../hqp $(ADOL_INCDIR) -I../omu \
              -I../hxi -I${HQP_PREFIX}/include/hqp
 
 HQP_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
@@ -54,7 +54,7 @@ CC = @CC@
 CFLAGS = @WFLAG@ -DDEBUG @ADOLCDEF@ \
          ${HQP_INCDIR} ${TCL_INCDIR}
 
-LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR} 
+LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR} ${ADOL_LIBDIR}
 
 #
 # machine independent part

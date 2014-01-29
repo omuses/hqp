@@ -30,7 +30,7 @@ SRCS =	Omu_Init.C \
 	Omu_IntSDIRK.C \
         $(OMU_INTRKSUITE_C) \
         $(OMU_INTDASPK_C) \
-	$(ADOLC_SRCS) \
+	adoublev.C \
 	Prg_SFunction.C \
 	Prg_SFunctionOpt.C \
 	Prg_SFunctionEst.C \

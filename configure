@@ -649,6 +649,8 @@ fortran_g77
 fortran_f77
 ADOLCDEF
 ASRCS
+ADOL_LIBDIR
+ADOL_INCDIR
 TCL_LIBDIR
 TCL_INCDIR
 OMU_DEFS
@@ -751,6 +753,7 @@ with_matlab
 with_matlab_libs
 with_tclinclude
 enable_adolc
+with_adolc
 enable_fortran
 enable_gmalloc
 enable_lpsolve
@@ -1393,6 +1396,7 @@ Optional Packages:
   --with-matlab       directory containing Matlab installation
   --with-matlab-libs  directory containing Matlab run-time libraries
   --with-tclinclude   directory containing include file tcl.h
+  --with-adolc       directory containing ADOL-C installation
 
 Some influential environment variables:
   CC          C compiler command
@@ -4897,24 +4901,55 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $omu_adolc" >&5
 $as_echo "$omu_adolc" >&6; }
 
-if test "$omu_adolc" = yes; then
-  cd adol-c;
-  if test -d adol-c; then rm -rf adol-c; fi
-  tar xzf adolc-1.9.0-PL2.tar.gz;
-  mv adolc-1.9.0 adol-c;
-  patch -p0 -N -s < hqp_adolc.patch;
-  # Note: ADOL-C 1.9.0 configures PICFLAG wrong under Linux and MinGW (gcc 4.8)
-  cd adol-c; ./configure --with-cflags="$CFLAGS" --with-cxxflags="$CXXFLAGS"; cd ..;
-  cd ..
-  ASRCS="\$(ASRCS)"
-  ADOLCDEF="-DOMU_WITH_ADOLC=1"
+ASRCS=""
+ADOLCDEF=""
+ADOL_INCDIR="."
+ADOL_LIBDIR="."
+
+
+if test "$omu_adolc" != no; then
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-adolc" >&5
+$as_echo_n "checking --with-adolc... " >&6; }
+
+# Check whether --with-adolc was given.
+if test "${with_adolc+set}" = set; then :
+  withval=$with_adolc; with_adolc=$withval
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_adolc" >&5
+$as_echo "$with_adolc" >&6; }
+
+  # try to find ADOL-C automatically if nothing else was specified
+  if test -z "${with_adolc}"; then
+    with_adolc="/usr/local"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: guessing --with-adolc... $with_adolc" >&5
+$as_echo "guessing --with-adolc... $with_adolc" >&6; }
+  fi
+
+  if test -f ${with_adolc}/include/adolc/adolc.h; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_adolc}/include/adolc/adolc.h" >&5
+$as_echo "${with_adolc}/include/adolc/adolc.h" >&6; }
+    ASRCS="\$(ASRCS)"
+    ADOLCDEF="-DOMU_WITH_ADOLC=1"
+    ADOL_INCDIR="$with_adolc/include"
+    ADOL_LIBDIR="$with_adolc/lib"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: file not found" >&5
+$as_echo "file not found" >&6; }
+    as_fn_error $? "Specify path of ADOL-C via --with-adolc" "$LINENO" 5
+  fi
+
   OMU_DEFS="$OMU_DEFS $ADOLCDEF"
   HQP_DEFS="$HQP_DEFS $ADOLCDEF"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS ../adol-c/adol-c/adolc/*\$O ../adol-c/adol-c/adolc/*/*\$O"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
+  ODC_MACH_OBJS="$ODC_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
 else
   ASRCS=""
   ADOLCDEF=""
 fi
+
+
 
 
 

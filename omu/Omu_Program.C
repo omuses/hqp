@@ -29,6 +29,7 @@
 #ifdef OMU_WITH_ADOLC
 #include <adolc/interfaces.h>
 #include <adolc/adalloc.h>
+#include <adolc/taping.h>
 #endif
 
 #include "Omu_Program.h"
@@ -41,6 +42,10 @@
 #include <If_RealVec.h>
 
 IF_BASE_DEFINE(Omu_Program);
+
+#ifdef OMU_WITH_ADOLC
+#include "adoublev.h"
+#endif
 
 #define GET_SET_CB(vartype, name) \
   "prg_"#name, \
@@ -238,14 +243,21 @@ void Omu_Program::setup_struct(int k,
   bool with_continuous = (f0.gxf->dim > 0);
   bool init;
 
-  adoublev ax(nxt);
-  adoublev au(nu);
-  adoublev axt(nxt);
-  adoublev adx(nxt);
-  adoublev aF(nxt);
-  adoublev af(nf);
+  //  adoublev ax(nxt);
+  static adoublev ax; ax.alloc(nxt);
+  //  adoublev au(nu);
+  static adoublev au; au.alloc(nu);
+  //  adoublev axt(nxt);
+  static adoublev axt; axt.alloc(nxt);
+  //  adoublev adx(nxt);
+  static adoublev adx; adx.alloc(nxt);
+  //  adoublev aF(nxt);
+  static adoublev aF; aF.alloc(nxt);
+  //  adoublev af(nf);
+  static adoublev af; af.alloc(nf);
   adouble af0;
-  adoublev ac(nc);
+  //  adoublev ac(nc);
+  static adoublev ac; ac.alloc(nc);
   int ndep, nindep;
 
   // initialize Jacobians with zeros;
@@ -396,11 +408,16 @@ void Omu_Program::update(int kk,
   int nf = f->dim;
   int nc = c->dim;
 
-  adoublev ax(nx);
-  adoublev au(nu);
-  adoublev af(max(nxf, nf));
-  adouble  af0;
-  adoublev ac(nc);
+  //  adoublev ax(nx);
+  static adoublev ax; ax.alloc(nx);
+  //  adoublev au(nu);
+  static adoublev au; au.alloc(nu);
+  //  adoublev af(max(nxf, nf));
+  static adoublev af; af.alloc(max(nxf, nf));
+  adouble af0;
+  //  adoublev ac(nc);
+  static adoublev ac; ac.alloc(nc);
+
   int ndep, nindep;
   int i, j;
   bool grds;
@@ -533,9 +550,12 @@ void Omu_Program::consistic(int kk, double t,
 
   ad_realloc(ndep, nindep);
 
-  adoublev ax(nxt);
-  adoublev au(nu);
-  adoublev axt(nxt);
+  //  adoublev ax(nxt);
+  static adoublev ax; ax.alloc(nxt);
+  //  adoublev au(nu);
+  static adoublev au; au.alloc(nu);
+  //  adoublev axt(nxt);
+  static adoublev axt; axt.alloc(nxt);
 
   for (i = 0; i < nxt; i++) {
     axt[i] = 0.0;
@@ -596,9 +616,12 @@ void Omu_Program::consistic(int kk, double t,
 
   ad_realloc(ndep, nindep);
 
-  adoublev ax(nxt);
-  adoublev au(nu);
-  adoublev axt(nxt);
+  //  adoublev ax(nxt);
+  static adoublev ax; ax.alloc(nxt);
+  //  adoublev au(nu);
+  static adoublev au; au.alloc(nu);
+  //  adoublev axt(nxt);
+  static adoublev axt; axt.alloc(nxt);
 
   for (i = 0; i < nxt; i++) {
     axt[i] = 0.0;
@@ -681,10 +704,14 @@ void Omu_Program::continuous(int kk, double t,
 
   ad_realloc(ndep, nindep);
 
-  adoublev ax(nxt);
-  adoublev au(nu);
-  adoublev adx(nxt);
-  adoublev aF(nxt);
+  //  adoublev ax(nxt);
+  static adoublev ax; ax.alloc(nxt);
+  //  adoublev au(nu);
+  static adoublev au; au.alloc(nu);
+  //  adoublev adx(nxt);
+  static adoublev adx; adx.alloc(nxt);
+  //  adoublev aF(nxt);
+  static adoublev aF; aF.alloc(nxt);
 
   for (i = 0; i < nxt; i++) {
     aF[i] = 0.0;
@@ -755,10 +782,14 @@ void Omu_Program::continuous(int kk, double t,
 
   ad_realloc(ndep, nindep);
 
-  adoublev ax(nxt);
-  adoublev au(nu);
-  adoublev adx(nxt);
-  adoublev aF(nxt);
+  //  adoublev ax(nxt);
+  static adoublev ax; ax.alloc(nxt);
+  //  adoublev au(nu);
+  static adoublev au; au.alloc(nu);
+  //  adoublev adx(nxt);
+  static adoublev adx; adx.alloc(nxt);
+  //  adoublev aF(nxt);
+  static adoublev aF; aF.alloc(nxt);
 
   for (i = 0; i < nxt; i++) {
     aF[i] = 0.0;

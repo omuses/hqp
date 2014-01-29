@@ -36,6 +36,7 @@
 #undef max
 #endif
 #include <adolc/adouble.h>
+inline double value(badouble a) {return a.value();}
 #else
   typedef double adouble;
   typedef double* adoublev;
@@ -56,7 +57,9 @@
 #include <If_Class.h>
 
 IF_BASE_DECLARE(Omu_Program);
-
+#ifdef OMU_WITH_ADOLC
+#include "adoublev.h"
+#endif
 /**
  * Interface for a multi-stage optimization problem. The problem may be
  * defined in a derived class by overloading the appropriate methods.

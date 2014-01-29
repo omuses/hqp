@@ -1,3 +1,10 @@
+2014-01-29  <e-arnold>
+
+	* Makefile, configure.in, makedefs.in, makedirs.in, omu/Makefile,
+	omu/Omu_IntODE.C, omu/Omu_IntOdeTs.C, omu/Omu_Program.[hC],
+	omu/adoublev.[hC], odc/Makefile.in: - remove ADOL-C from source
+	tree and re-implement adoublev
+
 2014-01-28  <rfranke>
 
 	* configure, configure.in:
