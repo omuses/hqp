@@ -125,7 +125,9 @@ puts ""
 
 # plot signals
 puts "Plotting resulting signals..."
-if {[catch {package present Tk}] || [catch {package require BLT}]} {
+if {[catch {package present Tk}] 
+    || ([catch {package require BLT}] ?
+	[catch {package require rbc}] : 0)} {
     puts "Skipping plot as no blt::graph available."
 } else {
 
@@ -154,7 +156,11 @@ if {[catch {package present Tk}] || [catch {package require BLT}]} {
     # create blt::graph in a toplevel window and plot data
     set graph .g
     destroy $graph
-    blt::graph $graph -title "[prg_name] demo"
+    if {![catch {package present BLT}]} {
+	set graph [blt::graph .graph -title "[prg_name] demo"]
+    } else {
+	set graph [rbc::graph .graph -title "[prg_name] demo"]
+    }
     $graph element create u -xdata $times -ydata $us -color red -symbol ""
     $graph element create y1 -xdata $times -ydata $y1 -color blue -symbol ""
     $graph element create y2 -xdata $times -ydata $y2 -color green -symbol ""

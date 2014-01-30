@@ -82,7 +82,9 @@ puts "Obj-evals: [prg_fbd_evals]"
 
 # plot result
 puts "Plotting resulting signals..."
-if {[catch {package present Tk}] || [catch {package require BLT}]} {
+if {[catch {package present Tk}] 
+    || ([catch {package require BLT}] ?
+	[catch {package require rbc}] : 0)} {
     puts "Skipping plot as no blt::graph available."
 } else {
 
@@ -105,7 +107,11 @@ if {[catch {package present Tk}] || [catch {package require BLT}]} {
 
     # create blt::graph in a toplevel window and plot data
     destroy .graph
-    set graph [blt::graph .graph -title "[prg_name] demo"]
+    if {![catch {package present BLT}]} {
+	set graph [blt::graph .graph -title "[prg_name] demo"]
+    } else {
+	set graph [rbc::graph .graph -title "[prg_name] demo"]
+    }
     $graph element create u -xdata $ts -ydata $us -smooth $usmooth \
 	-color red -symbol "" 
     $graph element create y1 -xdata $ts -ydata $y1 \
