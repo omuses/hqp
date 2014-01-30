@@ -3,16 +3,27 @@
 # graphical output with BLT
 #
 # E. Arnold   2003-02-16
+# <e-arnold>  2014-01-30 try rbc, if BLT not available
 #
 
 source omu.tcl
 
-if { [catch {package present Tk}] || [catch {package require BLT}] } {
+if {[catch {package present Tk}] 
+    || ([catch {package require BLT}] ?
+	[catch {package require rbc}] : 0)} {
     set plots 0
-    puts stderr "plots disabled"
+    puts stderr "Crane plots disabled"
 } else {
     set plots 1
-    namespace import blt::graph
+    if {![catch {package present BLT}]} {
+	namespace import blt::graph
+    } else {
+	namespace import rbc::graph
+	proc Blt_ZoomStack {g} {Rbc_ZoomStack $g}
+	proc Blt_Crosshairs {g} {Rbc_Crosshairs $g}
+	proc Blt_ActiveLegend {g} {Rbc_ActiveLegend $g}
+	proc Blt_ClosestPoint {g} {Rbc_ClosestPoint $g}
+    }
     option add *symbol {}
 }
 

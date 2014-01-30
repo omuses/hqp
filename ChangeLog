@@ -1,3 +1,8 @@
+2014-01-30  <e-arnold>
+
+	* odc/crane.tcl, odc/bio.tcl
+	  - try rbc, if BLT not available
+
 2014-01-29  <e-arnold>
 
 	* Makefile, configure.in, makedefs.in, makedirs.in, omu/Makefile,
