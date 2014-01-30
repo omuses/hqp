@@ -1,14 +1,15 @@
 2014-01-30  <e-arnold>
 
-	* odc/crane.tcl, odc/bio.tcl
+	* odc/crane.tcl, odc/bio.tcl, odc/dic_mex_sfunction.tcl,
+	  odc/dic_mex_sfunction_est.tcl, odc/dic_mex_sfunction_int.tcl:
 	  - try rbc, if BLT not available
 
 2014-01-29  <e-arnold>
 
 	* Makefile, configure.in, makedefs.in, makedirs.in, omu/Makefile,
-	omu/Omu_IntODE.C, omu/Omu_IntOdeTs.C, omu/Omu_Program.[hC],
-	omu/adoublev.[hC], odc/Makefile.in: - remove ADOL-C from source
-	tree and re-implement adoublev
+	  omu/Omu_IntODE.C, omu/Omu_IntOdeTs.C, omu/Omu_Program.[hC],
+	  omu/adoublev.[hC], odc/Makefile.in:
+	  - remove ADOL-C from source tree and re-implement adoublev
 
 2014-01-28  <rfranke>
 
