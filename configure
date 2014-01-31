@@ -4922,7 +4922,7 @@ $as_echo "$with_adolc" >&6; }
 
   # try to find ADOL-C automatically if nothing else was specified
   if test -z "${with_adolc}"; then
-    with_adolc="/usr/local"
+    with_adolc="/usr"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: guessing --with-adolc... $with_adolc" >&5
 $as_echo "guessing --with-adolc... $with_adolc" >&6; }
   fi

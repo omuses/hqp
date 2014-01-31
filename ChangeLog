@@ -1,5 +1,10 @@
 2014-01-30  <e-arnold>
 
+	* omu/adoublev.C, configure.in, configure:
+	  -  adoublev operator improvement (thanks to Vitalij Ruge)
+
+2014-01-30  <e-arnold>
+
 	* odc/crane.tcl, odc/bio.tcl, odc/dic_mex_sfunction.tcl,
 	  odc/dic_mex_sfunction_est.tcl, odc/dic_mex_sfunction_int.tcl:
 	  - try rbc, if BLT not available

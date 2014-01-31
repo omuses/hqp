@@ -619,7 +619,7 @@ if test "$omu_adolc" != no; then
 
   # try to find ADOL-C automatically if nothing else was specified
   if test -z "${with_adolc}"; then
-    with_adolc="/usr/local"
+    with_adolc="/usr"
     AC_MSG_RESULT([guessing --with-adolc... $with_adolc])
   fi
 

@@ -96,8 +96,11 @@ adoublev& adoublev::operator >>= (double* y)
 adoublev& adoublev::operator = (const adoublev& y)
 {
   int i;
-  for ( i = 0; i < size; i++ )
-    v[i] = y[i];
+  if(y.size != size)
+    m_error(E_SIZES, "adoublev::operator =");
+
+  for ( i = 0; i < size; ++i )
+    v[i] = y.v[i];
   return *this;
 }
 
@@ -105,8 +108,11 @@ adoublev& adoublev::operator = (const adoublev& y)
 adoublev& adoublev::operator -= (const adoublev& y)
 {
   int i;
-  for ( i = 0; i < size; i++ )
-    v[i] -= y[i];
+  if(y.size != size)
+    m_error(E_SIZES, "adoublev::operator -=");
+
+  for ( i = 0; i < size; ++i )
+    v[i] -= y.v[i];
   return *this;
 }
 
@@ -114,8 +120,11 @@ adoublev& adoublev::operator -= (const adoublev& y)
 adoublev& adoublev::operator += (const adoublev& y)
 {
   int i;
-  for ( i = 0; i < size; i++ )
-    v[i] += y[i];
+  if(y.size != size)
+    m_error(E_SIZES, "adoublev::operator +=");
+
+  for ( i = 0; i < size; ++i )
+    v[i] += y.v[i];
   return *this;
 }
 
