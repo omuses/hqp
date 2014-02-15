@@ -80,7 +80,7 @@ public:
                                 -\frac{{der\_u}_{ref}}{u_{nominal}}\right]^2
       \right\}_i
     \\[4ex] \displaystyle \qquad
-    \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
+    \ + \ \sum_{kk=0}^{KK} \Delta t_{y,i}^{kk} \sum_{i=1}^{n_y} \left\{
       y_{weight1}\left[y(t^{kk})-\frac{y_{ref}}{y_{nominal}}\right]
       \ +\ y_{weight2}\left[y(t^{kk})-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
@@ -90,7 +90,7 @@ public:
       \ +\ y_{f\_weight2}\left[y(t_f)-\frac{y_{ref}}{y_{nominal}}\right]^2
     \right\}_i
     \\[4ex] \displaystyle \qquad
-    \ + \ \sum_{kk=0}^{KK} \Delta t^{kk} \sum_{i=1}^{n_y} \left\{
+    \ + \ \sum_{kk=0}^{KK} \Delta t_{y,i}^{kk} \sum_{i=1}^{n_y} \left\{
       y_{soft\_weight1}\,s^{kk} + y_{soft\_weight2}\,s^{kk}s^{kk}
     \right\}_i
     \\[4ex] \displaystyle \qquad
@@ -106,9 +106,18 @@ public:
    \begin{array}{l}
     \displaystyle \Delta t_{u,i}^{kk} = 
     \left\{\begin{array}{ll}
-      t_{scale}^{kk+1}(t^{kk+1} - t^{kk}), & u_{order,i} = 0 \ \ \mbox{and}\ \ kk < KK, \\[1ex]
-      0, & u_{order,i} = 0 \ \ \mbox{and}\ \ kk = KK, \\[1ex]
+      \Delta t_0^{kk}, & u_{order,i} = 0, \\[1ex]
       \Delta t^{kk}, & u_{order,i} = 1,
+    \end{array}\right. \\[5ex]
+    \displaystyle \Delta t_{y,i}^{kk} = 
+    \left\{\begin{array}{ll}
+      \Delta t_0^{kk}, & y_{order,i} = 0, \\[1ex]
+      \Delta t^{kk}, & y_{order,i} = 1,
+    \end{array}\right. \\[5ex]
+    \displaystyle \Delta t_0^{kk} = 
+    \left\{\begin{array}{ll}
+      t_{scale}^{kk+1}(t^{kk+1} - t^{kk}), & kk < KK, \\[1ex]
+      0, & kk = KK,
     \end{array}\right. \\[5ex]
     \displaystyle \Delta t^{kk} = \frac{1}{2}
     \left\{\begin{array}{ll}
@@ -314,6 +323,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   Omu_OptVarVec _mdl_yf_soft; 	///< relaxed output constraints at final time
 
   IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
+  IVECP 	_mdl_y_order; 	///< interpolation order (default: 1 (linear))
 
   VECP		_taus;		///< scaled time communicated to outside as prg_ts
   int 		_t_scale_idx; 	///< index into mdl_u vector for variable used for scaling of time
@@ -612,6 +622,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// upper bounds on states at stage boundaries (default: Inf)
   const VECP mdl_x_max() const {return _mdl_x.max;}
 
+  /// interpolation order (0 (constant) or 1 (linear), default: 1)
+  const IVECP mdl_y_order() const {return _mdl_y_order;}
+
   /// bias for outputs
   const VECP mdl_y_bias() const {return _mdl_y_bias;}
 
@@ -831,6 +844,9 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   /// set upper bounds on states
   void set_mdl_x_max(const VECP v)
   {v_copy_elements(v, _mdl_x.max);}
+
+  /// set interpolation order
+  void set_mdl_y_order(const IVECP v) {iv_copy_elements(v, _mdl_y_order);}
 
   /// set output bias
   void set_mdl_y_bias(const VECP v) {v_copy_elements(v, _mdl_y_bias);}

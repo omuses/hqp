@@ -1,3 +1,9 @@
+2014-02-15  <rfranke>
+
+	* omu/Prg_SFunctionOpt.[hC]:
+	  - introduce mdl_y_order (default: 1)
+	  - fix treatment of inactive inputs for zero order hold
+
 2014-01-30  <e-arnold>
 
 	* omu/adoublev.C, configure.in, configure:
