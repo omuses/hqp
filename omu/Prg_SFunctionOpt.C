@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2013  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -126,6 +126,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_u_periodic = iv_get(_mdl_nu);
   _mdl_x_periodic = iv_get(_mdl_nx);
   _t_nominal = 1.0;
+  _mdl_y_order = iv_get(_mdl_ny);
   _mdl_y_bias = v_get(_mdl_ny);
   v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
@@ -139,6 +140,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   v_set(_mdl_y_nominal, 1.0);
   iv_set(_mdl_u_periodic, 0);
   iv_set(_mdl_x_periodic, 0);
+  iv_set(_mdl_y_order, 1);
   v_set(_mdl_y_bias, 0.0);
 
   // numbers of optimization variables
@@ -215,6 +217,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_max)));
 
+  _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_order)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_bias)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_min)));
@@ -256,6 +259,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   m_free(_mdl_xs);
   m_free(_mdl_us);
   v_free(_mdl_y_bias);
+  iv_free(_mdl_y_order);
   iv_free(_mdl_x_periodic);
   iv_free(_mdl_u_periodic);
   v_free(_mdl_y_nominal);
@@ -304,6 +308,7 @@ void Prg_SFunctionOpt::setup_model()
   v_resize(_mdl_y_nominal, _mdl_ny);
   iv_resize(_mdl_u_periodic, _mdl_nu);
   iv_resize(_mdl_x_periodic, _mdl_nx);
+  iv_resize(_mdl_y_order, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
   iv_set(_mdl_x0_active, 0);
   v_set(_mdl_der_x0_min, -Inf);
@@ -316,6 +321,7 @@ void Prg_SFunctionOpt::setup_model()
   v_set(_mdl_y_nominal, 1.0);
   iv_set(_mdl_u_periodic, 0);
   iv_set(_mdl_x_periodic, 0);
+  iv_set(_mdl_y_order, 1);
   v_set(_mdl_y_bias, 0.0);
 }
 
@@ -925,9 +931,15 @@ void Prg_SFunctionOpt::update(int kk,
       mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
   }
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
-    if (_mdl_u.active[idx])
-      _mdl_us[kk][idx] = x[i++] * _mdl_u_nominal[idx];
-    mdl_u[idx] = _mdl_us[kk][idx];
+    if (_mdl_u.active[idx]) {
+      mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
+      _mdl_us[kk][idx] = mdl_u[idx];
+    }
+    else if (kk == _KK && _KK > 0 && _mdl_u_order[idx] == 0)
+      // hold last but one value in case of zero order hold
+      mdl_u[idx] = _mdl_us[kk-1][idx];
+    else
+      mdl_u[idx] = _mdl_us[kk][idx];
   }
 
   // set simulation time
@@ -959,6 +971,7 @@ void Prg_SFunctionOpt::update(int kk,
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
   double dtu; 	// factor used for controlled inputs in objective function
+  double dty; 	// factor used for outputs in objective function
   if (kk == 0) {
     if (_KK > 0) {
       dt = 0.5 * (ts(kk+1) - ts(kk)) * tscale;
@@ -1018,6 +1031,7 @@ void Prg_SFunctionOpt::update(int kk,
   }
   // contribution of active outputs
   for (i = 0, is = 0, isc = 0, idx = 0; idx < _mdl_ny; idx++) {
+    dty = (_mdl_y_order[idx] == 0)? dt0: dt;
     // assign used outputs to constraints
     if (_mdl_y.active[idx]) {
       c[i + kk%spsk] = mdl_y[idx] / _mdl_y_nominal[idx];
@@ -1026,9 +1040,9 @@ void Prg_SFunctionOpt::update(int kk,
     // calculate objective term
     help = (mdl_y[idx] - _mdl_y.ref[idx]) / _mdl_y_nominal[idx];
     if (_mdl_y.weight1[idx] != 0.0)
-      f0 += dt * _mdl_y.weight1[idx] * help;
+      f0 += dty * _mdl_y.weight1[idx] * help;
     if (_mdl_y.weight2[idx] != 0.0)
-      f0 += dt * _mdl_y.weight2[idx] * help*help;
+      f0 += dty * _mdl_y.weight2[idx] * help*help;
     // consider soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
       if (kk < _KK)
@@ -1036,8 +1050,8 @@ void Prg_SFunctionOpt::update(int kk,
       else
 	help = x[_nx + is + kk%spsk];
 
-      f0 += dt * (_mdl_y_soft.weight1[idx]*help
-		  + _mdl_y_soft.weight2[idx]*help*help);
+      f0 += dty * (_mdl_y_soft.weight1[idx]*help
+		   + _mdl_y_soft.weight2[idx]*help*help);
 
       if (_mdl_y_soft.min[idx] > -Inf) {
 	c[spsk*_nc + isc + kk%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
@@ -1560,6 +1574,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
   double dt; 	// factor for linear interpol. (trapezoidal integration rule)
   double dt0; 	// factor for zero order hold
   double dtu; 	// factor used for controlled inputs in objective function
+  double dty; 	// factor used for outputs in objective function
   double ddtx; 	// help variable for partial derivative of a dt
   double ddtu; 	// help variable for partial derivative of a dt
   double ddt0; 	// help variable for partial derivative of a dt
@@ -1665,12 +1680,13 @@ void Prg_SFunctionOpt::update_grds(int kk,
   }
   // active outputs
   for (i = 0, is = 0, idx = 0; idx < _mdl_ny; idx++) {
+    dty = (_mdl_y_order[idx] == 0)? dt0: dt;
     // contribution of objective term
     if (_mdl_y.active[idx] == 1) {
       help = (c[i + kk%spsk] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]);
       if (_mdl_y.weight1[idx] != 0.0) {
         for (j = 0; j < _nx; j++)
-          f0.gx[j] += dt * _mdl_y.weight1[idx] * c.Jx[i + kk%spsk][j];
+          f0.gx[j] += dty * _mdl_y.weight1[idx] * c.Jx[i + kk%spsk][j];
         if (_t_active) {
           f0.gx[t_scale_ix] += ddtx * _mdl_y.weight1[idx] * help;
           if (kk < _KK)
@@ -1679,7 +1695,7 @@ void Prg_SFunctionOpt::update_grds(int kk,
       }
       if (_mdl_y.weight2[idx] != 0.0) {
         for (j = 0; j < _nx; j++)
-          f0.gx[j] += dt * _mdl_y.weight2[idx] *
+          f0.gx[j] += dty * _mdl_y.weight2[idx] *
             2.0 * help * c.Jx[i + kk%spsk][j];
         if (_t_active) {
           f0.gx[t_scale_ix] += ddtx * _mdl_y.weight2[idx] * help*help;
@@ -1695,14 +1711,14 @@ void Prg_SFunctionOpt::update_grds(int kk,
       if (kk < _KK) {
         help = u[upsk*(_nu+_nsu) + is + kk%spsk];
 	f0.gu[upsk*(_nu+_nsu) + is + kk%spsk]
-	  += dt * (_mdl_y_soft.weight1[idx]
-		   + 2.0*_mdl_y_soft.weight2[idx]*help);
+	  += dty * (_mdl_y_soft.weight1[idx]
+		    + 2.0*_mdl_y_soft.weight2[idx]*help);
       }
       else {
         help = x[_nx + is + kk%spsk];
 	f0.gx[_nx + is + kk%spsk]
-	  += dt * (_mdl_y_soft.weight1[idx]
-		   + 2.0*_mdl_y_soft.weight2[idx]*help);
+	  += dty * (_mdl_y_soft.weight1[idx]
+		    + 2.0*_mdl_y_soft.weight2[idx]*help);
         
       }
       if (_t_active) {
@@ -1781,6 +1797,9 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
       mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
+    else if (kk == _KK && _KK > 0 && _mdl_u_order[idx] == 0)
+      // hold last but one value in case of zero order hold
+      mdl_u[idx] = _mdl_us[kk-1][idx];
     else
       mdl_u[idx] = _mdl_us[kk][idx];
   }
