@@ -3442,6 +3442,12 @@ if test "$CC" = "cl -nologo"; then
   CXXFLAGS="-TP -EHsc $CXXFLAGS"
 fi
 
+if test "$GCC" = yes; then
+  CFLAGS="$CFLAGS -Wno-comment"
+  CXXFLAGS="$CXXFLAGS -Wno-comment"
+  WFLAG="$WFLAG -Wno-unused-parameter -Wno-comment"
+fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for u_int used by Meschach" >&5
