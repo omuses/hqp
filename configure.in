@@ -646,7 +646,11 @@ if test "$omu_adolc" != no; then
     ASRCS="\$(ASRCS)"
     ADOLCDEF="-DOMU_WITH_ADOLC=1"
     ADOL_INCDIR="$with_adolc/include"
-    ADOL_LIBDIR="$with_adolc/lib"
+    if test -d ${with_adolc}/lib64; then
+        ADOL_LIBDIR="$with_adolc/lib64"
+    else
+        ADOL_LIBDIR="$with_adolc/lib"
+    fi
   else
     AC_MSG_RESULT([file not found])
     AC_MSG_ERROR([Specify path of ADOL-C via --with-adolc])
