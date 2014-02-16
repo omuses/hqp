@@ -4942,7 +4942,11 @@ $as_echo "${with_adolc}/include/adolc/adolc.h" >&6; }
     ASRCS="\$(ASRCS)"
     ADOLCDEF="-DOMU_WITH_ADOLC=1"
     ADOL_INCDIR="$with_adolc/include"
-    ADOL_LIBDIR="$with_adolc/lib"
+    if test -d ${with_adolc}/lib64; then
+        ADOL_LIBDIR="$with_adolc/lib64"
+    else
+        ADOL_LIBDIR="$with_adolc/lib"
+    fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: file not found" >&5
 $as_echo "file not found" >&6; }
