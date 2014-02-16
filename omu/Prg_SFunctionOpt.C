@@ -527,7 +527,7 @@ void Prg_SFunctionOpt::setup(int k,
 
   // setup states
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
-    if (k == 0 && _mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
+    if ((k == 0 && _mdl_u_order[idx] < 0) || _mdl_u_order[idx] > 1)
       m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
               "mdl_u_order must be 0 or 1");
     if (_mdl_u.active[idx]) {
@@ -544,8 +544,8 @@ void Prg_SFunctionOpt::setup(int k,
           x.max[i] = x.initial[i]
             + _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
       }
-      else if (_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1
-               || !_multistage && k == 0 && _mdl_u0_nfixed[idx] == 0) {
+      else if ((_multistage && k >= _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 1)
+               || (!_multistage && k == 0 && _mdl_u0_nfixed[idx] == 0)) {
 	// control bounds
         if (k==0 && _mdl_u_periodic[idx])
           // indicate periodic state to Hqp_Docp
