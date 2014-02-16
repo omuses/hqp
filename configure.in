@@ -274,6 +274,11 @@ if test $uname_found = "yes" ; then
       RFLAG="-Wl,+b,"
       AC_PROG_RANLIB
       ;;
+    Darwin*)
+      if test "$hqp_shared" = "yes"; then
+           hqp_libs_resolved="partial"
+      fi
+      ;;
     CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
       if test "$hqp_shared" = "yes"; then
@@ -383,6 +388,10 @@ if test "$hqp_libs_resolved" = "yes"; then
   OMU_MACH_OBJS="../hqp/*\$O ../iftcl/*\$O ../meschach/*\$O"
 else
   OMU_LIBS="${OMU_LIBS} ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+  if test "$hqp_libs_resolved" = "partial"; then
+    # in this mode we need -lhqp both for linking and running
+    OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+  fi
 fi
 
 AC_SUBST(HQP_LIBS)
