@@ -58,6 +58,7 @@ lib: $(OBJS) Makefile
 	rm -f $(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX)
 	$(LD)$(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX) $(OBJS) \
           ../meschach/*$O ../iftcl/*$O $(HQP_MACH_OBJS)
+	$(SHLIB_RENAME) -id @rpath/$(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
 
 hqp_solve.c: tpc hqp_solve.tcl
 	./tpc -ts 80 -o hqp_solve.c hqp_solve.tcl

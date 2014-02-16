@@ -670,6 +670,7 @@ OMU_LIBS
 HQP_LIBS
 MES_CFLAGS
 MES_CC
+SHLIB_RENAME
 TCL_STUB_LIB
 TCL_LIBS
 RFLAG
@@ -3565,6 +3566,9 @@ RFLAG="-Wl,-rpath,"
 # (will be set to LIB_SUFFIX if not specified differently)
 MKLIB_SUFFIX=""
 
+# Command for setting the install name of a shared library (Currently Darwin only)
+SHLIB_RENAME=""
+
 # default Tcl libraries
 if test ! -z "$TCL_LIB_SPEC"; then
   # take from tclConfig.sh
@@ -4289,6 +4293,7 @@ fi
     Darwin*)
       if test "$hqp_shared" = "yes"; then
            hqp_libs_resolved="partial"
+           SHLIB_RENAME="install_name_tool"
       fi
       ;;
     CYGWIN*|MSYS*|MINGW*)
@@ -4456,10 +4461,15 @@ if test -z "$RANLIB"; then
   RANLIB=":"
 fi
 
+if test -z "$SHLIB_RENAME"; then
+  SHLIB_RENAME=":"
+fi
+
 if test -z "$MES_CC"; then
   MES_CC="$CC"
   MES_CFLAGS="$CFLAGS"
 fi
+
 
 
 
