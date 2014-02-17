@@ -44,6 +44,7 @@ class adoublev
 
  public:
   adoublev(void );
+  adoublev(int );
   ~adoublev(void );
   void alloc(int );                 /* allocate memory */
   int sz() const {return size;}     /* Get the size of the vector */
@@ -53,6 +54,8 @@ class adoublev
   adoublev& operator = (const adoublev& );
   adoublev& operator -= (const adoublev& );
   adoublev& operator += (const adoublev& );
+
+  friend std::ostream& operator << (std::ostream&, const adoublev& );
 };
 
 #endif

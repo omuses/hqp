@@ -142,6 +142,12 @@ if test "$CC" = "cl -nologo"; then
   CXXFLAGS="-TP -EHsc $CXXFLAGS"
 fi
 
+if test "$GCC" = yes; then
+  CFLAGS="$CFLAGS -Wno-comment"
+  CXXFLAGS="$CXXFLAGS -Wno-comment"
+  WFLAG="$WFLAG -Wno-unused-parameter -Wno-comment"
+fi
+
 AC_SUBST(WFLAG)
 
 AC_MSG_CHECKING([for u_int used by Meschach])
@@ -211,6 +217,9 @@ RFLAG="-Wl,-rpath,"
 # (will be set to LIB_SUFFIX if not specified differently)
 MKLIB_SUFFIX=""
 
+# Command for setting the install name of a shared library (Currently Darwin only)
+SHLIB_RENAME=""
+
 # default Tcl libraries
 if test ! -z "$TCL_LIB_SPEC"; then
   # take from tclConfig.sh
@@ -273,6 +282,12 @@ if test $uname_found = "yes" ; then
       ALL_DEFS="${ALL_DEFS} -DIF_CLASS_STATIC=1"
       RFLAG="-Wl,+b,"
       AC_PROG_RANLIB
+      ;;
+    Darwin*)
+      if test "$hqp_shared" = "yes"; then
+           hqp_libs_resolved="partial"
+           SHLIB_RENAME="install_name_tool"
+      fi
       ;;
     CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
@@ -348,6 +363,10 @@ if test -z "$RANLIB"; then
   RANLIB=":"
 fi
 
+if test -z "$SHLIB_RENAME"; then
+  SHLIB_RENAME=":"
+fi
+
 if test -z "$MES_CC"; then
   MES_CC="$CC"
   MES_CFLAGS="$CFLAGS"
@@ -369,6 +388,7 @@ AC_SUBST(RFLAG)
 AC_SUBST(TCL_LIBS)
 AC_SUBST(TCL_STUB_LIB)
 AC_SUBST(RANLIB)
+AC_SUBST(SHLIB_RENAME)
 
 AC_SUBST(MES_CC)
 AC_SUBST(MES_CFLAGS)
@@ -383,6 +403,10 @@ if test "$hqp_libs_resolved" = "yes"; then
   OMU_MACH_OBJS="../hqp/*\$O ../iftcl/*\$O ../meschach/*\$O"
 else
   OMU_LIBS="${OMU_LIBS} ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+  if test "$hqp_libs_resolved" = "partial"; then
+    # in this mode we need -lhqp both for linking and running
+    OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+  fi
 fi
 
 AC_SUBST(HQP_LIBS)
@@ -628,7 +652,11 @@ if test "$omu_adolc" != no; then
     ASRCS="\$(ASRCS)"
     ADOLCDEF="-DOMU_WITH_ADOLC=1"
     ADOL_INCDIR="$with_adolc/include"
-    ADOL_LIBDIR="$with_adolc/lib"
+    if test -d ${with_adolc}/lib64; then
+        ADOL_LIBDIR="$with_adolc/lib64"
+    else
+        ADOL_LIBDIR="$with_adolc/lib"
+    fi
   else
     AC_MSG_RESULT([file not found])
     AC_MSG_ERROR([Specify path of ADOL-C via --with-adolc])

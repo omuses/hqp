@@ -670,6 +670,7 @@ OMU_LIBS
 HQP_LIBS
 MES_CFLAGS
 MES_CC
+SHLIB_RENAME
 TCL_STUB_LIB
 TCL_LIBS
 RFLAG
@@ -3441,6 +3442,12 @@ if test "$CC" = "cl -nologo"; then
   CXXFLAGS="-TP -EHsc $CXXFLAGS"
 fi
 
+if test "$GCC" = yes; then
+  CFLAGS="$CFLAGS -Wno-comment"
+  CXXFLAGS="$CXXFLAGS -Wno-comment"
+  WFLAG="$WFLAG -Wno-unused-parameter -Wno-comment"
+fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for u_int used by Meschach" >&5
@@ -3564,6 +3571,9 @@ RFLAG="-Wl,-rpath,"
 # Suffix used for making a library
 # (will be set to LIB_SUFFIX if not specified differently)
 MKLIB_SUFFIX=""
+
+# Command for setting the install name of a shared library (Currently Darwin only)
+SHLIB_RENAME=""
 
 # default Tcl libraries
 if test ! -z "$TCL_LIB_SPEC"; then
@@ -4286,6 +4296,12 @@ else
 fi
 
       ;;
+    Darwin*)
+      if test "$hqp_shared" = "yes"; then
+           hqp_libs_resolved="partial"
+           SHLIB_RENAME="install_name_tool"
+      fi
+      ;;
     CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
       if test "$hqp_shared" = "yes"; then
@@ -4451,10 +4467,15 @@ if test -z "$RANLIB"; then
   RANLIB=":"
 fi
 
+if test -z "$SHLIB_RENAME"; then
+  SHLIB_RENAME=":"
+fi
+
 if test -z "$MES_CC"; then
   MES_CC="$CC"
   MES_CFLAGS="$CFLAGS"
 fi
+
 
 
 
@@ -4486,6 +4507,10 @@ if test "$hqp_libs_resolved" = "yes"; then
   OMU_MACH_OBJS="../hqp/*\$O ../iftcl/*\$O ../meschach/*\$O"
 else
   OMU_LIBS="${OMU_LIBS} ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+  if test "$hqp_libs_resolved" = "partial"; then
+    # in this mode we need -lhqp both for linking and running
+    OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+  fi
 fi
 
 
@@ -4933,7 +4958,11 @@ $as_echo "${with_adolc}/include/adolc/adolc.h" >&6; }
     ASRCS="\$(ASRCS)"
     ADOLCDEF="-DOMU_WITH_ADOLC=1"
     ADOL_INCDIR="$with_adolc/include"
-    ADOL_LIBDIR="$with_adolc/lib"
+    if test -d ${with_adolc}/lib64; then
+        ADOL_LIBDIR="$with_adolc/lib64"
+    else
+        ADOL_LIBDIR="$with_adolc/lib"
+    fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: file not found" >&5
 $as_echo "file not found" >&6; }

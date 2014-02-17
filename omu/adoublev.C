@@ -37,6 +37,13 @@ adoublev::adoublev(void)
 }
 
 //--------------------------------------------------------------------------
+adoublev::adoublev(int sz)
+{
+  size = max_size = sz;
+  v = new adouble[size];
+}
+
+//--------------------------------------------------------------------------
 adoublev::~adoublev(void)
 { 
   if ( ( max_size > 0 ) && (v != (adouble *) NULL ) )
@@ -126,6 +133,15 @@ adoublev& adoublev::operator += (const adoublev& y)
   for ( i = 0; i < size; ++i )
     v[i] += y.v[i];
   return *this;
+}
+
+//--------------------------------------------------------------------------
+std::ostream& operator << ( std::ostream& out, const adoublev &arg )
+{ out << "(";
+  for (int i=0; i<arg.size-1; i++)
+    out << arg.v[i] << ", ";
+  out << arg[arg.size-1] << ")(a)";
+  return out;
 }
 
 //--------------------------------------------------------------------------
