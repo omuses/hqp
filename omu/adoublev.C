@@ -37,6 +37,13 @@ adoublev::adoublev(void)
 }
 
 //--------------------------------------------------------------------------
+adoublev::adoublev(int sz)
+{
+  size = max_size = sz;
+  v = new adouble[size];
+}
+
+//--------------------------------------------------------------------------
 adoublev::~adoublev(void)
 { 
   if ( ( max_size > 0 ) && (v != (adouble *) NULL ) )

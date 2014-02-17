@@ -44,6 +44,7 @@ class adoublev
 
  public:
   adoublev(void );
+  adoublev(int );
   ~adoublev(void );
   void alloc(int );                 /* allocate memory */
   int sz() const {return size;}     /* Get the size of the vector */
