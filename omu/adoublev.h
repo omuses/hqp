@@ -54,6 +54,8 @@ class adoublev
   adoublev& operator = (const adoublev& );
   adoublev& operator -= (const adoublev& );
   adoublev& operator += (const adoublev& );
+
+  friend std::ostream& operator << (std::ostream&, const adoublev& );
 };
 
 #endif
