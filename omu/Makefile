@@ -47,6 +47,7 @@ lib: $(OBJS) $(DASPK) Makefile
 	$(LD)$(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX) $(OBJS) \
 	$(DASPK_OBJS) $(OMU_MACH_OBJS)
 	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
+	$(SHLIB_RENAME) -id @rpath/$(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
 
 daspk:
 	PWD=`pwd`; cd ../daspk; $(MAKE); cd "$(PWD)"
