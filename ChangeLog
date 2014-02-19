@@ -1,3 +1,11 @@
+2014-02-19  <rfranke>
+
+	* configure.in, configure:
+	  - add initial support for Mac OSX provided by Pär Winzell
+
+	* ChangeLog:
+	  - remove trailing whitespaces
+
 2014-02-15  <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]:
@@ -156,10 +164,10 @@
 
 	* configure, configure.in, hqp/Meschach.h, omu/Omu_Program.h:
 	  - minor changes for gcc 4.4.3, cl 9.0
-	
+
 	* hxi/Hxi_SimStruct.C:
 	  - modify for gcc 4.3 (thanks to Benjamin Kern)
-	
+
 2009-11-14  <rfranke>
 
 	* Prg_SFunctionOpt.C:
@@ -265,7 +273,7 @@
 
 	* configure.in, configure, Makefile.hqp:
 	  modify for gcc 4.1.0
-	
+
 2006-02-21  <rfranke>
 
 	* meschach/bkpfacto.c (BKPfactor):
@@ -307,7 +315,7 @@
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
 	  - extend _multistage binary flag to integer and provide
 	    re-initialization of states in each stage with _multistage=2
-	
+
 	* omu/Prg_SFunction.[hC], omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
 	  - roll back treatment of discrete events to release 1.9.2, but
 	    don't call mdlOutputs in Prg_SFunction::setup_model and
@@ -315,7 +323,7 @@
 
 2005-07-25  <rfranke>
 
-	* omu/Hqp_DocpStub.[hC], omu/Hqp_Omuses.C: 
+	* omu/Hqp_DocpStub.[hC], omu/Hqp_Omuses.C:
 	  - don't catch model errors during initial simulation
 	  - move treatment of model errors to Hqp_DocpStub for update_stage
 
@@ -323,7 +331,7 @@
 
 	* configure.in, configure:
 	  disable ADOL-C per default; require explicit --enable-adolc
-	
+
 	* omu/Prg_SFunction.C (setup_model):
 	  simplify and improve processing of discrete events
 
@@ -346,10 +354,10 @@
 
 	* Makefile: add install-adolc
 
-2005-06-30  <e_arnold>	
+2005-06-30  <e_arnold>
 
-	* hqp/Hqp_IpLQDOCP.[hC]: revert to previous revision 1.3/1.8 
-	
+	* hqp/Hqp_IpLQDOCP.[hC]: revert to previous revision 1.3/1.8
+
 2005-06-30  <rfranke>
 
 	* omu/Prg_SFunction.C, hxi/Hxi_SimStruct.[hC], hxi/Hxi_mx_parse.h:
@@ -395,7 +403,7 @@
 
 2005-01-17  <rfranke>
 
-	* hxi/Hxi_MEX_SFunction.[hC], hxi/Hxi_SFunction.[hC], hxi/cg_sfun.h, 
+	* hxi/Hxi_MEX_SFunction.[hC], hxi/Hxi_SFunction.[hC], hxi/cg_sfun.h,
 	  hxi/Hxi_SimStruct.h, hxi/Hxi_sfun_types.h, hxi/simstruc.h,
 	  omu/Makefile, omu/Prg_SFunction.h:
 	  - hide implementation details of SimStruct behind C calling interface
@@ -403,7 +411,7 @@
 	* hxi/Hxi_SimStruct_methods.h:
 	  - new file collecting supported SimStruct and mxArray methods
 
-	* hxi/Hxi_SimStruct.C: 
+	* hxi/Hxi_SimStruct.C:
 	  - new file implementing Hxi::SimStruct and optionally directing
 	    calls to MEX S-function
 
@@ -422,12 +430,12 @@
 
 	* adol-c, configure.in, configure, Makefile, makedirs.in,
 	  odc/Makefile.in:
-	  - Remove adol-c/adolc directory tree from CVS. Rebuild from 
+	  - Remove adol-c/adolc directory tree from CVS. Rebuild from
 	    adolc-1.9.0-PL2.tar.gz during configure.
 
 	* hqp/Hqp_IpLQDOCP.[hC]
 	  - replace BKPfactor, BKPsolve by matBKPfactor, matBKPsolve
-	
+
 2005-01-11  <rfranke>
 
 	Add support for native external S-functions,
@@ -453,7 +461,7 @@
 
 	* odc/sfun_dic.c:
 	  - enable mdlJacobian for all builds
-	
+
 	* odc/mex.tcl.in:
 	  - extend with building of native binary S-function
 
@@ -469,38 +477,38 @@
 	* omu/Omu_Program.h, omu/Omu_IntOdeTs.C, hqp/Hqp_DocpAdol.h,
 	  configure.in, configure, odc/Makefile.in:
 	  - check for ADOL-C
-	
+
 2004-12-01	<e_arnold>
-	
+
 	* Makefile:
 	  - use adol-c/Makefile
-	  	  
+
 2004-10-14	<e_arnold>
-	
-	* adol-c/Makefile.in, adol-c/adolc/Makefile.in, configure.in, 
+
+	* adol-c/Makefile.in, adol-c/adolc/Makefile.in, configure.in,
 	  configure:
-	  - bug fix for spaces in directory names	  
-	  	  
+	  - bug fix for spaces in directory names
+
 2004-10-13	<e_arnold>
-	
+
 	* configure.in, configure: DEVELOPMENT_VERSION=yes
 
 	* adol-c: replace by adolc-1.9.0-PL2.tar.gz
-	
+
 	* configure.in, configure, hqp_adolc.patch, makedirs.in, Makefile,
-	  odc/Makefile.in, omu/Omu_Program.[hC], omu/Omu_IntODE.C, 
+	  odc/Makefile.in, omu/Omu_Program.[hC], omu/Omu_IntODE.C,
 	  omu/Omu_IntGRK4.C, omu/Omu_IntOdeTs.C, omu/Omu_IntSDIRK.C,
 	  omu/Omu_IntRKsuite.C, hqp/Hqp_DocpAdol.[hC],
 	  hxi/Hxi_sfun_types.h, hxi/Hxi_mxArray.h, hxi/Hxi_SimStruct.h
 	  - adapt to ADOL-C version 1.9.0
-	
+
 	* hqp/Hqp_IpDOCP.C:
-	  - bug fix for assert'ed GetDim() 
+	  - bug fix for assert'ed GetDim()
 	    (reported by nnunn@ausport.gov.au, 2004-01-16)
 
 	* Makefile, Makefile.hqp, omu/Makefile:
-	  - bug fix for spaces in directory names	  
-	  	  
+	  - bug fix for spaces in directory names
+
 2004-10-06  <rfranke>
 
 	* configure.in, configure:
@@ -522,7 +530,7 @@
 2004-06-30    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC]:
-	  - introduce mdl_u0_min/max 
+	  - introduce mdl_u0_min/max
 
 2004-06-28    <rfranke>
 
@@ -541,7 +549,7 @@
 2004-05-24    <rfranke>
 
 	* README.html, INSTALL.html:
-	  - change formatting from text to html files 
+	  - change formatting from text to html files
 	    and include them with documentation
 
 	* hqp/Hqp.h, hqp/Hqp_impl.h:
@@ -563,7 +571,7 @@
 
 2004-04-08    <rfranke>
 
-	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]: 
+	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEst.[hC]:
 	  - correct initialization of x0
 	* omu/Prg_SFunction.C (setup_model): bug fix for change on 2004-04-06
 
@@ -587,17 +595,17 @@
 	  - setup_stages: initialize mdl_xs from mdl_x0
 	  - setup: initialize initial states from mdl_xs, instead of mdl_x0
 	  (in this way mdl_xs is used to initialize states of all stages)
-	
+
 	* omu/Prg_SFunctionOpt.[hC]:
 	  - introduce additional _mdl_x0 to preserve result of setup_model
 	    in Prg_SFunction::_mdl_x0, similar to Prg_SFunctionEst
-	
+
 2004-02-28    <rfranke>
 
 	* omu/Hqp_Omuses.C:
 	  call Omu_Program::consistic at beginning of each stage
 	  (instead before solution of continuous-time equations) to
-	  - simplify initialization of (expansion) states if no 
+	  - simplify initialization of (expansion) states if no
 	    continuous equations present, e.g. at final stage
 	  - better treatment of discrete events at beginning of stage
 
@@ -623,11 +631,11 @@
 
 2004-01-17    <rfranke>
 
-	* meschach/sparse.c (sp_free): 
+	* meschach/sparse.c (sp_free):
 	  - bug fix for freeing sparse matrices with max_m > m
 	  - fix truncation of rows if size decreases
 
-	* meschach/machine.h: 
+	* meschach/machine.h:
 	  call memmove and memset only for blocks of size>0 to avoid potential
 	  error messages in mpatrol about access to bad memory locations
 
@@ -640,9 +648,9 @@
 2003-11-26    <e_arnold>
 
 	* configure.in: DEVELOPMENT_VERSION=yes
-	
+
 	* odc/crane.tcl, odc/bio.tcl: changes for BLT 3.0
-	
+
 2003-11-22    <rfranke>
 
 	* configure.in: change version to 1.9.0, add tag release-1-9-0
@@ -650,7 +658,7 @@
 	* INSTALL: add note on gnumex
 
 	* Makefile (distclean): remove adol-c/SRC/iostream.h
-	  (configure might create it) 
+	  (configure might create it)
 
 2003-11-19    <rfranke>
 
@@ -659,7 +667,7 @@
 
 2003-11-12    <rfranke>
 
-	* configure*, makedirs.in: 
+	* configure*, makedirs.in:
 	  - improved automatic configuration for MEX interface
 
 2003-11-08    <rfranke>
@@ -667,11 +675,11 @@
 	* configure.in, hqp_docp/Makefile.in, odc/Makefile.in:
 	  - support for gcc -mno-cygwin (native Windows version using Cygwin)
 	  - base patchlevel on modification date of ChangeLog
-	  - use default Matlab libmex.lib under Windows 
+	  - use default Matlab libmex.lib under Windows
 	    (as it works for the static libs built per default with gcc3.3.1)
           - use default --with-matlab
-	
-	* lib/pkgIndex.tcl: add 
+
+	* lib/pkgIndex.tcl: add
 	* Makefile.hqp: install Tcl package handling, together with libs
 
 	* INSTALL: update installation instructions
@@ -680,7 +688,7 @@
 	  replace strict <(>) with \le(\ge)
 
 	* omu/Omu_IntDASPK.h, omu/Omu_IntOdeTs.h, omu/Omu_IntSDIRK.h:
-	  rename call arguments of overloaded methods according to 
+	  rename call arguments of overloaded methods according to
 	  base class to prevent warnings from doxygen 1.2.18
 
 2003-11-04    <rfranke>
@@ -689,7 +697,7 @@
 	* omu/Prg_SFunctionOpt/Est.C: do always MAJOR_TIME_STEPs
 	  as MINOR_TIME_STEPs may skip detection of events
 
-	* omu/Omu_Program.C (stages_alloc): 
+	* omu/Omu_Program.C (stages_alloc):
 	    bug fix for initialization of prg_ts for K == 0
 
 2003-10-29    <rfranke>
@@ -701,15 +709,15 @@
 
 2003-10-16    <rfranke>
 
-	* omu/Prg_SFunctionOpt/Est.C: 
+	* omu/Prg_SFunctionOpt/Est.C:
 	  introduce treatment of simulation time step mode
 	  (otherwise mdlOutputs of an S-function might not work)
 
-	* omu/Prg_SFunctionOpt/Est.C: 
+	* omu/Prg_SFunctionOpt/Est.C:
 	  raise error E_CONV if model evaluation fails, not E_RANGE
 	  (see change of Hqp_Omuses on 2003-09-09)
 
-	* omu/Prg_SFunctionEst.C (Prg_SFunctionEst): 
+	* omu/Prg_SFunctionEst.C (Prg_SFunctionEst):
 	  correct initialization of ys_ref
 
 2003-09-22    <h_linke>
@@ -722,7 +730,7 @@
 	  ode,
 	* /omu/Omu_IntSDIRK.[hC]:
 	  adapt to new integrator interface, code clean up
-	
+
 2003-09-13    <rfranke>
 
 	* configure.in: extend check for conflicting names defined for
@@ -731,7 +739,7 @@
 2003-09-12    <e_arnold>
 	* meschach/matop.c, meschach/version.c:
 	  in-situ bug fix in ms_mltadd()
-	* omu/Omu_IntIMP.[hC]: 
+	* omu/Omu_IntIMP.[hC]:
 	  derive from Omu_Integrator, improved step-size control
 	* omu/Omu_IntGRK4.[hC]:
 	  derive from Omu_Integrator; cosmetic changes for GCC 3.3.1
@@ -739,7 +747,7 @@
 	  bug fix in Omu_ClassAlloc() (GRK4)
 	* omu/Hqp_Omuses.C
 	  cosmetic changes for GCC 3.3.1
-	
+
 2003-09-10    <rfranke>
 
 	* meschach/err.[hc], meschach/version.c:
@@ -777,7 +785,7 @@
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C (constructors):
 	  take out initialization of _K and _KK as this is done in Omu_Program
 
-	* omu/Omu_Integrator.C (setup_stages): don't allocate Omu_DepVec[_K] 
+	* omu/Omu_Integrator.C (setup_stages): don't allocate Omu_DepVec[_K]
 	  for _K=0 as cl does cause a crash otherwise
 
 2003-08-20    <rfranke>
@@ -808,10 +816,10 @@
 	  (bug had been introduced on 2003-03-04)
 
 2003-05-20    <e_arnold>
-	
+
 	* omu/Omu_IntIMP.[hC]:
 	  revert to version 1.8.2
-	
+
 2003-05-20    <rfranke>
 
 	* omu/Prg_SFunction*.[hC] (setup_model):
@@ -854,7 +862,7 @@
 	* omu/Omu_IntODE.[hC], omu/Omu_IntDASPK.[hC], omu/Omu_IntSDIRK.[hC]:
 	    adapt to modified Omu_Integrator::solve method
 	* omu/Omu_IntGRK4.[hC], omu/Omu_IntIMP.[hC]:
-	    adapt init_stage method 
+	    adapt init_stage method
 
 	* omu/Omu_Integrator.[hC], omu/Hqp_Omuses.C:
 	    remove method init_sample
@@ -887,13 +895,13 @@
 
 2003-04-15    <rfranke>
 
-	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C: 
+	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C:
 	  bug fix for storing mdl_xs and mdl_us during update
 	  (was introduced 2003-04-04)
 
 2003-04-04    <rfranke>
 
-	* omu/Prg_SFunctionEst.[hC], omu/Prg_SFunctionOpt.[hC]: 
+	* omu/Prg_SFunctionEst.[hC], omu/Prg_SFunctionOpt.[hC]:
 	  introduce mdl_xs for state values at all sample periods
 
 2003-03-27    <rfranke>
@@ -923,7 +931,7 @@
 
 	* omu/Hqp_Omuses.C (update_vals, update_stage): bug fix if number
 	  of states increases in subsequent stage
-	
+
 
 2003-02-25    <rfranke>
 
@@ -936,11 +944,11 @@
 
 	* omu/Omu_IntIMP.[hC]: improved Newton's method
 	* added new integrator omu/Omu_IntGRK4.[hC]
-	
+
 2003-02-17    <e_arnold>
 
 	* odc/Prg_Bio.[hC], odc/bio.tcl: add example problem
-	
+
 2003-02-15    <rfranke>
 
 	* omu/Prg_SFunctionOpt.[hC], omu/Prg_SFunctionEpt.[hC]:
@@ -964,7 +972,7 @@
 	  extend documentation
 
 	* omu/Hqp_DocpStub.h: remove horizon method; add documentation
-	
+
 	* odc/dic_mex_sfunction_est.tcl, odc/dic_mex_sfunction.tcl:
 	  - only compile sfun_dic.c if S-function not yet there,
 	  - plot into main window
@@ -972,12 +980,12 @@
 2002-12-21    <e_arnold>
 
 	* odc/crane.tcl: enable plots if Tk and BLT are available
-	
+
 2002-12-09    <e_arnold>
 
 	* Meschach library: ANSI_C
 	* hqp/meschext_ea.[hC] moved to meschach/*addon_hqp.[hc]
-	
+
 2002-12-06    <rfranke>
 
 	* configure.in: change version to 1.8.2, add tag release-1-8-2
@@ -998,7 +1006,7 @@
 2002-11-28    <rfranke>
 
 	* omu/Prg_SFunction.C (setup_sfun): instead of raising an error,
-	  issue a warning for more than one sample time 
+	  issue a warning for more than one sample time
 	* omu/Prg_SFunctionEst.C, omu/Prg_SFunctionOpt.C:
 	  call mdlOutputs before each call to mdlDerivatives (cf. Simulink)
 	* hxi/simstruc.h: bug fix for Level 1 S-functions
@@ -1026,7 +1034,7 @@
 
 2002-11-20    <rfranke>
 
-	* iftcl/If_Element.[hC]: add treatment of Tcl command 
+	* iftcl/If_Element.[hC]: add treatment of Tcl command
 	* iftcl/If_Variable.C: remove as functionality went to If_Element
 	* iftcl/If_Procedure.[hC]: add procedure taking no arguments
 	* iftcl/If_Method.h: adapt to changes in If_Element
@@ -1137,7 +1145,7 @@
 
 	* omu/Prg_SFunction.C (setup_sfun): add call to
 	  mdlInitializeConditions to get default initial states
-	
+
 2002-06-18    <rfranke>
 
 	* configure.in: change version to 1.8.1, add tag release-1-8-1
@@ -1189,10 +1197,10 @@
 2002-05-31    <h_linke>
 	* omu/Omu_IntSDIRK.[hC]:  support fixed integration stepsize
         * introduce conditional compilation for adolc
-	
+
 2002-05-25    <rfranke>
 
-	* hxi/Hxi_MEX_SFunction.[hC], omu/Prg_SFunctionOpt.[hC]: 
+	* hxi/Hxi_MEX_SFunction.[hC], omu/Prg_SFunctionOpt.[hC]:
 	  add support for S-function method mdlJacobian
 	* odc/sfun_dic.c: add mdlJacobian
 	* omu/Prg_SFunctionEst.C (setup_struct): predefine trivial Jacobians
@@ -1275,9 +1283,9 @@
 2002-05-06    <h_linke>
 
 	* omu/Omu_IntSDIRK.[hC]: adapt to new integrator interface
-	  add possibility to select between routines with or without 
+	  add possibility to select between routines with or without
 	  adol-c for sensitivity computation
-	
+
 2002-05-05    <rfranke>
 
 	* configure.in: change version to 1.8.0, add tag release-1-8-0
@@ -1331,7 +1339,7 @@
 
 	* omu/Omu_IntSDIRK.[hC]: remove adolc from sensitivity computation
 	* omu/Omu_IntSDIRK.[hC]: add possibility to least squares solution
-	  
+
 2002-04-23    <rfranke>
 
 	* meschach/makefile: add splufctr to list of compiled objects
@@ -1344,12 +1352,12 @@
 2002-04-22    <e_arnold>
 
 	* hqp/t_mesch.[hC]: rename free(); replace delete by delete[]
-	* hqp/Hqp_IpLQDOCP.[hC]: rename free(), adapt to changes	
-	
+	* hqp/Hqp_IpLQDOCP.[hC]: rename free(), adapt to changes
+
 2002-04-21    <rfranke>
 
 	* omu/Prg_SFunction*.[hC]: add predefined optimization and
-	  estimation problems for MEX S-functions 
+	  estimation problems for MEX S-functions
 	* configure.in, makedefs.in, makedirs.in, omu/Omu_Init.C,
 	omu/Makefile, odc/Makefile.in: adapt accordingly
 	* hxi/Hxi_MEX_SFunction.C: extend dynamic loading for cl
@@ -1371,28 +1379,28 @@
 	* omu/Omu_Dependents.h, omu/Omu_Program.h, omu/Omu_Variables.h:
 	include local Omu files via "..." instead of <...>
 
-	* omu/Omu_IntSDIRK.C, omu/Omu_IntIMP.C, hqp/Hqp_HL_BFGS.C, 
-	hqp/Hqp_HL.C, hqp/Hqp_IpSpSC.C, hqp/meschext_ea.C, 
+	* omu/Omu_IntSDIRK.C, omu/Omu_IntIMP.C, hqp/Hqp_HL_BFGS.C,
+	hqp/Hqp_HL.C, hqp/Hqp_IpSpSC.C, hqp/meschext_ea.C,
 	hqp/Hqp_IpLQDOCP.C, hqp/Hqp_IpRedSpBKP.C, hqp/Meschach.h,
 	hqp/meschext_ea.h, hqp/Hqp_IpSpBKP.C:
 	  include Meschach files relative to meschach subdirectory, e.g.:
 	  #include <meschach/matrix.h> instead of #include <matrix.h>
 	This should avoid conflicts with very common names used by Meschach.
 	* makedirs.in, hqp_docp/Makefile.in, odc/Makefile.in,
-	Makefile.hqp, Makefile: 
+	Makefile.hqp, Makefile:
   	  hide Meschach includes in meschach subdirectory
 
 2002-04-10    <e_arnold>
 
 	* omu/Omu_IntDopri5.[hC]: remove static const from class declaration
-	
+
 2002-04-08    <rfranke>
 
 	* iftcl/If_Command.C (tclCmd): add catchall for Meschach errors
 
 	* iftcl/If_Variable.C (tclCmd): add catchall for Meschach errors
 
-	* hqp/Hqp_Init.C (Hqp_Init): cleanup initialization of errors 
+	* hqp/Hqp_Init.C (Hqp_Init): cleanup initialization of errors
 	  (delete code that was commented out since 1997)
 
 2001-10-10    <rfranke>
@@ -1415,7 +1423,7 @@
 	* omu/Omu_Dependents.[hC], omu/Omu_Deps.[hC]:
 	  add classes for dependent variables
 
-	* omu/Omu_Integrator.[hC], omu/Omu_IntDASPK.[hC], omu/Omu_IntODE.[hC]: 
+	* omu/Omu_Integrator.[hC], omu/Omu_IntDASPK.[hC], omu/Omu_IntODE.[hC]:
 	  adapt to data structures introduced for new low level interface
 	  of Omu_Program
 
@@ -1436,7 +1444,7 @@
 
 2001-08-28    <e_arnold@users.sourceforge.net>
 
-	* hqp/Hqp_HL.[hC]: hela_init_scale, hela_init_multipliers 
+	* hqp/Hqp_HL.[hC]: hela_init_scale, hela_init_multipliers
 
 2001-08-27    <e_arnold@users.sourceforge.net>
 
@@ -1476,7 +1484,7 @@
 	* configure.in: change to version 1.7.8d (d for development)
 
 	* hxi/Hxi_mxArray.h: introduce own memory management
-	* hxi/Hxi_SimStruct.h: 
+	* hxi/Hxi_SimStruct.h:
 	  - store pointers to mxArrays for parameters instead of copies
 	  - introduce constructor/destructor Hxi_SimStruct_create/destroy
 	* odc/Prg_DIC_SFunction.C, odc/Prg_DID_SFunction.[hC]: adapt to changes
@@ -1486,7 +1494,7 @@
 
 2001-07-12    <rfranke>
 
-	* hxi/Hxi_SimStruct.h: remove ssGetOutputPortRealSignalPtrs and 
+	* hxi/Hxi_SimStruct.h: remove ssGetOutputPortRealSignalPtrs and
 	  Hxi_SimStruct::_yPtrs as such pointers do not exist for S-functions
 
 	* odc/runall: correct names for double integrator examples
@@ -1498,13 +1506,13 @@
 
 2001-06-10    <rfranke@users.sourceforge.net>
 
-	* hxi/Hxi_SimStruct.h: introduce member _dummy to work around 
+	* hxi/Hxi_SimStruct.h: introduce member _dummy to work around
 	  memory allocation problem with vector<adouble> using ADOL-C 1.7.8
 	* odc/Prg_DI?_SFunction.C: adapt to new Hxi_SimStruct version
 
 2001-05-22    <rfranke@users.sourceforge.net>
 
-	* hxi/Hxi_SimStruct.h: add support for dwork data vectors 
+	* hxi/Hxi_SimStruct.h: add support for dwork data vectors
 
 2001-05-11    <rfranke@users.sourceforge.net>
 
@@ -1553,7 +1561,7 @@
 04/09/01: rf
 	- hqp/Meschach.C: memory bug fix in sprow_inprod
 	  (detected by Christian Schulz)
-	
+
 04/02/01: rf: replace If_Float* with If_Real*
 	- hqp, omu, odc: replace names
 	- iftcl/If_Float*.h: introduce warning about being depreciated
@@ -1566,7 +1574,7 @@
 
 03/19/01: rf
 	- remove DASPK3 from distribution
-   
+
 03/19/01: rf
 	- hqp/Hqp_Docp.C: don't store intermediate results on prg_f anymore
 
@@ -1585,7 +1593,7 @@
 	- iftcl: declare ifName argument of all constructors const char*,
 	         add constructors to If_Variables for read-write-mode
 	- hqp/Hqp.h: undef Inf before declaring it for Hqp
-	
+
 02/26/01: rf: change version to 1.7b1
 
 02/26/01: rf
@@ -1595,7 +1603,7 @@
 	  call arguments to be called by Hqp_Omuses;
 	- omu/Omu_Program:  new public methods ts() and ks()
 	  for accessing _ts and _ks
-	
+
 02/15/01: rf
 	- hqp/hqp_solve.tcl: introduce hqp_logging to optionally
 	  disable log output
@@ -1603,17 +1611,17 @@
 02/07/01: rf
 	- add omu/Omu_IntEuler.[hC], extend omu/Makefile, omu/Omu_Init.C
 	- omu/Omu_IntRK4.C: add support for Omu_Integrator::_stepsize
-	
+
 01/27/01: rf
 	- hqp/Hqp_Init.C: disable Meschach's error counting & exit
 	  (call count_errs(0) in Hqp_Init())
-	
+
 01/27/01: rf
 	- omu/Omu_Integrator: introduce _stepsize (prg_int_stepsize)
 	- omu/Omu_IntDASPK, omu/Omu_IntIMP: implement support for _stepsize
 	- Makefile, Makefile.hqp: replace "make" with $(MAKE)
 	  (as proposed by Christian Schulz)
-	
+
 12/05/00: rf: resolve meschach/err.h, catch conflict
 	- configure.in: change version to 1.7a5
 	- rename meschach/err.h to meschach/m_err.h
@@ -1628,15 +1636,15 @@
 	- iftcl/If.[hC], hqp_docp/Docp_Main.C: change name "Float" to "Real"
 	- iftcl: add If_Real.h, If_RealVec.h, If_RealMat.h
 	  (should be used instead of If_Float* includes and types)
-	
+
 12/01/00: rf
 	- configure.in: change version to 1.7a3
-	
+
 12/01/00: rf
 	- moved PERMP from hqp/t_mesch.h to hqp/Meschach.h
 	- configure.in: remove check for HUGE_VAL
 	  (as this was a temporary problem of intermediate Cygwin 1.1)
-	
+
 11/29/00: rf: remove newly defined types from Hqp_Docp C calling interface
 	(use same types as in Hqp implementation, i.e. Real, VECP, ...
 	 instead of Float, FloatVec, ...
@@ -1644,31 +1652,31 @@
 	- remove iftcl/If_types.h
 	- modify iftcl/If.[hC], hqp/Hqp.[hC], omu/Hqp_Docp_stub.[hC],
 	  hqp_docp/Docp_Main.C, hqp_docp/Prg_Di.[hC]
-	
+
 11/25/00: rf
 	- hqp/sprcm.C: bug fix in function sp_rcm_scan
 	- hqp/Hqp_Docp.C: modified problem setup for correct hot start
 	- hqp_docp/Prg_Di.C, hqp_docp/Docp_Main.C: new theHqp_Docp_handle
 	- hqp/Hqp.[hC] corrections for new data types
-	
+
 11/23/00: rf: improved error handling
 	- hqp/Meschach.h: introduce macro "catcherr" using Meschach's catch
 	- hqp/Hqp_IpsFranke.C, hqp/Hqp_IpsMehrotra.C: use catcherr
 	  to detect degeneration, instead of direct access to setjmp()
 	- omu/Hqp_Omuses.C: apply Meschach's "catchall" to integrator->solve,
 	  so that integration errors result in SQP step shortening
-	  
+
 11/22/00: rf
 	- omu/Omu_Init.C, omu/Makefile: add Omu_IntSDIRK
 	  (provided by H. Linke)
 	- hqp/Hqp_Docp.C: break updating stages when _f becomes infinite
-	
+
 11/20/00: rf
 	- omu/Hqp_Omuses.[hC]: implemet setup_struct() and call
 	  obtain_structure from there (instead from setup_vars)
 	- hqp/Hqp_Docp.C: call setup_horizon() from general setup()
 	  (instead from setup_x)
-	
+
 11/15/00: rf
 	- hqp/Hqp_SqpSolver::feasible_vals:
 	  introduce check for is_finite(_prg->f())
@@ -1684,7 +1692,7 @@
 	  if this has not been done by calling program
 	- ./configure.in: slight modification for building a DLL
 	- hqp_docp: demo new features in Docp_Main.C
-	
+
 11/07/00: rf: improved generation of Hqp shared object
 	- change version to 1.7a1
 	- Hqp.[hC]: provide new Hqp Docp interface
@@ -1695,7 +1703,7 @@
 	- new files omu/Hqp_Docp_stub.[hC] to mimic Hqp_Docp for Omuses
 	- omu/Hqp_Omuses is now derived from omu/Hqp_Docp_stub
 	- extensions to configure.in for generation of hqp.dll using cl
-	
+
 11/03/00: rf: add support for cl compiler
 	- hqp/Hqp_IpSpSC.C: correct prototype for spCHOLsol()
 	- hqp/meschext_ea.h: remove argument lists after #undef's
@@ -1712,7 +1720,7 @@
 	- former Hqp.C becomes Hqp_impl.C
 
 11/01/00: rf:
-	- bug fix in meschach/hessen.c after call to hhvec in hsehldr.c 
+	- bug fix in meschach/hessen.c after call to hhvec in hsehldr.c
 	  to avoid infinite loop in symmeig()
 	- hqp/Hqp_HL_BFGS.C: change default _eigen_control to true
 	- omu/Omu_IntDASPK.C (realloc): more sensible allocation of memory
@@ -1722,7 +1730,7 @@
 	- change version to 1.6.1
 	- omu/Omu_IntDASPK.C: add _nsteps (prg_int_nsteps) for
 	  user-defined number of integrator steps
-	
+
 06/06/00: release HQP 1.6
 
 06/05/00: rf:
@@ -1734,13 +1742,13 @@
 05/30/00: ea:
 	- omu/Omu_IntIMP.[hC] added
 	  implicit midpoint rule for stiff ODEs
-	
+
 05/22/00: rf:
         - omu/Omu_Init.C: correct include Omu_IntOdeTS.h to Omu_IntOdeTs.h
           as reported by H. Mittelmann
 
 05/18/00: release HQP 1.6b2
-	
+
 05/17/00: rf:
 	- omu/Omu_Vector.C: add explicit call to constructor of VECP from
 	  copy constructor of Omu_Vector
@@ -1749,16 +1757,16 @@
 
 05/13/00: rf:
 	- omu/Omu_Program.[hC]: add high-level contsistic
-	
+
 05/13/00: rf:
 	- omu/Hqp_Omuses.C, omu/Omu_IntDASPK.C, omu/Omu_IntODE.[hC]:
-	  add support for _nv>0 expansion variables, i.e. sensitivities 
+	  add support for _nv>0 expansion variables, i.e. sensitivities
 	  are only calculated with respect to _nx states used by optimization
 	- omu/Omu_Integrator.[hC]:
 	  new member _nx for number of states used as optimization variables
 	- omu/Omu_IntDASPK.C: don't provide analytical Jacobian to DASPK,
 	  if it is not explicitly given via low level continuous
-	
+
 04/29/00: rf:
 	- extend omu/Omu_IntDASPK.[hC] with iterative Krylov capabilities
 	  as worked out by hl
@@ -1773,8 +1781,8 @@
 	  from Hqp_Docp::reinit_bd
 	- hqp/Hqp_SqpSolver.C: take out update of Jacobians if hot started
 
-04/14/00: release HQP 1.6b1 
-	
+04/14/00: release HQP 1.6b1
+
 04/09/00: rf: integrate DASPK3.0 with Omuses
 	- add files omu/Omu_IntDASPK.[hC]
 	- omu/Omu_Integrator.[hC]: remove dimensions from init_sample()
@@ -1792,18 +1800,18 @@
 
 04/07/00: rf
 	- omu/Omu_Integrator.C: change default _rtol from 1e-6 to 1e-8
-	
+
 04/06/00: rf: add hot start feature to Sqp solver:
-	- hqp/Hqp_SqpSolver.[hC]: new method qp_reinit_bd 
-	  (Tcl command sqp_qp_reinit_bd), 
+	- hqp/Hqp_SqpSolver.[hC]: new method qp_reinit_bd
+	  (Tcl command sqp_qp_reinit_bd),
 	  which causes a re-initialization of bounds
-	- hqp/Hqp_SqpProgram.[hC]: add callback method reinit_bd 
+	- hqp/Hqp_SqpProgram.[hC]: add callback method reinit_bd
 	  (provide default that does nothing)
 	- hqp/Hqp_Docp.[hC]: implement reinit_bd, provide new
 	  interface method reinit_bounds(k, ...)
 	- omu/Hqp_Omuses.[hC]: implement reinit_bounds
 	  (for now just call Omu_Program::setup assuming that no dims change)
-	
+
 04/03/00: rf
 	- add low-level continuous to omu/Omu_Program,
 	  which calculates Jacobians using ADOL-C by default
@@ -1811,17 +1819,17 @@
 	- let omu/Omu_IntODE call low-level continuous
 	- change default omu/Omu_Integrator::_atol from 1e-12 to 1e-8
 	- omu/Hqp_Omuses.C: use Dopri5 as default integrator
-	
+
 03/30/00: ea
 	- move _rtol, _atol, prg_int_atol, prg_int_rtol to Omu_Integrator.[hC]
 	- update Omu_IntDopri5.[hC]
-	
+
 03/29/00: ea
 	- initialize CVS repository with version 1.6a4
-	
+
 03/29/00: rf
 	- make ADOL-C working with Cygwin
-	  (mv adol-c/SRC/{adallocc,taputilc,tayutilc}.c to 
+	  (mv adol-c/SRC/{adallocc,taputilc,tayutilc}.c to
  	        adol-c/SRC/{adalloc,taputil,tayutil}.c and
 	      adol-c/SRC/DRIVERS/{driversc,odedriversc}.c to
 	        adol-c/SRC/DRIVERS/{drivers,odedrivers}.c and
@@ -1829,25 +1837,25 @@
 	        adol-c/SRC/SPARSE/{sparse}.c)
 	- configure.in: temporarily disabled check for g2c.h and f2c.h
 	  (due to name clash with ADOL-C 1.8.7 SRC/DRIVERS/taylor.h)
-	
+
 03/27/00: hl, ea
 	- update to ADOL-C 1.8.7
-	
+
 -------------------------------------------------------------------------------
 11/10/99: ea
 	- Omu_IntRK4.[hC]: prg_int_atol, prg_int_rtol (dummy)
-	
+
 08/20/99: ea
 	- bugfix in Hqp_IpLQDOCP.C
-	
+
 05/07/99:  ea
-	- update Omu_IntOdeTS.[Ch] 
-	
+	- update Omu_IntOdeTS.[Ch]
+
 04/27/99: ea
 	- update to ADOL-C 1.8.2
 	- change configure.in for egcs-1.1.2 (g77, libg2c)
 	- add omu/Omu_IntDopri5.[hC]: Dormand-Prince method
--------------------------------------------------------------------------------	
+-------------------------------------------------------------------------------
 03/22/00: rf
 	- include Omuses, Odc, and ADOL-C with distribution
 	- omu/Omu_Init.C: add call to Tcl_PkgRequire/Provide
@@ -1872,11 +1880,11 @@
 	- exchange use of finite with is_finite
 	- remove (void) arg form t_mesch.[hC] and default args from t_mesch.C
 	- remove qsort.c from HQP sources (in hqp/Makefile)
-	
+
 12/25/99: rf
 	- hqp/Hqp_Init.C: add call to Tcl_PkgRequire
 	- hqp/Hqp_Init.C: remove utime implementation
-	
+
 12/23/99: rf
 	- change sign in Hqp_SqpProgram::test_cmd, so that it can
 	  be used to approximate gradients numerically
@@ -1886,7 +1894,7 @@
 	  created
 	- hqp/Prg_CUTE*.C use sp_update_val instead of own sp_set_val2
 	- move sprow_zero from Prg_CUTE*.C to Meschach.[hC]
-	
+
 12/21/99: rf
 	Resolve name clashes with ASCEND
 	- meschach/matrix.h L480: take away declaration of cube
@@ -1899,18 +1907,17 @@
 
 12/17/99: rf
 	- add files hqp/Prg_ASCEND.[hC], hqp/Hqp_ASCEND_dummies.C
-	
+
 12/16/99: rf
 	- rename __P to MESCH__P in meschach/{machine,matrix,sparse}.h
 	  as gcc version egcs-2.91.66 defines __P with throw()
 
 4/13/99: release HQP 1.5p1
 4/13/99: rf
-	- rename hqp/hqp.tcl to hqp/hqp_solve.tcl to avoid name conflict 
+	- rename hqp/hqp.tcl to hqp/hqp_solve.tcl to avoid name conflict
 	with hqp/Hqp.C on systems that don't distinguish lower and upper case
 	- update hqp/Hqp_Init.C to evaluate hqp_solve
 	- update hqp/Makefile to build hqp_solve
 	- change eigen_control default to false,
  	  (because Meschach's symmeig() may have endless iteration)
 
-	

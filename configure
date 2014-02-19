@@ -4288,13 +4288,13 @@ fi
       ;;
     Darwin*)
       if test "$hqp_shared" = "yes"; then
-           hqp_libs_resolved="partial"
+        hqp_libs_resolved="yes"
       fi
       ;;
     CYGWIN*|MSYS*|MINGW*)
       PICFLAG=""
       if test "$hqp_shared" = "yes"; then
-        hqp_libs_resolved="yes"
+        hqp_libs_resolved="bake-in"
         LIB_PREFIX=""
         LIB_SUFFIX=".dll"
       else
@@ -4402,7 +4402,7 @@ fi
       # note: -nodefaultlib:msvcrt is required when using Tcl stubs
       SHLD="link -dll -nologo -nodefaultlib:msvcrt"
       if test "$hqp_shared" = "yes"; then
-        hqp_libs_resolved="yes"
+        hqp_libs_resolved="bake-in"
         MKLIB_SUFFIX=".dll"
         LD="$SHLD"
         LIB_SUFFIX=".dll"
@@ -4485,13 +4485,12 @@ fi
 HQP_LIBS="${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
 OMU_LIBS="${LDLIB_PREFIX}omu${LDLIB_SUFFIX}"
 # add Hqp to Omuses machine objects or to libs required for using Omuses
-if test "$hqp_libs_resolved" = "yes"; then
-#  OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
-  # for now directly link Hqp objects into an Omuses DLL
+if test "$hqp_libs_resolved" = "bake-in"; then
+  # directly link Hqp objects into an Omuses DLL
   OMU_MACH_OBJS="../hqp/*\$O ../iftcl/*\$O ../meschach/*\$O"
 else
   OMU_LIBS="${OMU_LIBS} ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
-  if test "$hqp_libs_resolved" = "partial"; then
+  if test "$hqp_libs_resolved" = "yes"; then
     # in this mode we need -lhqp both for linking and running
     OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
   fi
@@ -4813,7 +4812,7 @@ fi
 
 
 # add MEX libs to machine objects
-if test "$hqp_libs_resolved" = "yes"; then
+if test "$hqp_libs_resolved" = "bake-in"; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
 else
   ODC_MACH_OBJS="$ODC_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
@@ -5355,7 +5354,7 @@ fi
 
 
 # add Fortran libs to machine objects
-if test "$hqp_libs_resolved" = "yes"; then
+if test "$hqp_libs_resolved" = "bake-in"; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(FORTRAN_LIBS)"
 else
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(FORTRAN_LIBS)"
