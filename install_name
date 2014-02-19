@@ -1,0 +1,4 @@
+#!/bin/sh
+# Add lib name relative to rpath as install name for Darwin platform
+
+install_name_tool -id @rpath/$1 $1

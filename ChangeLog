@@ -1,6 +1,6 @@
 2014-02-19  <rfranke>
 
-	* configure.in, configure:
+	* configure.in, configure, hqp/Makefile.in:
 	  - add initial support for Mac OSX provided by Pär Winzell
 
 	* ChangeLog:

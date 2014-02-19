@@ -4289,6 +4289,8 @@ fi
     Darwin*)
       if test "$hqp_shared" = "yes"; then
         hqp_libs_resolved="yes"
+        # configure RANLIB to call install_name_tool
+        RANLIB="../install_name"
       fi
       ;;
     CYGWIN*|MSYS*|MINGW*)
