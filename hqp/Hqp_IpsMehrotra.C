@@ -359,7 +359,64 @@ void Hqp_IpsMehrotra::step()
   Real  alpha_aff, alpha_corr, mu_aff, mu, sigma, zmin, wmin, fpd, mu_pl;
   int 	code, mod_terlaky = 1;
 
-  if ( ( v_min(_z, &izmin) <= 0.0 ) || ( v_min(_w, &iwmin) <= 0.0 ) )
+  // solve a program without inequality constraints
+
+  if ( _m == 0 ) {
+    sp_mv_symmlt(_qp->Q, _qp->x, _r1);
+    v_add(_r1, _qp->c, _r1);
+    sp_vm_mltadd(_r1, _y, _qp->A, -1.0, _r1);
+    sp_mv_mlt(_qp->A, _qp->x, _r2);
+    v_add(_r2, _qp->b, _r2);
+    sv_mlt(-1.0, _r2, _r2); //-
+    v_resize(_r3, 0);
+    v_resize(_r4, 0);
+    //    sv_mlt(-1.0, _r2, _r2); //-
+#ifdef m_catch
+    m_catch(E_SING,
+	    // try
+	    _matrix->factor(_qp, _z, _w);
+	    residuum =
+	    _matrix->solve(_qp, _z, _w,
+			   _r1, _r2, _r3, _r4, _dx, _dy, _dz, _dw),
+	    // catch(E_SING)
+	    if ( _logging )
+	      printf("\nHqp_Degenerate: QP without inequality constraints\n"); 
+	    _result = Hqp_Degenerate;
+	    return);
+#else
+    _matrix->factor(_qp, _z, _w);
+    if ((code = setjmp(restart)) != 0) {
+      set_err_flag(EF_EXIT);	// avoid recursive error calls
+      if (code == E_SING) {
+	_result = Hqp_Degenerate;
+
+	if ( _logging )
+	  printf("\nHqp_Degenerate: QP without inequality constraints\n"); 
+	return;
+      }
+      else
+	error(code, "Hqp_IpsMehrotra::step");
+    }
+    else {
+#   ifdef DEBUG
+      set_err_flag(EF_JUMP);
+#   else
+      set_err_flag(EF_SILENT);
+#   endif
+    }
+    residuum = _matrix->solve(_qp, _z, _w,
+			      _r1, _r2, _r3, _r4, _dx, _dy, _dz, _dw);
+#endif
+    v_add(_qp->x, _dx, _qp->x); 
+    v_add(_y, _dy, _y); 
+    _iter++;
+    _result = Hqp_Optimal;
+    return;
+  }
+
+  // solve a program with inequality constraints
+
+  if ( ( v_min(_z, &izmin) <= 0.0 ) || ( v_min(_w, &iwmin) <= 0.0 ) ) 
     printf("Should never occure: min(_z)=%g, min(_w)=%g\n", 
 	   _z->ve[izmin], _w->ve[iwmin]);
 
