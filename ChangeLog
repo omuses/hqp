@@ -1,3 +1,8 @@
+2014-03-01  <rfranke>
+
+	* configure, configure.in, .gitignore, INSTALL.html:
+	  - release 1.9.7
+
 2014-02-25  <e-arnold>
 
 	* hqp/Hqp_IpsMehrotra.C:

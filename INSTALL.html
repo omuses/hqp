@@ -73,11 +73,17 @@ Following options can be specified:
 <p><b>Feature options:</b></p>
 <dl>
  <dt><pre>--enable-adolc</pre></dt>
-     <dd>Unpack and build the contained ADOL-C for automatic differentiation 
+     <dd>Include code that uses ADOL-C for automatic differentiation 
      as part of Omuses. This simplifies the manual implementation of 
      optimization programs. See the Odc demo collection, 
      e.g. ./odc/Prg_BatchReactor.[hC] using ADOL-C vs. 
-     ./odc/Prg_BatchReactor_bare.[hC] accessing lower level interfaces.</dd>
+     ./odc/Prg_BatchReactor_bare.[hC] accessing lower level interfaces.<br>
+     Additionally you may specify:</dd>
+     <dl>
+     <dt><pre>--with-adolc</pre></dt>
+       <dd>Directory prefix of ADOL-C installation, e.g.
+       <pre>--with-adolc=/usr</pre></dd>
+     </dl>
  <dt><pre>--enable-fortran</pre></dt>
      <dd>Include the numerical integration routines RKsuite and 
      optionally DASPK with libomu (see also daspk/README).
@@ -281,11 +287,6 @@ Files required to run HQP with CUTE
 <dt>meschach</dt>
 <dd>
   Matrix library (by D.E. Steward and Z. Leyk)
-</dd>
-
-<dt>adol-c</dt>
-<dd>
-  Automatic differentiation code (by A. Griewank et al)
 </dd>
 
 <dt>iftcl</dt>
