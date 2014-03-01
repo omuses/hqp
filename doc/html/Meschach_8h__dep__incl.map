@@ -1,8 +1,8 @@
 <map id="Meschach.h" name="Meschach.h">
 <area shape="rect" id="node3" href="$If_8h.html" title="public declarations of the interface library " alt="" coords="521,83,561,112"/>
-<area shape="rect" id="node13" href="$If__RealMat_8h.html" title="Interface variables for matrices of reals (currently Mesch::MATP) " alt="" coords="5,315,101,344"/>
-<area shape="rect" id="node15" href="$If__RealVec_8h.html" title="Interface variables for vectors of reals (currently Mesch::VECP) " alt="" coords="533,315,632,344"/>
-<area shape="rect" id="node19" href="$If__IntVec_8h.html" title="Interface variables for integer vectors of the Meschach library. " alt="" coords="656,315,741,344"/>
+<area shape="rect" id="node13" href="$If__IntVec_8h.html" title="Interface variables for integer vectors of the Meschach library. " alt="" coords="5,315,91,344"/>
+<area shape="rect" id="node17" href="$If__RealMat_8h.html" title="Interface variables for matrices of reals (currently Mesch::MATP) " alt="" coords="523,315,619,344"/>
+<area shape="rect" id="node19" href="$If__RealVec_8h.html" title="Interface variables for vectors of reals (currently Mesch::VECP) " alt="" coords="643,315,741,344"/>
 <area shape="rect" id="node30" href="$Hqp_8h.html" title="declaration of external API for HQP (Huge Quadratic Programming) " alt="" coords="948,83,1004,112"/>
 <area shape="rect" id="node52" href="$Omu__Dependents_8h.html" title="Dependent variables (single and vector, including Jacobians). " alt="" coords="1247,160,1385,189"/>
 <area shape="rect" id="node60" href="$Omu__Program_8h.html" title="Interface for a multistage optimization problem described by algebraic and differential equations..." alt="" coords="1408,237,1525,267"/>
@@ -12,10 +12,10 @@
 <area shape="rect" id="node7" href="$If__Variable_8h.html" title="base classes for interface variables " alt="" coords="301,237,395,267"/>
 <area shape="rect" id="node23" href="$If__Method_8h.html" title="binds a pointer to a method to an interface element " alt="" coords="419,237,509,267"/>
 <area shape="rect" id="node25" href="$If__Procedure_8h.html" title="binds a function pointer to an interface element " alt="" coords="533,237,640,267"/>
-<area shape="rect" id="node9" href="$If__Bool_8h.html" title="Interface variable for booleans. " alt="" coords="336,315,411,344"/>
-<area shape="rect" id="node11" href="$If__Real_8h.html" title="Interface variable for doubles. " alt="" coords="435,315,509,344"/>
-<area shape="rect" id="node17" href="$If__Int_8h.html" title="Interface variable for integers. " alt="" coords="125,315,187,344"/>
-<area shape="rect" id="node21" href="$If__StdString_8h.html" title="If_Variable for standard C++ string type. " alt="" coords="211,315,312,344"/>
+<area shape="rect" id="node9" href="$If__Bool_8h.html" title="Interface variable for booleans. " alt="" coords="339,315,413,344"/>
+<area shape="rect" id="node11" href="$If__Int_8h.html" title="Interface variable for integers. " alt="" coords="437,315,499,344"/>
+<area shape="rect" id="node15" href="$If__Real_8h.html" title="Interface variable for doubles. " alt="" coords="115,315,189,344"/>
+<area shape="rect" id="node21" href="$If__StdString_8h.html" title="If_Variable for standard C++ string type. " alt="" coords="213,315,315,344"/>
 <area shape="rect" id="node32" href="$Hqp__impl_8h.html" title="internal declarations for HQP (Huge Quadratic Programming) " alt="" coords="932,160,1020,189"/>
 <area shape="rect" id="node38" href="$Hqp__DocpWrapper_8h.html" title="Implement an Hqp_Docp and connect it to Hqp_DocpSpec. " alt="" coords="789,469,933,499"/>
 <area shape="rect" id="node48" href="$Hqp__DocpStub_8h.html" title="client stub for Hqp_Docp interface " alt="" coords="1063,160,1185,189"/>

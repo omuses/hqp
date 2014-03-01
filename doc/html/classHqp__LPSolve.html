@@ -31,7 +31,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HQP
-   &#160;<span id="projectnumber">1.9.6</span>
+   &#160;<span id="projectnumber">1.9.7</span>
    </div>
   </td>
  </tr>
@@ -102,14 +102,14 @@ Public Member Functions</h2></td></tr>
 virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__LPSolve.html#a5cf7940b8621c6b557d094e17f92f392">~Hqp_LPSolve</a> ()</td></tr>
 <tr class="memdesc:a5cf7940b8621c6b557d094e17f92f392"><td class="mdescLeft">&#160;</td><td class="mdescRight">destructor <br/></td></tr>
 <tr class="separator:a5cf7940b8621c6b557d094e17f92f392"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1a1829155bdae397a1791d96cc1433f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af1a1829155bdae397a1791d96cc1433f"></a>
-virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__LPSolve.html#af1a1829155bdae397a1791d96cc1433f">init</a> (IF_DEF_ARGS)</td></tr>
-<tr class="memdesc:af1a1829155bdae397a1791d96cc1433f"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize a MIP for an optimization problem given in _prg <br/></td></tr>
-<tr class="separator:af1a1829155bdae397a1791d96cc1433f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ab5c8c5f8484a6bfa35a4096154f60a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1ab5c8c5f8484a6bfa35a4096154f60a"></a>
-virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__LPSolve.html#a1ab5c8c5f8484a6bfa35a4096154f60a">solve</a> (IF_DEF_ARGS)</td></tr>
-<tr class="memdesc:a1ab5c8c5f8484a6bfa35a4096154f60a"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize and solve a MIP for an optimization problem given in _prg <br/></td></tr>
-<tr class="separator:a1ab5c8c5f8484a6bfa35a4096154f60a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a192d0bb32737bda86d4f7b709758e322"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a192d0bb32737bda86d4f7b709758e322"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__LPSolve.html#a192d0bb32737bda86d4f7b709758e322">init</a> ()</td></tr>
+<tr class="memdesc:a192d0bb32737bda86d4f7b709758e322"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize a MIP for an optimization problem given in _prg <br/></td></tr>
+<tr class="separator:a192d0bb32737bda86d4f7b709758e322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac05cb63cacbf5df9037159773e733c6e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac05cb63cacbf5df9037159773e733c6e"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__LPSolve.html#ac05cb63cacbf5df9037159773e733c6e">solve</a> ()</td></tr>
+<tr class="memdesc:ac05cb63cacbf5df9037159773e733c6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize and solve a MIP for an optimization problem given in _prg <br/></td></tr>
+<tr class="separator:ac05cb63cacbf5df9037159773e733c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1fe9dae65a222d4ef24527e4ed22677"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae1fe9dae65a222d4ef24527e4ed22677"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__LPSolve.html#ae1fe9dae65a222d4ef24527e4ed22677">dump</a> ()</td></tr>
 <tr class="memdesc:ae1fe9dae65a222d4ef24527e4ed22677"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write current linear program to the file mip_dump.lp. <br/></td></tr>
@@ -161,11 +161,17 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memdesc:a9857dc813b58ddf58ebeef6ad00a18dc inherit pub_methods_classHqp__MipSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">destructor <br/></td></tr>
 <tr class="separator:a9857dc813b58ddf58ebeef6ad00a18dc inherit pub_methods_classHqp__MipSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acafbbcdfe2893faba499f6ec2ab78c4f inherit pub_methods_classHqp__MipSolver"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acafbbcdfe2893faba499f6ec2ab78c4f"></a>
-<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>prg</b> ()</td></tr>
+<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#acafbbcdfe2893faba499f6ec2ab78c4f">prg</a> ()</td></tr>
+<tr class="memdesc:acafbbcdfe2893faba499f6ec2ab78c4f inherit pub_methods_classHqp__MipSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">optimization program <br/></td></tr>
 <tr class="separator:acafbbcdfe2893faba499f6ec2ab78c4f inherit pub_methods_classHqp__MipSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada5d0cd5a29aa441906fcf64f3b08b31 inherit pub_methods_classHqp__MipSolver"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada5d0cd5a29aa441906fcf64f3b08b31"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_prg</b> (<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *)</td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#ada5d0cd5a29aa441906fcf64f3b08b31">set_prg</a> (<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *)</td></tr>
+<tr class="memdesc:ada5d0cd5a29aa441906fcf64f3b08b31 inherit pub_methods_classHqp__MipSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">set optimization program <br/></td></tr>
 <tr class="separator:ada5d0cd5a29aa441906fcf64f3b08b31 inherit pub_methods_classHqp__MipSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2028dd7d07cd99d305de3b20c752e84b inherit pub_methods_classHqp__MipSolver"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2028dd7d07cd99d305de3b20c752e84b"></a>
+const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a2028dd7d07cd99d305de3b20c752e84b">mip_result</a> () const </td></tr>
+<tr class="memdesc:a2028dd7d07cd99d305de3b20c752e84b inherit pub_methods_classHqp__MipSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">current processing state <br/></td></tr>
+<tr class="separator:a2028dd7d07cd99d305de3b20c752e84b inherit pub_methods_classHqp__MipSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -198,6 +204,10 @@ char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a116c3d817a464b1094c9c6d6ff8a94bb">_prg</a></td></tr>
 <tr class="memdesc:a116c3d817a464b1094c9c6d6ff8a94bb inherit pro_attribs_classHqp__MipSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">optimization problem to work on <br/></td></tr>
 <tr class="separator:a116c3d817a464b1094c9c6d6ff8a94bb inherit pro_attribs_classHqp__MipSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eded2d9f339c5399c82860094f457fc inherit pro_attribs_classHqp__MipSolver"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4eded2d9f339c5399c82860094f457fc"></a>
+<a class="el" href="Hqp__impl_8h.html#a0b1fa9ef11bc8c7fa1bc78d97b372907">Hqp_Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a4eded2d9f339c5399c82860094f457fc">_result</a></td></tr>
+<tr class="memdesc:a4eded2d9f339c5399c82860094f457fc inherit pro_attribs_classHqp__MipSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">current processing state <br/></td></tr>
+<tr class="separator:a4eded2d9f339c5399c82860094f457fc inherit pro_attribs_classHqp__MipSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface to lp_solve (see: <a href="http://lpsolve.sourceforge.net/5.5">http://lpsolve.sourceforge.net/5.5</a>). </p>
@@ -210,7 +220,7 @@ char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classHqp__LPSolve.html">Hqp_LPSolve</a></li>
-    <li class="footer">Generated on Sat Jan 25 2014 15:52:37 for HQP by
+    <li class="footer">Generated on Sat Mar 1 2014 13:08:38 for HQP by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

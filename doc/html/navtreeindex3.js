@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"classOmu__Gradient.html#abc7cc249455589de31f69f8e23c06afe":[5,0,36,2],
 "classOmu__Gradient.html#ac22ec2709a8fb31e0d9d4a43737ceae2":[5,0,36,5],
 "classOmu__IntDASPK.html":[5,0,37],
 "classOmu__IntDASPK.html#a04a1d94fb72b86da20a6876152f69418":[5,0,37,3],
@@ -248,6 +249,5 @@ var NAVTREEINDEX3 =
 "classPrg__SFunctionEst.html#a1f07262f60d6dc886b902724fac32c26":[5,0,57,43],
 "classPrg__SFunctionEst.html#a248385890f407a31008fa45bf1bb46de":[5,0,57,67],
 "classPrg__SFunctionEst.html#a24882c54c4eb6e8ebd5ab7dd8c13dcbd":[5,0,57,91],
-"classPrg__SFunctionEst.html#a24cad15e3627f1a7f90392bab01a3d79":[5,0,57,29],
-"classPrg__SFunctionEst.html#a25dab48b3012551ddf52af1830ec9f37":[5,0,57,66]
+"classPrg__SFunctionEst.html#a24cad15e3627f1a7f90392bab01a3d79":[5,0,57,29]
 };

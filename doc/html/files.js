@@ -1,5 +1,6 @@
 var files =
 [
+    [ "adoublev.h", "adoublev_8h.html", "adoublev_8h" ],
     [ "cg_sfun.h", "cg__sfun_8h.html", "cg__sfun_8h" ],
     [ "Hqp.h", "Hqp_8h.html", "Hqp_8h" ],
     [ "Hqp_Docp.h", "Hqp__Docp_8h.html", [
@@ -35,7 +36,9 @@ var files =
       [ "If_List", "classIf__List.html", "classIf__List" ]
     ] ],
     [ "If_ListElement.h", "If__ListElement_8h.html", "If__ListElement_8h" ],
-    [ "If_Method.h", "If__Method_8h.html", "If__Method_8h" ],
+    [ "If_Method.h", "If__Method_8h.html", [
+      [ "If_Method", "classIf__Method.html", "classIf__Method" ]
+    ] ],
     [ "If_Procedure.h", "If__Procedure_8h.html", "If__Procedure_8h" ],
     [ "If_Real.h", "If__Real_8h.html", "If__Real_8h" ],
     [ "If_RealMat.h", "If__RealMat_8h.html", "If__RealMat_8h" ],

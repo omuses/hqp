@@ -28,39 +28,39 @@
 </g>
 <!-- Node7 -->
 <g id="node13" class="node"><title>Node7</title>
-<a xlink:href="If__RealMat_8h.html" target="_top" xlink:title="Interface variables for matrices of reals (currently Mesch::MATP) ">
-<polygon fill="white" stroke="black" points="-0.5,-116.5 -0.5,-137.5 72.5,-137.5 72.5,-116.5 -0.5,-116.5"/>
-<text text-anchor="middle" x="36" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_RealMat.h</text>
+<a xlink:href="If__IntVec_8h.html" target="_top" xlink:title="Interface variables for integer vectors of the Meschach library. ">
+<polygon fill="white" stroke="black" points="-0.5,-116.5 -0.5,-137.5 64.5,-137.5 64.5,-116.5 -0.5,-116.5"/>
+<text text-anchor="middle" x="32" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_IntVec.h</text>
 </a>
 </g>
 <!-- Node1&#45;&gt;Node7 -->
 <g id="edge26" class="edge"><title>Node1&#45;&gt;Node7</title>
-<path fill="none" stroke="midnightblue" d="M682.442,-354.945C600.976,-347.352 433.654,-330.115 378,-312 241.916,-267.706 96.6806,-169.903 50.776,-137.591"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="682.598,-358.474 692.878,-355.908 683.242,-351.504 682.598,-358.474"/>
+<path fill="none" stroke="midnightblue" d="M682.45,-354.919C600.998,-347.284 433.698,-329.98 378,-312 240.575,-267.638 93.4765,-169.879 46.971,-137.585"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="682.604,-358.448 692.885,-355.888 683.251,-351.478 682.604,-358.448"/>
 </g>
-<!-- Node8 -->
-<g id="node15" class="node"><title>Node8</title>
-<a xlink:href="If__RealVec_8h.html" target="_top" xlink:title="Interface variables for vectors of reals (currently Mesch::VECP) ">
-<polygon fill="white" stroke="black" points="396,-116.5 396,-137.5 470,-137.5 470,-116.5 396,-116.5"/>
-<text text-anchor="middle" x="433" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_RealVec.h</text>
+<!-- Node9 -->
+<g id="node17" class="node"><title>Node9</title>
+<a xlink:href="If__RealMat_8h.html" target="_top" xlink:title="Interface variables for matrices of reals (currently Mesch::MATP) ">
+<polygon fill="white" stroke="black" points="387.5,-116.5 387.5,-137.5 460.5,-137.5 460.5,-116.5 387.5,-116.5"/>
+<text text-anchor="middle" x="424" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_RealMat.h</text>
 </a>
 </g>
-<!-- Node1&#45;&gt;Node8 -->
-<g id="edge28" class="edge"><title>Node1&#45;&gt;Node8</title>
-<path fill="none" stroke="midnightblue" d="M683.018,-348.424C657.221,-340.96 625.084,-329.187 600,-312 534.139,-266.873 539.73,-232.127 485,-174 472.487,-160.71 456.785,-146.858 445.927,-137.666"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="682.353,-351.872 692.925,-351.171 684.224,-345.126 682.353,-351.872"/>
+<!-- Node1&#45;&gt;Node9 -->
+<g id="edge28" class="edge"><title>Node1&#45;&gt;Node9</title>
+<path fill="none" stroke="midnightblue" d="M683.08,-348.334C657.303,-340.839 625.167,-329.066 600,-312 533.922,-267.191 541.752,-230.154 485,-174 470.935,-160.083 452.745,-146.549 439.9,-137.606"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="682.405,-351.779 692.977,-351.095 684.285,-345.036 682.405,-351.779"/>
 </g>
 <!-- Node10 -->
 <g id="node19" class="node"><title>Node10</title>
-<a xlink:href="If__IntVec_8h.html" target="_top" xlink:title="Interface variables for integer vectors of the Meschach library. ">
-<polygon fill="white" stroke="black" points="487.5,-116.5 487.5,-137.5 552.5,-137.5 552.5,-116.5 487.5,-116.5"/>
-<text text-anchor="middle" x="520" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_IntVec.h</text>
+<a xlink:href="If__RealVec_8h.html" target="_top" xlink:title="Interface variables for vectors of reals (currently Mesch::VECP) ">
+<polygon fill="white" stroke="black" points="478,-116.5 478,-137.5 552,-137.5 552,-116.5 478,-116.5"/>
+<text text-anchor="middle" x="515" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_RealVec.h</text>
 </a>
 </g>
 <!-- Node1&#45;&gt;Node10 -->
 <g id="edge30" class="edge"><title>Node1&#45;&gt;Node10</title>
-<path fill="none" stroke="midnightblue" d="M692.504,-344.268C656.016,-327.443 599.886,-296.63 566,-254 536.962,-217.469 525.273,-160.991 521.507,-137.651"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="691.23,-347.532 701.786,-348.441 694.101,-341.148 691.23,-347.532"/>
+<path fill="none" stroke="midnightblue" d="M693.102,-344.176C656.864,-327.188 600.711,-296.16 566,-254 535.947,-217.497 521.8,-161.003 516.989,-137.656"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="691.761,-347.411 702.31,-348.391 694.675,-341.046 691.761,-347.411"/>
 </g>
 <!-- Node14 -->
 <g id="node30" class="node"><title>Node14</title>
@@ -173,65 +173,65 @@
 <!-- Node5 -->
 <g id="node9" class="node"><title>Node5</title>
 <a xlink:href="If__Bool_8h.html" target="_top" xlink:title="Interface variable for booleans. ">
-<polygon fill="white" stroke="black" points="248,-116.5 248,-137.5 304,-137.5 304,-116.5 248,-116.5"/>
-<text text-anchor="middle" x="276" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_Bool.h</text>
+<polygon fill="white" stroke="black" points="250,-116.5 250,-137.5 306,-137.5 306,-116.5 250,-116.5"/>
+<text text-anchor="middle" x="278" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_Bool.h</text>
 </a>
 </g>
 <!-- Node4&#45;&gt;Node5 -->
 <g id="edge8" class="edge"><title>Node4&#45;&gt;Node5</title>
-<path fill="none" stroke="midnightblue" d="M263.623,-164.784C266.625,-155.617 270.052,-145.157 272.537,-137.571"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="260.272,-163.769 260.485,-174.362 266.924,-165.948 260.272,-163.769"/>
+<path fill="none" stroke="midnightblue" d="M264.32,-164.784C267.639,-155.617 271.426,-145.157 274.173,-137.571"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="260.965,-163.768 260.852,-174.362 267.547,-166.151 260.965,-163.768"/>
 </g>
 <!-- Node6 -->
 <g id="node11" class="node"><title>Node6</title>
-<a xlink:href="If__Real_8h.html" target="_top" xlink:title="Interface variable for doubles. ">
-<polygon fill="white" stroke="black" points="322,-116.5 322,-137.5 378,-137.5 378,-116.5 322,-116.5"/>
-<text text-anchor="middle" x="350" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_Real.h</text>
+<a xlink:href="If__Int_8h.html" target="_top" xlink:title="Interface variable for integers. ">
+<polygon fill="white" stroke="black" points="323.5,-116.5 323.5,-137.5 370.5,-137.5 370.5,-116.5 323.5,-116.5"/>
+<text text-anchor="middle" x="347" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_Int.h</text>
 </a>
 </g>
 <!-- Node4&#45;&gt;Node6 -->
 <g id="edge10" class="edge"><title>Node4&#45;&gt;Node6</title>
-<path fill="none" stroke="midnightblue" d="M282.941,-168.821C298.96,-158.831 319.055,-146.299 333.051,-137.571"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="280.691,-166.1 274.058,-174.362 284.395,-172.04 280.691,-166.1"/>
+<path fill="none" stroke="midnightblue" d="M282.105,-168.821C297.607,-158.831 317.053,-146.299 330.597,-137.571"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="280.017,-166.003 273.507,-174.362 283.809,-171.887 280.017,-166.003"/>
 </g>
 <!-- Node4&#45;&gt;Node7 -->
 <g id="edge12" class="edge"><title>Node4&#45;&gt;Node7</title>
-<path fill="none" stroke="midnightblue" d="M211.723,-173.117C170.589,-162.322 110.675,-146.598 72.5227,-136.585"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="210.932,-176.528 221.493,-175.681 212.709,-169.757 210.932,-176.528"/>
+<path fill="none" stroke="midnightblue" d="M211.305,-173.49C174.05,-164.067 120.083,-150.329 73,-138 70.2908,-137.291 67.4825,-136.549 64.6643,-135.802"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="210.797,-176.972 221.35,-176.029 212.512,-170.185 210.797,-176.972"/>
+</g>
+<!-- Node8 -->
+<g id="node15" class="node"><title>Node8</title>
+<a xlink:href="If__Real_8h.html" target="_top" xlink:title="Interface variable for doubles. ">
+<polygon fill="white" stroke="black" points="82,-116.5 82,-137.5 138,-137.5 138,-116.5 82,-116.5"/>
+<text text-anchor="middle" x="110" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_Real.h</text>
+</a>
 </g>
 <!-- Node4&#45;&gt;Node8 -->
 <g id="edge14" class="edge"><title>Node4&#45;&gt;Node8</title>
-<path fill="none" stroke="midnightblue" d="M298.637,-171.279C329.998,-160.944 372.356,-146.985 401.068,-137.523"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="297.274,-168.043 288.872,-174.497 299.465,-174.691 297.274,-168.043"/>
-</g>
-<!-- Node9 -->
-<g id="node17" class="node"><title>Node9</title>
-<a xlink:href="If__Int_8h.html" target="_top" xlink:title="Interface variable for integers. ">
-<polygon fill="white" stroke="black" points="89.5,-116.5 89.5,-137.5 136.5,-137.5 136.5,-116.5 89.5,-116.5"/>
-<text text-anchor="middle" x="113" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_Int.h</text>
-</a>
+<path fill="none" stroke="midnightblue" d="M220.886,-170.751C194.927,-160.509 160.488,-146.921 136.919,-137.621"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="219.793,-174.082 230.379,-174.497 222.362,-167.571 219.793,-174.082"/>
 </g>
 <!-- Node4&#45;&gt;Node9 -->
 <g id="edge16" class="edge"><title>Node4&#45;&gt;Node9</title>
-<path fill="none" stroke="midnightblue" d="M221.318,-170.628C195.026,-160.038 159.981,-145.923 136.969,-136.654"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="220.339,-174.007 230.923,-174.497 222.954,-167.514 220.339,-174.007"/>
+<path fill="none" stroke="midnightblue" d="M296.895,-171.144C326.613,-160.823 366.575,-146.944 393.701,-137.523"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="295.541,-167.909 287.242,-174.497 297.837,-174.522 295.541,-167.909"/>
 </g>
 <!-- Node4&#45;&gt;Node10 -->
 <g id="edge18" class="edge"><title>Node4&#45;&gt;Node10</title>
-<path fill="none" stroke="midnightblue" d="M302.432,-173.749C381.433,-156.199 403.497,-155.745 479,-138 481.726,-137.359 484.547,-136.666 487.373,-135.951"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="301.499,-170.371 292.509,-175.976 303.032,-177.201 301.499,-170.371"/>
+<path fill="none" stroke="midnightblue" d="M302.4,-173.725C377.048,-156.56 397.582,-154.189 469,-138 471.883,-137.347 474.865,-136.659 477.86,-135.961"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="301.471,-170.348 292.517,-176.011 303.048,-177.168 301.471,-170.348"/>
 </g>
 <!-- Node11 -->
 <g id="node21" class="node"><title>Node11</title>
 <a xlink:href="If__StdString_8h.html" target="_top" xlink:title="If_Variable for standard C++ string type. ">
-<polygon fill="white" stroke="black" points="153.5,-116.5 153.5,-137.5 230.5,-137.5 230.5,-116.5 153.5,-116.5"/>
-<text text-anchor="middle" x="192" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_StdString.h</text>
+<polygon fill="white" stroke="black" points="155.5,-116.5 155.5,-137.5 232.5,-137.5 232.5,-116.5 155.5,-116.5"/>
+<text text-anchor="middle" x="194" y="-124.5" font-family="Helvetica,sans-Serif" font-size="10.00">If_StdString.h</text>
 </a>
 </g>
 <!-- Node4&#45;&gt;Node11 -->
 <g id="edge20" class="edge"><title>Node4&#45;&gt;Node11</title>
-<path fill="none" stroke="midnightblue" d="M237.602,-167.691C226.629,-157.9 213.263,-145.973 203.846,-137.571"/>
-<polygon fill="midnightblue" stroke="midnightblue" points="235.286,-170.315 245.078,-174.362 239.947,-165.092 235.286,-170.315"/>
+<path fill="none" stroke="midnightblue" d="M237.888,-167.405C227.312,-157.668 214.52,-145.891 205.482,-137.571"/>
+<polygon fill="midnightblue" stroke="midnightblue" points="235.717,-170.164 245.445,-174.362 240.458,-165.014 235.717,-170.164"/>
 </g>
 <!-- Node15 -->
 <g id="node32" class="node"><title>Node15</title>

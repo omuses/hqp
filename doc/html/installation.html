@@ -31,7 +31,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HQP
-   &#160;<span id="projectnumber">1.9.6</span>
+   &#160;<span id="projectnumber">1.9.7</span>
    </div>
   </td>
  </tr>
@@ -118,7 +118,12 @@ Tcl version 8.1 or higher (typically packages <code>tcl</code> for the runtime a
 <p><b>Feature options:</b></p>
 <dl>
 <dt>--enable-adolc </dt>
-<dd>Unpack and build the contained ADOL-C for automatic differentiation as part of Omuses. This simplifies the manual implementation of optimization programs. See the Odc demo collection, e.g. ./odc/Prg_BatchReactor.[hC] using ADOL-C vs. ./odc/Prg_BatchReactor_bare.[hC] accessing lower level interfaces. </dd>
+<dd>Include code that uses ADOL-C for automatic differentiation as part of Omuses. This simplifies the manual implementation of optimization programs. See the Odc demo collection, e.g. ./odc/Prg_BatchReactor.[hC] using ADOL-C vs. ./odc/Prg_BatchReactor_bare.[hC] accessing lower level interfaces.<br/>
+ Additionally you may specify: <dl>
+<dt>--with-adolc </dt>
+<dd>Directory prefix of ADOL-C installation, e.g. <pre>--with-adolc=/usr</pre> </dd>
+</dl>
+</dd>
 <dt>--enable-fortran </dt>
 <dd>Include the numerical integration routines RKsuite and optionally DASPK with libomu (see also daspk/README). This requires an f77 compiler on your machine. Note: The automatic settings done by ./configure are for gfortran. Please check the variables FORTRAN_* in ./makedefs. </dd>
 <dt>--enable-mex </dt>
@@ -227,7 +232,7 @@ Tcl version 8.1 or higher (typically packages <code>tcl</code> for the runtime a
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Sat Jan 25 2014 15:52:36 for HQP by
+    <li class="footer">Generated on Sat Mar 1 2014 13:08:38 for HQP by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

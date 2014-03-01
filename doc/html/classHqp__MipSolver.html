@@ -31,7 +31,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HQP
-   &#160;<span id="projectnumber">1.9.6</span>
+   &#160;<span id="projectnumber">1.9.7</span>
    </div>
   </td>
  </tr>
@@ -103,19 +103,25 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memdesc:a9857dc813b58ddf58ebeef6ad00a18dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">destructor <br/></td></tr>
 <tr class="separator:a9857dc813b58ddf58ebeef6ad00a18dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acafbbcdfe2893faba499f6ec2ab78c4f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acafbbcdfe2893faba499f6ec2ab78c4f"></a>
-<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>prg</b> ()</td></tr>
+<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#acafbbcdfe2893faba499f6ec2ab78c4f">prg</a> ()</td></tr>
+<tr class="memdesc:acafbbcdfe2893faba499f6ec2ab78c4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">optimization program <br/></td></tr>
 <tr class="separator:acafbbcdfe2893faba499f6ec2ab78c4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada5d0cd5a29aa441906fcf64f3b08b31"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada5d0cd5a29aa441906fcf64f3b08b31"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_prg</b> (<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *)</td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#ada5d0cd5a29aa441906fcf64f3b08b31">set_prg</a> (<a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *)</td></tr>
+<tr class="memdesc:ada5d0cd5a29aa441906fcf64f3b08b31"><td class="mdescLeft">&#160;</td><td class="mdescRight">set optimization program <br/></td></tr>
 <tr class="separator:ada5d0cd5a29aa441906fcf64f3b08b31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e7265a52422db5dc93a19a7cf8bc134"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0e7265a52422db5dc93a19a7cf8bc134"></a>
-virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a0e7265a52422db5dc93a19a7cf8bc134">init</a> (IF_DEF_ARGS)=0</td></tr>
-<tr class="memdesc:a0e7265a52422db5dc93a19a7cf8bc134"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize a MIP for an optimization problem given in _prg <br/></td></tr>
-<tr class="separator:a0e7265a52422db5dc93a19a7cf8bc134"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33628bc91aaec1d43712092f5eabbe71"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a33628bc91aaec1d43712092f5eabbe71"></a>
-virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a33628bc91aaec1d43712092f5eabbe71">solve</a> (IF_DEF_ARGS)=0</td></tr>
-<tr class="memdesc:a33628bc91aaec1d43712092f5eabbe71"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize and solve a MIP for an optimization problem given in _prg <br/></td></tr>
-<tr class="separator:a33628bc91aaec1d43712092f5eabbe71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2028dd7d07cd99d305de3b20c752e84b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2028dd7d07cd99d305de3b20c752e84b"></a>
+const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a2028dd7d07cd99d305de3b20c752e84b">mip_result</a> () const </td></tr>
+<tr class="memdesc:a2028dd7d07cd99d305de3b20c752e84b"><td class="mdescLeft">&#160;</td><td class="mdescRight">current processing state <br/></td></tr>
+<tr class="separator:a2028dd7d07cd99d305de3b20c752e84b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f18624f8e3640e69674b96cb270a946"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f18624f8e3640e69674b96cb270a946"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a1f18624f8e3640e69674b96cb270a946">init</a> ()=0</td></tr>
+<tr class="memdesc:a1f18624f8e3640e69674b96cb270a946"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize a MIP for an optimization problem given in _prg <br/></td></tr>
+<tr class="separator:a1f18624f8e3640e69674b96cb270a946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bfffd69c3d68949fa28913da6caf95d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5bfffd69c3d68949fa28913da6caf95d"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a5bfffd69c3d68949fa28913da6caf95d">solve</a> ()=0</td></tr>
+<tr class="memdesc:a5bfffd69c3d68949fa28913da6caf95d"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize and solve a MIP for an optimization problem given in _prg <br/></td></tr>
+<tr class="separator:a5bfffd69c3d68949fa28913da6caf95d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b5b5310d9433f43a91c4749808d3b78"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5b5b5310d9433f43a91c4749808d3b78"></a>
 virtual const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a5b5b5310d9433f43a91c4749808d3b78">name</a> ()=0</td></tr>
 <tr class="memdesc:a5b5b5310d9433f43a91c4749808d3b78"><td class="mdescLeft">&#160;</td><td class="mdescRight">name of mixed integer solver <br/></td></tr>
@@ -131,6 +137,10 @@ Protected Attributes</h2></td></tr>
 <a class="el" href="classHqp__SqpProgram.html">Hqp_SqpProgram</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a116c3d817a464b1094c9c6d6ff8a94bb">_prg</a></td></tr>
 <tr class="memdesc:a116c3d817a464b1094c9c6d6ff8a94bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">optimization problem to work on <br/></td></tr>
 <tr class="separator:a116c3d817a464b1094c9c6d6ff8a94bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eded2d9f339c5399c82860094f457fc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4eded2d9f339c5399c82860094f457fc"></a>
+<a class="el" href="Hqp__impl_8h.html#a0b1fa9ef11bc8c7fa1bc78d97b372907">Hqp_Result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHqp__MipSolver.html#a4eded2d9f339c5399c82860094f457fc">_result</a></td></tr>
+<tr class="memdesc:a4eded2d9f339c5399c82860094f457fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">current processing state <br/></td></tr>
+<tr class="separator:a4eded2d9f339c5399c82860094f457fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for a solver for mixed integer problems. </p>
@@ -143,7 +153,7 @@ Protected Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classHqp__MipSolver.html">Hqp_MipSolver</a></li>
-    <li class="footer">Generated on Sat Jan 25 2014 15:52:37 for HQP by
+    <li class="footer">Generated on Sat Mar 1 2014 13:08:38 for HQP by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

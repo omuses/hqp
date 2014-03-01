@@ -13,7 +13,7 @@ var classHqp__Docp =
     [ "setup_horizon", "classHqp__Docp.html#ae135c418ac086f161d66f7aaba294f74", null ],
     [ "setup_struct", "classHqp__Docp.html#a3e9dea4551d401eb8241af58c9fee91d", null ],
     [ "setup_vars", "classHqp__Docp.html#a8c0f52753795a38b7336072acd1b2191", null ],
-    [ "simulate", "classHqp__Docp.html#a921c0b75943ca978e917d2229fbd7792", null ],
+    [ "simulate", "classHqp__Docp.html#aeb412443e51b3dca4d14265620ef64f7", null ],
     [ "update_grds", "classHqp__Docp.html#a89e66589890866e0e40e006c09849d5e", null ],
     [ "update_hela", "classHqp__Docp.html#a9c57677c6b9cbacb4226ef520c44476b", null ],
     [ "update_stage", "classHqp__Docp.html#ad82188ff7f9b7672cbdb83e8331e3cac", null ],
