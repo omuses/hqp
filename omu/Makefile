@@ -38,7 +38,7 @@ SRCS =	Omu_Init.C \
 	Hxi_SimStruct.C \
 	$(MEX_SRCS)
 
-OBJS = $(SRCS:.C=$O) $(RKSUITE_O)
+OBJS = $(SRCS:.C=$O) $(RKSUITE_O) sfun_fmu$O
 
 LIBRARY = omu
 
@@ -54,6 +54,9 @@ daspk:
 $(RKSUITE_O): $(RKSUITE_O:$O=.f)
 	PWD=`pwd`; cd "`dirname $(RKSUITE_O)`"; \
 	$(FORTRAN_COMP) $(FORTRAN_FLAGS) -c rksuite.f; cd "$(PWD)"
+
+sfun_fmu$O: ../hxi/sfun_fmu.c
+	$(CC) -c $(CFLAGS) $(CCDEFS) ../hxi/sfun_fmu.c
 
 Hxi_MEX_SFunction$O: ../hxi/Hxi_MEX_SFunction.C
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) ../hxi/Hxi_MEX_SFunction.C

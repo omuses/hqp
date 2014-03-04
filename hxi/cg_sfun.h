@@ -44,7 +44,7 @@ void Hxi_SimStruct_init(SimStruct *S) {
 
   // optional S-function methods
 #if defined(MDL_CHECK_PARAMETERS)
-  ssSetmdlStart(S, &mdlCheckParameters);
+  ssSetmdlCheckParameters(S, &mdlCheckParameters);
 #endif
 
 #if defined(MDL_START)

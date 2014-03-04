@@ -29,6 +29,7 @@
 
 #include <assert.h>
 #include <malloc.h>
+#include <string.h>
 
 #ifdef min
 #undef min
@@ -1104,20 +1105,27 @@ HXI_EXTERN SimStruct *Hxi_SimStruct_create(const char *path) {
   SimStruct *S; // SimStruct to be created
   Hxi::SimStruct<real_T> *S0 = new Hxi::SimStruct<real_T>(); // used during creation
   S0->setPath(path);
-#if defined(HXI_INLINE_S_FUNCTION)
-  // directly initialize SimStruct
-  S = (SimStruct*)S0;
-  Hxi_SimStruct_init(S);
-#else
-  S = Hxi_SFunction_open((SimStruct*)S0);
-#if defined(HXI_WITH_MEX)
-  if (!S) {
-    // we are having a MEX S-function; don't need S0 anymore
-    delete S0;
-    S = Hxi_MEX_SimStruct_create();
-    ssSetPath(S, path);
-  }
+#if !defined(HXI_INLINE_S_FUNCTION)
+  if (strlen(path) > 4 && strcmp(path + strlen(path) - 4, ".fmu") == 0) {
+    // use sfun_fmu wrapper
 #endif
+    // directly initialize SimStruct
+    S = (SimStruct*)S0;
+    Hxi_SimStruct_init(S);
+#if !defined(HXI_INLINE_S_FUNCTION)
+  }
+  else {
+    // load regular S-function compiled for Hxi
+    S = Hxi_SFunction_open((SimStruct*)S0);
+# if defined(HXI_WITH_MEX)
+    if (!S) {
+      // we are having a MEX S-function; don't need S0 anymore
+      delete S0;
+      S = Hxi_MEX_SimStruct_create();
+      ssSetPath(S, path);
+    }
+# endif
+  }
 #endif
   return S;
 }
@@ -1125,8 +1133,13 @@ HXI_EXTERN SimStruct *Hxi_SimStruct_create(const char *path) {
 /** Delete a SimStruct. */
 HXI_EXTERN void Hxi_SimStruct_destroy(SimStruct *S) {
 #if !defined(HXI_INLINE_S_FUNCTION)
-  // release S-function
-  Hxi_SFunction_close(S);
+  const char *path = "";
+  if (value(*((real_T*)S)) == HQP_MAGIC_CODE)
+    path = ((Hxi::SimStruct<real_T> *)S)->getPath();
+  if (strlen(path) <= 4 || strcmp(path + strlen(path) - 4, ".fmu") != 0) {
+    // release S-function if Hxi_SFunction_open has been called
+    Hxi_SFunction_close(S);
+  }
 #endif
 #if defined(HXI_WITH_MEX)
   if (!isHxiSimStruct(S))

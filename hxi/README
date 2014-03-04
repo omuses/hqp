@@ -1,23 +1,35 @@
 This directory contains Hqp eXternal Interfaces (HXI).
 
-Currently provided is:
+# Functional Model Interface (FMI)
 
-* Interface to Simulink(R) S-function in two versions. 
+FMI defines model units that contain executable code for different
+platforms and a model description in xml format, besides more.
+See https://www.fmi-standard.org
 
-** Calling interface to binary MEX S-function
+Hxi implements a calling interface to FMI 2.0 for model exchange
+as a wrapper S-function. Tcl is used to process xml and zip.
 
-The files Hxi_MEX_SFunction.[hC] implement a calling interface 
-using dynamic load functions dlopen, dlsym, dlerror, dlclose.
-The main problem with this interface is that currently no model
-Jacobians are officially supported for S-functions, i.e. derivatives
-have to be approximated numerically.
+# Simulink(R) S-function
 
-** Emulation of S-function interface using ADOL-C
+S-function defines a calling interface to executable model code.
+Hxi provides two versions of that interface.
 
-The interface in Hxi_SimStruct.h, Hxi_mxArray.h, Hxi_sfun_types.h 
-provides the data structures and macros required to compile 
-a simple discrete-time or continuous-time S-function for Hqp. 
+## Hxi S-function emulation interface
+
+The interface in Hxi_SimStruct.[hC], Hxi_SimStruct_methods.h,
+Hxi_mxArray.h, Hxi_sfun_types.h provides the data structures 
+and macros required to compile a simple discrete-time or 
+continuous-time S-function for Hqp. 
 Only a subset of the Simulink(R) S-function interface is covered. 
+
+### Using Hxi S-function with regular numeric types
+
+Define real_T as double to compile an S-function with the Hxi interface.
+The S-function may either be inlined or loaded dynamically.
+Implement the mdlJacobian method to provide derivatives.
+
+### Using Hxi S-function with automatic differentiation
+
 The whole S-function must be available in source form and 
 must compile with real_T defined as ADOL-C adouble.
 This approch has the main advantage that problems with not
@@ -26,7 +38,12 @@ supported features more likely appear already at compilation time
 optimization). Furthermore exact derivatives can be obtained in this
 way using ADOL-C.
 
-Ruediger Franke, October 10, 2001
-rfranke@users.sourceforge.net
+## Calling interface to binary MEX S-function
+
+The files Hxi_MEX_SFunction.[hC] implement a calling interface 
+using dynamic load functions dlopen, dlsym, dlerror, dlclose.
+The main problem with this interface is that currently no model
+Jacobians are officially supported for S-functions, i.e. derivatives
+have to be approximated numerically.
 
 (Simulink is a registered trademark of The MathWorks, Inc.)

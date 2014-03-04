@@ -1,3 +1,16 @@
+2014-03-04  <rfranke>
+
+	* hxi/sfun_fmu.c, hxi/fmi.tcl, hxi/Hxi_SimStruct.C, hxi/README,
+	  hxi/fmiTypesPlatform.h, hxi/fmiFunctionTypes.h, hxi/fmiFunctions.h,
+	  omu/Makefile:
+	  - add interface to FMI 2.0 for model exchange
+
+	* hxi/cg_sfun.h:
+	  - minor bug fix
+
+	* configure, configure.in:
+	  - change to development version 1.9.7
+
 2014-03-01  <rfranke>
 
 	* configure, configure.in, .gitignore, INSTALL.html:
