@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2013  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -215,7 +215,7 @@ void Prg_SFunctionEst::write_active_mx_args(VECP p)
 void Prg_SFunctionEst::setup_model()
 {
   // load S-function
-  Prg_SFunction::setup_model();
+  Prg_SFunction::setup_model(_t0);
 
   // check for optional S-function methods that are required
   assert(ssGetmdlDerivatives(_SS) != NULL);

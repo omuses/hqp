@@ -1,6 +1,7 @@
 /**
  * @file Prg_SFunctionOpt.h
- *    Optimal control problem for a model given as MEX S-function.
+ *    Optimal control problem for a model given
+ *    as S-function or Functional Model Unit (FMU).
  *
  * rf, 7/25/00
  *
@@ -28,24 +29,14 @@
 #ifndef Prg_SFunctionOpt_H
 #define Prg_SFunctionOpt_H
 
+#include "Omu_Program.h"
 #include "Prg_SFunction.h"
+
 #include "Omu_Variables.h"
 
-/** Extend Omu_VariableVec with attributes for optimization criterion. */
-class Omu_OptVarVec: public Omu_VariableVec {
-public:
-  VECP 	weight1;	///< weight for linear objective term (default: 0.0)
-  VECP 	weight2;	///< weight for quadratic objective term (default: 0.0)
-  VECP 	ref; 		///< reference value for quadratic term (default: 0.0)
-  IVECP active; 	///< indicate used variables (default: 0 -- not used)
-
-  Omu_OptVarVec(); 		///< allocate empty vectors
-  virtual ~Omu_OptVarVec(); 	///< destroy vectors
-  virtual void resize(int n); 	///< resize and initialize vectors
-};
-
 /**
-   Optimal control problem for a model given as MEX S-function treated with
+   Optimal control program for a model given as S-function or 
+   Functional Model Unit (FMU). The program is treated with
    multi-stage control vector parameterization.
    The optimization time horizon @f$[t_0,t_f]@f$ is split into @f$k=0,...,K@f$ 
    stages with time points @f$t_0=t^0<t^1<\ldots<t^K=t_f@f$. Each stage may 
@@ -303,7 +294,7 @@ public:
    \end{array}
    @f]
  */
-class Prg_SFunctionOpt: public Prg_SFunction {
+class Prg_SFunctionOpt: public Omu_Program, public Prg_SFunction {
 
  protected:
   Omu_VariableVec _mdl_x0;	///< initial states for optimization
@@ -340,12 +331,12 @@ class Prg_SFunctionOpt: public Prg_SFunction {
   int		_nx;	///< number of states for optimizer
   int		_nu;	///< number of optimized control inputs
   int		_nc;	///< number of constrained outputs
-  int		_nc0;	///< number of constrained/used outputs at initial time
-  int		_ncf;	///< number of constrained/used outputs at final time
   int		_ns;	///< number of slack variables for soft constraints
   int		_nsc;	///< number of soft constraints
   int		_nsu;	///< number of slack variables for soft cns on inputs
   int		_nsuc;	///< number of soft constraints on inputs
+  int		_nc0;	///< number of constrained/used outputs at initial time
+  int		_ncf;	///< number of constrained/used outputs at final time
   int		_nsf;	///< number of slacks for soft constraints at final time
   int		_nscf;	///< number of soft constraints at final time
   int 		_multistage; 	///< treat as multistage problem
@@ -390,7 +381,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /**
    * @name Implementation of predefined methods.
-   * @see Omu_Program
+   * @see Omu_Program, Prg_SFunction
    */
   //@{
   void setup_model();
@@ -498,8 +489,8 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /**
    * @name Read methods for model specific members (no If prefix).
-   * Note that the prefix mdl_ is omitted in the detailed mathematical
-   * problem description.
+   * Note that the prefix mdl_ is omitted in the description of the
+   * detailed mathematical program.
    */
   //@{
   /// initial states
@@ -837,6 +828,7 @@ class Prg_SFunctionOpt: public Prg_SFunction {
 
   /// set periodic states
   void set_mdl_x_periodic(const IVECP v) {iv_copy_elements(v, _mdl_x_periodic);}
+
   /// set lower bounds on states
   void set_mdl_x_min(const VECP v)
   {v_copy_elements(v, _mdl_x.min);}

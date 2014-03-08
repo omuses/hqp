@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2009  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -104,5 +104,18 @@ public:
 
 /** Depreciated name for Omu_VariableVec. */
 typedef Omu_VariableVec Omu_Vector;
+
+/** Extend Omu_VariableVec with attributes for optimization criterion. */
+class Omu_OptVarVec: public Omu_VariableVec {
+public:
+  VECP 	weight1;	///< weight for linear objective term (default: 0.0)
+  VECP 	weight2;	///< weight for quadratic objective term (default: 0.0)
+  VECP 	ref; 		///< reference value for quadratic term (default: 0.0)
+  IVECP active; 	///< indicate used variables (default: 0 -- not used)
+
+  Omu_OptVarVec(); 		///< allocate empty vectors
+  virtual ~Omu_OptVarVec(); 	///< destroy vectors
+  virtual void resize(int n); 	///< resize and initialize vectors
+};
 
 #endif

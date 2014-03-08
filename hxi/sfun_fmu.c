@@ -690,9 +690,11 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Initialize S-function
    */
+  ssSetModelName(S, fmuName);
   ssSetNumSFcnParams(S, m->np);
   if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
-    return; /* Parameter mismatch will be reported by solver */
+    if (ssGetSFcnParamsCount(S) != 0)
+      return; /* Parameter mismatch will be reported by solver */
   }
   mdlCheckParameters(S);
   if (ssGetErrorStatus(S) != NULL) {

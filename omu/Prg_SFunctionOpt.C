@@ -70,41 +70,6 @@
 IF_CLASS_DEFINE("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
 
 //--------------------------------------------------------------------------
-Omu_OptVarVec::Omu_OptVarVec()
-{
-  weight1 = v_resize(v_get(1), 0);
-  weight2 = v_resize(v_get(1), 0);
-  ref = v_resize(v_get(1), 0);
-  active = iv_resize(iv_get(1), 0);
-}
-
-//--------------------------------------------------------------------------
-Omu_OptVarVec::~Omu_OptVarVec()
-{
-  v_free(ref);
-  v_free(weight2);
-  v_free(weight1);
-  iv_free(active);
-}
-
-//--------------------------------------------------------------------------
-void Omu_OptVarVec::resize(int n)
-{
-  Omu_VariableVec::alloc(n);
-  v_resize(weight1, n);
-  v_resize(weight2, n);
-  v_resize(ref, n);
-  iv_resize(active, n);
-
-  v_set(weight1, 0.0);
-  v_set(weight2, 0.0);
-  v_set(ref, 0.0);
-  iv_zero(active);
-}
-
-//==========================================================================
-
-//--------------------------------------------------------------------------
 Prg_SFunctionOpt::Prg_SFunctionOpt()
 {
   _sps = 1;
@@ -151,6 +116,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _nsc = 0;
   _nsu = 0;
   _nsuc = 0;
+  _nc0 = 0;
   _ncf = 0;
   _nsf = 0;
   _nscf = 0;
@@ -277,7 +243,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
 void Prg_SFunctionOpt::setup_model()
 {
   // load S-function
-  Prg_SFunction::setup_model();
+  Prg_SFunction::setup_model(_t0);
 
   // check for optional S-function methods that are required
   if (_mdl_nx > _mdl_nd)

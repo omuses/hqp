@@ -1,3 +1,10 @@
+2014-03-08    <rfranke>
+
+	* omu/Prg_SFunction*.[hC], omu/Omu_Variables.[hC], hxi/sfun_fmi.c:
+	  - get parameter values from FMU if no mdl_args specified
+	  - decouple Prg_SFunction from inheritance chain
+	  - move Omu_OptVarVec from Prg_SFunctionOpt to Omu_Variables
+
 2014-03-04  <rfranke>
 
 	* hxi/sfun_fmu.c, hxi/fmi.tcl, hxi/Hxi_SimStruct.C, hxi/README,

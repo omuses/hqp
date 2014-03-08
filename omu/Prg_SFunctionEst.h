@@ -1,7 +1,7 @@
 /**
  * @file Prg_SFunctionEst.h
  *    Estimation of initial states and parameters for a model given
- *    as MEX S-function.
+ *    as S-function or Functional Model Unit (FMU).
  *
  * rf, 7/25/00
  *
@@ -29,12 +29,15 @@
 #ifndef Prg_SFunctionEst_H
 #define Prg_SFunctionEst_H
 
+#include "Omu_Program.h"
 #include "Prg_SFunction.h"
+
 #include "Omu_Variables.h"
 
 /**
    Estimation of parameters and initial states for a model given
-   as MEX S-function. The estimation problem is formulated 
+   as S-function or Functional Model Unit (FMU).
+   The estimation problem is formulated 
    at the discrete time points @f$t^{0,l}<t^{1,l}<\ldots<t^{K_l}@f$ with
    @f$l=1,\ldots,N_{ex}@f$ a number of experiments. The data of all
    experiments is concatenated into combined vectors of time points,
@@ -211,7 +214,7 @@
        \alpha=0.05.
    @f]
  */
-class Prg_SFunctionEst: public Prg_SFunction {
+class Prg_SFunctionEst: public Omu_Program, public Prg_SFunction {
 
  protected:
   Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)

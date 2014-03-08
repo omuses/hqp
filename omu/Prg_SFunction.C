@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2010  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -67,6 +67,7 @@ Prg_SFunction::Prg_SFunction()
 {
   _mdl_name = strdup("SFunction");
   _mdl_path = strdup("");
+  _mdl_is_fmu = false;
 
   // initialize _mdl_args and _mx_args
   _mdl_args = strdup("");
@@ -86,11 +87,11 @@ Prg_SFunction::Prg_SFunction()
   _mdl_p = v_get(_mdl_np);
   _mdl_x0 = v_get(_mdl_nx);
 
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x0)));
-  _ifList.append(new If_String(GET_SET_CB(const char *, mdl_name)));
-  _ifList.append(new If_String(GET_SET_CB(const char *, mdl_path)));
-  _ifList.append(new If_String(GET_SET_CB(const char *, mdl_args)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x0)));
+  _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_name)));
+  _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_path)));
+  _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_args)));
 }
 
 //--------------------------------------------------------------------------
@@ -126,6 +127,8 @@ void Prg_SFunction::set_mdl_path(const char *str)
   free(_mdl_path);
   _mdl_path = strdup(str);
   _mdl_needs_setup = true;
+  int len = strlen(_mdl_path);
+  _mdl_is_fmu = (len > 4 && strcmp(_mdl_path + len - 4, ".fmu") == 0);
 }
 
 //--------------------------------------------------------------------------
@@ -225,7 +228,7 @@ bool Prg_SFunction::setSampleHit(bool val)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::setup_model()
+void Prg_SFunction::setup_model(double t0)
 {
   int i;
 
@@ -241,8 +244,9 @@ void Prg_SFunction::setup_model()
     m_error(E_FORMAT, ssGetErrorStatus(_SS));
   }
 
-  // initialize model name
-  ssSetModelName(_SS, _mdl_name);
+  // initialize model name (FMU name is initialized by model from path below)
+  if (!_mdl_is_fmu)
+    ssSetModelName(_SS, _mdl_name);
 
   // (re-)parse model arguments to
   // adapt mxArray to SimStruct of loaded S-function (MEX or Hxi)
@@ -263,6 +267,25 @@ void Prg_SFunction::setup_model()
 
   // initialize model
   SMETHOD_CALL(mdlInitializeSizes, _SS);
+  // exploit model description available for FMU
+  if (_mdl_is_fmu) {
+    // obtain model name
+    free(_mdl_name);
+    _mdl_name = strdup(ssGetModelName(_SS));
+
+    // obtain parameters from model description if no mdl_args given
+    if (_mdl_nargs == 0 && ssGetNumSFcnParams(_SS) > 0) {
+      if (Tcl_VarEval(theInterp, "set ::fmu::", _mdl_name,
+                      "::parameterStartValues", NULL) != TCL_OK) {
+        m_error(E_INTERN, "can't get parameter values");
+      }
+      set_mdl_args(Tcl_GetStringResult(theInterp));
+      ssSetSFcnParamsCount(_SS, _mdl_nargs);
+      for (i = 0; i < _mdl_nargs; i++)
+        ssSetSFcnParam(_SS, i, _mx_args[i]);
+    }
+  }
+  // check numbers of expected and given model parameters
   if (ssGetNumSFcnParams(_SS) != ssGetSFcnParamsCount(_SS)) {
     fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
 	    ssGetNumSFcnParams(_SS), ssGetSFcnParamsCount(_SS));
@@ -300,8 +323,8 @@ void Prg_SFunction::setup_model()
   }
 
   // set simulation time
-  ssSetT(_SS, _t0);
-  _t0_setup_model = _t0;
+  ssSetT(_SS, t0);
+  _t0_setup_model = t0;
 
   // initialize and check sample times of model
   mdlInitializeSampleTimes(_SS);

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2009  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -88,5 +88,39 @@ void Omu_VariableVec::alloc(int n, int n_expand)
   iv_set(integer, 0);
 }
 
+//==========================================================================
+
+//--------------------------------------------------------------------------
+Omu_OptVarVec::Omu_OptVarVec()
+{
+  weight1 = v_resize(v_get(1), 0);
+  weight2 = v_resize(v_get(1), 0);
+  ref = v_resize(v_get(1), 0);
+  active = iv_resize(iv_get(1), 0);
+}
+
+//--------------------------------------------------------------------------
+Omu_OptVarVec::~Omu_OptVarVec()
+{
+  v_free(ref);
+  v_free(weight2);
+  v_free(weight1);
+  iv_free(active);
+}
+
+//--------------------------------------------------------------------------
+void Omu_OptVarVec::resize(int n)
+{
+  Omu_VariableVec::alloc(n);
+  v_resize(weight1, n);
+  v_resize(weight2, n);
+  v_resize(ref, n);
+  iv_resize(active, n);
+
+  v_set(weight1, 0.0);
+  v_set(weight2, 0.0);
+  v_set(ref, 0.0);
+  iv_zero(active);
+}
 
 //==========================================================================

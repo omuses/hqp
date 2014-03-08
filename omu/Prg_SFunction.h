@@ -1,13 +1,13 @@
 /**
  * @file Prg_SFunction.h
  *    Basic functionality for formulating an optimization problem for
- *    a model given as MEX S-function.
+ *    a model given as S-function or Functional Model Unit (FMU).
  *
  * rf, 7/25/00
  */
 
 /*
-    Copyright (C) 1997--2010  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,19 +28,23 @@
 #ifndef Prg_SFunction_H
 #define Prg_SFunction_H
 
-#include <Omu_Program.h>
-
-#include "Hxi_SFunction.h"
+#include <If_List.h>
+#include <Meschach.h>
+#include <Hxi_SFunction.h>
 
 /**
  * Basic functionality for formulating an optimization problem for
- * a model given as MEX S-function.
+ * a model given as S-function or Functional Model Unit (FMU).
  */
-class Prg_SFunction: public Omu_Program {
+class Prg_SFunction {
+
+ private:
+  If_List	_ifList_model; 	///< container for interface elements
 
  protected:
-  char 		*_mdl_name;	///< S-function name
-  char 		*_mdl_path;	///< full S-function path
+  char 		*_mdl_name;	///< S-function or FMU name
+  char 		*_mdl_path;	///< S-function or FMU path for loading
+  bool 		_mdl_is_fmu; 	///< indicate a Function Model Unit
   char 		*_mdl_args;	///< S-function parameters
   SimStruct 	*_SS;		///< pointer to %SimStruct
   mxArray	**_mx_args; 	///< S-function parameters after parsing
@@ -61,7 +65,7 @@ class Prg_SFunction: public Omu_Program {
   bool 		_mdl_needs_setup;
 
   // methods
-  virtual void setup_model(); 	///< load S-function
+  virtual void setup_model(double t0); 	///< load S-function
 
   /**
    * @name Helper methods for reading and writing S-function arguments.
