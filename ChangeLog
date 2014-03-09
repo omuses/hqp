@@ -1,3 +1,7 @@
+2014-03-09  <e-arnold>
+	* hqp/Hqp_IpsMehrotra.C:
+	  - bug fix in maximum step size
+
 2014-03-08    <rfranke>
 
 	* omu/Prg_SFunction*.[hC], omu/Omu_Variables.[hC], hxi/sfun_fmi.c:

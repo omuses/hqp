@@ -665,7 +665,7 @@ void Hqp_IpsMehrotra::step()
 	(_alpha*_dz->ve[izmin]);
     else
       fpd = 0;
-    _alpha = max(1-_gammaf, fpd)*_alpha;
+    _alpha = max(0.0, min(max(1.0-_gammaf, fpd)*_alpha, 1.0));
   }
   if ( _logging ) 
     printf("%8.2g %8.2g %8.2g %8.2g %8.2g\n", 
