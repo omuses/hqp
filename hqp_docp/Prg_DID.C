@@ -10,9 +10,6 @@
 #include <If_Int.h>
 #include <If_Bool.h>
 
-/** Number of stages */
-static int _kmax = 60;
-
 //--------------------------------------------------------------------------
 Prg_DID::Prg_DID()
 {

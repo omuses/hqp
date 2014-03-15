@@ -35,7 +35,7 @@
 class Hqp_DocpAssoc;
 
 /** Base class for Discrete-time Optimal Control Programs */
-class Hqp_Docp: public Hqp_SqpProgram {
+class HQP_API Hqp_Docp: public Hqp_SqpProgram {
 
  public:
 

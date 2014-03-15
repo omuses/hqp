@@ -27,12 +27,13 @@
 #ifndef If_List_H
 #define If_List_H
 
+#include "If.h"
 #include "If_ListElement.h"
 
 /**
  *  List of If_ListElement's. The list destructor destroys all elements.
  */
-class If_List {
+class IF_API If_List {
 
  protected:
   If_ListElement	*_anchor;	///< point to top of the list

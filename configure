@@ -3430,7 +3430,7 @@ if test "$CC" = cl; then
   CC="cl -nologo"
 fi
 if test "$CC" = "cl -nologo"; then
-  WFLAG="-W3"
+  WFLAG="-W2"
   if test "$hqp_symbols" = yes; then
     CFLAGS="-ZI -DDEBUG"
     CXXFLAGS="-ZI -DDEBUG"

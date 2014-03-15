@@ -89,10 +89,15 @@ Hqp_SqpProgram::~Hqp_SqpProgram()
 }
 
 //-------------------------------------------------------------------------
-void Hqp_SqpProgram::set_x(const VECP n_x)
+void Hqp_SqpProgram::set_s(const VECP s)
 {
-  assert(n_x->dim == _x->dim);
-  v_copy(n_x, _x);
+  v_copy_elements(s, _qp->x);
+}
+
+//-------------------------------------------------------------------------
+void Hqp_SqpProgram::set_x(const VECP x)
+{
+  v_copy_elements(x, _x);
 }
 
 //-------------------------------------------------------------------------

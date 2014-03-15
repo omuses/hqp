@@ -38,7 +38,7 @@ IF_BASE_DECLARE(Hqp_SqpProgram);
 /**
  *  Base class for formulating nonlinear programs.
  */
-class Hqp_SqpProgram {
+class HQP_API Hqp_SqpProgram {
 
  protected:
   If_List	_ifList; 	///< interface elements
@@ -91,7 +91,7 @@ class Hqp_SqpProgram {
   /** current optimization step (solution of linear-quadratic sub-problem)*/
   virtual const VECP s() const {return _qp->x;}
   /** set optimization step */
-  virtual void set_s(const VECP v) {v_copy_elements(v, _qp->x);}
+  virtual void set_s(const VECP v);
 
   /** current vector of optimization variables */
   virtual const VECP x() const {return _x;}
