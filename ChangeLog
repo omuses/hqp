@@ -1,4 +1,11 @@
 2014-03-15  <rfranke>
+
+	* hxi/fmi.tcl:
+	  - determine sparse model structure from XML description
+
+	* hxi/sfun_fmu.c:
+	  - bug fix for initialization of model name
+
 	* omu/Omu_Model.[hC], omu/Prg_SFunction.[hC]:
 	  - rename base class Prg_SFunction to Omu_Model
 

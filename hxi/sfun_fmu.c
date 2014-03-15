@@ -195,6 +195,11 @@ static void callbackLogger(fmiComponentEnvironment ce, fmiString instanceName,
   va_list args;
   int n;
 
+#ifndef WITH_LOGGING
+  if (status == fmiOK)
+    return;
+#endif
+
   va_start(args, message);
   n = vsnprintf(m->messageStr, m->messageStrLen, message, args);
   /* enlarge m->messageStr up to max 16 KB */
@@ -690,7 +695,7 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Initialize S-function
    */
-  ssSetModelName(S, fmuName);
+  ssSetModelName(S, m->fmuName);
   ssSetNumSFcnParams(S, m->np);
   if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
     if (ssGetSFcnParamsCount(S) != 0)
@@ -747,8 +752,6 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 static void mdlInitializeConditions(SimStruct *S)
 {
   Hxi_ModelData *m = (Hxi_ModelData *)ssGetPWork(S)[0];
-  int i;
-  InputRealPtrsType uPtrs;
 
 #ifdef WITH_LOGGING
   Tcl_Eval(m->interp, "puts mdlInitializeConditions");
@@ -761,6 +764,7 @@ static void mdlInitializeConditions(SimStruct *S)
       m->fmu = NULL;
     }
   }
+
   if (m->fmu == NULL) {
     m->fmu = (*m->fmiInstantiate)(m->fmuName, fmiModelExchange,
                                   m->guid, "file:///", &m->fmiCallbackFunctions,
@@ -838,7 +842,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   }
 
   /* set states */
-  if((*m->fmiSetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
+  if(m->nxc > 0 &&
+     (*m->fmiSetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
      != fmiOK) {
     ssSetErrorStatus(S, "can't set continuous states of FMU");
     return;
