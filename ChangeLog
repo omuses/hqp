@@ -1,5 +1,10 @@
 2014-03-15  <rfranke>
 
+	* hqp/Hqp.[hC], hqp/Hqp_DocpWrapper.h, hqp/Makefile,
+	  hqp_docp/Prg_DIC.[hC], hqp_docp/Docp_Main.C,
+	  omu/Hqp_DocpStub.[hC], omu/Makefile:
+	  - remove C calling interface between Hqp and Omuses
+
 	* omu/Omu_Init.C, omu/Hqp_Omuses.[hC]:
 	  - inherit Hqp_Omuses from Hqp_Docp, bypassing C calling interface
 
