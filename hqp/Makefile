@@ -10,7 +10,6 @@ CCDEFS = $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) $(ASCEND_INCDIR) \
 	 $(LPSOLVE_INCDIR) $(HQP_INCDIR) $(HQP_DEFS)
 
 SRCS = 	Hqp_Init.C \
-	Hqp.C \
 	sprcm.C \
 	Meschach.C \
         spBKP.C \

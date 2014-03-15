@@ -1,5 +1,5 @@
 
-README for hqp_docp, an example for applying HQP 1.7 
+README for hqp_docp, an example for applying HQP
 directly to multistage problems
 
 The front-end Omuses is intended to provide as much comfort as
@@ -22,6 +22,3 @@ to create the executable 'docp'.
 Invoke
   ./docp
 to run a simple example (constrained double integrator).
-
-(4)
-Send correspondence to: hqp@rz.tu-ilmenau.de

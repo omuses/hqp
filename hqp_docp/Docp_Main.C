@@ -5,19 +5,13 @@
  *
  *  rf, 2/10/98
  *
- *  rf, 11/10/00
- *    updated for new interface of Hqp 1.7
  */
 
-#include <Hqp.h>
-#include <If.h>
 #include <stdio.h>
 #include <assert.h>
 
+#include <Hqp.h>
 #include "Prg_DID.h"
-
-/** Handle used for calls to Hqp Docp instance */
-Hqp_DocpHandle theHqp_DocpHandle;
 
 /**
  * Simple main function.
@@ -35,11 +29,11 @@ int main(int argc, char *argv[])
   assert(If_SizeOfInt() == sizeof(int));
   assert(If_SizeOfReal() == sizeof(Real));
 
-  // Create Docp specification from problem as declared in file Prg_DID.h
-  Hqp_DocpSpec spec = Prg_DID_Spec();
+  // Initialize Hqp
+  Hqp_Init(If_Interp());
 
-  // Create Hqp_Docp and register callback functions
-  theHqp_DocpHandle = Hqp_Docp_create(spec, NULL);
+  // Create optimization program
+  Prg_DID *prg = new Prg_DID();
 
   // Configure solver
   printf("Configure solver\n");
@@ -90,9 +84,8 @@ int main(int argc, char *argv[])
   printf("Iters     : %d\n", iters);
   printf("Line steps: %d\n", steps);
 
-  // Destroy Hqp_Docp
-  Hqp_Docp_destroy(theHqp_DocpHandle);
+  // Free program
+  delete prg;
 
   return 0;
 }
-

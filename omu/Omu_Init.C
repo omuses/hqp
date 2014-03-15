@@ -71,6 +71,7 @@ static void Omu_ClassAlloc()
   IF_CLASS_ALLOC("DASPK", Omu_IntDASPK, Omu_Integrator);
   IF_CLASS_ALLOC("RKsuite", Omu_IntRKsuite, Omu_Integrator);
 #endif
+  IF_CLASS_ALLOC("Omuses", Hqp_Omuses, Hqp_SqpProgram);
   IF_CLASS_ALLOC("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
   IF_CLASS_ALLOC("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 }

@@ -13,7 +13,6 @@ CCDEFS = -I. $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) \
 ASRCS =	Omu_IntOdeTs.C
 
 SRCS =	Omu_Init.C \
-	Hqp_DocpStub.C \
 	Hqp_Omuses.C \
 	Omu_Variables.C \
 	Omu_Vars.C \
