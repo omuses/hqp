@@ -30,7 +30,7 @@
 #define Prg_SFunctionOpt_H
 
 #include "Omu_Program.h"
-#include "Prg_SFunction.h"
+#include "Omu_Model.h"
 
 #include "Omu_Variables.h"
 
@@ -294,7 +294,7 @@
    \end{array}
    @f]
  */
-class Prg_SFunctionOpt: public Omu_Program, public Prg_SFunction {
+class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
 
  protected:
   Omu_VariableVec _mdl_x0;	///< initial states for optimization

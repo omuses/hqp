@@ -1,5 +1,5 @@
 /*
- * Prg_SFunction.C -- class definition
+ * Omu_Model.C -- class definition
  *
  */
 
@@ -22,7 +22,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Prg_SFunction.h"
+#include "Omu_Model.h"
 
 #include <stdlib.h>
 
@@ -37,8 +37,8 @@
 
 #define GET_SET_CB(vartype, name) \
   #name, \
-  IF_GET_CB(vartype, Prg_SFunction, name), \
-  IF_SET_CB(vartype, Prg_SFunction, set_##name)
+  IF_GET_CB(vartype, Omu_Model, name), \
+  IF_SET_CB(vartype, Omu_Model, set_##name)
 
 // Call an S-function method and check for errors.
 // Throw E_FORMAT as errors occuring during initialization done here
@@ -63,7 +63,7 @@
 }
 
 //--------------------------------------------------------------------------
-Prg_SFunction::Prg_SFunction()
+Omu_Model::Omu_Model()
 {
   _mdl_name = strdup("SFunction");
   _mdl_path = strdup("");
@@ -95,7 +95,7 @@ Prg_SFunction::Prg_SFunction()
 }
 
 //--------------------------------------------------------------------------
-Prg_SFunction::~Prg_SFunction()
+Omu_Model::~Omu_Model()
 {
   int i;
   if (_SS) {
@@ -114,7 +114,7 @@ Prg_SFunction::~Prg_SFunction()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::set_mdl_name(const char *str)
+void Omu_Model::set_mdl_name(const char *str)
 {
   free(_mdl_name);
   _mdl_name = strdup(str);
@@ -122,7 +122,7 @@ void Prg_SFunction::set_mdl_name(const char *str)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::set_mdl_path(const char *str)
+void Omu_Model::set_mdl_path(const char *str)
 {
   free(_mdl_path);
   _mdl_path = strdup(str);
@@ -132,7 +132,7 @@ void Prg_SFunction::set_mdl_path(const char *str)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::set_mdl_args(const char *arg_str)
+void Omu_Model::set_mdl_args(const char *arg_str)
 {
   const char *str, *str1;
   mxArray **args;
@@ -143,7 +143,7 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
   str1 = Hxi::mx_count_columns(str, nargs);
   if (*str1 != '\0') {
     // did not arrive at the end of the string
-    m_error(E_FORMAT, "Prg_SFunction::set_mdl_args that "
+    m_error(E_FORMAT, "Omu_Model::set_mdl_args that "
 	    "failed to parse S-function args");
   }
   args = new mxArray* [nargs];
@@ -168,7 +168,7 @@ void Prg_SFunction::set_mdl_args(const char *arg_str)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::read_mx_args(VECP p)
+void Omu_Model::read_mx_args(VECP p)
 {
   mxArray *arg;
   int i, j, idx, nel;
@@ -185,7 +185,7 @@ void Prg_SFunction::read_mx_args(VECP p)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::write_mx_args(VECP p)
+void Omu_Model::write_mx_args(VECP p)
 {
   mxArray *arg;
   int i, j, idx, nel;
@@ -202,7 +202,7 @@ void Prg_SFunction::write_mx_args(VECP p)
 }
 
 //--------------------------------------------------------------------------
-bool Prg_SFunction::setContinuousTask(bool val)
+bool Omu_Model::setContinuousTask(bool val)
 {
   bool hasContinuousSampleTime = false;
   for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
@@ -215,7 +215,7 @@ bool Prg_SFunction::setContinuousTask(bool val)
 }
 
 //--------------------------------------------------------------------------
-bool Prg_SFunction::setSampleHit(bool val)
+bool Omu_Model::setSampleHit(bool val)
 {
   bool hasDiscreteSampleTime = false;
   for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
@@ -228,7 +228,7 @@ bool Prg_SFunction::setSampleHit(bool val)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunction::setup_model(double t0)
+void Omu_Model::setup_model(double t0)
 {
   int i;
 
@@ -289,7 +289,7 @@ void Prg_SFunction::setup_model(double t0)
   if (ssGetNumSFcnParams(_SS) != ssGetSFcnParamsCount(_SS)) {
     fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
 	    ssGetNumSFcnParams(_SS), ssGetSFcnParamsCount(_SS));
-    m_error(E_FORMAT, "Prg_SFunction::setup_model: parameter count mismatch");
+    m_error(E_FORMAT, "Omu_Model::setup_model: parameter count mismatch");
   }
 
   // obtain model sizes
@@ -304,7 +304,7 @@ void Prg_SFunction::setup_model(double t0)
       _mdl_nu += ssGetInputPortWidth(_SS, i);
     else {
       m_warning(WARN_UNKNOWN,
-		"Prg_SFunction::setup_model: ignoring non-contiguous inputs");
+		"Omu_Model::setup_model: ignoring non-contiguous inputs");
       break;
     }
   }
@@ -317,7 +317,7 @@ void Prg_SFunction::setup_model(double t0)
       _mdl_ny += ssGetOutputPortWidth(_SS, i);
     else {
       m_warning(WARN_UNKNOWN,
-		"Prg_SFunction::setup_model: ignoring non-contiguous outputs");
+		"Omu_Model::setup_model: ignoring non-contiguous outputs");
       break;
     }
   }
@@ -330,7 +330,7 @@ void Prg_SFunction::setup_model(double t0)
   mdlInitializeSampleTimes(_SS);
   if (ssGetNumSampleTimes(_SS) < 1)
     m_warning(WARN_UNKNOWN,
-	      "Prg_SFunction::setup_model: no sample times initialized");
+	      "Omu_Model::setup_model: no sample times initialized");
 
   // start using S-function
   if (ssGetmdlStart(_SS) != NULL)

@@ -215,7 +215,7 @@ void Prg_SFunctionEst::write_active_mx_args(VECP p)
 void Prg_SFunctionEst::setup_model()
 {
   // load S-function
-  Prg_SFunction::setup_model(_t0);
+  Omu_Model::setup_model(_t0);
 
   // check for optional S-function methods that are required
   assert(ssGetmdlDerivatives(_SS) != NULL);
@@ -292,10 +292,10 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
   // store parameters in _mdl_p
-  v_copy(Prg_SFunction::_mdl_p, _mdl_p);
+  v_copy(Omu_Model::_mdl_p, _mdl_p);
 
   // setup _mdl_xs with initial states from model
-  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
+  v_copy(Omu_Model::_mdl_x0, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];
@@ -894,7 +894,7 @@ void Prg_SFunctionEst::consistic(int kk, double t,
     // read back states from model
     // Note: take estimated initial states from the optimizer
     // to prevent their overriding by the model, e.g. from parameters;
-    // they are read once in Prg_SFunction::setup_model() instead.
+    // they are read once in Omu_Model::setup_model() instead.
     for (i = 0; i < _mdl_nx; i++) {
       if (new_experiment && _mdl_x0_active[i]) {
         if (kk == 0)

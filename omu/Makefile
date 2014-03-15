@@ -31,7 +31,7 @@ SRCS =	Omu_Init.C \
         $(OMU_INTRKSUITE_C) \
         $(OMU_INTDASPK_C) \
 	adoublev.C \
-	Prg_SFunction.C \
+	Omu_Model.C \
 	Prg_SFunctionOpt.C \
 	Prg_SFunctionEst.C \
 	Hxi_SFunction.C \

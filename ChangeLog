@@ -1,3 +1,7 @@
+2014-03-15  <rfranke>
+	* omu/Omu_Model.[hC], omu/Prg_SFunction.[hC]:
+	  - rename base class Prg_SFunction to Omu_Model
+
 2014-03-09  <e-arnold>
 	* hqp/Hqp_IpsMehrotra.C:
 	  - bug fix in maximum step size

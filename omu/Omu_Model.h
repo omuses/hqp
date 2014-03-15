@@ -1,5 +1,5 @@
 /**
- * @file Prg_SFunction.h
+ * @file Omu_Model.h
  *    Basic functionality for formulating an optimization problem for
  *    a model given as S-function or Functional Model Unit (FMU).
  *
@@ -25,8 +25,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Prg_SFunction_H
-#define Prg_SFunction_H
+#ifndef Omu_Model_H
+#define Omu_Model_H
 
 #include <If_List.h>
 #include <Meschach.h>
@@ -36,7 +36,7 @@
  * Basic functionality for formulating an optimization problem for
  * a model given as S-function or Functional Model Unit (FMU).
  */
-class Prg_SFunction {
+class Omu_Model {
 
  private:
   If_List	_ifList_model; 	///< container for interface elements
@@ -89,8 +89,8 @@ class Prg_SFunction {
 
  public:
 
-  Prg_SFunction();		///< constructor
-  ~Prg_SFunction();		///< destructor
+  Omu_Model();		///< constructor
+  ~Omu_Model();		///< destructor
 
   /**
    * @name Member access methods (no If prefix)

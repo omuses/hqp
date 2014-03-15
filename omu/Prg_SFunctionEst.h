@@ -30,7 +30,7 @@
 #define Prg_SFunctionEst_H
 
 #include "Omu_Program.h"
-#include "Prg_SFunction.h"
+#include "Omu_Model.h"
 
 #include "Omu_Variables.h"
 
@@ -214,7 +214,7 @@
        \alpha=0.05.
    @f]
  */
-class Prg_SFunctionEst: public Omu_Program, public Prg_SFunction {
+class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
 
  protected:
   Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)

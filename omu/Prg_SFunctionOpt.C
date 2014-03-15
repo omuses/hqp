@@ -243,7 +243,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
 void Prg_SFunctionOpt::setup_model()
 {
   // load S-function
-  Prg_SFunction::setup_model(_t0);
+  Omu_Model::setup_model(_t0);
 
   // check for optional S-function methods that are required
   if (_mdl_nx > _mdl_nd)
@@ -329,7 +329,7 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
       _mdl_us[kk][_t_scale_idx] = 1.0;
 
   // setup _mdl_xs with initial states from model
-  v_copy(Prg_SFunction::_mdl_x0, _mdl_x0);
+  v_copy(Omu_Model::_mdl_x0, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];
@@ -1816,7 +1816,7 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
     // read back states from model
     // Note: take optimized initial states from the optimizer
     // to prevent their overriding by the model, e.g. from parameters;
-    // they are read once in Prg_SFunction::setup_model() instead.
+    // they are read once in Omu_Model::setup_model() instead.
     for (i = 0; i < _mdl_nd; i++) {
       if (kk == 0 && _mdl_x0_active[i])
         xt[i] = x[i];
