@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2007  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,7 +27,7 @@
 #ifndef Hqp_Omuses_H
 #define Hqp_Omuses_H
 
-#include "Hqp_DocpStub.h"
+#include <Hqp_Docp.h>
 
 #include <If_List.h>
 
@@ -43,13 +43,15 @@ class Omu_Dep;
  * Extend DOCP interface with treatment of continuous-time differential
  * algebraic equations (DAE) and multiple sample periods per stage.
  */
-class Hqp_Omuses: public Hqp_DocpStub {
+class Hqp_Omuses: public Hqp_Docp {
 
  public:
   Hqp_Omuses();
   ~Hqp_Omuses();
 
-  /** setup stages of optimization problem */
+  const char *name() {return "Omuses";} ///< generic name Omuses
+
+  /** setup stages of optimization program */
   void setup_stages();
 
  protected:

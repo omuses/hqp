@@ -60,7 +60,8 @@ Hqp_SqpProgram::Hqp_SqpProgram()
   _x = v_resize(v_get(1), 0);
   _f = 0.0;
 
-  theSqpSolver->set_prg(this);
+  if (theSqpSolver)
+    theSqpSolver->set_prg(this);
   if (theMipSolver)
     theMipSolver->set_prg(this);
 

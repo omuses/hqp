@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2005  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -109,8 +109,22 @@ extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
   Omu_ClassAlloc();
 # endif
 
-  // create instance of Hqp_Omuses
-  new Hqp_Omuses;
+  // use one command prg_name for Hqp and Omuses
+  if (Tcl_Eval(interp, "rename prg_name _prg_name_hqp; \
+                        proc prg_name {{name {}}} { \
+                          if [catch {eval _prg_name_hqp $name} result] { \
+                            _prg_name_hqp Omuses; \
+                            _prg_name_omu $name \
+                          } else { \
+                            if {$result == {Omuses}} { \
+                              return [_prg_name_omu] \
+                            } else { \
+                              return $result \
+                            } \
+                          } \
+                        }") != TCL_OK) {
+    return TCL_ERROR;
+  }
 
   return TCL_OK;
 }

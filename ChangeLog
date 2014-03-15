@@ -1,5 +1,11 @@
 2014-03-15  <rfranke>
 
+	* omu/Omu_Init.C, omu/Hqp_Omuses.[hC]:
+	  - inherit Hqp_Omuses from Hqp_Docp, bypassing C calling interface
+
+	* hqp/Hqp_SqpProgram.C:
+	  - bug fix for creation of integer programs
+
 	* hxi/fmi.tcl:
 	  - determine sparse model structure from XML description
 
@@ -10,6 +16,7 @@
 	  - rename base class Prg_SFunction to Omu_Model
 
 2014-03-09  <e-arnold>
+
 	* hqp/Hqp_IpsMehrotra.C:
 	  - bug fix in maximum step size
 

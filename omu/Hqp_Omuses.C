@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2007  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -44,6 +44,8 @@
 
 typedef If_Method<Hqp_Omuses> If_Cmd;
 
+IF_CLASS_DEFINE("Omuses", Hqp_Omuses, Hqp_SqpProgram);
+
 //--------------------------------------------------------------------------
 Hqp_Omuses::Hqp_Omuses()
 {
@@ -69,7 +71,7 @@ Hqp_Omuses::Hqp_Omuses()
   _hela_setup = 1;
   _stages_ok = false;
 
-  _ifList.append(new IF_MODULE("prg_name", &_prg, Omu_Program));
+  _ifList.append(new IF_MODULE("_prg_name_omu", &_prg, Omu_Program));
   _ifList.append(new IF_MODULE("prg_integrator", &_integrator,
 			       Omu_Integrator));
   _ifList.append(new If_Cmd("prg_setup_stages",
@@ -558,9 +560,9 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 			      MATP Lxx, MATP Luu, MATP Lxu)
 {
   if (!_ad) {
-    Hqp_DocpStub::update_stage(k, x, u, f, f0, c,
-			       fx, fu, f0x, f0u, cx, cu,
-			       rf, rc, Lxx, Luu, Lxu);
+    Hqp_Docp::update_stage(k, x, u, f, f0, c,
+			   fx, fu, f0x, f0u, cx, cu,
+			   rf, rc, Lxx, Luu, Lxu);
     return;
   }
 
