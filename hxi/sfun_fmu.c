@@ -793,6 +793,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 {
   Hxi_ModelData *m = (Hxi_ModelData *)ssGetPWork(S)[0];
   fmiEventInfo eventInfo;
+  fmiBoolean enterEventMode;
+  fmiBoolean terminateSimulation;
   int i, j;
   int idx[NUM_BASETYPES];
   InputRealPtrsType uPtrs;
@@ -874,23 +876,52 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     return;
   }
 
+  /* prepare event processing */
   if (m->initPending) {
-    /* Initialize FMU */
+    /* initialize FMU */
     m->initPending = fmiFalse;
     if ((*m->fmiEnterInitializationMode)(m->fmu) != fmiOK
         || (*m->fmiExitInitializationMode)(m->fmu) != fmiOK) {
       ssSetErrorStatus(S, "can't initialize FMU");
       return;
     }
+    enterEventMode = fmiTrue;
+  }
+  else if (ssIsMinorTimeStep(S))
+    /* no event processing in minor time steps */
+    enterEventMode = fmiFalse;
+  else {
+    if (m->nxc > 0) {
+      /* complete integrator step and optionally start event update */
+      if ((*m->fmiCompletedIntegratorStep)(m->fmu, fmiTrue, &enterEventMode,
+                                           &terminateSimulation) != fmiOK) {
+        ssSetErrorStatus(S, "can't complete integrator step of FMU");
+        return;
+      }
+      if (terminateSimulation) {
+        ssSetErrorStatus(S, "terminate after integrator step of FMU");
+        return;
+      }
+    }
+    else
+      /* always enter event mode if there are no continuous states */
+      enterEventMode = fmiTrue;
+    if (enterEventMode)
+      (*m->fmiEnterEventMode)(m->fmu);
+  }
+
+  /* process events */
+  if (enterEventMode) {
     eventInfo.newDiscreteStatesNeeded = fmiTrue;
     while (eventInfo.newDiscreteStatesNeeded) {
       (*m->fmiNewDiscreteStates)(m->fmu, &eventInfo);
       if (eventInfo.terminateSimulation) {
-        ssSetErrorStatus(S, "terminate after initialization of FMU");
+        ssSetErrorStatus(S, "terminate in event mode of FMU");
         return;
       }
     }
-    (*m->fmiEnterContinuousTimeMode)(m->fmu);
+    if (m->nxc > 0)
+      (*m->fmiEnterContinuousTimeMode)(m->fmu);
   }
 
   /* get outputs */
@@ -928,35 +959,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 static void mdlUpdate(SimStruct *S, int_T tid)
 {
   Hxi_ModelData *m = (Hxi_ModelData *)ssGetPWork(S)[0];
-  fmiEventInfo eventInfo;
-  fmiBoolean enterEventMode;
-  fmiBoolean terminateSimulation;
 
 #ifdef WITH_LOGGING
   Tcl_Eval(m->interp, "puts mdlUpdate");
 #endif
-
-  if ((*m->fmiCompletedIntegratorStep)(m->fmu, fmiTrue, &enterEventMode,
-				       &terminateSimulation) != fmiOK) {
-    ssSetErrorStatus(S, "can't complete integrator step of FMU");
-    return;
-  }
-  if (terminateSimulation) {
-    ssSetErrorStatus(S, "terminate after integrator step of FMU");
-    return;
-  }
-  if (enterEventMode) {
-    (*m->fmiEnterEventMode)(m->fmu);
-    eventInfo.newDiscreteStatesNeeded = fmiTrue;
-    while (eventInfo.newDiscreteStatesNeeded) {
-      (*m->fmiNewDiscreteStates)(m->fmu, &eventInfo);
-      if (eventInfo.terminateSimulation) {
-        ssSetErrorStatus(S, "terminate in event mode of FMU");
-        return;
-      }
-    }
-    (*m->fmiEnterContinuousTimeMode)(m->fmu);
-  }
 
   if((*m->fmiGetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
      != fmiOK) {

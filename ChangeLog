@@ -1,3 +1,8 @@
+2014-03-27  <rfranke>
+
+	* hxi/sfun_fmu.tcl:
+	  - move event processing completely to mdlOutputs
+
 2014-03-15  <rfranke>
 
 	* hqp/Hqp.[hC], hqp/Hqp_DocpWrapper.h, hqp/Makefile,
