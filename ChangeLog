@@ -1,3 +1,9 @@
+2014-04-21    <rfranke>
+
+	* hxi/fmi.tcl, hxi/sfun_fmu.c:
+	  - extract all files from FMU, including also resources
+	  - treat custom modelIndentifier when loading binary
+
 2014-03-27  <rfranke>
 
 	* hxi/sfun_fmu.tcl:

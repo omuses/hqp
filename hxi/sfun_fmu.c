@@ -133,6 +133,7 @@ typedef struct {
   char 			*fmuName;
   char 			*guid;
   char 			*generationTool;
+  char 			*resourcesURI;
   char 			*messageStr;
   int 			messageStrLen;
 
@@ -440,7 +441,7 @@ static void mdlInitializeSizes(SimStruct *S)
   Tcl_Interp *interp;
   Tcl_Obj *objPtr;
   char *fmuName;
-  char *binPath;
+  int doesDirectoryExist;
   int doesDescriptionExist;
   Hxi_ModelData *m;
   DLHANDLE handle;
@@ -469,16 +470,14 @@ static void mdlInitializeSizes(SimStruct *S)
   fmuName = strdup(Tcl_GetStringResult(interp));
 
   /*
-   * Test if binary model code has been extracted before
+   * Test if model has been extracted before
    */
-  if (Tcl_VarEval(interp, "::fmi::testBinary ", ssGetPath(S), NULL) != TCL_OK) {
+  if (Tcl_VarEval(interp, "::fmi::testExtracted ", ssGetPath(S), NULL) != TCL_OK
+      || (objPtr = Tcl_GetObjResult(interp)) == NULL
+      || Tcl_GetBooleanFromObj(interp, objPtr, &doesDirectoryExist) != TCL_OK) {
     ssSetErrorStatus(S, Tcl_GetStringResult(interp));
     return;
   }
-  if (strcmp(Tcl_GetStringResult(interp), "") != 0)
-    binPath = strdup(Tcl_GetStringResult(interp));
-  else
-    binPath = NULL;
 
   /*
    * Lookup existing model data
@@ -499,13 +498,14 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Release old model instance and extract new binary code
    */
-  if (binPath == NULL || !doesDescriptionExist) {
+  if (!doesDirectoryExist || !doesDescriptionExist) {
     if (m != NULL) {
       /* free previously allocated model instance */
       if (m->fmu != NULL)
         (*m->fmiFreeInstance)(m->fmu);
       free(m->guid);
       free(m->generationTool);
+      free(m->resourcesURI);
       freeVariables(m->y);
       freeVariables(m->u);
       freeVariables(m->p);
@@ -515,15 +515,14 @@ static void mdlInitializeSizes(SimStruct *S)
       free(m);
       m = NULL;
     }
-    if (binPath == NULL) {
-      /* extract new binary code */
+    if (!doesDirectoryExist) {
+      /* extract model from new FMU */
       if (Tcl_VarEval(interp,
-                      "::fmi::extractBinaries ", ssGetPath(S), NULL) != TCL_OK
+                      "::fmi::extractModel ", ssGetPath(S), NULL) != TCL_OK
           || strcmp(Tcl_GetStringResult(interp), "") == 0) {
-        ssSetErrorStatus(S, "can't extract binary model from FMU");
+        ssSetErrorStatus(S, "can't extract model from FMU");
         return;
       }
-      binPath = strdup(Tcl_GetStringResult(interp));
     }
     /* read model description */
     if (Tcl_VarEval(interp, "::fmi::readModelDescription ", ssGetPath(S),
@@ -536,8 +535,12 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Load binary model code
    */
-  handle = DLOPEN(binPath);
-  free(binPath);
+  if (Tcl_VarEval(interp, "::fmi::getBinaryPath ", ssGetPath(S),
+		  NULL) != TCL_OK) {
+    ssSetErrorStatus(S, "can't get path of FMU binary");
+    return;
+  }
+  handle = DLOPEN(Tcl_GetStringResult(interp));
   if (!handle) {
     ssSetErrorStatus(S, DLERROR());
     return;
@@ -597,17 +600,24 @@ static void mdlInitializeSizes(SimStruct *S)
     /* get guid */
     if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
                     "::attributes(guid)", NULL) != TCL_OK) {
-      ssSetErrorStatus(S, "can't get guid");
+      ssSetErrorStatus(S, "can't get guid of FMU");
       return;
     }
     m->guid = strdup(Tcl_GetStringResult(interp));
     /* get generation tool */
     if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
                     "::attributes(generationTool)", NULL) != TCL_OK) {
-      ssSetErrorStatus(S, "can't get generationTool");
+      ssSetErrorStatus(S, "can't get generationTool of FMU");
       return;
     }
     m->generationTool = strdup(Tcl_GetStringResult(interp));
+    /* get location of resources directory */
+    if (Tcl_VarEval(interp, "::fmi::getResourcesURI ", ssGetPath(S),
+                    NULL) != TCL_OK) {
+      ssSetErrorStatus(S, "can't get location of FMU resources");
+      return;
+    }
+    m->resourcesURI = strdup(Tcl_GetStringResult(interp));
 
     /* 
      * Initialize parameters
@@ -767,7 +777,8 @@ static void mdlInitializeConditions(SimStruct *S)
 
   if (m->fmu == NULL) {
     m->fmu = (*m->fmiInstantiate)(m->fmuName, fmiModelExchange,
-                                  m->guid, "file:///", &m->fmiCallbackFunctions,
+                                  m->guid, m->resourcesURI,
+                                  &m->fmiCallbackFunctions,
                                   fmiFalse, fmiFalse);
     if (m->fmu == NULL) {
       ssSetErrorStatus(S, "can't instantiate FMU");

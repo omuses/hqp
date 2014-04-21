@@ -20,61 +20,68 @@ namespace eval ::fmi {
     }
 }
 
-## Excract name of FMU from fmuPath (excluding directoris and file extension)
+## Obtain name of FMU from fmuPath (excluding directories and file extension)
 #  @return fmuName
 proc ::fmi::getName {fmuPath} {
     return [file rootname [file tail $fmuPath]]
 }
 
-## Test if binary with rootname of FMU exists and has same or newer mtime
-#  @return binary path in case of success
-proc ::fmi::testBinary {fmuPath} {
-    set binPath [file rootname $fmuPath][info sharedlibextension]
-    if {[file exists $binPath]
-	&& [file mtime $binPath] >= [file mtime $fmuPath]} {
-	return $binPath
+## Get location of extracted FMU resources
+#  @return URI of resources directory
+proc ::fmi::getResourcesURI {fmuPath} {
+    set dirPath [file rootname $fmuPath]
+    return "file:///[string trimleft [file normalize $dirPath] /]/resources"
+}
+
+## Get path of FMU binary from attributes exported by readModelDescription
+#  @return binary path for respective platform
+proc ::fmi::getBinaryPath {fmuPath} {
+    set binPath [file rootname $fmuPath]
+    set binPath ${binPath}/binaries/$::fmi::platformSubDir($::tcl_platform(os))
+    set binPath ${binPath}[expr 8*$::tcl_platform(wordSize)]
+    set fmuName [file rootname [file tail $fmuPath]]
+    set modelIdentifier [set ::fmu::${fmuName}::attributes(modelIdentifier)]
+    return ${binPath}/${modelIdentifier}[info sharedlibextension]
+}
+
+## Test if folder with rootname of FMU exists and has same or newer mtime
+#  @return true in case of success
+proc ::fmi::testExtracted {fmuPath} {
+    set dirPath [file rootname $fmuPath]
+    if {[file exists $dirPath] &&
+        [file mtime $dirPath] >= [file mtime $fmuPath]} {
+        return true
+    } else {
+        return false
     }
 }
 
-## Extract binaries for respective platform
-#  @return binary path in case of success
-proc ::fmi::extractBinaries {fmuPath} {
-    set extractSubDir binaries/$::fmi::platformSubDir($::tcl_platform(os))
-    set extractSubDir ${extractSubDir}[expr 8*$::tcl_platform(wordSize)]
-    set extractSubDir binaries/win32
-    set fmuDir [file dirname $fmuPath]
+## Extract all files of FMU, including e.g. binaries and resources
+proc ::fmi::extractModel {fmuPath} {
     set fmuTime [file mtime $fmuPath]
-    set fp [::vfs::zip::Mount $fmuPath $fmuPath]
-    foreach srcName [glob -types f $fmuPath/$extractSubDir/*] {
-	set dstName $fmuDir/[file tail $srcName]
-	if {![file exists $dstName]
-	    || [file mtime $dstName] != $fmuTime} {
-	    # extract file
-	    file copy -force $srcName $dstName
-	    # set time of extracted file
-	    # because zip doesn't keep time zones and daylight savings
-	    file mtime $dstName $fmuTime
-	}
+    set dirPath [file rootname $fmuPath]
+    if [file exists $dirPath] {
+	file delete -force $dirPath
     }
+    set fp [::vfs::zip::Mount $fmuPath $fmuPath]
+    file copy $fmuPath $dirPath
     ::vfs::zip::Unmount $fp $fmuPath
-    return [::fmi::testBinary $fmuPath]
+    file mtime $dirPath $fmuTime
 }
 
-## Parse modelDescription.xml and
+## Parse modelDescription.xml of extracted model and
 #  store infos in namespace array ::fmu::${fmuName}
 proc ::fmi::readModelDescription {fmuPath} {
 
     # read modelDescription.xml
-    set fmuName [file rootname [file tail $fmuPath]]
-    set fmuTime [file mtime $fmuPath]
-    set fp_fmu [::vfs::zip::Mount $fmuPath $fmuName]
-    set fp [open $fmuName/modelDescription.xml]
+    set dirPath [file rootname $fmuPath]
+    set fp [open $dirPath/modelDescription.xml]
     fconfigure $fp -encoding utf-8
     set fmiModelDescription [xml2list [read $fp]]
     close $fp
-    ::vfs::zip::Unmount $fp_fmu $fmuName
 
     # create a namespace to hold infos
+    set fmuName [file rootname [file tail $fmuPath]]
     if [namespace exists ::fmu::$fmuName] {
 	namespace delete ::fmu::$fmuName
     }
@@ -101,11 +108,6 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    error "Missing tag ModelExchange in modelDescription" 
 	}
 	array set fmuAttributes $fmiAttributes(ModelExchange)
-    }
-
-    # check FMU name as this is needed for the extraction of binaries
-    if {$fmuName != $fmuAttributes(modelIdentifier)} {
-	error "Name mismatch between \"$fmuPath\" and modelIdentifier \"$fmuAttributes(modelIdentifier)\""
     }
 
     # collect type definitions
