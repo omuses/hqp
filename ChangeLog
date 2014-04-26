@@ -7,6 +7,7 @@
 	  - support for reading model description of FMI 1.0
 	  - fix reading of Jacobian structure with derivatives
 	  - make dependency of vfs::zip local to ::fmi::extractModel
+	  - exploit built-in zlib available since Tcl 8.6
 
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
 	  - add command prg_setup_model

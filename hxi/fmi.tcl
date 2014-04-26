@@ -56,15 +56,20 @@ proc ::fmi::testExtracted {fmuPath} {
 
 ## Extract all files of FMU, including e.g. binaries and resources
 proc ::fmi::extractModel {fmuPath} {
-    package require vfs::zip
     set fmuTime [file mtime $fmuPath]
     set dirPath [file rootname $fmuPath]
     if [file exists $dirPath] {
 	file delete -force $dirPath
     }
-    set fp [::vfs::zip::Mount $fmuPath $fmuPath]
-    file copy $fmuPath $dirPath
-    ::vfs::zip::Unmount $fp $fmuPath
+    if {[package vcompare [info tclversion] "8.6"] >= 0} {
+	# use Tcl's built-in zlib
+	::fmi::unzip $fmuPath
+    } else {
+	package require vfs::zip
+	set fp [::vfs::zip::Mount $fmuPath $fmuPath]
+	file copy $fmuPath $dirPath
+	::vfs::zip::Unmount $fp $fmuPath
+    }
     file mtime $dirPath $fmuTime
 }
 
@@ -235,7 +240,7 @@ proc ::fmi::readModelDescription {fmuPath} {
                                  [string toupper [string index $category 0]]]s
             foreach element $structureElements($elementName) {
                 array set structureAttributes [lindex $element 1]
-                if {[lsearch 
+                if {[lsearch \
                      [array names structureAttributes] dependencies] < 0} {
                     # no dependencies given
                     continue
@@ -348,4 +353,95 @@ proc ::fmi::list2xml list {
 	}
 	default {error "could not parse $list"}
     }
+}
+
+## Unzip a zip archive.
+# See: http://wiki.tcl.tk/3307
+#      http://wiki.tcl.tk/15158
+proc ::fmi::unzip fmuPath {
+    set fd [open $fmuPath rb]
+    # scan directory at end of zip file
+    set off -22
+    while 1 {
+	seek $fd $off end
+	binary scan [read $fd 4] i sig
+	if {$sig == 0x06054b50} {
+	    seek $fd $off end
+	    break
+	}
+	incr off -1
+    }
+    binary scan [read $fd 22] issssiis sig disk cddisk nrecd nrec \
+	dirsize diroff clen
+    if {$clen > 0} {
+	set comment [read $fd $clen]
+    } else {
+	set comment ""
+    }
+    if {$disk != 0} {
+	error "multi-file zip not supported"
+    }
+    seek $fd $diroff
+    # collect all directory entries
+    for {set i 0} {$i < $nrec} {incr i} {
+	binary scan [read $fd 46] issssssiiisssssii \
+	    sig ver mver flag method time date crc csz usz n m k d ia ea \
+	    off
+	if {$sig != 0x02014b50} {
+	    error "bad directory entry"
+	}
+	set name [read $fd $n]
+	set extra [read $fd $m]
+	if {$k == 0} {
+	    set c ""
+	} else {
+	    set c [read $fd $k]
+	}
+	set directory($name) [dict create date $date time $time \
+			      size $csz disksize $usz offset $off \
+			      method $method extra $extra comment $c]
+    }
+    # extract all files
+    set dir [file dirname $fmuPath]/[file rootname [file tail $fmuPath]]
+    foreach name [array names directory] {
+        dict with directory($name) {}
+	# extract file content
+        seek $fd $offset
+        binary scan [read $fd 30] isssssiiiss sig - - - - - - - - nlen xlen
+        if {$sig != 0x04034b50} {
+            error "not a file record"
+        }
+        seek $fd [expr {$nlen + $xlen}] current
+        set data [read $fd $size]
+        if {[string length $data] != $size} {
+            error "read length mismatch: $size expected"
+        }
+        if {$method == 8} {
+            set data [zlib inflate $data]
+        } elseif {$method != 0} {
+            error "unsupported method: $method"
+        }
+	# build directory
+	set pathName ${dir}/${name}
+	if {![file exists [file dirname $pathName]]} {
+	    file mkdir [file dirname $pathName]
+	}
+	# write file
+	set fp [open $pathName wb]
+	puts -nonewline $fp $data
+	close $fp
+	# set file modification time from DOS timestamp
+	# date: |Y|Y|Y|Y|Y|Y|Y|m| |m|m|m|d|d|d|d|d|
+	# time: |H|H|H|H|H|M|M|M| |M|M|M|S|S|S|S|S|.|
+	set ymdhms [list [expr (($date & 0xFE00) >> 9)+1980] \
+			 [expr (($date & 0x01E0) >> 5)] \
+			 [expr  ($date & 0x001F)] \
+			 [expr (($time & 0xF800) >> 11)] \
+			 [expr (($time & 0x07E0) >> 5)] \
+			 [expr (($time & 0x001F) << 1)]]
+	file mtime $pathName [clock scan $ymdhms \
+				  -format "%Y %m %d %k %M %S" \
+				  -timezone :UTC]
+    }
+    close $fd
 }
