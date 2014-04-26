@@ -275,7 +275,7 @@ void Omu_Model::setup_model(double t0)
 
     // obtain parameters from model description if no mdl_args given
     if (_mdl_nargs == 0 && ssGetNumSFcnParams(_SS) > 0) {
-      if (Tcl_VarEval(theInterp, "set ::fmu::", _mdl_name,
+      if (Tcl_VarEval(theInterp, "::set ::fmu::", _mdl_name,
                       "::parameterStartValues", NULL) != TCL_OK) {
         m_error(E_INTERN, "can't get parameter values");
       }

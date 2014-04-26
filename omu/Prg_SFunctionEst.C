@@ -32,6 +32,7 @@
 #include <If_RealMat.h>
 #include <If_Int.h>
 #include <If_IntVec.h>
+#include <If_Method.h>
 
 #include <meschach/matrix2.h> // for confidence intervals
 
@@ -68,6 +69,9 @@
     m_error(E_CONV, ssGetErrorStatus(S)); \
   } \
 }
+
+typedef If_Method<Prg_SFunctionEst> If_Cmd;
+
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -123,6 +127,8 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _dxfdx = m_resize(m_get(1, 1), _nx, _nx);
   _dxfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
 
+  _ifList.append(new If_Cmd("prg_setup_model",
+			    &Prg_SFunctionEst::setup_model, this));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_max)));

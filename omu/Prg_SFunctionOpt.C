@@ -33,6 +33,7 @@
 #include <If_IntVec.h>
 #include <If_Int.h>
 #include <If_IntVec.h>
+#include <If_Method.h>
 
 // redefine assert to throw an error instead of aborting
 #undef assert
@@ -67,6 +68,9 @@
     m_error(E_CONV, ssGetErrorStatus(S)); \
   } \
 }
+
+typedef If_Method<Prg_SFunctionOpt> If_Cmd;
+
 IF_CLASS_DEFINE("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
 
 //--------------------------------------------------------------------------
@@ -126,6 +130,8 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_ys = m_get(_KK+1, _mdl_ny);
   _taus = v_get(_KK+1);
 
+  _ifList.append(new If_Cmd("prg_setup_model",
+			    &Prg_SFunctionOpt::setup_model, this));
   _ifList.append(new If_Int("prg_sps", &_sps));
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", multistage)));
   _ifList.append(new If_Int(GET_SET_CB(int, "", mdl_t_scale_idx)));

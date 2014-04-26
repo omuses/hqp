@@ -1,3 +1,11 @@
+2014-04-26    <rfranke>
+
+	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
+	  - add command prg_setup_model
+
+	* omu/Omu_Model.C:
+	  - fix global namespace for set command
+
 2014-04-21    <rfranke>
 
 	* hxi/fmi.tcl, hxi/sfun_fmu.c:
