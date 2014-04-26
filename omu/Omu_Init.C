@@ -127,6 +127,14 @@ extern "C" int OMU_API Omu_Init(Tcl_Interp *interp)
     return TCL_ERROR;
   }
 
+  // evaluate ../hxi/fmi.tcl
+  extern char *fmi;
+  if (Tcl_Eval(interp, fmi) == TCL_ERROR) {
+    fprintf(stderr,
+	    "Evaluation of built-in code failed: %s\n",
+            Tcl_GetStringResult(interp));
+  }
+
   return TCL_OK;
 }
 

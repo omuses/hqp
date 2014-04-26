@@ -1,5 +1,13 @@
 2014-04-26    <rfranke>
 
+	* omu/Omu_Init.C, omu/Makefile:
+	  - add ::fmi as built-in code to Omuses
+
+	* hxi/fmi.tcl:
+	  - support for reading model description of FMI 1.0
+	  - fix reading of Jacobian structure with derivatives
+	  - make dependency of vfs::zip local to ::fmi::extractModel
+
 	* omu/Prg_SFunctionOpt.C, omu/Prg_SFunctionEst.C:
 	  - add command prg_setup_model
 

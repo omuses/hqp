@@ -4,8 +4,6 @@
 
 package provide fmi 2.0
 
-package require vfs::zip	;# used to read FMU files
-
 ## hold one sub-namespace with infos for each loaded FMU
 namespace eval ::fmu {
 }
@@ -58,6 +56,7 @@ proc ::fmi::testExtracted {fmuPath} {
 
 ## Extract all files of FMU, including e.g. binaries and resources
 proc ::fmi::extractModel {fmuPath} {
+    package require vfs::zip
     set fmuTime [file mtime $fmuPath]
     set dirPath [file rootname $fmuPath]
     if [file exists $dirPath] {
@@ -73,6 +72,11 @@ proc ::fmi::extractModel {fmuPath} {
 #  store infos in namespace array ::fmu::${fmuName}
 proc ::fmi::readModelDescription {fmuPath} {
 
+    # extract model if not yet done
+    if {![::fmi::testExtracted $fmuPath]} {
+        ::fmi::extractModel $fmuPath
+    }
+
     # read modelDescription.xml
     set dirPath [file rootname $fmuPath]
     set fp [open $dirPath/modelDescription.xml]
@@ -80,7 +84,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     set fmiModelDescription [xml2list [read $fp]]
     close $fp
 
-    # create a namespace to hold infos
+    # create a namespace for parsed model description
     set fmuName [file rootname [file tail $fmuPath]]
     if [namespace exists ::fmu::$fmuName] {
 	namespace delete ::fmu::$fmuName
@@ -119,6 +123,7 @@ proc ::fmi::readModelDescription {fmuPath} {
 
     # identify states
     set stateIndices {}
+    set derivativeIndices {}
     if {$fmiVersion < 2.0} {
 	if {$fmuAttributes(numberOfContinuousStates) > 0} {
 	    error "States are not supported in FMI $fmiVersion"
@@ -135,6 +140,7 @@ proc ::fmi::readModelDescription {fmuPath} {
 		    set typeAttributes [lindex [lindex [lindex $dVar 2] 0] 1]
 		    set sIdx [lsearch $typeAttributes "derivative"]
 		    lappend stateIndices [lindex $typeAttributes [incr sIdx]]
+		    lappend derivativeIndices [incr dIdx]
 		}
 	    }
 	}
@@ -207,27 +213,40 @@ proc ::fmi::readModelDescription {fmuPath} {
 
     # get model structure
     # use zero based indices counted per category
-    set catIdx 0
-    foreach category {parameter state input output} {
-        foreach index [set ::fmu::${fmuName}::${category}Indices] {
-            set mapIndex($index) $catIdx
-            incr catIdx
-        }
-    }
-    foreach element $fmiElements(ModelStructure) {
-	set structureElements([lindex $element 0]) [lindex $element 2]
-    }
-    foreach category {output derivative discreteState} {
-        set elementName [string replace $category 0 0 \
-                             [string toupper [string index $category 0]]]s
-        foreach element $structureElements($elementName) {
-            array set structureAttributes [lindex $element 1]
-            set var $mapIndex($structureAttributes(index))
-            set dependencies {}
-            foreach dependency $structureAttributes(dependencies) {
-                lappend dependencies $mapIndex($dependency)
+    if {$fmiVersion >= 2.0} {
+        set catIdx 0
+        foreach category {parameter state input output} {
+            foreach index [set ::fmu::${fmuName}::${category}Indices] {
+                set mapIndex($index) $catIdx
+                incr catIdx
             }
-            set ::fmu::${fmuName}::${category}Dependencies($var) $dependencies
+        }
+        foreach category {derivative} {
+            foreach index [set ${category}Indices] {
+                set mapIndex($index) $catIdx
+                incr catIdx
+            }
+        }
+        foreach element $fmiElements(ModelStructure) {
+            set structureElements([lindex $element 0]) [lindex $element 2]
+        }
+        foreach category {output derivative discreteState} {
+            set elementName [string replace $category 0 0 \
+                                 [string toupper [string index $category 0]]]s
+            foreach element $structureElements($elementName) {
+                array set structureAttributes [lindex $element 1]
+                if {[lsearch 
+                     [array names structureAttributes] dependencies] < 0} {
+                    # no dependencies given
+                    continue
+                }
+                set var $mapIndex($structureAttributes(index))
+                set deps {}
+                foreach dependency $structureAttributes(dependencies) {
+                    lappend deps $mapIndex($dependency)
+                }
+                set ::fmu::${fmuName}::${category}Dependencies($var) $deps
+            }
         }
     }
 

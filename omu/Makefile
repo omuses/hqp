@@ -37,7 +37,7 @@ SRCS =	Omu_Init.C \
 	Hxi_SimStruct.C \
 	$(MEX_SRCS)
 
-OBJS = $(SRCS:.C=$O) $(RKSUITE_O) sfun_fmu$O
+OBJS = $(SRCS:.C=$O) $(RKSUITE_O) fmi$O sfun_fmu$O
 
 LIBRARY = omu
 
@@ -46,6 +46,9 @@ lib: $(OBJS) $(DASPK) Makefile
 	$(LD)$(LIB_PREFIX)$(LIBRARY)$(MKLIB_SUFFIX) $(OBJS) \
 	$(DASPK_OBJS) $(OMU_MACH_OBJS)
 	$(RANLIB) $(LIB_PREFIX)$(LIBRARY)$(LIB_SUFFIX)
+
+fmi.c: ../hxi/fmi.tcl
+	../hqp/tpc -ts 80 -o fmi.c ../hxi/fmi.tcl
 
 daspk:
 	PWD=`pwd`; cd ../daspk; $(MAKE); cd "$(PWD)"
@@ -69,8 +72,11 @@ Hxi_SimStruct$O: ../hxi/Hxi_SimStruct.C
 .C$O:
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<
 
+.c$O:
+	$(CC) -c $(CFLAGS) $(CCDEFS) $<
+
 clean:
-	rm -f *.o *.obj *.[pi]db $(LIB_PREFIX)omu.* *~
+	rm -f fmi.c *.o *.obj *.[pi]db $(LIB_PREFIX)omu.* *~
 	PWD=`pwd`; cd ../daspk; $(MAKE) clean; cd "$(PWD)"
 	PWD=`pwd`; cd ../rksuite; rm -f *.o *.obj *~; cd "$(PWD)"
 
