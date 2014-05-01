@@ -4,6 +4,7 @@
 /makedefs
 /makedirs
 /doc/Doxyfile
+/doc/html/*
 /lib/pkgIndex.tcl
 /hqp/hqp_solve.c
 /hqp/tpc

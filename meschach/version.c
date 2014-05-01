@@ -114,6 +114,9 @@ void	m_version()
 	printf("\tvecop.c: handle in-situ case v1==v2==out in v_mltadd\n");
 	printf("\t(various): replace double by Real\n");
 	printf("\t(various): explicit typecast (int)\n");
+	/* rf, 2014-05-01 */
+	printf("\tmachine.h, matdef.h, spbkp.c: remove use of deprecated malloc.h (use stdlib.h)\n");
+	printf("\tmatdef.h: remove definition of MAXDIM to 2001 (see definition in matrix.h)\n");
 	printf("\n");
 }
 

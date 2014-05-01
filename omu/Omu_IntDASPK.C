@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1996--2003  Ruediger Franke and Hartmut Linke
+    Copyright (C) 1996--2014  Ruediger Franke and Hartmut Linke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,7 +25,6 @@
  */
 
 #include <assert.h>
-#include <malloc.h>
 
 #include <If_Int.h>
 #include <If_Bool.h>

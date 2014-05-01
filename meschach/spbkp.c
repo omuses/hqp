@@ -39,13 +39,7 @@ static	char	rcsid[] = "$Id: spbkp.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 #include	"sparse.h"
 #include        "sparse2.h"
 
-
-#ifdef MALLOCDECL
-#include <malloc.h>
-#endif
-
 #define alpha	0.6403882032022076 /* = (1+sqrt(17))/8 */
-
 
 #define	btos(x)	((x) ? "TRUE" : "FALSE")
 

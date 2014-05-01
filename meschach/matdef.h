@@ -39,14 +39,6 @@ typedef struct	{
 #define	PNULL	((PERM *)NULL)
 #define	IVNULL	((IVEC *)NULL)
 
-#define	MAXDIM	2001
-
-#ifndef MALLOCDECL
-MESCH_API void	*malloc(size_t),
-    *calloc(size_t,size_t),
-    *realloc(void *,size_t);
-#endif
-
 #define	NEW(type)		((type *)calloc(1,sizeof(type)))
 #define	NEW_A(size,type)	((type *)calloc((size)>1?(size):1,sizeof(type)))
 #define	RENEW(var,num,type) \

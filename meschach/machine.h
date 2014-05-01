@@ -18,7 +18,7 @@
 #define NOT_SEGMENTED 1
 #define HAVE_MEMORY_H 1
 /* #undef HAVE_COMPLEX_H */
-#define HAVE_MALLOC_H 1
+#undef HAVE_MALLOC_H
 /* #undef HAVE_SYS_CDEFS_H */
 #define STDC_HEADERS 1
 #define HAVE_BCOPY 1
