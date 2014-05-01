@@ -218,8 +218,8 @@ static void callbackLogger(fmiComponentEnvironment ce, fmiString instanceName,
     Tcl_VarEval(m->interp, "puts -nonewline { ", category, ": }", NULL);
   else
     Tcl_Eval(m->interp, "puts -nonewline {: }");
-  Tcl_VarEval(m->interp, "puts [::fmi::mapNames ", m->fmuName,
-	      " {", m->messageStr, "}]", NULL);
+  Tcl_VarEval(m->interp, "puts [::fmi::mapNames {", m->fmuName,
+	      "} {", m->messageStr, "}]", NULL);
   Tcl_Eval(m->interp, "update idletasks");
 }
 
@@ -279,8 +279,8 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   Hxi_ModelVariables *vars;
 
   /* obtain number of variables */
-  if (Tcl_VarEval(m->interp, "llength $::fmu::", m->fmuName,
-		  "::", category, "References", NULL) != TCL_OK
+  if (Tcl_VarEval(m->interp, "llength ${::fmu::", m->fmuName,
+		  "::", category, "References}", NULL) != TCL_OK
       || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
       || Tcl_GetIntFromObj(m->interp, objPtr, &n) != TCL_OK) {
     return NULL;
@@ -300,8 +300,8 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   }
   for (i = 0; i < n; i++) {
     sprintf(index, "%d", i);
-    if (Tcl_VarEval(m->interp, "lindex $::fmu::", m->fmuName,
-		    "::", category, "BaseTypes ", index, NULL) != TCL_OK
+    if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
+		    "::", category, "BaseTypes} ", index, NULL) != TCL_OK
 	|| (baseTypeName = Tcl_GetStringResult(m->interp)) == NULL) {
       freeVariables(vars);
       return NULL;
@@ -338,8 +338,8 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
     vars->s = (fmiString *)malloc((vars->n[FMI_STRING])*sizeof(fmiString));
   for (i = 0; i < n; i++) {
     sprintf(index, "%d", i);
-    if (Tcl_VarEval(m->interp, "lindex $::fmu::", m->fmuName,
-		    "::", category, "References ", index, NULL) != TCL_OK
+    if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
+		    "::", category, "References} ", index, NULL) != TCL_OK
 	|| (objPtr = Tcl_GetObjResult(m->interp)) == NULL
 	|| Tcl_GetIntFromObj(m->interp, objPtr, &ref) != TCL_OK) {
       freeVariables(vars);
@@ -463,7 +463,8 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Get name of FMU from path
    */
-  if (Tcl_VarEval(interp, "::fmi::getName ", ssGetPath(S), NULL) != TCL_OK) {
+  if (Tcl_VarEval(interp, "::fmi::getName {", ssGetPath(S), "}",
+                  NULL) != TCL_OK) {
     ssSetErrorStatus(S, "can't get FMU name from path");
     return;
   }
@@ -472,7 +473,8 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Test if model has been extracted before
    */
-  if (Tcl_VarEval(interp, "::fmi::testExtracted ", ssGetPath(S), NULL) != TCL_OK
+  if (Tcl_VarEval(interp, "::fmi::testExtracted {", ssGetPath(S), "}",
+                  NULL) != TCL_OK
       || (objPtr = Tcl_GetObjResult(interp)) == NULL
       || Tcl_GetBooleanFromObj(interp, objPtr, &doesDirectoryExist) != TCL_OK) {
     ssSetErrorStatus(S, Tcl_GetStringResult(interp));
@@ -482,8 +484,8 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Lookup existing model data
    */
-  if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
-                  "::modelData", NULL) == TCL_OK) {
+  if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                  "::modelData}", NULL) == TCL_OK) {
     if (sscanf(Tcl_GetStringResult(interp), "0x%p", &m) != 1) {
       ssSetErrorStatus(S, "can't get previously stored model instance");
       return;
@@ -518,14 +520,15 @@ static void mdlInitializeSizes(SimStruct *S)
     if (!doesDirectoryExist) {
       /* extract model from new FMU */
       if (Tcl_VarEval(interp,
-                      "::fmi::extractModel ", ssGetPath(S), NULL) != TCL_OK
+                      "::fmi::extractModel {", ssGetPath(S), "}",
+                      NULL) != TCL_OK
           || strcmp(Tcl_GetStringResult(interp), "") == 0) {
         ssSetErrorStatus(S, "can't extract model from FMU");
         return;
       }
     }
     /* read model description */
-    if (Tcl_VarEval(interp, "::fmi::readModelDescription ", ssGetPath(S),
+    if (Tcl_VarEval(interp, "::fmi::readModelDescription {", ssGetPath(S), "}",
                     NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't read model description of FMU");
       return;
@@ -535,7 +538,7 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Load binary model code
    */
-  if (Tcl_VarEval(interp, "::fmi::getBinaryPath ", ssGetPath(S),
+  if (Tcl_VarEval(interp, "::fmi::getBinaryPath {", ssGetPath(S), "}",
 		  NULL) != TCL_OK) {
     ssSetErrorStatus(S, "can't get path of FMU binary");
     return;
@@ -553,8 +556,8 @@ static void mdlInitializeSizes(SimStruct *S)
     (Hxi_SimStruct_init_t*)DLSYM(handle, "Hxi_SimStruct_init");
   if (Hxi_SimStruct_init_p) {
     /* store null pointer to model data */
-    if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
-                    "::modelData 0x00", NULL) != TCL_OK) {
+    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                    "::modelData} 0x00", NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't store model instance");
       return;
     }
@@ -592,27 +595,27 @@ static void mdlInitializeSizes(SimStruct *S)
     m->messageStrLen = 256;
     /* store pointer to model data for repeated calls */
     sprintf(m->messageStr, "0x%p", m);
-    if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
-                    "::modelData ", m->messageStr, NULL) != TCL_OK) {
+    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                    "::modelData} ", m->messageStr, NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't store model instance");
       return;
     }
     /* get guid */
-    if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
-                    "::attributes(guid)", NULL) != TCL_OK) {
+    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                    "::attributes(guid)}", NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't get guid of FMU");
       return;
     }
     m->guid = strdup(Tcl_GetStringResult(interp));
     /* get generation tool */
-    if (Tcl_VarEval(interp, "::set ::fmu::", fmuName,
-                    "::attributes(generationTool)", NULL) != TCL_OK) {
+    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                    "::attributes(generationTool)}", NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't get generationTool of FMU");
       return;
     }
     m->generationTool = strdup(Tcl_GetStringResult(interp));
     /* get location of resources directory */
-    if (Tcl_VarEval(interp, "::fmi::getResourcesURI ", ssGetPath(S),
+    if (Tcl_VarEval(interp, "::fmi::getResourcesURI {", ssGetPath(S), "}",
                     NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't get location of FMU resources");
       return;
@@ -622,8 +625,8 @@ static void mdlInitializeSizes(SimStruct *S)
     /* 
      * Initialize parameters
      */
-    if (Tcl_VarEval(interp, "llength $::fmu::", fmuName,
-                    "::parameterReferences", NULL) != TCL_OK
+    if (Tcl_VarEval(interp, "llength ${::fmu::", fmuName,
+                    "::parameterReferences}", NULL) != TCL_OK
         || (objPtr = Tcl_GetObjResult(interp)) == NULL
         || Tcl_GetIntFromObj(interp, objPtr, &m->np) != TCL_OK) {
       ssSetErrorStatus(S, Tcl_GetStringResult(interp));
@@ -641,8 +644,8 @@ static void mdlInitializeSizes(SimStruct *S)
     /*
      * Initialize states, inputs and outputs
      */
-    if (Tcl_VarEval(interp, "llength $::fmu::", fmuName,
-                    "::stateReferences", NULL) != TCL_OK
+    if (Tcl_VarEval(interp, "llength ${::fmu::", fmuName,
+                    "::stateReferences}", NULL) != TCL_OK
         || (objPtr = Tcl_GetObjResult(interp)) == NULL
         || Tcl_GetIntFromObj(interp, objPtr, &m->nxc) != TCL_OK) {
       ssSetErrorStatus(S, "can't get number of states");

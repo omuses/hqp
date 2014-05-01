@@ -1,3 +1,8 @@
+2014-05-01    <rfranke>
+
+	* omu/Omu_Model.C, hxi/sfun_fmu.c:
+	  - support special characters in model names
+
 2014-04-26    <rfranke>
 
 	* omu/Omu_Init.C, omu/Makefile:
