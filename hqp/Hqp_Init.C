@@ -18,7 +18,7 @@
  */
 
 /*
-    Copyright (C) 1994--2009  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -159,6 +159,20 @@ static void signal_handler(int code)
 }
 
 //--------------------------------------------------------------------------
+extern "C" HQP_API int Hqp_InitSignalHandler() 
+{
+  // install a handler for signal interrupt
+  signal(SIGINT, &signal_handler);
+#if !defined(_MSC_VER) && !defined(__MINGW32__)
+  signal(SIGXCPU, &signal_handler);
+#endif
+
+  // ignore signals from floating point arithmetics
+  // (needed for ADOL-C 1.7 on Alpha with OSF3.2, OSF4.0)
+  signal(SIGFPE, SIG_IGN);
+}
+
+//--------------------------------------------------------------------------
 extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp) 
 {
   // provide Tcl package Hqp
@@ -188,16 +202,6 @@ extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp)
   _ifList.append(new IF_MODULE("mip_solver", &theMipSolver, Hqp_MipSolver));
   _ifList.append(new If_String("hqp_version", &Hqp_Version));
   _ifList.append(new If_Procedure("m_version", &m_version_cmd));
-
-  // install a handler for signal interrupt
-  signal(SIGINT, &signal_handler);
-#if !defined(_MSC_VER) && !defined(__MINGW32__)
-  signal(SIGXCPU, &signal_handler);
-#endif
-
-  // ignore signals from floating point arithmetics
-  // (needed for ADOL-C 1.7 on Alpha with OSF3.2, OSF4.0)
-  signal(SIGFPE, SIG_IGN);
 
   // evaluate hqp_solve.tcl
   extern char *hqp_solve;

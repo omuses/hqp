@@ -1,9 +1,14 @@
+2014-05-02    <rfranke>
+
+	* hqp/{Hqp_Init.C, Hqp.h}, hqp_docp/Docp_Main.C, odc/Odc_Main.c:
+	  - move setup of signal handler into separate Hqp_InitSignalHandler
+
 2014-05-01    <rfranke>
 
 	* meschach/{machine.h, matdef.h, spbkp.c, version.c},
 	  iftcl/{If_Class.C, If_IntVec.C}, hqp/Hqp_DocpAdol.C,
 	  hxi/Hxi_SimStruct.C, omu/Omu_IntDASPK.C:
-	  - remove use of deprecated malloc.h
+	  - remove use of deprecated malloc.h (use stdlib.h instead)
 
 	* omu/Omu_Model.C, hxi/sfun_fmu.c:
 	  - support special characters in model names

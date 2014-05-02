@@ -38,6 +38,10 @@
 #define HQP_API 
 #endif
 
+/** initialize Tcl module Hqp */
 extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp);
+
+/** call Tcl procedure hqp_exit for signals SIGINT, SIGFPE and SIGXCPU */
+extern "C" HQP_API int Hqp_InitSignalHandler();
 
 #endif

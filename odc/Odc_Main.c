@@ -48,6 +48,7 @@ Tcl_AppInit(interp)
     return TCL_ERROR;
   }
   Tcl_StaticPackage(interp, "Hqp", Hqp_Init, NULL);
+  Hqp_InitSignalHandler();
 
   if (Omu_Init(interp) == TCL_ERROR) {
     return TCL_ERROR;

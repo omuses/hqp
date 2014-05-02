@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 
   // Initialize Hqp
   Hqp_Init(If_Interp());
+  Hqp_InitSignalHandler();
 
   // Create optimization program
   Prg_DID *prg = new Prg_DID();
