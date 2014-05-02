@@ -19,3 +19,6 @@ HQP_INCDIR = -I../hqp
 HXI_INCDIR = -I../hxi
 IF_INCDIR = -I../iftcl
 MES_INCDIR = -I..
+
+HQP_LIBDIR = @LFLAG@"../lib" @RFLAG@"../lib" \
+             @LFLAG@"@prefix@/lib" @RFLAG@"@prefix@/lib"

@@ -230,6 +230,7 @@ if test $uname_found = "yes" ; then
   case "$target" in 
     Linux*)
       if test "$hqp_shared" = "yes"; then
+        hqp_libs_resolved="yes"
         # guess Tcl libs if no tclConfig.sh available
         if test -z "$TCL_LIB_SPEC"; then
           AC_CHECK_LIB(dl, dlopen, have_dl=yes, have_dl=no)
@@ -391,7 +392,7 @@ else
   OMU_LIBS="${OMU_LIBS} ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
   if test "$hqp_libs_resolved" = "yes"; then
     # in this mode we need -lhqp both for linking and running
-    OMU_MACH_OBJS="${LFLAG}../lib ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
+    OMU_MACH_OBJS="\$(HQP_LIBDIR) ${LDLIB_PREFIX}hqp${LDLIB_SUFFIX}"
   fi
 fi
 

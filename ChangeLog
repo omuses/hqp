@@ -1,7 +1,11 @@
 2014-05-02    <rfranke>
 
+	* configure.in, configure, makedirs.in:
+	  - improve dynamic loading of Omuses under Linux and OSX
+
 	* hqp/{Hqp_Init.C, Hqp.h}, hqp_docp/Docp_Main.C, odc/Odc_Main.c:
 	  - move setup of signal handler into separate Hqp_InitSignalHandler
+	    in order to make it optional
 
 2014-05-01    <rfranke>
 
@@ -101,7 +105,7 @@
 
 2014-02-19  <rfranke>
 
-	* configure.in, configure, hqp/Makefile.in:
+	* configure.in, configure, hqp/Makefile, install_name:
 	  - add initial support for Mac OSX provided by Pär Winzell
 
 	* ChangeLog:
