@@ -322,9 +322,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
   int 		_t_scale_i; 	///< index of internal optimization variable for scaling of time
   double 	_t_scale_nominal;///< nominal value for time scaling (default: 1)
   double 	_t_nominal; 	///< nominal time (used internally for scaling)
-  VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
-  VECP 		_mdl_x_nominal;	///< nominal states (for scaling)
-  VECP 		_mdl_y_nominal;	///< nominal outputs (for scaling)
 
   VECP 		_mdl_y_bias;	///< bias correction (offset) for outputs 
 
@@ -550,9 +547,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
   /// decimation for optimized model inputs (default: 1)
   const IVECP mdl_u_decimation() const {return _mdl_u_decimation;}
 
-  /// nominal input values (for scaling)
-  const VECP mdl_u_nominal() const {return _mdl_u_nominal;}
-
   /// first and last value are equal (default: false)
   const IVECP mdl_u_periodic() const {return _mdl_u_periodic;}
 
@@ -601,9 +595,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
   /// indicate integer valued states
   const IVECP mdl_x_integer() const {return _mdl_x.integer;}
 
-  /// nominal state values (for scaling)
-  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
-
   /// first and last value are equal (default: false)
   const IVECP mdl_x_periodic() const {return _mdl_x_periodic;}
 
@@ -618,9 +609,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
 
   /// bias for outputs
   const VECP mdl_y_bias() const {return _mdl_y_bias;}
-
-  /// nominal output values (for scaling)
-  const VECP mdl_y_nominal() const {return _mdl_y_nominal;}
 
   /// lower bounds for model outputs
   const VECP mdl_y_min() const {return _mdl_y.min;}
@@ -766,9 +754,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
   void set_mdl_u_decimation(const IVECP v)
   {iv_copy_elements(v, _mdl_u_decimation);}
 
-  /// set nominal inputs
-  void set_mdl_u_nominal(const VECP v) {v_copy_elements(v, _mdl_u_nominal);}
-
   /// set periodic congtrols
   void set_mdl_u_periodic(const IVECP v) {iv_copy_elements(v, _mdl_u_periodic);}
 
@@ -823,9 +808,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
   /// set integer valued states
   void set_mdl_x_integer(const IVECP v) {iv_copy_elements(v, _mdl_x.integer);}
 
-  /// set nominal states
-  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
-
   /// set periodic states
   void set_mdl_x_periodic(const IVECP v) {iv_copy_elements(v, _mdl_x_periodic);}
 
@@ -842,9 +824,6 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
 
   /// set output bias
   void set_mdl_y_bias(const VECP v) {v_copy_elements(v, _mdl_y_bias);}
-
-  /// set nominal outputs
-  void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
 
   /// set lower bounds for model outputs
   void set_mdl_y_min(const VECP v) {v_copy_elements(v, _mdl_y.min);}

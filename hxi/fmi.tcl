@@ -75,6 +75,7 @@ proc ::fmi::extractModel {fmuPath} {
 
 ## Parse modelDescription.xml of extracted model and
 #  store infos in namespace array ::fmu::${fmuName}
+#  @return fmiVersion string
 proc ::fmi::readModelDescription {fmuPath} {
 
     # extract model if not yet done
@@ -192,15 +193,21 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    }
 	}
 
-	# obtain category (state, parameter, input/output)
-	set category ""
+	# obtain categories (state, parameter, input/output)
+	# note that a variable may be state and output
+	set categories {}
 	if {[lsearch $stateIndices $index] >= 0} {
-	    set category "state"
-	} elseif {[regexp ^(parameter|input|output)$ $v(causality)]} {
-	    set category $v(causality)
+	    lappend categories "state"
+	}
+	if {[regexp ^(parameter|input|output)$ $v(causality)]} {
+	    lappend categories $v(causality)
+	}
+        # unify boolean literals to 1 and 0 for easier treatment as numbers
+	if {$categories != {} && $vBaseType == "Boolean"} {
+	    set v(start) [string map {true 1 false 0} $v(start)]
 	}
 	# store variable infos
-	if {$category != ""} {
+	foreach category $categories {
 	    lappend ::fmu::${fmuName}::${category}Names $v(name)
 	    lappend ::fmu::${fmuName}::${category}Indices $index
 	    lappend ::fmu::${fmuName}::${category}References $v(valueReference)
@@ -208,7 +215,6 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    lappend ::fmu::${fmuName}::${category}NominalValues $v(nominal)
 	    lappend ::fmu::${fmuName}::${category}StartValues $v(start)
 	}
-
 	# keep mapping from valueReference to name per base type
 	set typeId [string tolower [string index $vBaseType 0]]
 	set ::fmu::${fmuName}::${typeId}Names($v(valueReference)) $v(name)
@@ -235,7 +241,12 @@ proc ::fmi::readModelDescription {fmuPath} {
         foreach element $fmiElements(ModelStructure) {
             set structureElements([lindex $element 0]) [lindex $element 2]
         }
-        foreach category {output derivative discreteState} {
+        set categories {output derivative}
+        # consider DiscreteStates from FMI 2.0 RC1 if present
+        if {[lsearch [array names structureElements] DiscreteStates] >= 0} {
+            lappend categories discreteState
+        }
+        foreach category $categories {
             set elementName [string replace $category 0 0 \
                                  [string toupper [string index $category 0]]]s
             foreach element $structureElements($elementName) {
@@ -257,6 +268,8 @@ proc ::fmi::readModelDescription {fmuPath} {
 
     # export fmuAttributes
     array set ::fmu::${fmuName}::attributes [array get fmuAttributes]
+
+    return $fmiVersion
 }
 
 ## Replace valueReferences of the form #r123# with variable names
@@ -404,6 +417,10 @@ proc ::fmi::unzip fmuPath {
     # extract all files
     set dir [file dirname $fmuPath]/[file rootname [file tail $fmuPath]]
     foreach name [array names directory] {
+        if {[string match */ $name]} {
+            # skip directory names
+            continue
+        }
         dict with directory($name) {}
 	# extract file content
         seek $fd $offset

@@ -1,3 +1,24 @@
+2014-07-30    <rfranke>
+
+	* hxi/sfun_fmu.c, fmi*.h: upgrade from FMI 2.0 RC1 to FMI 2.0
+
+	* hxi/fmi.tcl:
+	  - treat directory entries in fmu zip files
+	  - treat variables with multiple categories, like output and state
+
+	* omu/Omu_Model.[hC], omu/Prg_SFunction*.[hC], hxi/fmi.tcl:
+	  - automatically obtain nominal values from model description for FMUs
+
+	* omu/Omu_Model.[hC], omu/Prg_SFunction*.C:
+	  - obtain start values for states and inputs from
+	    model description for FMUs
+
+	* hxi/sfun_fmu.c:
+	  - don't obtain initial states in mdlInitializeConditions
+	    because they can generally only be obtained with inputs available
+
+	* hqp/Hqp_Init.C (Hqp_InitSignalHandler): provide return value
+
 2014-05-02    <rfranke>
 
 	* configure.in, configure, makedirs.in:

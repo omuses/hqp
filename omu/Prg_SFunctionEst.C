@@ -88,8 +88,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _mdl_u_order = iv_get(_mdl_nu);
   _mdl_y_active = iv_get(_mdl_ny);
   _mdl_p_nominal = v_get(_mdl_np);
-  _mdl_x_nominal = v_get(_mdl_nx);
-  _mdl_y_nominal = v_get(_mdl_ny);
   iv_zero(_mdl_p_active);
   v_zero(_mdl_p_confidence);
   iv_zero(_mdl_x0_active);
@@ -99,8 +97,6 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   iv_set(_mdl_u_order, 1);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_p_nominal);
-  v_ones(_mdl_x_nominal);
-  v_ones(_mdl_y_nominal);
 
   _np = 0;
   _nx0 = 0;
@@ -148,12 +144,10 @@ Prg_SFunctionEst::Prg_SFunctionEst()
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_order)));
 
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_max)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_active)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
 
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_x0s)));
   _ifList.append(new If_RealMat(GET_SET_CB(const MATP, "", mdl_us)));
@@ -193,9 +187,6 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
   iv_free(_mdl_x0_active);
   iv_free(_mdl_u_order);
   iv_free(_mdl_y_active);
-  v_free(_mdl_y_nominal);
-  v_free(_mdl_x_nominal);
-  v_free(_mdl_p_nominal);
 }
 
 //--------------------------------------------------------------------------
@@ -231,8 +222,6 @@ void Prg_SFunctionEst::setup_model()
   v_zero(_mdl_p.min);
 
   _mdl_x0.alloc(_mdl_nx);
-  v_zero(_mdl_x0);
-
   _mdl_x.alloc(_mdl_nx);
 
   iv_resize(_mdl_p_active, _mdl_np);
@@ -244,8 +233,6 @@ void Prg_SFunctionEst::setup_model()
   iv_resize(_mdl_u_order, _mdl_nu);
   iv_resize(_mdl_y_active, _mdl_ny);
   v_resize(_mdl_p_nominal, _mdl_np);
-  v_resize(_mdl_x_nominal, _mdl_nx);
-  v_resize(_mdl_y_nominal, _mdl_ny);
   iv_zero(_mdl_p_active);
   v_zero(_mdl_p_confidence);
   iv_zero(_mdl_x0_active);
@@ -255,8 +242,6 @@ void Prg_SFunctionEst::setup_model()
   iv_set(_mdl_u_order, 1);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_p_nominal);
-  v_ones(_mdl_x_nominal);
-  v_ones(_mdl_y_nominal);
 }
 
 //--------------------------------------------------------------------------
@@ -300,11 +285,17 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   // store parameters in _mdl_p
   v_copy(Omu_Model::_mdl_p, _mdl_p);
 
-  // setup _mdl_xs with initial states from model
-  v_copy(Omu_Model::_mdl_x0, _mdl_x0);
+  // setup _mdl_xs with start values from model
+  v_copy(Omu_Model::_mdl_x_start, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];
+  }
+
+  // setup _mdl_us with start values from model
+  for (kk = 0; kk < _KK; kk++) {
+    for (j = 0; j < _mdl_nu; j++)
+      _mdl_us[kk][j] = Omu_Model::_mdl_u_start[j];
   }
 }
 

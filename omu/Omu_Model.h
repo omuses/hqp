@@ -58,7 +58,12 @@ class Omu_Model {
   int		_mdl_ny;	///< number of model outputs
 
   VECP		_mdl_p;		///< parameters
-  VECP		_mdl_x0;	///< initial states
+  VECP		_mdl_x_start;	///< start values of states
+  VECP		_mdl_u_start;	///< start values of inputs
+
+  VECP 		_mdl_x_nominal;	///< nominal states (for scaling)
+  VECP 		_mdl_u_nominal;	///< nominal inputs (for scaling)
+  VECP 		_mdl_y_nominal;	///< nominal outputs (for scaling)
 
   /// indicate that setup_model needs to be called
   /// as _mdl_name, _mdl_path, or _mdl_args changed
@@ -115,9 +120,29 @@ class Omu_Model {
   void set_mdl_p(const VECP value) {v_copy_elements(value, _mdl_p);}
 
   /** initial states */
-  const VECP mdl_x0() const {return _mdl_x0;}
+  const VECP mdl_x_start() const {return _mdl_x_start;}
   /** set initial states */
-  void set_mdl_x0(const VECP value) {v_copy_elements(value, _mdl_x0);}
+  void set_mdl_x_start(const VECP value) {v_copy_elements(value, _mdl_x_start);}
+
+  /** inputs */
+  const VECP mdl_u_start() const {return _mdl_u_start;}
+  /** set inputs */
+  void set_mdl_u_start(const VECP value) {v_copy_elements(value, _mdl_u_start);}
+
+  /** nominal state values (for scaling) */
+  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
+  /** set nominal states */
+  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
+
+  /** nominal input values (for scaling) */
+  const VECP mdl_u_nominal() const {return _mdl_u_nominal;}
+  /** set nominal inputs */
+  void set_mdl_u_nominal(const VECP v) {v_copy_elements(v, _mdl_u_nominal);}
+
+  /** nominal output values (for scaling) */
+  const VECP mdl_y_nominal() const {return _mdl_y_nominal;}
+  /** set nominal outputs */
+  void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
 
   //@}
 };  

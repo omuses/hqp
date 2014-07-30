@@ -61,10 +61,18 @@
 #endif
 
 /** retrieve a function pointer from the loaded model, including error check */
-#define INIT_FUNCTION(NAME) \
-  m->NAME = (NAME ## TYPE*)DLSYM(m->handle, #NAME); \
-  if (m->NAME == NULL) { \
-    ssSetErrorStatus(S, "missing " #NAME); \
+#define INIT_FUNCTION(ID, NAME) \
+  if (ID == 2) { \
+    INIT_FUNCTION2(fmi2, NAME); \
+  } \
+  else { \
+    INIT_FUNCTION2(fmi, NAME); \
+  }
+
+#define INIT_FUNCTION2(PREFIX, NAME) \
+  m->fmi2 ## NAME = (fmi2 ## NAME ## TYPE*)DLSYM(m->handle, #PREFIX #NAME); \
+  if (m->fmi2 ## NAME == NULL) { \
+    ssSetErrorStatus(S, "missing " #PREFIX #NAME); \
     return; \
   }
 
@@ -76,8 +84,8 @@
 #include <tcl.h>
 extern Tcl_Interp *If_Interp(); /**< Tcl interpreter used by the interface */
 
-#include "fmiTypesPlatform.h"
-#include "fmiFunctionTypes.h"
+#include "fmi2TypesPlatform.h"
+#include "fmi2FunctionTypes.h"
 
 #include "simstruc.h"
 
@@ -105,11 +113,11 @@ typedef struct {
   int nv;			/**< overall number of variables */
   BaseTypes *btv;		/**< base type per variable */
   int n[NUM_BASETYPES];		/**< number of variables per base type */
-  fmiValueReference *vr[NUM_BASETYPES];	/**< value references per base type */
-  fmiReal *r;			/**< Real values */
-  fmiBoolean *b;		/**< Boolean values */
-  fmiInteger *i;		/**< Integer values */
-  fmiString *s;			/**< String values */
+  fmi2ValueReference *vr[NUM_BASETYPES]; /**< value references per base type */
+  fmi2Real *r;			/**< Real values */
+  fmi2Boolean *b;		/**< Boolean values */
+  fmi2Integer *i;		/**< Integer values */
+  fmi2String *s;			/**< String values */
 } Hxi_ModelVariables;
 
 static const char* statusStrings[] = {
@@ -146,37 +154,37 @@ typedef struct {
   Hxi_ModelVariables 	*y;
 
   DLHANDLE 		handle;
-  fmiComponent 		fmu;
-  fmiCallbackFunctions  fmiCallbackFunctions;
-  fmiBoolean 		initPending;
+  fmi2Component 	fmu;
+  fmi2CallbackFunctions fmi2CallbackFunctions;
+  fmi2Boolean 		initPending;
   /**< delay initialization until inputs are available */
 
   /**
    * @name FMI functions
    * @{
    */
-  fmiInstantiateTYPE             	*fmiInstantiate;
-  fmiEnterInitializationModeTYPE 	*fmiEnterInitializationMode;
-  fmiExitInitializationModeTYPE  	*fmiExitInitializationMode;
-  fmiNewDiscreteStatesTYPE       	*fmiNewDiscreteStates;
-  fmiEnterContinuousTimeModeTYPE 	*fmiEnterContinuousTimeMode;
-  fmiCompletedIntegratorStepTYPE 	*fmiCompletedIntegratorStep;
-  fmiEnterEventModeTYPE          	*fmiEnterEventMode;
-  fmiResetTYPE               		*fmiReset;
-  fmiTerminateTYPE               	*fmiTerminate;
-  fmiFreeInstanceTYPE            	*fmiFreeInstance;
-  fmiSetTimeTYPE                 	*fmiSetTime;
-  fmiSetContinuousStatesTYPE     	*fmiSetContinuousStates;
-  fmiSetRealTYPE                 	*fmiSetReal;
-  fmiSetBooleanTYPE              	*fmiSetBoolean;
-  fmiSetIntegerTYPE              	*fmiSetInteger;
-  fmiSetStringTYPE               	*fmiSetString;
-  fmiGetContinuousStatesTYPE     	*fmiGetContinuousStates;
-  fmiGetDerivativesTYPE          	*fmiGetDerivatives;
-  fmiGetRealTYPE                 	*fmiGetReal;
-  fmiGetBooleanTYPE              	*fmiGetBoolean;
-  fmiGetIntegerTYPE              	*fmiGetInteger;
-  fmiGetStringTYPE               	*fmiGetString;
+  fmi2InstantiateTYPE             	*fmi2Instantiate;
+  fmi2EnterInitializationModeTYPE 	*fmi2EnterInitializationMode;
+  fmi2ExitInitializationModeTYPE  	*fmi2ExitInitializationMode;
+  fmi2NewDiscreteStatesTYPE       	*fmi2NewDiscreteStates;
+  fmi2EnterContinuousTimeModeTYPE 	*fmi2EnterContinuousTimeMode;
+  fmi2CompletedIntegratorStepTYPE 	*fmi2CompletedIntegratorStep;
+  fmi2EnterEventModeTYPE          	*fmi2EnterEventMode;
+  fmi2ResetTYPE               		*fmi2Reset;
+  fmi2TerminateTYPE               	*fmi2Terminate;
+  fmi2FreeInstanceTYPE            	*fmi2FreeInstance;
+  fmi2SetTimeTYPE                 	*fmi2SetTime;
+  fmi2SetContinuousStatesTYPE     	*fmi2SetContinuousStates;
+  fmi2SetRealTYPE                 	*fmi2SetReal;
+  fmi2SetBooleanTYPE              	*fmi2SetBoolean;
+  fmi2SetIntegerTYPE              	*fmi2SetInteger;
+  fmi2SetStringTYPE               	*fmi2SetString;
+  fmi2GetContinuousStatesTYPE     	*fmi2GetContinuousStates;
+  fmi2GetDerivativesTYPE          	*fmi2GetDerivatives;
+  fmi2GetRealTYPE                 	*fmi2GetReal;
+  fmi2GetBooleanTYPE              	*fmi2GetBoolean;
+  fmi2GetIntegerTYPE              	*fmi2GetInteger;
+  fmi2GetStringTYPE               	*fmi2GetString;
   /**
    * @}
    */
@@ -188,16 +196,16 @@ typedef struct {
  */
 
 /** Log messages from FMU to Tcl stdout*/
-static void callbackLogger(fmiComponentEnvironment ce, fmiString instanceName,
-                           fmiStatus status, fmiString category,
-                           fmiString message, ...)
+static void callbackLogger(fmi2ComponentEnvironment ce, fmi2String instanceName,
+                           fmi2Status status, fmi2String category,
+                           fmi2String message, ...)
 {
   Hxi_ModelData *m = (Hxi_ModelData *)ce;
   va_list args;
   int n;
 
 #ifndef WITH_LOGGING
-  if (status == fmiOK)
+  if (status == fmi2OK)
     return;
 #endif
 
@@ -272,7 +280,7 @@ static void freeVariables(Hxi_ModelVariables *vars)
 static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
 {
   int i, j, n, ref;
-  char index[4*sizeof(fmiValueReference)]; /* upper bound for string length */
+  char index[4*sizeof(fmi2ValueReference)]; /* upper bound for string length */
   Tcl_Obj *objPtr;
   const char *baseTypeName;
   int idx[NUM_BASETYPES];
@@ -325,17 +333,17 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   for (j = 0; j < NUM_BASETYPES; j++) {
     if (vars->n[j] > 0)
       vars->vr[j] =
-	(fmiValueReference *)malloc((vars->n[j])*sizeof(fmiValueReference));
+	(fmi2ValueReference *)malloc((vars->n[j])*sizeof(fmi2ValueReference));
     idx[j] = 0;
   }
   if (vars->n[FMI_REAL] > 0)
-    vars->r = (fmiReal *)malloc((vars->n[FMI_REAL])*sizeof(fmiReal));
+    vars->r = (fmi2Real *)malloc((vars->n[FMI_REAL])*sizeof(fmi2Real));
   if (vars->n[FMI_BOOLEAN] > 0)
-    vars->b = (fmiBoolean *)malloc((vars->n[FMI_BOOLEAN])*sizeof(fmiBoolean));
+    vars->b = (fmi2Boolean *)malloc((vars->n[FMI_BOOLEAN])*sizeof(fmi2Boolean));
   if (vars->n[FMI_INTEGER] > 0)
-    vars->i = (fmiInteger *)malloc((vars->n[FMI_INTEGER])*sizeof(fmiInteger));
+    vars->i = (fmi2Integer *)malloc((vars->n[FMI_INTEGER])*sizeof(fmi2Integer));
   if (vars->n[FMI_STRING] > 0)
-    vars->s = (fmiString *)malloc((vars->n[FMI_STRING])*sizeof(fmiString));
+    vars->s = (fmi2String *)malloc((vars->n[FMI_STRING])*sizeof(fmi2String));
   for (i = 0; i < n; i++) {
     sprintf(index, "%d", i);
     if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
@@ -358,59 +366,59 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
 }
 
 /** Write variable values to FMU */
-static fmiStatus setValues(Hxi_ModelData *m, const Hxi_ModelVariables *vars)
+static fmi2Status setValues(Hxi_ModelData *m, const Hxi_ModelVariables *vars)
 {
-  fmiStatus ret;
+  fmi2Status ret;
   if (vars->n[FMI_REAL] > 0) {
-    ret = (*m->fmiSetReal)(m->fmu, vars->vr[FMI_REAL],
-			   vars->n[FMI_REAL], vars->r);
-    if (ret != fmiOK)
+    ret = (*m->fmi2SetReal)(m->fmu, vars->vr[FMI_REAL],
+			    vars->n[FMI_REAL], vars->r);
+    if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_BOOLEAN] > 0) {
-    ret = (*m->fmiSetBoolean)(m->fmu, vars->vr[FMI_BOOLEAN],
-			      vars->n[FMI_BOOLEAN], vars->b);
-    if (ret != fmiOK)
+    ret = (*m->fmi2SetBoolean)(m->fmu, vars->vr[FMI_BOOLEAN],
+			       vars->n[FMI_BOOLEAN], vars->b);
+    if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_INTEGER] > 0) {
-    ret = (*m->fmiSetInteger)(m->fmu, vars->vr[FMI_INTEGER],
-			      vars->n[FMI_INTEGER], vars->i);
-    if (ret != fmiOK)
+    ret = (*m->fmi2SetInteger)(m->fmu, vars->vr[FMI_INTEGER],
+			       vars->n[FMI_INTEGER], vars->i);
+    if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_STRING] > 0) {
-    ret = (*m->fmiSetString)(m->fmu, vars->vr[FMI_STRING],
-			     vars->n[FMI_STRING], vars->s);
-    if (ret != fmiOK)
+    ret = (*m->fmi2SetString)(m->fmu, vars->vr[FMI_STRING],
+			      vars->n[FMI_STRING], vars->s);
+    if (ret != fmi2OK)
       return ret;
   }
-  return fmiOK;
+  return fmi2OK;
 }
 
 /** Read variable values from FMU */
-static fmiStatus getValues(Hxi_ModelData *m, Hxi_ModelVariables *vars)
+static fmi2Status getValues(Hxi_ModelData *m, Hxi_ModelVariables *vars)
 {
-  fmiStatus ret;
+  fmi2Status ret;
   if (vars->n[FMI_REAL] > 0) {
-    ret = (*m->fmiGetReal)(m->fmu, vars->vr[FMI_REAL],
-			   vars->n[FMI_REAL], vars->r);
-    if (ret != fmiOK)
+    ret = (*m->fmi2GetReal)(m->fmu, vars->vr[FMI_REAL],
+			    vars->n[FMI_REAL], vars->r);
+    if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_BOOLEAN] > 0) {
-    ret = (*m->fmiGetBoolean)(m->fmu, vars->vr[FMI_BOOLEAN],
-			      vars->n[FMI_BOOLEAN], vars->b);
-    if (ret != fmiOK)
+    ret = (*m->fmi2GetBoolean)(m->fmu, vars->vr[FMI_BOOLEAN],
+			       vars->n[FMI_BOOLEAN], vars->b);
+    if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_INTEGER] > 0) {
-    ret = (*m->fmiGetInteger)(m->fmu, vars->vr[FMI_INTEGER],
-			      vars->n[FMI_INTEGER], vars->i);
-    if (ret != fmiOK)
+    ret = (*m->fmi2GetInteger)(m->fmu, vars->vr[FMI_INTEGER],
+			       vars->n[FMI_INTEGER], vars->i);
+    if (ret != fmi2OK)
       return ret;
   }
-  return fmiOK;
+  return fmi2OK;
 }
 
 /**
@@ -446,6 +454,7 @@ static void mdlInitializeSizes(SimStruct *S)
   Hxi_ModelData *m;
   DLHANDLE handle;
   Hxi_SimStruct_init_t *Hxi_SimStruct_init_p;
+  int version_id;
 
   /*
    * Get Tcl interpreter
@@ -504,7 +513,7 @@ static void mdlInitializeSizes(SimStruct *S)
     if (m != NULL) {
       /* free previously allocated model instance */
       if (m->fmu != NULL)
-        (*m->fmiFreeInstance)(m->fmu);
+        (*m->fmi2FreeInstance)(m->fmu);
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
@@ -521,8 +530,7 @@ static void mdlInitializeSizes(SimStruct *S)
       /* extract model from new FMU */
       if (Tcl_VarEval(interp,
                       "::fmi::extractModel {", ssGetPath(S), "}",
-                      NULL) != TCL_OK
-          || strcmp(Tcl_GetStringResult(interp), "") == 0) {
+                      NULL) != TCL_OK) {
         ssSetErrorStatus(S, "can't extract model from FMU");
         return;
       }
@@ -531,6 +539,11 @@ static void mdlInitializeSizes(SimStruct *S)
     if (Tcl_VarEval(interp, "::fmi::readModelDescription {", ssGetPath(S), "}",
                     NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't read model description of FMU");
+      return;
+    }
+    if (strcmp(Tcl_GetStringResult(interp), "2") < 0) {
+      Tcl_ResetResult(interp);
+      ssSetErrorStatus(S, "require FMI version 2.0");
       return;
     }
   }
@@ -671,39 +684,45 @@ static void mdlInitializeSizes(SimStruct *S)
     m->handle = handle;
     m->fmu = NULL;
 
-    m->fmiCallbackFunctions.logger = &callbackLogger;
-    m->fmiCallbackFunctions.allocateMemory = &callbackAllocateMemory;
-    m->fmiCallbackFunctions.freeMemory = &callbackFreeMemory;
-    m->fmiCallbackFunctions.stepFinished = NULL;
-    m->fmiCallbackFunctions.componentEnvironment = m;
+    m->fmi2CallbackFunctions.logger = &callbackLogger;
+    m->fmi2CallbackFunctions.allocateMemory = &callbackAllocateMemory;
+    m->fmi2CallbackFunctions.freeMemory = &callbackFreeMemory;
+    m->fmi2CallbackFunctions.stepFinished = NULL;
+    m->fmi2CallbackFunctions.componentEnvironment = m;
 
-    INIT_FUNCTION(fmiInstantiate);
-    INIT_FUNCTION(fmiEnterInitializationMode);
-    INIT_FUNCTION(fmiExitInitializationMode);
-    INIT_FUNCTION(fmiNewDiscreteStates);
-    INIT_FUNCTION(fmiEnterContinuousTimeMode);
-    INIT_FUNCTION(fmiCompletedIntegratorStep);
-    INIT_FUNCTION(fmiEnterEventMode);
-    INIT_FUNCTION(fmiReset);
-    INIT_FUNCTION(fmiTerminate);
-    INIT_FUNCTION(fmiFreeInstance);
-    INIT_FUNCTION(fmiSetTime);
-    INIT_FUNCTION(fmiSetContinuousStates);
-    INIT_FUNCTION(fmiSetReal);
-    INIT_FUNCTION(fmiSetBoolean);
-    INIT_FUNCTION(fmiSetInteger);
-    INIT_FUNCTION(fmiSetString);
-    INIT_FUNCTION(fmiGetContinuousStates);
-    INIT_FUNCTION(fmiGetDerivatives);
-    INIT_FUNCTION(fmiGetReal);
-    INIT_FUNCTION(fmiGetBoolean);
-    INIT_FUNCTION(fmiGetInteger);
-    INIT_FUNCTION(fmiGetString);
+    /* support FMI 2.0 with prefix "fmi2" and 2.0 RC1 with prefix "fmi" */
+    version_id = 2;
+    if (DLSYM(m->handle, "fmi2Instantiate") == NULL
+	&& DLSYM(m->handle, "fmiInstantiate") != NULL)
+      version_id = 1;
+
+    INIT_FUNCTION(version_id, Instantiate);
+    INIT_FUNCTION(version_id, EnterInitializationMode);
+    INIT_FUNCTION(version_id, ExitInitializationMode);
+    INIT_FUNCTION(version_id, NewDiscreteStates);
+    INIT_FUNCTION(version_id, EnterContinuousTimeMode);
+    INIT_FUNCTION(version_id, CompletedIntegratorStep);
+    INIT_FUNCTION(version_id, EnterEventMode);
+    INIT_FUNCTION(version_id, Reset);
+    INIT_FUNCTION(version_id, Terminate);
+    INIT_FUNCTION(version_id, FreeInstance);
+    INIT_FUNCTION(version_id, SetTime);
+    INIT_FUNCTION(version_id, SetContinuousStates);
+    INIT_FUNCTION(version_id, SetReal);
+    INIT_FUNCTION(version_id, SetBoolean);
+    INIT_FUNCTION(version_id, SetInteger);
+    INIT_FUNCTION(version_id, SetString);
+    INIT_FUNCTION(version_id, GetContinuousStates);
+    INIT_FUNCTION(version_id, GetDerivatives);
+    INIT_FUNCTION(version_id, GetReal);
+    INIT_FUNCTION(version_id, GetBoolean);
+    INIT_FUNCTION(version_id, GetInteger);
+    INIT_FUNCTION(version_id, GetString);
   }
   else
     free(fmuName);
 
-  m->initPending = fmiFalse;
+  m->initPending = fmi2False;
 
   /*
    * Initialize S-function
@@ -771,32 +790,25 @@ static void mdlInitializeConditions(SimStruct *S)
 #endif
 
   if (m->fmu != NULL) {
-    if ((*m->fmiReset)(m->fmu) != fmiOK) {
+    if ((*m->fmi2Reset)(m->fmu) != fmi2OK) {
       /* Free model instance if reset didn't work */
-      (*m->fmiFreeInstance)(m->fmu);
+      (*m->fmi2FreeInstance)(m->fmu);
       m->fmu = NULL;
     }
   }
 
   if (m->fmu == NULL) {
-    m->fmu = (*m->fmiInstantiate)(m->fmuName, fmiModelExchange,
-                                  m->guid, m->resourcesURI,
-                                  &m->fmiCallbackFunctions,
-                                  fmiFalse, fmiFalse);
+    m->fmu = (*m->fmi2Instantiate)(m->fmuName, fmi2ModelExchange,
+				   m->guid, m->resourcesURI,
+				   &m->fmi2CallbackFunctions,
+				   fmi2False, fmi2False);
     if (m->fmu == NULL) {
       ssSetErrorStatus(S, "can't instantiate FMU");
       return;
     }
   }
 
-  m->initPending = fmiTrue; /* wait until inputs are available */
-
-  /* get start values for continuous states */
-  if((*m->fmiGetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
-     != fmiOK) {
-    ssSetErrorStatus(S, "can't get continuous states of FMU");
-    return;
-  }
+  m->initPending = fmi2True; /* wait until inputs are available */
 }
 
 
@@ -806,9 +818,9 @@ static void mdlInitializeConditions(SimStruct *S)
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
   Hxi_ModelData *m = (Hxi_ModelData *)ssGetPWork(S)[0];
-  fmiEventInfo eventInfo;
-  fmiBoolean enterEventMode;
-  fmiBoolean terminateSimulation;
+  fmi2EventInfo eventInfo;
+  fmi2Boolean enterEventMode;
+  fmi2Boolean terminateSimulation;
   int i, j;
   int idx[NUM_BASETYPES];
   InputRealPtrsType uPtrs;
@@ -819,7 +831,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   Tcl_Eval(m->interp, "puts mdlOutputs");
 #endif
 
-  if((*m->fmiSetTime)(m->fmu, ssGetT(S)) != fmiOK) {
+  if((*m->fmi2SetTime)(m->fmu, ssGetT(S)) != fmi2OK) {
     ssSetErrorStatus(S, "can't set time of FMU");
     return;
   }
@@ -835,10 +847,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 	m->p->r[idx[j]++] = *mxGetPr(param);
 	break;
       case FMI_BOOLEAN:
-	m->p->b[idx[j]++] = *mxGetPr(param) == 0.0? fmiFalse: fmiTrue;
+	m->p->b[idx[j]++] = *mxGetPr(param) == 0.0? fmi2False: fmi2True;
 	break;
       case FMI_INTEGER:
-	m->p->i[idx[j]++] = (fmiInteger)(*mxGetPr(param));
+	m->p->i[idx[j]++] = (fmi2Integer)(*mxGetPr(param));
 	break;
       case FMI_STRING:
 	m->p->s[idx[j]++] = mxArrayToString(param);
@@ -846,7 +858,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 	break;
       }
     }
-    if (setValues(m, m->p) != fmiOK)
+    if (setValues(m, m->p) != fmi2OK)
       ssSetErrorStatus(S, "can't set parameters of FMU");
     idx[FMI_STRING] = 0;
     for (i = 0; i < m->p->nv; i++) {
@@ -859,8 +871,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
   /* set states */
   if(m->nxc > 0 &&
-     (*m->fmiSetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
-     != fmiOK) {
+     (*m->fmi2SetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
+     != fmi2OK) {
     ssSetErrorStatus(S, "can't set continuous states of FMU");
     return;
   }
@@ -876,16 +888,16 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       m->u->r[idx[j]++] = *uPtrs[i];
       break;
     case FMI_BOOLEAN:
-      m->u->b[idx[j]++] = *uPtrs[i] == 0.0? fmiFalse: fmiTrue;
+      m->u->b[idx[j]++] = *uPtrs[i] == 0.0? fmi2False: fmi2True;
       break;
     case FMI_INTEGER:
-      m->u->i[idx[j]++] = (fmiInteger)(*uPtrs[i]);
+      m->u->i[idx[j]++] = (fmi2Integer)(*uPtrs[i]);
       break;
     default:
       break;
     }
   }
-  if (setValues(m, m->u) != fmiOK) {
+  if (setValues(m, m->u) != fmi2OK) {
     ssSetErrorStatus(S, "can't set inputs of FMU");
     return;
   }
@@ -893,22 +905,22 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   /* prepare event processing */
   if (m->initPending) {
     /* initialize FMU */
-    m->initPending = fmiFalse;
-    if ((*m->fmiEnterInitializationMode)(m->fmu) != fmiOK
-        || (*m->fmiExitInitializationMode)(m->fmu) != fmiOK) {
+    m->initPending = fmi2False;
+    if ((*m->fmi2EnterInitializationMode)(m->fmu) != fmi2OK
+        || (*m->fmi2ExitInitializationMode)(m->fmu) != fmi2OK) {
       ssSetErrorStatus(S, "can't initialize FMU");
       return;
     }
-    enterEventMode = fmiTrue;
+    enterEventMode = fmi2True;
   }
   else if (ssIsMinorTimeStep(S))
     /* no event processing in minor time steps */
-    enterEventMode = fmiFalse;
+    enterEventMode = fmi2False;
   else {
     if (m->nxc > 0) {
       /* complete integrator step and optionally start event update */
-      if ((*m->fmiCompletedIntegratorStep)(m->fmu, fmiTrue, &enterEventMode,
-                                           &terminateSimulation) != fmiOK) {
+      if ((*m->fmi2CompletedIntegratorStep)(m->fmu, fmi2True, &enterEventMode,
+                                           &terminateSimulation) != fmi2OK) {
         ssSetErrorStatus(S, "can't complete integrator step of FMU");
         return;
       }
@@ -919,28 +931,28 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     }
     else
       /* always enter event mode if there are no continuous states */
-      enterEventMode = fmiTrue;
+      enterEventMode = fmi2True;
     if (enterEventMode)
-      (*m->fmiEnterEventMode)(m->fmu);
+      (*m->fmi2EnterEventMode)(m->fmu);
   }
 
   /* process events */
   if (enterEventMode) {
-    eventInfo.newDiscreteStatesNeeded = fmiTrue;
+    eventInfo.newDiscreteStatesNeeded = fmi2True;
     while (eventInfo.newDiscreteStatesNeeded) {
-      (*m->fmiNewDiscreteStates)(m->fmu, &eventInfo);
+      (*m->fmi2NewDiscreteStates)(m->fmu, &eventInfo);
       if (eventInfo.terminateSimulation) {
         ssSetErrorStatus(S, "terminate in event mode of FMU");
         return;
       }
     }
     if (m->nxc > 0)
-      (*m->fmiEnterContinuousTimeMode)(m->fmu);
+      (*m->fmi2EnterContinuousTimeMode)(m->fmu);
   }
 
   /* get outputs */
   vals = ssGetOutputPortRealSignal(S, 0);
-  if (getValues(m, m->y) != fmiOK) {
+  if (getValues(m, m->y) != fmi2OK) {
     ssSetErrorStatus(S, "can't get outputs of FMU");
     return;
   }
@@ -978,8 +990,8 @@ static void mdlUpdate(SimStruct *S, int_T tid)
   Tcl_Eval(m->interp, "puts mdlUpdate");
 #endif
 
-  if((*m->fmiGetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
-     != fmiOK) {
+  if((*m->fmi2GetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
+     != fmi2OK) {
     ssSetErrorStatus(S, "can't get continuous states of FMU");
     return;
   }
@@ -998,7 +1010,7 @@ static void mdlDerivatives(SimStruct *S)
   Tcl_Eval(m->interp, "puts mdlDerivatives");
 #endif
 
-  if((*m->fmiGetDerivatives)(m->fmu, ssGetdX(S), m->nxc) != fmiOK) {
+  if((*m->fmi2GetDerivatives)(m->fmu, ssGetdX(S), m->nxc) != fmi2OK) {
     ssSetErrorStatus(S, "can't get derivatives of FMU");
     return;
   }
@@ -1014,7 +1026,7 @@ static void mdlTerminate(SimStruct *S)
 #ifdef WITH_LOGGING
   Tcl_Eval(m->interp, "puts mdlTerminate");
 #endif
-  if((*m->fmiTerminate)(m->fmu) != fmiOK) {
+  if((*m->fmi2Terminate)(m->fmu) != fmi2OK) {
     ssSetErrorStatus(S, "can't terminate FMU");
     return;
   }

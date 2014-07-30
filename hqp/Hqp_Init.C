@@ -170,6 +170,8 @@ extern "C" HQP_API int Hqp_InitSignalHandler()
   // ignore signals from floating point arithmetics
   // (needed for ADOL-C 1.7 on Alpha with OSF3.2, OSF4.0)
   signal(SIGFPE, SIG_IGN);
+
+  return TCL_OK;
 }
 
 //--------------------------------------------------------------------------

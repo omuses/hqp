@@ -89,9 +89,6 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _mdl_u_order = iv_get(_mdl_nu);
   _mdl_u0_nfixed = iv_get(_mdl_nu);
   _mdl_u_decimation = iv_get(_mdl_nu);
-  _mdl_u_nominal = v_get(_mdl_nu);
-  _mdl_x_nominal = v_get(_mdl_nx);
-  _mdl_y_nominal = v_get(_mdl_ny);
   _mdl_u_periodic = iv_get(_mdl_nu);
   _mdl_x_periodic = iv_get(_mdl_nx);
   _t_nominal = 1.0;
@@ -104,9 +101,6 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
-  v_set(_mdl_u_nominal, 1.0);
-  v_set(_mdl_x_nominal, 1.0);
-  v_set(_mdl_y_nominal, 1.0);
   iv_set(_mdl_u_periodic, 0);
   iv_set(_mdl_x_periodic, 0);
   iv_set(_mdl_y_order, 1);
@@ -158,7 +152,6 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_integer)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u0_nfixed)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_decimation)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_nominal)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_u_periodic)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_u_max)));
@@ -184,14 +177,12 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 					   mdl_der_u_soft_weight2)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_integer)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_nominal)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_periodic)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_x_max)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_order)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_bias)));
-  _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_nominal)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_ref)));
@@ -234,9 +225,6 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
   iv_free(_mdl_y_order);
   iv_free(_mdl_x_periodic);
   iv_free(_mdl_u_periodic);
-  v_free(_mdl_y_nominal);
-  v_free(_mdl_x_nominal);
-  v_free(_mdl_u_nominal);
   iv_free(_mdl_u_decimation);
   iv_free(_mdl_u0_nfixed);
   iv_free(_mdl_u_order);
@@ -275,9 +263,6 @@ void Prg_SFunctionOpt::setup_model()
   iv_resize(_mdl_u_order, _mdl_nu);
   iv_resize(_mdl_u0_nfixed, _mdl_nu);
   iv_resize(_mdl_u_decimation, _mdl_nu);
-  v_resize(_mdl_u_nominal, _mdl_nu);
-  v_resize(_mdl_x_nominal, _mdl_nx);
-  v_resize(_mdl_y_nominal, _mdl_ny);
   iv_resize(_mdl_u_periodic, _mdl_nu);
   iv_resize(_mdl_x_periodic, _mdl_nx);
   iv_resize(_mdl_y_order, _mdl_ny);
@@ -288,9 +273,6 @@ void Prg_SFunctionOpt::setup_model()
   iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
-  v_set(_mdl_u_nominal, 1.0);
-  v_set(_mdl_x_nominal, 1.0);
-  v_set(_mdl_y_nominal, 1.0);
   iv_set(_mdl_u_periodic, 0);
   iv_set(_mdl_x_periodic, 0);
   iv_set(_mdl_y_order, 1);
@@ -328,17 +310,16 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   m_resize(_mdl_xs, _KK+1, _mdl_nx);
   m_resize(_mdl_ys, _KK+1, _mdl_ny);
 
+  // setup _mdl_xs and mdl_us with start values from model
+  set_mdl_x0(Omu_Model::_mdl_x_start);
+  set_mdl_u0(Omu_Model::_mdl_u_start);
+
   // setup scaling of time
   v_copy(Omu_Program::ts(), _taus);
-  if (_t_scale_idx >= 0)
+  if (!_mdl_is_fmu && _t_scale_idx >= 0) {
+    // skip initialization for FMU because its start value is used
     for (kk = 0; kk < _KK; kk++)
       _mdl_us[kk][_t_scale_idx] = 1.0;
-
-  // setup _mdl_xs with initial states from model
-  v_copy(Omu_Model::_mdl_x0, _mdl_x0);
-  for (kk = 0; kk < _KK; kk++) {
-    for (j = 0; j < _mdl_nx; j++)
-      _mdl_xs[kk][j] = _mdl_x0[j];
   }
 }
 

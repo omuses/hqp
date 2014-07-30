@@ -85,10 +85,18 @@ Omu_Model::Omu_Model()
   _mdl_ny = 0;
 
   _mdl_p = v_get(_mdl_np);
-  _mdl_x0 = v_get(_mdl_nx);
+  _mdl_x_start = v_get(_mdl_nx);
+  _mdl_u_start = v_get(_mdl_nu);
+  _mdl_x_nominal = v_get(_mdl_nx);
+  _mdl_u_nominal = v_get(_mdl_nu);
+  _mdl_y_nominal = v_get(_mdl_ny);
 
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
-  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x0)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x_start)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_u_start)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x_nominal)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_u_nominal)));
+  _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_y_nominal)));
   _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_name)));
   _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_path)));
   _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_args)));
@@ -106,7 +114,11 @@ Omu_Model::~Omu_Model()
     mxDestroyArray(_mx_args[i]);
   delete [] _mx_args;
 
-  v_free(_mdl_x0);
+  v_free(_mdl_y_nominal);
+  v_free(_mdl_u_nominal);
+  v_free(_mdl_x_nominal);
+  v_free(_mdl_u_start);
+  v_free(_mdl_x_start);
   v_free(_mdl_p);
   free(_mdl_args);
   free(_mdl_path);
@@ -280,6 +292,7 @@ void Omu_Model::setup_model(double t0)
         m_error(E_INTERN, "can't get parameter values");
       }
       set_mdl_args(Tcl_GetStringResult(theInterp));
+      Tcl_ResetResult(theInterp);
       ssSetSFcnParamsCount(_SS, _mdl_nargs);
       for (i = 0; i < _mdl_nargs; i++)
         ssSetSFcnParam(_SS, i, _mx_args[i]);
@@ -349,20 +362,60 @@ void Omu_Model::setup_model(double t0)
   v_resize(_mdl_p, _mdl_np);
   read_mx_args(_mdl_p);
 
-  // get initial states that shall be initialized with mdlInitializeConditions
-  // Note: initialization might also be postponed by the model to the next
-  //       mdlOutputs/mdlUpdate call, e.g. if initial states depend on inputs,
-  //       however, don't call these methods here as inputs are not known.
-  if (ssGetmdlInitializeConditions(_SS) != NULL) {
-    SMETHOD_CALL(mdlInitializeConditions, _SS);
+  v_resize(_mdl_x_start, _mdl_nx);
+  if (_mdl_is_fmu) {
+    // get start values for states from model description
+    if (Tcl_VarEval(theInterp, "mdl_x_start ${::fmu::", _mdl_name,
+		    "::stateStartValues}", NULL) != TCL_OK)
+      m_error(E_INTERN, "can't obtain start values for states of FMU");
   }
-  real_T *mdl_xd = ssGetDiscStates(_SS);
-  real_T *mdl_xc = ssGetContStates(_SS);
-  v_resize(_mdl_x0, _mdl_nx);
-  for (i = 0; i < _mdl_nd; i++)
-    _mdl_x0[i] = mdl_xd[i];
-  for (i = _mdl_nd; i < _mdl_nx; i++)
-    _mdl_x0[i] = mdl_xc[i - _mdl_nd];
+  else {
+    // get initial states that shall be initialized with mdlInitializeConditions
+    // Note: initialization might also be postponed by the model to the next
+    //       mdlOutputs/mdlUpdate call, e.g. if initial states depend on inputs,
+    //       however, don't call these methods here as inputs are not known.
+    if (ssGetmdlInitializeConditions(_SS) != NULL) {
+      SMETHOD_CALL(mdlInitializeConditions, _SS);
+    }
+    real_T *mdl_xd = ssGetDiscStates(_SS);
+    real_T *mdl_xc = ssGetContStates(_SS);
+    for (i = 0; i < _mdl_nd; i++)
+      _mdl_x_start[i] = mdl_xd[i];
+    for (i = _mdl_nd; i < _mdl_nx; i++)
+      _mdl_x_start[i] = mdl_xc[i - _mdl_nd];
+  }
+
+  v_resize(_mdl_u_start, _mdl_nu);
+  if (_mdl_is_fmu) {
+    // get start values for inputs from model description
+    if (Tcl_VarEval(theInterp, "mdl_u_start ${::fmu::", _mdl_name,
+		    "::inputStartValues}", NULL) != TCL_OK)
+      m_error(E_INTERN, "can't obtain start values for inputs of FMU");
+  }
+  else {
+    v_set(_mdl_u_start, 0.0);
+  }
+
+  // setup nominal values
+  v_resize(_mdl_x_nominal, _mdl_nx);
+  v_resize(_mdl_u_nominal, _mdl_nu);
+  v_resize(_mdl_y_nominal, _mdl_ny);
+  if (_mdl_is_fmu) {
+    // take over default values from model description
+    if(Tcl_VarEval(theInterp, "mdl_u_nominal ${::fmu::", _mdl_name,
+                   "::inputNominalValues}", NULL) != TCL_OK ||
+       Tcl_VarEval(theInterp, "mdl_x_nominal ${::fmu::", _mdl_name,
+                   "::stateNominalValues}", NULL) != TCL_OK ||
+       Tcl_VarEval(theInterp, "mdl_y_nominal ${::fmu::", _mdl_name,
+                   "::outputNominalValues}", NULL) != TCL_OK)
+      m_error(E_INTERN, "can't obtain nominal values");
+  }
+  else {
+    // ordinary S-function
+    v_set(_mdl_u_nominal, 1.0);
+    v_set(_mdl_x_nominal, 1.0);
+    v_set(_mdl_y_nominal, 1.0);
+  }
 
   _mdl_needs_setup = false;
 }

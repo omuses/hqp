@@ -230,8 +230,6 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
   IVECP 	_mdl_u_order; 	///< interpolation order (default: 1 (linear))
   IVECP		_mdl_y_active; 	///< indicate measured outputs
   VECP 		_mdl_p_nominal;	///< nominal parameter values (for scaling)
-  VECP 		_mdl_x_nominal; ///< nominal state values (for scaling)
-  VECP		_mdl_y_nominal;	///< nominal output values (for scaling)
 
   int		_nx;	///< number of states for optimizer
   int		_np;	///< number of estimated parameters
@@ -384,9 +382,6 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
   /// maximum for time derivative of x0  
   const VECP mdl_der_x0_max() const {return _mdl_der_x0_max;}
 
-  /// nominal state values (for scaling)
-  const VECP mdl_x_nominal() const {return _mdl_x_nominal;}
-
   ///< interpolation order (0 (constant) or 1 (linear), default: 1)
   const IVECP mdl_u_order() const {return _mdl_u_order;}
 
@@ -398,9 +393,6 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
 
   /// indicate measured outputs
   const IVECP mdl_y_active() const {return _mdl_y_active;}
-
-  /// nominal output values (for scaling)
-  const VECP mdl_y_nominal() const {return _mdl_y_nominal;}
 
   /// initial states for each experiment (size: nex . mdl_nx)
   const MATP mdl_x0s() const {return _mdl_x0s;}
@@ -456,9 +448,6 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
   /// set maximum for dx0dt
   void set_mdl_der_x0_max(const VECP v) {v_copy_elements(v, _mdl_der_x0_max);}
 
-  /// set nominal states
-  void set_mdl_x_nominal(const VECP v) {v_copy_elements(v, _mdl_x_nominal);}
-
   /// set interpolation order for inputs
   void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
 
@@ -472,9 +461,6 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
 
   /// set measured outputs
   void set_mdl_y_active(const IVECP v) {iv_copy_elements(v, _mdl_y_active);}
-
-  /// set nominal outputs
-  void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
 
   /// set initial states
   void set_mdl_x0s(const MATP v) {
