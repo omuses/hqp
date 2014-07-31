@@ -49,6 +49,40 @@ class Hqp_Omuses: public Hqp_Docp {
   Hqp_Omuses();
   ~Hqp_Omuses();
 
+  /**
+   * @name Member access methods.
+   */
+  //@{
+  /// optimization program
+  Omu_Program *prg() const {return _prg;}
+  /// Set optimization program.
+  /// Remind to delete an existing prg before creating a new one!
+  void set_prg(Omu_Program *prg) {_prg = prg;}
+
+  /// solver for continuous-time differential equations
+  Omu_Integrator *integrator() const {return _integrator;}
+  /// Set solver for continuous-time differential equations.
+  /// Remind to delete an existing integrator before creating a new one!
+  void set_integrator(Omu_Integrator *integrator) {_integrator = integrator;}
+
+  /// flag about use of automatic differentiation
+  bool ad() const {return _ad;}
+  /// Set flag about use of automatic differentiation.
+  void set_ad(bool val) {_ad = val;}
+
+  /// scaling of optimization criterion
+  double fscale() const {return _fscale;}
+  /// Set scaling of optimization criterion.
+  void set_fscale(double val) {_fscale = val;}
+
+  /// setup method for structure of Hessian of Lagrangian.
+  /// 0: full Hessian, 1: setup based on structure information
+  int hela_setup() const {return _hela_setup;}
+  /// Set setup method for structure of Hessian of Lagrangian.
+  void set_hela_setup(int val) {_hela_setup = val;}
+
+  //@}
+
   const char *name() {return "Omuses";} ///< generic name Omuses
 
   /** setup stages of optimization program */
@@ -56,7 +90,7 @@ class Hqp_Omuses: public Hqp_Docp {
 
  protected:
   If_List		_ifList; 	///< interface elements
-  Omu_Program		*_prg; 		///< problem definition
+  Omu_Program		*_prg; 		///< optimization program
   Omu_Integrator	*_integrator; 	///< integrator
 
   bool 	_stages_ok;	///< setup_stages() was called separately

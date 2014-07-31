@@ -42,6 +42,14 @@
 
 #include "Omu_IntDopri5.h"
 
+#define GET_SET_CB(vartype, prefix, name) \
+  GET_CB(vartype, prefix, name), \
+  IF_SET_CB(vartype, Hqp_Omuses, set_##name)
+
+#define GET_CB(vartype, prefix, name) \
+  prefix#name, \
+  IF_GET_CB(vartype, Hqp_Omuses, name)
+
 typedef If_Method<Hqp_Omuses> If_Cmd;
 
 IF_CLASS_DEFINE("Omuses", Hqp_Omuses, Hqp_SqpProgram);
@@ -50,7 +58,7 @@ IF_CLASS_DEFINE("Omuses", Hqp_Omuses, Hqp_SqpProgram);
 Hqp_Omuses::Hqp_Omuses()
 {
   _prg = NULL;
-  _integrator = new Omu_IntDopri5;
+  _integrator = NULL;
   _xs = NULL;
   _us = NULL;
   _css = NULL;
@@ -76,9 +84,9 @@ Hqp_Omuses::Hqp_Omuses()
 			       Omu_Integrator));
   _ifList.append(new If_Cmd("prg_setup_stages",
 			    &Hqp_Omuses::setup_stages, this));
-  _ifList.append(new If_Bool("prg_ad", &_ad));
-  _ifList.append(new If_Real("prg_fscale", &_fscale));
-  _ifList.append(new If_Int("prg_hela_setup", &_hela_setup));
+  _ifList.append(new If_Bool(GET_SET_CB(bool, "prg_", ad)));
+  _ifList.append(new If_Real(GET_SET_CB(double, "prg_", fscale)));
+  _ifList.append(new If_Int(GET_SET_CB(int, "prg_", hela_setup)));
 }
 
 //--------------------------------------------------------------------------
@@ -139,6 +147,9 @@ void Hqp_Omuses::setup_stages()
   _stages_ok = true;
 
   // setup integrator
+  // create a default integrator if none has been configured
+  if (_integrator == NULL)
+    _integrator = new Omu_IntDopri5;
   _integrator->setup_stages(_prg);
 }
 

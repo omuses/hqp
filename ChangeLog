@@ -1,3 +1,7 @@
+2014-07-31  <rfranke>
+
+	* omu/Hqp_Omuses.[hC]: add C++ member access methods
+
 2014-07-30    <rfranke>
 
 	* hxi/sfun_fmu.c, fmi*.h: upgrade from FMI 2.0 RC1 to FMI 2.0
