@@ -31,8 +31,8 @@ SRCS =	Omu_Init.C \
         $(OMU_INTDASPK_C) \
 	adoublev.C \
 	Omu_Model.C \
-	Prg_SFunctionOpt.C \
-	Prg_SFunctionEst.C \
+	Prg_DynamicOpt.C \
+	Prg_DynamicEst.C \
 	Hxi_SFunction.C \
 	Hxi_SimStruct.C \
 	$(MEX_SRCS)

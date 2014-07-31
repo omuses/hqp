@@ -1,5 +1,8 @@
 2014-07-31  <rfranke>
 
+	* omu/Prg_*.[hC], omu/Omu_Init.C, omu/Makefile:
+	  - rename generic predefined programs to DynamicOpt and DynamicEst
+
 	* omu/Hqp_Omuses.[hC]: add C++ member access methods
 
 2014-07-30    <rfranke>

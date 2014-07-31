@@ -1,7 +1,7 @@
 /**
- * @file Prg_SFunctionOpt.h
+ * @file Prg_DynamicOpt.h
  *    Optimal control problem for a model given
- *    as S-function or Functional Model Unit (FMU).
+ *    as Functional Model Unit (FMU) or as S-function.
  *
  * rf, 7/25/00
  *
@@ -26,8 +26,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Prg_SFunctionOpt_H
-#define Prg_SFunctionOpt_H
+#ifndef Prg_DynamicOpt_H
+#define Prg_DynamicOpt_H
 
 #include "Omu_Program.h"
 #include "Omu_Model.h"
@@ -294,7 +294,7 @@
    \end{array}
    @f]
  */
-class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
+class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
 
  protected:
   Omu_VariableVec _mdl_x0;	///< initial states for optimization
@@ -378,7 +378,7 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
 
   /**
    * @name Implementation of predefined methods.
-   * @see Omu_Program, Prg_SFunction
+   * @see Omu_Program, Omu_Model
    */
   //@{
   void setup_model();
@@ -438,10 +438,10 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
 
  public:
 
-  Prg_SFunctionOpt();		///< constructor
-  ~Prg_SFunctionOpt();		///< destructor
+  Prg_DynamicOpt();		///< constructor
+  ~Prg_DynamicOpt();		///< destructor
 
-  const char *name() {return "SFunctionOpt";} ///< name SFunctionOpt
+  const char *name() {return "DynamicOpt";} ///< name DynamicOpt
 
   /**
    * @name Access methods for program specific members (If prefix: prg_)
@@ -909,5 +909,12 @@ class Prg_SFunctionOpt: public Omu_Program, public Omu_Model {
   //@}
 };  
 
-#endif
+/**
+ * Deprecated synonym for DynamicOpt providing backwards compatibility.
+ */
+class Prg_SFunctionOpt: public Prg_DynamicOpt {
+ public:
+  const char *name() {return "SFunctionOpt";} ///< name SFunctionOpt
+};
 
+#endif

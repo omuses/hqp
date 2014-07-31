@@ -1,5 +1,5 @@
 /*
- * Prg_SFunctionEst.C -- class definition
+ * Prg_DynamicEst.C -- class definition
  *
  */
 
@@ -22,7 +22,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Prg_SFunctionEst.h"
+#include "Prg_DynamicEst.h"
 
 #include <stdlib.h>
 
@@ -42,11 +42,11 @@
 
 #define GET_SET_CB(vartype, prefix, name) \
   GET_CB(vartype, prefix, name), \
-  IF_SET_CB(vartype, Prg_SFunctionEst, set_##name)
+  IF_SET_CB(vartype, Prg_DynamicEst, set_##name)
 
 #define GET_CB(vartype, prefix, name) \
   prefix#name, \
-  IF_GET_CB(vartype, Prg_SFunctionEst, name)
+  IF_GET_CB(vartype, Prg_DynamicEst, name)
 
 // Call an S-function method and check for errors.
 // Throw E_CONV as errors occuring during solution are generally
@@ -70,12 +70,13 @@
   } \
 }
 
-typedef If_Method<Prg_SFunctionEst> If_Cmd;
+typedef If_Method<Prg_DynamicEst> If_Cmd;
 
+IF_CLASS_DEFINE("DynamicEst", Prg_DynamicEst, Omu_Program);
 IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 
 //--------------------------------------------------------------------------
-Prg_SFunctionEst::Prg_SFunctionEst()
+Prg_DynamicEst::Prg_DynamicEst()
 {
   _multistage = 1;
 
@@ -124,7 +125,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
   _dxfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
 
   _ifList.append(new If_Cmd("prg_setup_model",
-			    &Prg_SFunctionEst::setup_model, this));
+			    &Prg_DynamicEst::setup_model, this));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_max)));
@@ -163,7 +164,7 @@ Prg_SFunctionEst::Prg_SFunctionEst()
 }
 
 //--------------------------------------------------------------------------
-Prg_SFunctionEst::~Prg_SFunctionEst()
+Prg_DynamicEst::~Prg_DynamicEst()
 {
   m_free(_dxfdpx0);
   m_free(_dxfdx);
@@ -190,7 +191,7 @@ Prg_SFunctionEst::~Prg_SFunctionEst()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::write_active_mx_args(VECP p)
+void Prg_DynamicEst::write_active_mx_args(VECP p)
 {
   mxArray *arg;
   int i, j, ip, idx, nel;
@@ -209,7 +210,7 @@ void Prg_SFunctionEst::write_active_mx_args(VECP p)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::setup_model()
+void Prg_DynamicEst::setup_model()
 {
   // load S-function
   Omu_Model::setup_model(_t0);
@@ -245,7 +246,7 @@ void Prg_SFunctionEst::setup_model()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
+void Prg_DynamicEst::setup_stages(IVECP ks, VECP ts)
 {
   int kk, i, j;
 
@@ -261,7 +262,7 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
   }
   else {
     if (_nex > 1) {
-      m_error(E_FORMAT, "Prg_SFunctionEst::setup_stages: "
+      m_error(E_FORMAT, "Prg_DynamicEst::setup_stages: "
 	      "prg_nex>1 requires prg_multistage=true");
     }
     _KK = max(_K, _KK); // assume that one of both has been specified
@@ -300,9 +301,9 @@ void Prg_SFunctionEst::setup_stages(IVECP ks, VECP ts)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::setup(int k,
-			     Omu_VariableVec &x, Omu_VariableVec &u,
-			     Omu_VariableVec &c)
+void Prg_DynamicEst::setup(int k,
+			   Omu_VariableVec &x, Omu_VariableVec &u,
+			   Omu_VariableVec &c)
 {
   int i, idx, kk;
 
@@ -365,7 +366,7 @@ void Prg_SFunctionEst::setup(int k,
   }
 
   if (!_multistage && _nx0 > 0)
-    m_error(E_FORMAT, "Prg_SFunctionEst::setup: "
+    m_error(E_FORMAT, "Prg_DynamicEst::setup: "
 	    "estimation of initial states requires prg_multistage=true");
 
   // allocate optimization variables
@@ -464,12 +465,12 @@ void Prg_SFunctionEst::setup(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::setup_struct(int k,
-				    const Omu_VariableVec &x,
-				    const Omu_VariableVec &u,
-				    Omu_DependentVec &xt, Omu_DependentVec &F,
-				    Omu_DependentVec &f,
-				    Omu_Dependent &f0, Omu_DependentVec &c)
+void Prg_DynamicEst::setup_struct(int k,
+				  const Omu_VariableVec &x,
+				  const Omu_VariableVec &u,
+				  Omu_DependentVec &xt, Omu_DependentVec &F,
+				  Omu_DependentVec &f,
+				  Omu_Dependent &f0, Omu_DependentVec &c)
 {
   int i, j;
   int ex = _exs[ks(k)]; 	// experiment of current stage
@@ -539,8 +540,8 @@ void Prg_SFunctionEst::setup_struct(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::init_simulation(int k,
-				       Omu_VariableVec &x, Omu_VariableVec &u)
+void Prg_DynamicEst::init_simulation(int k,
+				     Omu_VariableVec &x, Omu_VariableVec &u)
 {
   // initial states
   if (k == 0 || _multistage > 1)
@@ -548,11 +549,11 @@ void Prg_SFunctionEst::init_simulation(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::update(int kk,
-			      const Omu_StateVec &x, const Omu_Vec &u,
-			      const Omu_StateVec &xf,
-			      Omu_DependentVec &f, Omu_Dependent &f0,
-			      Omu_DependentVec &c)
+void Prg_DynamicEst::update(int kk,
+			    const Omu_StateVec &x, const Omu_Vec &u,
+			    const Omu_StateVec &xf,
+			    Omu_DependentVec &f, Omu_Dependent &f0,
+			    Omu_DependentVec &c)
 {
   int i, j, idx;
   int ex = _exs[kk];
@@ -795,7 +796,7 @@ void Prg_SFunctionEst::update(int kk,
                  m_inverse(_COV, _P2),
                  // catch
                  m_error(E_CONV, 
-                         "Prg_SFunctionEst::update: singular Covariance matrix")
+                         "Prg_DynamicEst::update: singular Covariance matrix")
                  );
       sm_mlt(_ssr/n, _P2, _COV);
       for (i = 0, idx = 0; idx < _mdl_np; idx++) {
@@ -817,9 +818,9 @@ void Prg_SFunctionEst::update(int kk,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::consistic(int kk, double t,
-				 const Omu_StateVec &x, const Omu_Vec &u,
-				 Omu_DependentVec &xt)
+void Prg_DynamicEst::consistic(int kk, double t,
+			       const Omu_StateVec &x, const Omu_Vec &u,
+			       Omu_DependentVec &xt)
 {
   int i;
   int ex = _exs[kk];
@@ -923,9 +924,9 @@ void Prg_SFunctionEst::consistic(int kk, double t,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionEst::continuous(int kk, double t,
-				  const Omu_StateVec &x, const Omu_Vec &u,
-				  const Omu_StateVec &dx, Omu_DependentVec &F)
+void Prg_DynamicEst::continuous(int kk, double t,
+				const Omu_StateVec &x, const Omu_Vec &u,
+				const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   int i;
 

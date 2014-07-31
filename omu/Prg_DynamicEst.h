@@ -1,7 +1,7 @@
 /**
- * @file Prg_SFunctionEst.h
+ * @file Prg_DynamicEst.h
  *    Estimation of initial states and parameters for a model given
- *    as S-function or Functional Model Unit (FMU).
+ *    as Functional Model Unit (FMU) or as S-function.
  *
  * rf, 7/25/00
  *
@@ -26,8 +26,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Prg_SFunctionEst_H
-#define Prg_SFunctionEst_H
+#ifndef Prg_DynamicEst_H
+#define Prg_DynamicEst_H
 
 #include "Omu_Program.h"
 #include "Omu_Model.h"
@@ -214,7 +214,7 @@
        \alpha=0.05.
    @f]
  */
-class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
+class Prg_DynamicEst: public Omu_Program, public Omu_Model {
 
  protected:
   Omu_VariableVec _mdl_p;	///< model parameters (note: default min is 0)
@@ -299,10 +299,10 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
 
  public:
 
-  Prg_SFunctionEst();		///< constructor
-  ~Prg_SFunctionEst();		///< destructor
+  Prg_DynamicEst();		///< constructor
+  ~Prg_DynamicEst();		///< destructor
 
-  const char *name() {return "SFunctionEst";} ///< name SFunctionEst
+  const char *name() {return "DynamicEst";} ///< name DynamicEst
 
   /**
    * @name Access methods for program specific members (If prefix: prg_)
@@ -500,5 +500,13 @@ class Prg_SFunctionEst: public Omu_Program, public Omu_Model {
 
   //@}
 };  
+
+/**
+ * Deprecated synonym for DynamicEst providing backwards compatibility.
+ */
+class Prg_SFunctionEst: public Prg_DynamicEst {
+ public:
+  const char *name() {return "SFunctionEst";} ///< name SFunctionEst
+};
 
 #endif

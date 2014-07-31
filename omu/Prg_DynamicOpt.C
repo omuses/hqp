@@ -1,5 +1,5 @@
 /*
- * Prg_SFunctionOpt.C -- class definition
+ * Prg_DynamicOpt.C -- class definition
  *
  */
 
@@ -22,7 +22,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Prg_SFunctionOpt.h"
+#include "Prg_DynamicOpt.h"
 
 #include <stdlib.h>
 
@@ -41,11 +41,11 @@
 
 #define GET_SET_CB(vartype, prefix, name) \
   GET_CB(vartype, prefix, name), \
-  IF_SET_CB(vartype, Prg_SFunctionOpt, set_##name)
+  IF_SET_CB(vartype, Prg_DynamicOpt, set_##name)
 
 #define GET_CB(vartype, prefix, name) \
   prefix#name, \
-  IF_GET_CB(vartype, Prg_SFunctionOpt, name)
+  IF_GET_CB(vartype, Prg_DynamicOpt, name)
 
 // Call an S-function method and check for errors.
 // Throw E_CONV as errors occuring during solution are generally
@@ -69,12 +69,13 @@
   } \
 }
 
-typedef If_Method<Prg_SFunctionOpt> If_Cmd;
+typedef If_Method<Prg_DynamicOpt> If_Cmd;
 
+IF_CLASS_DEFINE("DynamicOpt", Prg_DynamicOpt, Omu_Program);
 IF_CLASS_DEFINE("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
 
 //--------------------------------------------------------------------------
-Prg_SFunctionOpt::Prg_SFunctionOpt()
+Prg_DynamicOpt::Prg_DynamicOpt()
 {
   _sps = 1;
   _multistage = 1;
@@ -125,7 +126,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
   _taus = v_get(_KK+1);
 
   _ifList.append(new If_Cmd("prg_setup_model",
-			    &Prg_SFunctionOpt::setup_model, this));
+			    &Prg_DynamicOpt::setup_model, this));
   _ifList.append(new If_Int("prg_sps", &_sps));
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", multistage)));
   _ifList.append(new If_Int(GET_SET_CB(int, "", mdl_t_scale_idx)));
@@ -215,7 +216,7 @@ Prg_SFunctionOpt::Prg_SFunctionOpt()
 }
 
 //--------------------------------------------------------------------------
-Prg_SFunctionOpt::~Prg_SFunctionOpt()
+Prg_DynamicOpt::~Prg_DynamicOpt()
 {
   v_free(_taus);
   m_free(_mdl_ys);
@@ -234,7 +235,7 @@ Prg_SFunctionOpt::~Prg_SFunctionOpt()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::setup_model()
+void Prg_DynamicOpt::setup_model()
 {
   // load S-function
   Omu_Model::setup_model(_t0);
@@ -280,7 +281,7 @@ void Prg_SFunctionOpt::setup_model()
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
+void Prg_DynamicOpt::setup_stages(IVECP ks, VECP ts)
 {
   int kk, j;
 
@@ -290,7 +291,7 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 
   // setup optimization problem
   if (_sps < 1) {
-    m_error(E_FORMAT, "Prg_SFunctionOpt::setup_stages: "
+    m_error(E_FORMAT, "Prg_DynamicOpt::setup_stages: "
 	    "prg_sps must at least be one");
   }
   if (_multistage) {
@@ -299,7 +300,7 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
   }
   else {
     if (_sps > 1) {
-      m_error(E_FORMAT, "Prg_SFunctionOpt::setup_stages: "
+      m_error(E_FORMAT, "Prg_DynamicOpt::setup_stages: "
 	      "prg_sps>1 requires prg_multistage=true");
     }
     _K = 1;
@@ -324,9 +325,9 @@ void Prg_SFunctionOpt::setup_stages(IVECP ks, VECP ts)
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::setup(int k,
-			     Omu_VariableVec &x, Omu_VariableVec &u,
-			     Omu_VariableVec &c)
+void Prg_DynamicOpt::setup(int k,
+			   Omu_VariableVec &x, Omu_VariableVec &u,
+			   Omu_VariableVec &c)
 {
   int i, idx, isc, iscf, j;
 
@@ -367,7 +368,7 @@ void Prg_SFunctionOpt::setup(int k,
       _t_active = _mdl_u.active[_t_scale_idx];
       _t_scale_nominal = _mdl_u_nominal[_t_scale_idx];
       if (_mdl_u_order[_t_scale_idx] != 0)
-	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+	  m_error(E_FORMAT, "Prg_DynamicOpt::setup: "
 		  "mdl_u_order[mdl_t_scale_idx] must be 0 (zero order hold)");
     }
     else
@@ -411,7 +412,7 @@ void Prg_SFunctionOpt::setup(int k,
       if (_mdl_y0.min[idx] > -Inf || _mdl_y0.max[idx] < Inf
 	  || _mdl_y0.weight1[idx] != 0.0 || _mdl_y0.weight2[idx] != 0.0) {
 	if (!_multistage)
-	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+	  m_error(E_FORMAT, "Prg_DynamicOpt::setup: "
 		  "use of mdl_y0 requires prg_multistage=true");
 	_mdl_y0.active[idx] = 1;
 	_nc0++;
@@ -487,7 +488,7 @@ void Prg_SFunctionOpt::setup(int k,
   // setup states
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (k == 0 && _mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
-      m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+      m_error(E_FORMAT, "Prg_DynamicOpt::setup: "
               "mdl_u_order must be 0 or 1");
     if (_mdl_u.active[idx]) {
       x.initial[i] = _mdl_us[ks(k)][idx] / _mdl_u_nominal[idx];
@@ -545,7 +546,7 @@ void Prg_SFunctionOpt::setup(int k,
         x.min[i] = x.max[i] = Inf;
       else if (_mdl_x0_active[idx]) {
 	if (!_multistage)
-	  m_error(E_FORMAT, "Prg_SFunctionOpt::setup: "
+	  m_error(E_FORMAT, "Prg_DynamicOpt::setup: "
 		  "mdl_x0_active=1 requires prg_multistage=true");
         // use the more restrictive bound of x0_min/max and x_min/max
         if (_mdl_x0.min[idx] > _mdl_x.min[idx])
@@ -754,12 +755,12 @@ void Prg_SFunctionOpt::setup(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::setup_struct(int k,
-				    const Omu_VariableVec &x,
-				    const Omu_VariableVec &u,
-				    Omu_DependentVec &xt, Omu_DependentVec &F,
-				    Omu_DependentVec &f,
-				    Omu_Dependent &f0, Omu_DependentVec &c)
+void Prg_DynamicOpt::setup_struct(int k,
+				  const Omu_VariableVec &x,
+				  const Omu_VariableVec &u,
+				  Omu_DependentVec &xt, Omu_DependentVec &F,
+				  Omu_DependentVec &f,
+				  Omu_Dependent &f0, Omu_DependentVec &c)
 {
   int i, idx, j;
 
@@ -852,8 +853,8 @@ void Prg_SFunctionOpt::setup_struct(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::init_simulation(int k,
-				       Omu_VariableVec &x, Omu_VariableVec &u)
+void Prg_DynamicOpt::init_simulation(int k,
+				     Omu_VariableVec &x, Omu_VariableVec &u)
 {
   // initial states
   if (k == 0 || _multistage > 1)
@@ -861,11 +862,11 @@ void Prg_SFunctionOpt::init_simulation(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::update(int kk,
-			      const Omu_StateVec &x, const Omu_Vec &u,
-			      const Omu_StateVec &xf,
-			      Omu_DependentVec &f, Omu_Dependent &f0,
-			      Omu_DependentVec &c)
+void Prg_DynamicOpt::update(int kk,
+			    const Omu_StateVec &x, const Omu_Vec &u,
+			    const Omu_StateVec &xf,
+			    Omu_DependentVec &f, Omu_Dependent &f0,
+			    Omu_DependentVec &c)
 {
   int i, idx, is, isc, isf, iscf;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
@@ -1165,11 +1166,11 @@ void Prg_SFunctionOpt::update(int kk,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::update_grds(int kk, 
-				   const Omu_StateVec &x, const Omu_Vec &u,
-				   const Omu_StateVec &xf,
-				   Omu_DependentVec &f, Omu_Dependent &f0,
-				   Omu_DependentVec  &c)
+void Prg_DynamicOpt::update_grds(int kk, 
+				 const Omu_StateVec &x, const Omu_Vec &u,
+				 const Omu_StateVec &xf,
+				 Omu_DependentVec &f, Omu_Dependent &f0,
+				 Omu_DependentVec  &c)
 {
   int i, idx, ii, iidx0, iidx, isc, iscdx, is, j, jdx, rdx;
   int isf, iscf, iscfdx, ixf;
@@ -1733,9 +1734,9 @@ void Prg_SFunctionOpt::update_grds(int kk,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::consistic(int kk, double t,
-				 const Omu_StateVec &x, const Omu_Vec &u,
-				 Omu_DependentVec &xt)
+void Prg_DynamicOpt::consistic(int kk, double t,
+			       const Omu_StateVec &x, const Omu_Vec &u,
+			       Omu_DependentVec &xt)
 {
   int i, idx;
 
@@ -1831,9 +1832,9 @@ void Prg_SFunctionOpt::consistic(int kk, double t,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::continuous(int kk, double t,
-				  const Omu_StateVec &x, const Omu_Vec &u,
-				  const Omu_StateVec &dx, Omu_DependentVec &F)
+void Prg_DynamicOpt::continuous(int kk, double t,
+				const Omu_StateVec &x, const Omu_Vec &u,
+				const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   int i, idx;
   int upsk = _multistage? 1: _KK;
@@ -1908,11 +1909,11 @@ void Prg_SFunctionOpt::continuous(int kk, double t,
 }
 
 //--------------------------------------------------------------------------
-void Prg_SFunctionOpt::continuous_grds(int kk, double t,
-				       const Omu_StateVec &x,
-				       const Omu_Vec &u,
-				       const Omu_StateVec &dx,
-				       Omu_DependentVec &F)
+void Prg_DynamicOpt::continuous_grds(int kk, double t,
+				     const Omu_StateVec &x,
+				     const Omu_Vec &u,
+				     const Omu_StateVec &dx,
+				     Omu_DependentVec &F)
 {
   if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
