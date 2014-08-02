@@ -117,7 +117,7 @@ typedef struct {
   fmi2Real *r;			/**< Real values */
   fmi2Boolean *b;		/**< Boolean values */
   fmi2Integer *i;		/**< Integer values */
-  fmi2String *s;			/**< String values */
+  fmi2String *s;		/**< String values */
 } Hxi_ModelVariables;
 
 static const char* statusStrings[] = {
@@ -835,7 +835,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     ssSetErrorStatus(S, "can't set time of FMU");
     return;
   }
-  /* ToDo: set tunable parameters introduced with FMI 2.0 */
+  /* Set all parameter values at initialization */
   if (m->initPending) {
     for (j = 0; j < NUM_BASETYPES; j++)
       idx[j] = 0;
@@ -867,6 +867,54 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     }
     if (ssGetErrorStatus(S))
       return;
+  }
+  /* Set changed values else, to support tunable parameters of FMI 2.0. */
+  else {
+    for (j = 0; j < NUM_BASETYPES; j++)
+      idx[j] = 0;
+    for (i = 0; i < m->p->nv; i++) {
+      param = ssGetSFcnParam(S, i);
+      j = m->p->btv[i];
+      switch (j) {
+      case FMI_REAL:
+        if (m->p->r[idx[j]] != *mxGetPr(param)) {
+          m->p->r[idx[j]] = *mxGetPr(param);
+          if ((*m->fmi2SetReal)(m->fmu, m->p->vr[FMI_REAL] + idx[j],
+                                1, m->p->r + idx[j]) != fmi2OK) {
+            ssSetErrorStatus(S, "can't set Real parameter of FMU");
+            return;
+          }
+        }
+        idx[j]++;
+	break;
+      case FMI_BOOLEAN:
+        if (m->p->b[idx[j]] != (*mxGetPr(param) == 0.0? fmi2False: fmi2True)) {
+          m->p->b[idx[j]] = *mxGetPr(param) == 0.0? fmi2False: fmi2True;
+          if ((*m->fmi2SetBoolean)(m->fmu, m->p->vr[FMI_BOOLEAN] + idx[j],
+                                   1, m->p->b + idx[j]) != fmi2OK) {
+            ssSetErrorStatus(S, "can't set Boolean parameter of FMU");
+            return;
+          }
+        }
+        idx[j]++;
+	break;
+      case FMI_INTEGER:
+        if (m->p->i[idx[j]] != (fmi2Integer)(*mxGetPr(param))) {
+          m->p->i[idx[j]] = (fmi2Integer)(*mxGetPr(param));
+          if ((*m->fmi2SetInteger)(m->fmu, m->p->vr[FMI_INTEGER] + idx[j],
+                                   1, m->p->i + idx[j]) != fmi2OK) {
+            ssSetErrorStatus(S, "can't set Integer parameter of FMU");
+            return;
+          }
+        }
+        idx[j]++;
+	break;
+      case FMI_STRING:
+        /* Note: don't support tunable string parameters for now */
+      default:
+	break;
+      }
+    }
   }
 
   /* set states */

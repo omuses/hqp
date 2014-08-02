@@ -1,3 +1,8 @@
+2014-08-02    <rfranke>
+
+	* hxi/sfun_fmu.c:
+	  - add support for tunable parameters introduced with FMI 2.0
+
 2014-07-31  <rfranke>
 
 	* omu/Prg_*.[hC], omu/Omu_Init.C, omu/Makefile:
