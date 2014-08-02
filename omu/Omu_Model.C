@@ -312,6 +312,8 @@ void Omu_Model::setup_model(double t0)
   // (this limitation is because later on we will only access port 0)
   _mdl_nu = 0;
   for (i = 0; i < ssGetNumInputPorts(_SS); i++) {
+    if (ssGetInputPortWidth(_SS, i) < 1)
+      continue;
     if (*ssGetInputPortRealSignalPtrs(_SS, i)
 	== *ssGetInputPortRealSignalPtrs(_SS, 0) + _mdl_nu)
       _mdl_nu += ssGetInputPortWidth(_SS, i);
@@ -325,6 +327,8 @@ void Omu_Model::setup_model(double t0)
   // (this limitation is because later on we will only access port 0)
   _mdl_ny = 0;
   for (i = 0; i < ssGetNumOutputPorts(_SS); i++) {
+    if (ssGetOutputPortWidth(_SS, i) < 1)
+      continue;
     if (ssGetOutputPortRealSignal(_SS, i)
 	== ssGetOutputPortRealSignal(_SS, 0) + _mdl_ny)
       _mdl_ny += ssGetOutputPortWidth(_SS, i);

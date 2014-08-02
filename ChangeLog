@@ -1,5 +1,8 @@
 2014-08-02    <rfranke>
 
+	* omu/Omu_Model.C:
+	  - bug fix for I/O ports with dimension of zero
+
 	* hxi/sfun_fmu.c:
 	  - add support for tunable parameters introduced with FMI 2.0
 
