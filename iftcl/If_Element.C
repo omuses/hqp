@@ -26,6 +26,8 @@
 #include "If_ListElement.h"
 #include "If_Element.h"
 
+#include <meschach/err.h>
+
 //--------------------------------------------------------------------------
 Tcl_Interp *theInterp = NULL;
 

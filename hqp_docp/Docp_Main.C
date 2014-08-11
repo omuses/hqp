@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
   // (from now on error tests are omitted for If-calls
   //  in order to improve readability)
   eps = 0.0;
-  If_GetReal("sqp_eps", eps);
+  If_GetReal("sqp_eps", &eps);
   printf(" set sqp_eps to: %g\n", eps);
 
   mat_solver = NULL;
-  If_GetString("qp_mat_solver", mat_solver);
+  If_GetString("qp_mat_solver", &mat_solver);
   printf(" set qp_mat_solver to: %s\n", mat_solver);
 
   printf("\nSolve problem\n");
@@ -78,9 +78,9 @@ int main(int argc, char *argv[])
   // Write solution statistics
   double objective;
   int iters, steps;
-  If_GetReal("prg_f", objective);
-  If_GetInt("sqp_iter", iters);
-  If_GetInt("prg_fbd_evals", steps);
+  If_GetReal("prg_f", &objective);
+  If_GetInt("sqp_iter", &iters);
+  If_GetInt("prg_fbd_evals", &steps);
   printf("Objective : %g\n", objective);
   printf("Iters     : %d\n", iters);
   printf("Line steps: %d\n", steps);

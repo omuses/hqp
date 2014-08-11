@@ -1,3 +1,10 @@
+2014-08-11  <rfranke>
+
+	* iftcl/If.h, iftcl/If*.[hC], hqp_docp/Docp_Main.C:
+	  - change argument references to pointers to
+	    allow inclusion of If.h into C code, besides C++
+	  - add If_Log functionality
+
 2014-08-04  <rfranke>
 
 	* hxi/sfun_fmu.c:

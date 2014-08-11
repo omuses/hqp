@@ -27,7 +27,7 @@
 #ifndef If_H
 #define If_H
 
-#include <Meschach.h>
+#include <meschach/machine.h>
 #include <tcl.h>
 
 /** define IF_API when compiling a Dynamic Link Library (DLL) */
@@ -41,7 +41,26 @@
 /** Return code for fail. */
 #define IF_ERROR 	1
 
+/** Supported log levels */
+typedef enum {
+  If_LogNone = 0,
+  If_LogError,
+  If_LogWarning,
+  If_LogInfo,
+  If_LogAll,
+} If_LogLevel;
+
+#ifdef __cplusplus
 extern "C" {
+#else
+# if defined(_MSC_VER)
+  /** define inline for Microsoft C compiler */
+#  define inline __forceinline
+# endif
+#endif
+  /** Log a message */
+  IF_API void If_Log(const char *category, const char *message, ...);
+
   /** Initialize the command interface to use the specified Tcl_Interp.
       This function needs to be called by an extension being loaded
       to a Tcl application. It either returns TCL_OK or TCL_ERROR
@@ -55,9 +74,10 @@ extern "C" {
       which Tcl version to use. */
   inline int If_CreateInterp(int argc, char *argv[])
   {
+    Tcl_Interp *interp;
     char argv0 = '\0';
     Tcl_FindExecutable(argc > 0? argv[0]: &argv0);
-    Tcl_Interp *interp = Tcl_CreateInterp();
+    interp = Tcl_CreateInterp();
     if (If_Init(interp) != TCL_OK || Tcl_Init(interp) != TCL_OK)
       return IF_ERROR;
     return IF_OK;
@@ -73,7 +93,7 @@ extern "C" {
   IF_API int If_SetInt(const char *name, int val);
 
   /** Get an Int value. */
-  IF_API int If_GetInt(const char *name, int &val);
+  IF_API int If_GetInt(const char *name, int *val);
 
   /** Return size of Real. */
   IF_API int If_SizeOfReal();
@@ -82,13 +102,13 @@ extern "C" {
   IF_API int If_SetReal(const char *name, Real val);
 
   /** Get a Real value. */
-  IF_API int If_GetReal(const char *name, Real &val);
+  IF_API int If_GetReal(const char *name, Real *val);
 
   /** Set a variables value from a string representation. */
   IF_API int If_SetString(const char *name, const char *val);
 
   /** Get the string representation of a variables value. */
-  IF_API int If_GetString(const char *name, const char *&val);
+  IF_API int If_GetString(const char *name, const char **val);
 
   /** Evaluate a command. */
   IF_API int If_Eval(const char *command);
@@ -105,6 +125,9 @@ extern "C" {
     
     return Tcl_GetStringResult(If_Interp());
   }
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif

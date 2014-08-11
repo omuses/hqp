@@ -27,6 +27,32 @@
 #include "If_Element.h"
 
 #include <string.h>
+#include <stdarg.h>
+
+//-----------------------------------------------------------------------
+extern "C" void If_Log(const char *category, const char *message, ...)
+{
+  static char *logMessage = NULL;
+  static int logMessageLength = 0;
+  va_list args;
+  int n;
+
+  va_start(args, message);
+  if (logMessage == NULL)
+    logMessage = (char *)malloc(256);
+  n = vsnprintf(logMessage, logMessageLength, message, args);
+  /* enlarge logMessage up to max 16 KB */
+  if (n >= logMessageLength && n < 16*1024) {
+    free(logMessage);
+    logMessage = (char *)malloc(n+1);
+    logMessageLength = n+1;
+    vsnprintf(logMessage, logMessageLength, message, args);
+  }
+  va_end(args);
+
+  Tcl_VarEval(theInterp, "puts {", category, ": ", logMessage, "}", NULL);
+  Tcl_Eval(theInterp, "update idletasks");
+}
 
 //--------------------------------------------------------------------------
 extern "C" int If_Init(Tcl_Interp *interp)
@@ -80,7 +106,7 @@ extern "C" int If_SetInt(const char *name, int val)
 }
 
 //-----------------------------------------------------------------------
-extern "C" int If_GetInt(const char *name, int &val)
+extern "C" int If_GetInt(const char *name, int *val)
 {
   if (!theInterp)
     return IF_ERROR;
@@ -88,7 +114,7 @@ extern "C" int If_GetInt(const char *name, int &val)
   if (Tcl_Eval(theInterp, (char *)name) != TCL_OK)
     return IF_ERROR;
 
-  if (Tcl_GetIntFromObj(theInterp, Tcl_GetObjResult(theInterp), &val)
+  if (Tcl_GetIntFromObj(theInterp, Tcl_GetObjResult(theInterp), val)
       != TCL_OK)
     return IF_ERROR;
 
@@ -135,7 +161,7 @@ extern "C" int If_SetReal(const char *name, Real val)
 }
 
 //-----------------------------------------------------------------------
-extern "C" int If_GetReal(const char *name, Real &val)
+extern "C" int If_GetReal(const char *name, Real *val)
 {
   if (!theInterp)
     return IF_ERROR;
@@ -143,7 +169,7 @@ extern "C" int If_GetReal(const char *name, Real &val)
   if (Tcl_Eval(theInterp, (char *)name) != TCL_OK)
     return IF_ERROR;
 
-  if (Tcl_GetDoubleFromObj(theInterp, Tcl_GetObjResult(theInterp), &val)
+  if (Tcl_GetDoubleFromObj(theInterp, Tcl_GetObjResult(theInterp), val)
       != TCL_OK)
     return IF_ERROR;
 
@@ -165,7 +191,7 @@ extern "C" int If_SetString(const char *name, const char *val)
 }
 
 //-----------------------------------------------------------------------
-extern "C" int If_GetString(const char *name, const char *&val)
+extern "C" int If_GetString(const char *name, const char **val)
 {
   if (!theInterp)
     return IF_ERROR;
@@ -174,7 +200,7 @@ extern "C" int If_GetString(const char *name, const char *&val)
     val = NULL;
     return IF_ERROR;
   }
-  val = Tcl_GetStringResult(theInterp);
+  *val = Tcl_GetStringResult(theInterp);
   return IF_OK;
 }
 

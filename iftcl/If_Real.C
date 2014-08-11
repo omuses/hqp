@@ -25,6 +25,8 @@
 
 #include "If_Real.h"
 
+#include <Meschach.h>
+
 //--------------------------------------------------------------------------
 int If_Real::setTclObj(Tcl_Interp *interp, Tcl_Obj *CONST objPtr)
 {

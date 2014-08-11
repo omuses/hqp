@@ -29,6 +29,8 @@
 
 #include "If_Element.h"
 
+#include <assert.h>
+
 /** Construct a read callback */
 #define IF_GET_CB(vartype, classtype, name) \
   new If_GetCb<vartype, classtype>(&classtype::name, this)
