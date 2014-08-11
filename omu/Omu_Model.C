@@ -28,6 +28,7 @@
 
 #include <Hxi_mx_parse.h>
 
+#include <If_Int.h>
 #include <If_RealVec.h>
 #include <If_String.h>
 
@@ -39,28 +40,6 @@
   #name, \
   IF_GET_CB(vartype, Omu_Model, name), \
   IF_SET_CB(vartype, Omu_Model, set_##name)
-
-// Call an S-function method and check for errors.
-// Throw E_FORMAT as errors occuring during initialization done here
-// are generally due to wrong configuration data (e.g. bad mdl_args).
-#define SMETHOD_CALL(method, S) { \
-  ssSetErrorStatus(S, NULL); \
-  method(S); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(E_FORMAT, ssGetErrorStatus(S)); \
-  } \
-}
-#define SMETHOD_CALL2(method, S, tid) { \
-  ssSetErrorStatus(S, NULL); \
-  method(S, tid); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(E_FORMAT, ssGetErrorStatus(S)); \
-  } \
-}
 
 //--------------------------------------------------------------------------
 Omu_Model::Omu_Model()
@@ -74,6 +53,7 @@ Omu_Model::Omu_Model()
   _mdl_nargs = 0;
   _mx_args = NULL;
 
+  _mdl_logging = If_LogNone;
   _mdl_needs_setup = true;
 
   _SS = NULL;
@@ -91,6 +71,7 @@ Omu_Model::Omu_Model()
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_y_nominal = v_get(_mdl_ny);
 
+  _ifList_model.append(new If_Int(GET_SET_CB(int, mdl_logging)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x_start)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_u_start)));
@@ -107,7 +88,7 @@ Omu_Model::~Omu_Model()
 {
   int i;
   if (_SS) {
-    mdlTerminate(_SS);
+    SMETHOD_CALL(mdlTerminate, _SS);
     Hxi_SimStruct_destroy(_SS);
   }
   for (i = 0; i < _mdl_nargs; i++)
@@ -246,7 +227,7 @@ void Omu_Model::setup_model(double t0)
 
   // setup S-function
   if (_SS) {
-    mdlTerminate(_SS);
+    SMETHOD_CALL(mdlTerminate, _SS);
     Hxi_SimStruct_destroy(_SS);
   }
 

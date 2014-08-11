@@ -47,27 +47,10 @@
   prefix#name, \
   IF_GET_CB(vartype, Prg_DynamicOpt, name)
 
-// Call an S-function method and check for errors.
 // Throw E_CONV as errors occuring during solution are generally
 // due to bad values and need to be treated (esp. during stepsize check).
-#define SMETHOD_CALL(method, S) { \
-  ssSetErrorStatus(S, NULL); \
-  method(S); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(E_CONV, ssGetErrorStatus(S)); \
-  } \
-}
-#define SMETHOD_CALL2(method, S, tid) { \
-  ssSetErrorStatus(S, NULL); \
-  method(S, tid); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(E_CONV, ssGetErrorStatus(S)); \
-  } \
-}
+#undef SMETHOD_ERROR
+#define SMETHOD_ERROR E_CONV
 
 typedef If_Method<Prg_DynamicOpt> If_Cmd;
 

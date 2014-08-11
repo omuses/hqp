@@ -32,8 +32,6 @@
 #define S_FUNCTION_NAME sfun_fmu
 #define S_FUNCTION_LEVEL 2
 
-#undef WITH_LOGGING
-
 #include <string.h>
 #include <stdarg.h>
 
@@ -87,9 +85,7 @@
  * @}
  */
 
-/*#include <iftcl/If.h>*/
-#include <tcl.h>
-extern Tcl_Interp *If_Interp(); /**< Tcl interpreter used by the interface */
+#include <iftcl/If.h>
 
 #include "fmi2TypesPlatform.h"
 #include "fmi2FunctionTypes.h"
@@ -104,8 +100,9 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
  * @{
  */
 
+#define ARRAYSIZE(array) (sizeof(array)/sizeof(array[0]))
+#define NUM_BASETYPES ARRAYSIZE(BaseTypeNames)
 static const char* BaseTypeNames[] = {"Real", "Boolean", "Integer", "String"};
-#define NUM_BASETYPES (sizeof(BaseTypeNames)/sizeof(BaseTypeNames[0]))
 
 /** Base types of FMI */
 typedef enum {
@@ -132,8 +129,18 @@ static const char* statusStrings[] = {
   "Warning",
   "Discard",
   "Error",
-  "Fatal"
+  "Fatal",
+  "Pending"
 };
+
+static const char* logCategories[] = {
+  "logAll",
+  "logEvents", "logNonlinearSystems", "logDynamicStateSelection",
+  "logStatusWarning", "logStatusPending", "logSingularLinearSystems",
+  "logStatusDiscard", "logStatusError", "logStatusFatal"
+};
+// offsets into logCategories per log level 0 .. 4
+static int logOffsets[] = {10, 7, 4, 1, 0};
 
 /**
  * @}
@@ -171,6 +178,7 @@ typedef struct {
    * @{
    */
   fmi2InstantiateTYPE             	*fmi2Instantiate;
+  fmi2SetDebugLoggingTYPE             	*fmi2SetDebugLogging;
   fmi2EnterInitializationModeTYPE 	*fmi2EnterInitializationMode;
   fmi2ExitInitializationModeTYPE  	*fmi2ExitInitializationMode;
   fmi2NewDiscreteStatesTYPE       	*fmi2NewDiscreteStates;
@@ -211,11 +219,7 @@ static void callbackLogger(fmi2ComponentEnvironment ce, fmi2String instanceName,
   va_list args;
   int n;
 
-#ifndef WITH_LOGGING
-  if (status == fmi2OK)
-    return;
-#endif
-
+  /* format varargs into message string */
   va_start(args, message);
   n = vsnprintf(m->messageStr, m->messageStrLen, message, args);
   /* enlarge m->messageStr up to max 16 KB */
@@ -227,15 +231,14 @@ static void callbackLogger(fmi2ComponentEnvironment ce, fmi2String instanceName,
   }
   va_end(args);
 
-  Tcl_VarEval(m->interp, "puts -nonewline {",  m->fmuName,
-	      " ", statusStrings[status], "}", NULL);
-  if (strlen(category) > 0 && strcmp(category, statusStrings[status]) != 0)
-    Tcl_VarEval(m->interp, "puts -nonewline { ", category, ": }", NULL);
-  else
-    Tcl_Eval(m->interp, "puts -nonewline {: }");
-  Tcl_VarEval(m->interp, "puts [::fmi::mapNames {", m->fmuName,
-	      "} {", m->messageStr, "}]", NULL);
-  Tcl_Eval(m->interp, "update idletasks");
+  /* replace variable references with names */
+  Tcl_VarEval(m->interp, "::fmi::mapNames {", m->fmuName,
+	      "} {", m->messageStr, "}", NULL);
+
+  /* do the log */
+  If_Log(statusStrings[status], "%s %s: %s", m->fmuName,
+	 strcmp(category, statusStrings[status]) != 0? category: "",
+	 Tcl_GetStringResult(m->interp));
 }
 
 /**
@@ -459,10 +462,6 @@ static void mdlInitializeSizes(SimStruct *S)
     ssSetErrorStatus(S, "can't init Tcl");
     return;
   }
-
-#ifdef WITH_LOGGING
-  Tcl_Eval(interp, "puts mdlInitializeSizes");
-#endif
 
   /*
    * Get name of FMU from path
@@ -691,6 +690,7 @@ static void mdlInitializeSizes(SimStruct *S)
       version_id = 1;
 
     INIT_FUNCTION(S, m, version_id, Instantiate);
+    INIT_FUNCTION(S, m, version_id, SetDebugLogging);
     INIT_FUNCTION(S, m, version_id, EnterInitializationMode);
     INIT_FUNCTION(S, m, version_id, ExitInitializationMode);
     INIT_FUNCTION(S, m, version_id, NewDiscreteStates);
@@ -762,13 +762,6 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
-  Hxi_ModelData *m;
-
-#ifdef WITH_LOGGING
-  GET_MODELDATA(S, m);
-  Tcl_Eval(m->interp, "puts mdlInitializeSampleTimes");
-#endif
-
   ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
   ssSetOffsetTime(S, 0, 0.0);
 }
@@ -781,11 +774,9 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 static void mdlInitializeConditions(SimStruct *S)
 {
   Hxi_ModelData *m;
+  int logging;
 
   GET_MODELDATA(S, m);
-#ifdef WITH_LOGGING
-  Tcl_Eval(m->interp, "puts mdlInitializeConditions");
-#endif
 
   if (m->fmu != NULL) {
     if ((*m->fmi2Reset)(m->fmu) != fmi2OK) {
@@ -803,6 +794,21 @@ static void mdlInitializeConditions(SimStruct *S)
     if (m->fmu == NULL) {
       ssSetErrorStatus(S, "can't instantiate FMU");
       return;
+    }
+    /*
+     * Initialize logging
+     * ToDo: should check categories with modelDescription.xml
+     */
+    if (If_GetInt("mdl_logging", &logging) != IF_OK) {
+      ssSetErrorStatus(S, If_ResultString());
+      return;
+    }
+    if (logging > 0) {
+      if (logging > ARRAYSIZE(logOffsets) - 1)
+	logging = ARRAYSIZE(logOffsets) - 1;
+      (*m->fmi2SetDebugLogging)(m->fmu, fmi2True,
+				ARRAYSIZE(logCategories) - logOffsets[logging],
+				&logCategories[logOffsets[logging]]);
     }
   }
 
@@ -826,9 +832,6 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   double *vals;
 
   GET_MODELDATA(S, m);
-#ifdef WITH_LOGGING
-  Tcl_Eval(m->interp, "puts mdlOutputs");
-#endif
 
   if ((*m->fmi2SetTime)(m->fmu, ssGetT(S)) != fmi2OK) {
     ssSetErrorStatus(S, "can't set time of FMU");
@@ -909,7 +912,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         idx[j]++;
 	break;
       case FMI_STRING:
-        /* Note: don't support tunable string parameters for now */
+        /* ToDo: support tunable string parameters */
       default:
 	break;
       }
@@ -967,7 +970,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     if (m->nxc > 0) {
       /* complete integrator step and optionally start event update */
       if ((*m->fmi2CompletedIntegratorStep)(m->fmu, fmi2True, &enterEventMode,
-                                           &terminateSimulation) != fmi2OK) {
+                                            &terminateSimulation) != fmi2OK) {
         ssSetErrorStatus(S, "can't complete integrator step of FMU");
         return;
       }
@@ -1034,11 +1037,9 @@ static void mdlUpdate(SimStruct *S, int_T tid)
   Hxi_ModelData *m;
 
   GET_MODELDATA(S, m);
-#ifdef WITH_LOGGING
-  Tcl_Eval(m->interp, "puts mdlUpdate");
-#endif
 
-  if ((*m->fmi2GetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
+  if (m->nxc > 0 &&
+      (*m->fmi2GetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
       != fmi2OK) {
     ssSetErrorStatus(S, "can't get continuous states of FMU");
     return;
@@ -1056,11 +1057,9 @@ static void mdlDerivatives(SimStruct *S)
   Hxi_ModelData *m;
 
   GET_MODELDATA(S, m);
-#ifdef WITH_LOGGING
-  Tcl_Eval(m->interp, "puts mdlDerivatives");
-#endif
 
-  if ((*m->fmi2GetDerivatives)(m->fmu, ssGetdX(S), m->nxc) != fmi2OK) {
+  if (m->nxc > 0 &&
+      (*m->fmi2GetDerivatives)(m->fmu, ssGetdX(S), m->nxc) != fmi2OK) {
     ssSetErrorStatus(S, "can't get derivatives of FMU");
     return;
   }
@@ -1075,9 +1074,6 @@ static void mdlTerminate(SimStruct *S)
   Hxi_ModelData *m;
 
   GET_MODELDATA(S, m);
-#ifdef WITH_LOGGING
-  Tcl_Eval(m->interp, "puts mdlTerminate");
-#endif
 
   if (m->fmi2Terminate != NULL && (*m->fmi2Terminate)(m->fmu) != fmi2OK) {
     ssSetErrorStatus(S, "can't terminate FMU");

@@ -1,5 +1,15 @@
 2014-08-11  <rfranke>
 
+	* hxi/sfun_fmu.c:
+	  - make logging configurable at runtime
+	  - don't call state related functions if there are no states
+
+	* omu/Omu_Model.[hC], Prg_Dynamic*.C, hxi/sfun_fmu.c:
+	  - add configurable logging
+	  - check errors of mdlTerminate
+
+	* omu/Prg_DynamicEst.C: minor fix for initialization of x0
+
 	* iftcl/If.h, iftcl/If*.[hC], hqp_docp/Docp_Main.C:
 	  - change argument references to pointers to
 	    allow inclusion of If.h into C code, besides C++

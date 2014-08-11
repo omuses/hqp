@@ -48,27 +48,10 @@
   prefix#name, \
   IF_GET_CB(vartype, Prg_DynamicEst, name)
 
-// Call an S-function method and check for errors.
 // Throw E_CONV as errors occuring during solution are generally
 // due to bad values and need to be treated (esp. during stepsize check).
-#define SMETHOD_CALL(method, S) { \
-  ssSetErrorStatus(S, NULL); \
-  method(S); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(E_CONV, ssGetErrorStatus(S)); \
-  } \
-}
-#define SMETHOD_CALL2(method, S, tid) { \
-  ssSetErrorStatus(S, NULL); \
-  method(S, tid); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(E_CONV, ssGetErrorStatus(S)); \
-  } \
-}
+#undef SMETHOD_ERROR
+#define SMETHOD_ERROR E_CONV
 
 typedef If_Method<Prg_DynamicEst> If_Cmd;
 
@@ -270,7 +253,8 @@ void Prg_DynamicEst::setup_stages(IVECP ks, VECP ts)
     stages_alloc(ks, ts, 1, _KK);
   }
 
-  // initialize all _x0s with _x0
+  // initialize _x0 with start values from model and _x0s with _x0
+  v_copy(Omu_Model::_mdl_x_start, _mdl_x0);
   m_resize(_mdl_x0s, _nex, _mdl_nx);
   for (i = 0; i < _nex; i++) {
     for (j = 0; j < _mdl_nx; j++)
@@ -287,7 +271,6 @@ void Prg_DynamicEst::setup_stages(IVECP ks, VECP ts)
   v_copy(Omu_Model::_mdl_p, _mdl_p);
 
   // setup _mdl_xs with start values from model
-  v_copy(Omu_Model::_mdl_x_start, _mdl_x0);
   for (kk = 0; kk < _KK; kk++) {
     for (j = 0; j < _mdl_nx; j++)
       _mdl_xs[kk][j] = _mdl_x0[j];

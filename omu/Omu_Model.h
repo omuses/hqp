@@ -32,6 +32,33 @@
 #include <Meschach.h>
 #include <Hxi_SFunction.h>
 
+/** Error kind used for failed S-function methods */
+#define SMETHOD_ERROR E_FORMAT
+/** Call an S-function method, including logging and error handling. */
+#define SMETHOD_CALL(method, S) { \
+  if (_mdl_logging >= If_LogInfo) \
+    If_Log("Info", "%s at %.3f", #method, ssGetT(S)); \
+  ssSetErrorStatus(S, NULL); \
+  method(S); \
+  if (ssGetErrorStatus(S)) { \
+    fprintf(stderr, "Error from " #method ": %s\n", \
+	    ssGetErrorStatus(S)); \
+    m_error(SMETHOD_ERROR, ssGetErrorStatus(S)); \
+  } \
+}
+/** Call an S-function method, including logging and error handling. */
+#define SMETHOD_CALL2(method, S, tid) { \
+  if (_mdl_logging >= If_LogInfo) \
+    If_Log("Info", "%s tid %d at %.3f", #method, tid, ssGetT(S)); \
+  ssSetErrorStatus(S, NULL); \
+  method(S, tid); \
+  if (ssGetErrorStatus(S)) { \
+    fprintf(stderr, "Error from " #method ": %s\n", \
+	    ssGetErrorStatus(S)); \
+    m_error(SMETHOD_ERROR, ssGetErrorStatus(S)); \
+  } \
+}
+
 /**
  * Basic functionality for formulating an optimization problem for
  * a model given as S-function or Functional Model Unit (FMU).
@@ -49,6 +76,7 @@ class Omu_Model {
   SimStruct 	*_SS;		///< pointer to %SimStruct
   mxArray	**_mx_args; 	///< S-function parameters after parsing
   int 		_mdl_nargs; 	///< number of S-function arguments
+  If_LogLevel 	_mdl_logging;	///< log level for debugging
 
   double 	_t0_setup_model;///< time used for initialization of model
   int		_mdl_np;	///< number of model parameters
@@ -113,6 +141,18 @@ class Omu_Model {
   /** String representation of S-function arguments */
   const char *mdl_args() const {return _mdl_args;}
   void set_mdl_args(const char *str);	///< set S-function arguments
+
+  /** Log level for debugging */
+  int mdl_logging() const {return _mdl_logging;}
+  /** set log level */
+  void set_mdl_logging(int logging) {
+    if (logging < If_LogNone)
+      _mdl_logging = If_LogNone;
+    else if (logging > If_LogAll)
+      _mdl_logging = If_LogAll;
+    else
+      _mdl_logging = (If_LogLevel)logging;
+  }
 
   /** parameters */
   const VECP mdl_p() const {return _mdl_p;}
