@@ -33,13 +33,13 @@
 extern "C" void If_Log(const char *category, const char *message, ...)
 {
   static char *logMessage = NULL;
-  static int logMessageLength = 0;
+  static int logMessageLength = 256;
   va_list args;
   int n;
 
   va_start(args, message);
   if (logMessage == NULL)
-    logMessage = (char *)malloc(256);
+    logMessage = (char *)malloc(logMessageLength);
   n = vsnprintf(logMessage, logMessageLength, message, args);
   /* enlarge logMessage up to max 16 KB */
   if (n >= logMessageLength && n < 16*1024) {

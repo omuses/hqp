@@ -1,3 +1,8 @@
+2014-08-14  <rfranke>
+
+	* iftcl/If.C, hxi/sfun_fmu.c:
+	  - fix logging introduced on 8/11
+
 2014-08-11  <rfranke>
 
 	* hxi/sfun_fmu.c:

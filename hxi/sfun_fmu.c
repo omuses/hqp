@@ -100,8 +100,8 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
  * @{
  */
 
-#define ARRAYSIZE(array) (sizeof(array)/sizeof(array[0]))
-#define NUM_BASETYPES ARRAYSIZE(BaseTypeNames)
+#define ARRAY_SIZE(array) (sizeof(array)/sizeof(array[0]))
+#define NUM_BASETYPES ARRAY_SIZE(BaseTypeNames)
 static const char* BaseTypeNames[] = {"Real", "Boolean", "Integer", "String"};
 
 /** Base types of FMI */
@@ -218,6 +218,8 @@ static void callbackLogger(fmi2ComponentEnvironment ce, fmi2String instanceName,
   Hxi_ModelData *m = (Hxi_ModelData *)ce;
   va_list args;
   int n;
+  int hasCategory = category != NULL && category[0] != '\0'
+    && strcmp(category, statusStrings[status]) != 0;
 
   /* format varargs into message string */
   va_start(args, message);
@@ -233,12 +235,12 @@ static void callbackLogger(fmi2ComponentEnvironment ce, fmi2String instanceName,
 
   /* replace variable references with names */
   Tcl_VarEval(m->interp, "::fmi::mapNames {", m->fmuName,
-	      "} {", m->messageStr, "}", NULL);
+              "} {", m->messageStr, "}", NULL);
 
   /* do the log */
-  If_Log(statusStrings[status], "%s %s: %s", m->fmuName,
-	 strcmp(category, statusStrings[status]) != 0? category: "",
-	 Tcl_GetStringResult(m->interp));
+  If_Log(statusStrings[status], "%s%s%s: %s", m->fmuName,
+         hasCategory? " ": "", hasCategory? category: "",
+         Tcl_GetStringResult(m->interp));
 }
 
 /**
@@ -804,11 +806,15 @@ static void mdlInitializeConditions(SimStruct *S)
       return;
     }
     if (logging > 0) {
-      if (logging > ARRAYSIZE(logOffsets) - 1)
-	logging = ARRAYSIZE(logOffsets) - 1;
-      (*m->fmi2SetDebugLogging)(m->fmu, fmi2True,
-				ARRAYSIZE(logCategories) - logOffsets[logging],
-				&logCategories[logOffsets[logging]]);
+      if (logging > ARRAY_SIZE(logOffsets) - 1)
+        logging = ARRAY_SIZE(logOffsets) - 1;
+      if ((*m->fmi2SetDebugLogging)
+          (m->fmu, fmi2True,
+           ARRAY_SIZE(logCategories) - logOffsets[logging],
+           &logCategories[logOffsets[logging]]) > fmi2Warning) {
+        ssSetErrorStatus(S, "can't set debug logging of FMU");
+        return;
+      }
     }
   }
 
