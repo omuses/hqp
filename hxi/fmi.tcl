@@ -241,11 +241,16 @@ proc ::fmi::readModelDescription {fmuPath} {
         foreach element $fmiElements(ModelStructure) {
             set structureElements([lindex $element 0]) [lindex $element 2]
         }
-        set categories {output derivative}
-        # consider DiscreteStates from FMI 2.0 RC1 if present
-        if {[lsearch [array names structureElements] DiscreteStates] >= 0} {
-            lappend categories discreteState
-        }
+	# collect given ModelStructure elements
+	set categories {}
+	foreach category {output derivative discreteState} {
+            set elementName [string replace $category 0 0 \
+                                 [string toupper [string index $category 0]]]s
+	    if {[lsearch [array names structureElements] $elementName] >= 0} {
+		lappend categories $category
+	    }
+	}
+	# process ModelStructure elements
         foreach category $categories {
             set elementName [string replace $category 0 0 \
                                  [string toupper [string index $category 0]]]s
@@ -334,8 +339,9 @@ proc ::fmi::xml2list xml {
 		append res "{$tagname [list $rest] {}} "
 	    }
 	    default {
+		set item [string map {= " "} $item]
 		set tagname [lindex $item 0] ;# start tag
-		set rest [lrange [string map {= " "} $item] 1 end]
+		set rest [lrange $item 1 end]
 		lappend stack $tagname
 		append res "\{$tagname [list $rest] \{"
 	    }
