@@ -766,7 +766,7 @@ int	m, n;
       A->row = RENEW(A->row,(unsigned)m,SPROW);
       if ( ! A->row )
 	m_error(E_MEM,"sp_resize");
-      for ( i = A->m; i < m; i++ )
+      for ( i = A->max_m; i < m; i++ )
       {
 	 if ( ! (A->row[i].elt = NEW_A(MINROWLEN,row_elt)) )
 	   m_error(E_MEM,"sp_resize");

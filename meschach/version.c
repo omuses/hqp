@@ -117,6 +117,9 @@ void	m_version()
 	/* rf, 2014-05-01 */
 	printf("\tmachine.h, matdef.h, spbkp.c: remove use of deprecated malloc.h (use stdlib.h)\n");
 	printf("\tmatdef.h: remove definition of MAXDIM to 2001 (see definition in matrix.h)\n");
+	/* rf, 2014-11-22 */
+	printf("\tmatdef.h: remove duplicate definition of NEW and RENEW (see definition in matrix.h)\n");
+	printf("\tsparse.c: fix memory leak in sp_resize\n");
 	printf("\n");
 }
 

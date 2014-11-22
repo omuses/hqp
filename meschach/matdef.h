@@ -39,12 +39,6 @@ typedef struct	{
 #define	PNULL	((PERM *)NULL)
 #define	IVNULL	((IVEC *)NULL)
 
-#define	NEW(type)		((type *)calloc(1,sizeof(type)))
-#define	NEW_A(size,type)	((type *)calloc((size)>1?(size):1,sizeof(type)))
-#define	RENEW(var,num,type) \
-	((var)=(type *)((var) ? realloc((var),(num)*sizeof(type)) : \
-				calloc((num),sizeof(type))))
-
 /* useful things to have around... */
 #define	min(a,b)	((a) < (b) ? (a) : (b))
 #define	max(a,b)	((a) > (b) ? (a) : (b))
