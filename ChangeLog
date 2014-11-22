@@ -6,6 +6,14 @@
 	* meschach/sparse.c, meschach/matdef.h, meschach/version.c:
 	  - fix memory leak in sp_resize
 
+2014-09-24  <rfranke>
+
+	* odc/DIC.mo, odc/sfun_fmu.tcl, odc/sfun_fmu_est.tcl, odc/Makefile.in:
+	  - add example for FMI defining the model with Modelica
+
+	* odc/omc.tcl:
+	  - compile Modelica model to FMU using OpenModelica
+
 2014-08-14  <rfranke>
 
 	* iftcl/If.C, hxi/sfun_fmu.c:
