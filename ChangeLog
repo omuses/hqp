@@ -1,3 +1,17 @@
+2014-12-11    <rfranke>
+
+	* hxi/sfun_fmu.c:
+	  - add detection of time and state events
+	  - call fmi2SetupExperiment instead of initial fmi2SetTime
+	  - only call fmi2Terminate if FMU has been initialized
+
+	* hxi/fmi.tcl:
+	  - mark extracted FMU dirs hidden with prepended dot
+
+	* odc/omc.tcl:
+	  - parse multi-line error messages
+	  - force copy of compiled FMU
+
 2014-11-22  <rfranke>
 
 	* hxi/fmi.tcl:

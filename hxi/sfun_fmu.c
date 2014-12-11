@@ -163,15 +163,20 @@ typedef struct {
   int 			nxc;
   int 			nu;
   int 			ny;
+  int 			nz;
   Hxi_ModelVariables 	*p;
   Hxi_ModelVariables 	*u;
   Hxi_ModelVariables 	*y;
+  fmi2Real		*z;
+  fmi2Real		*pre_z;
 
   DLHANDLE 		handle;
   fmi2Component 	fmu;
   fmi2CallbackFunctions fmi2CallbackFunctions;
   fmi2Boolean 		initPending;
   /**< delay initialization until inputs are available */
+  fmi2Boolean 		nextEventTimeDefined;
+  fmi2Real 		nextEventTime;
 
   /**
    * @name FMI functions
@@ -179,6 +184,7 @@ typedef struct {
    */
   fmi2InstantiateTYPE             	*fmi2Instantiate;
   fmi2SetDebugLoggingTYPE             	*fmi2SetDebugLogging;
+  fmi2SetupExperimentTYPE             	*fmi2SetupExperiment;
   fmi2EnterInitializationModeTYPE 	*fmi2EnterInitializationMode;
   fmi2ExitInitializationModeTYPE  	*fmi2ExitInitializationMode;
   fmi2NewDiscreteStatesTYPE       	*fmi2NewDiscreteStates;
@@ -196,6 +202,7 @@ typedef struct {
   fmi2SetStringTYPE               	*fmi2SetString;
   fmi2GetContinuousStatesTYPE     	*fmi2GetContinuousStates;
   fmi2GetDerivativesTYPE          	*fmi2GetDerivatives;
+  fmi2GetEventIndicatorsTYPE       	*fmi2GetEventIndicators;
   fmi2GetRealTYPE                 	*fmi2GetReal;
   fmi2GetBooleanTYPE              	*fmi2GetBoolean;
   fmi2GetIntegerTYPE              	*fmi2GetInteger;
@@ -513,6 +520,10 @@ static void mdlInitializeSizes(SimStruct *S)
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
+      if (m->pre_z != NULL)
+	free(m->pre_z);
+      if (m->z != NULL)
+	free(m->z);
       freeVariables(m->y);
       freeVariables(m->u);
       freeVariables(m->p);
@@ -670,6 +681,21 @@ static void mdlInitializeSizes(SimStruct *S)
     }
     m->ny = m->y->nv - m->y->n[FMI_STRING]; /* String outputs not supported */
 
+    /*
+     * Initialize event indicators
+     */
+    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                    "::attributes(numberOfEventIndicators)}", NULL) != TCL_OK
+        || (objPtr = Tcl_GetObjResult(interp)) == NULL
+        || Tcl_GetIntFromObj(interp, objPtr, &m->nz) != TCL_OK) {
+      ssSetErrorStatus(S, "can't get numberOfEventIndicators of FMU");
+      return;
+    }
+    if (m->nz > 0) {
+      m->z = calloc(m->nz, sizeof(fmi2Real));
+      m->pre_z = calloc(m->nz, sizeof(fmi2Real));
+    }
+
     /* clean-up interp for potential upcoming error messages */
     Tcl_ResetResult(interp);
 
@@ -693,6 +719,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
     INIT_FUNCTION(S, m, version_id, Instantiate);
     INIT_FUNCTION(S, m, version_id, SetDebugLogging);
+    INIT_FUNCTION(S, m, version_id, SetupExperiment);
     INIT_FUNCTION(S, m, version_id, EnterInitializationMode);
     INIT_FUNCTION(S, m, version_id, ExitInitializationMode);
     INIT_FUNCTION(S, m, version_id, NewDiscreteStates);
@@ -710,6 +737,7 @@ static void mdlInitializeSizes(SimStruct *S)
     INIT_FUNCTION(S, m, version_id, SetString);
     INIT_FUNCTION(S, m, version_id, GetContinuousStates);
     INIT_FUNCTION(S, m, version_id, GetDerivatives);
+    INIT_FUNCTION(S, m, version_id, GetEventIndicators);
     INIT_FUNCTION(S, m, version_id, GetReal);
     INIT_FUNCTION(S, m, version_id, GetBoolean);
     INIT_FUNCTION(S, m, version_id, GetInteger);
@@ -718,7 +746,7 @@ static void mdlInitializeSizes(SimStruct *S)
   else
     free(fmuName);
 
-  m->initPending = fmi2False;
+  m->initPending = fmi2True;
 
   /*
    * Initialize S-function
@@ -818,7 +846,15 @@ static void mdlInitializeConditions(SimStruct *S)
     }
   }
 
+  /* setup experiment (set start time) */
+  if ((*m->fmi2SetupExperiment)(m->fmu, fmi2False, 0.0,
+                                ssGetT(S), fmi2False, 0.0) != fmi2OK) {
+    ssSetErrorStatus(S, "can't setup experiment for FMU");
+    return;
+  }
+
   m->initPending = fmi2True; /* wait until inputs are available */
+  m->nextEventTimeDefined = fmi2False;
 }
 
 
@@ -829,6 +865,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 {
   Hxi_ModelData *m;
   fmi2EventInfo eventInfo;
+  fmi2Boolean timeEvent;
+  fmi2Boolean stateEvent;
   fmi2Boolean enterEventMode;
   fmi2Boolean terminateSimulation;
   int i, j;
@@ -839,7 +877,9 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
   GET_MODELDATA(S, m);
 
-  if ((*m->fmi2SetTime)(m->fmu, ssGetT(S)) != fmi2OK) {
+  /* Set time after initialization */
+  if (!m->initPending &&
+      (*m->fmi2SetTime)(m->fmu, ssGetT(S)) != fmi2OK) {
     ssSetErrorStatus(S, "can't set time of FMU");
     return;
   }
@@ -959,9 +999,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   }
 
   /* prepare event processing */
+  timeEvent = fmi2False;
+  stateEvent = fmi2False;
   if (m->initPending) {
     /* initialize FMU */
-    m->initPending = fmi2False;
     if ((*m->fmi2EnterInitializationMode)(m->fmu) != fmi2OK
         || (*m->fmi2ExitInitializationMode)(m->fmu) != fmi2OK) {
       ssSetErrorStatus(S, "can't initialize FMU");
@@ -974,6 +1015,21 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     enterEventMode = fmi2False;
   else {
     if (m->nxc > 0) {
+      /* check for time and state event */
+      if (m->nextEventTimeDefined && ssGetT(S) >= m->nextEventTime)
+	timeEvent = fmi2True;
+      if (m->nz > 0) {
+	if ((*m->fmi2GetEventIndicators)(m->fmu, m->z, m->nz) != fmi2OK) {
+	  ssSetErrorStatus(S, "can't get event indicators of FMU");
+	  return;
+	}
+	for (i = 0; i < m->nz; i++) {
+	  if ((m->z[i] >= 0.0 && m->pre_z[i] < 0.0) ||
+	      (m->z[i] <= 0.0 && m->pre_z[i] > 0.0))
+	    stateEvent = fmi2True;
+	  m->pre_z[i] = m->z[i];
+	}
+      }
       /* complete integrator step and optionally start event update */
       if ((*m->fmi2CompletedIntegratorStep)(m->fmu, fmi2True, &enterEventMode,
                                             &terminateSimulation) != fmi2OK) {
@@ -988,12 +1044,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     else
       /* always enter event mode if there are no continuous states */
       enterEventMode = fmi2True;
-    if (enterEventMode)
+    if (enterEventMode || timeEvent || stateEvent)
       (*m->fmi2EnterEventMode)(m->fmu);
   }
 
   /* process events */
-  if (enterEventMode) {
+  if (enterEventMode || timeEvent || stateEvent) {
     eventInfo.newDiscreteStatesNeeded = fmi2True;
     while (eventInfo.newDiscreteStatesNeeded) {
       (*m->fmi2NewDiscreteStates)(m->fmu, &eventInfo);
@@ -1001,6 +1057,19 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         ssSetErrorStatus(S, "terminate in event mode of FMU");
         return;
       }
+    }
+    /* get next time event */
+    m->nextEventTimeDefined = eventInfo.nextEventTimeDefined;
+    if (m->nextEventTimeDefined)
+      m->nextEventTime = eventInfo.nextEventTime;
+    /* get initial event indicators */
+    if (m->initPending) {
+      if (m->nz > 0 &&
+	  (*m->fmi2GetEventIndicators)(m->fmu, m->pre_z, m->nz) != fmi2OK) {
+	ssSetErrorStatus(S, "can't get initial event indicators of FMU");
+	return;
+      }
+      m->initPending = fmi2False;
     }
     if (m->nxc > 0)
       (*m->fmi2EnterContinuousTimeMode)(m->fmu);
@@ -1081,7 +1150,8 @@ static void mdlTerminate(SimStruct *S)
 
   GET_MODELDATA(S, m);
 
-  if (m->fmi2Terminate != NULL && (*m->fmi2Terminate)(m->fmu) != fmi2OK) {
+  if (!m->initPending && m->fmi2Terminate != NULL &&
+      (*m->fmi2Terminate)(m->fmu) != fmi2OK) {
     ssSetErrorStatus(S, "can't terminate FMU");
     return;
   }

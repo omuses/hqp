@@ -24,18 +24,24 @@ proc ::fmi::getName {fmuPath} {
     return [file rootname [file tail $fmuPath]]
 }
 
+## Obtain directory name of extracted FMU from fmuPath
+#  @return dirPath
+proc ::fmi::getDirPath {fmuPath} {
+    return [file dirname $fmuPath]/.[file rootname [file tail $fmuPath]]
+}
+
 ## Get location of extracted FMU resources
 #  @return URI of resources directory
 proc ::fmi::getResourcesURI {fmuPath} {
-    set dirPath [file rootname $fmuPath]
+    set dirPath [::fmi::getDirPath $fmuPath]
     return "file:///[string trimleft [file normalize $dirPath] /]/resources"
 }
 
 ## Get path of FMU binary from attributes exported by readModelDescription
 #  @return binary path for respective platform
 proc ::fmi::getBinaryPath {fmuPath} {
-    set binPath [file rootname $fmuPath]
-    set binPath ${binPath}/binaries/$::fmi::platformSubDir($::tcl_platform(os))
+    set dirPath [::fmi::getDirPath $fmuPath]
+    set binPath ${dirPath}/binaries/$::fmi::platformSubDir($::tcl_platform(os))
     set binPath ${binPath}[expr 8*$::tcl_platform(wordSize)]
     set fmuName [file rootname [file tail $fmuPath]]
     set modelIdentifier [set ::fmu::${fmuName}::attributes(modelIdentifier)]
@@ -45,7 +51,7 @@ proc ::fmi::getBinaryPath {fmuPath} {
 ## Test if folder with rootname of FMU exists and has same or newer mtime
 #  @return true in case of success
 proc ::fmi::testExtracted {fmuPath} {
-    set dirPath [file rootname $fmuPath]
+    set dirPath [::fmi::getDirPath $fmuPath]
     if {[file exists $dirPath] &&
         [file mtime $dirPath] >= [file mtime $fmuPath]} {
         return true
@@ -57,7 +63,7 @@ proc ::fmi::testExtracted {fmuPath} {
 ## Extract all files of FMU, including e.g. binaries and resources
 proc ::fmi::extractModel {fmuPath} {
     set fmuTime [file mtime $fmuPath]
-    set dirPath [file rootname $fmuPath]
+    set dirPath [::fmi::getDirPath $fmuPath]
     if [file exists $dirPath] {
 	file delete -force $dirPath
     }
@@ -84,7 +90,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     }
 
     # read modelDescription.xml
-    set dirPath [file rootname $fmuPath]
+    set dirPath [::fmi::getDirPath $fmuPath]
     set fp [open $dirPath/modelDescription.xml]
     fconfigure $fp -encoding utf-8
     set fmiModelDescription [xml2list [read $fp]]
@@ -421,7 +427,7 @@ proc ::fmi::unzip fmuPath {
 			      method $method extra $extra comment $c]
     }
     # extract all files
-    set dir [file dirname $fmuPath]/[file rootname [file tail $fmuPath]]
+    set dirPath [::fmi::getDirPath $fmuPath]
     foreach name [array names directory] {
         if {[string match */ $name]} {
             # skip directory names
@@ -445,7 +451,7 @@ proc ::fmi::unzip fmuPath {
             error "unsupported method: $method"
         }
 	# build directory
-	set pathName ${dir}/${name}
+	set pathName ${dirPath}/${name}
 	if {![file exists [file dirname $pathName]]} {
 	    file mkdir [file dirname $pathName]
 	}
