@@ -1,5 +1,11 @@
 2014-12-29  <rfranke>
 
+	* meschach/err.c, meschach/matdef.h
+	  - remove unused code
+
+	* hqp/Meschach.[hC], meschach/addon2_hqp.[hc]
+	  - move Meschach addons from hqp/Meschach to meschach/addon2_hqp
+
 	* hxi/fmi.tcl, hxi/sfun_fmu.c:
 	  - order variables alphabetically
 

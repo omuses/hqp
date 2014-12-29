@@ -335,19 +335,3 @@ int	err_num, line_num,list_num;
    return 0;
 }
 
-/* float_error -- catches floating arithmetic signals */
-static void	float_error(num)
-int	num;
-{
-   signal(SIGFPE,float_error);
-   /* fprintf(stderr,"SIGFPE: signal #%d\n",num); */
-   /* fprintf(stderr,"errno = %d\n",errno); */
-   ev_err("???.c",E_SIGNAL,0,"???",0);
-}
-
-/* catch_signal -- sets up float_error() to catch SIGFPE's */
-void	catch_FPE()
-{
-   signal(SIGFPE,float_error);
-}
-

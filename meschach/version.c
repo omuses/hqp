@@ -88,6 +88,7 @@ void	m_version()
 	printf("\t*.h: use MESCH__BEGIN/END_DECLS (extern \"C\") for declarations\n");
 	/* E. Arnold, 2002-11-26 */
 	printf("\tFurther adaptations to ANSI C; remove TRADITIONAL; prepend m_ to macros error, warning, catchall, tracecatch\n");
+	printf("\tIntroduce configurable MESCH_API instead of keyword extern\n");
 	/* E. Arnold, 2002-12-06 */
 	printf("\tMeschach add-ons from the Hqp project: addon_hqp, spaddon_hqp\n");
 	/* E. Arnold, 2003-09-06 */
@@ -120,6 +121,9 @@ void	m_version()
 	/* rf, 2014-11-22 */
 	printf("\tmatdef.h: remove duplicate definition of NEW and RENEW (see definition in matrix.h)\n");
 	printf("\tsparse.c: fix memory leak in sp_resize\n");
+	/* rf, 2014-12-29 */
+	printf("\taddon2_hqp.[hc]: more Meschach add-ons from Hqp\n");
+	printf("\terr.c: remove unused functions float_error() and catch_FPE()\n");
 	printf("\n");
 }
 
