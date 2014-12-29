@@ -165,6 +165,8 @@ typedef struct {
   int 			ny;
   int 			nz;
   Hxi_ModelVariables 	*p;
+  Hxi_ModelVariables	*xc;
+  int 			*xc_perm;
   Hxi_ModelVariables 	*u;
   Hxi_ModelVariables 	*y;
   fmi2Real		*z;
@@ -461,7 +463,7 @@ static void mdlInitializeSizes(SimStruct *S)
   Hxi_ModelData *m;
   DLHANDLE handle;
   Hxi_SimStruct_init_t *Hxi_SimStruct_init_p;
-  int version_id;
+  int i;
 
   /*
    * Get Tcl interpreter
@@ -526,6 +528,8 @@ static void mdlInitializeSizes(SimStruct *S)
 	free(m->z);
       freeVariables(m->y);
       freeVariables(m->u);
+      free(m->xc_perm);
+      freeVariables(m->xc);
       freeVariables(m->p);
       free(m->messageStr);
       free(m->fmuName);
@@ -644,32 +648,44 @@ static void mdlInitializeSizes(SimStruct *S)
     /* 
      * Initialize parameters
      */
-    if (Tcl_VarEval(interp, "llength ${::fmu::", fmuName,
-                    "::parameterReferences}", NULL) != TCL_OK
-        || (objPtr = Tcl_GetObjResult(interp)) == NULL
-        || Tcl_GetIntFromObj(interp, objPtr, &m->np) != TCL_OK) {
-      ssSetErrorStatus(S, Tcl_GetStringResult(interp));
-      return;
-    }
     if (!(m->p = getVariables(m, "parameter"))) {
       ssSetErrorStatus(S, "can't get parameters");
       return;
     }
-    if (m->p->nv != m->np) {
-      ssSetErrorStatus(S, "wrong parameter count");
+    m->np = m->p->nv;
+
+    /*
+     * Initialize states and derivatives
+     */
+    if (!(m->xc = getVariables(m, "state"))) {
+      ssSetErrorStatus(S, "can't get states");
       return;
+    }
+    if (m->xc->nv != m->xc->n[FMI_REAL]) {
+      ssSetErrorStatus(S, "states must be of type real");
+      return;
+    }
+    m->nxc = m->xc->nv;
+
+    m->xc_perm = (int *)malloc(m->nxc * sizeof(int));
+    for (i = 0; i < m->nxc; i++) {
+      sprintf(m->messageStr, "%d", i);
+      if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
+                      "::statePermutation} ", m->messageStr, NULL) != TCL_OK
+          || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
+          || Tcl_GetIntFromObj(m->interp, objPtr, &m->xc_perm[i]) != TCL_OK) {
+        ssSetErrorStatus(S, "can't get state permutation of FMU");
+        return;
+      }
+      if (m->xc_perm[i] < 0 || m->nxc <= m->xc_perm[i]) {
+        ssSetErrorStatus(S, "got wrong state permutation of FMU");
+        return;
+      }
     }
 
     /*
-     * Initialize states, inputs and outputs
+     * Initialize inputs and outputs
      */
-    if (Tcl_VarEval(interp, "llength ${::fmu::", fmuName,
-                    "::stateReferences}", NULL) != TCL_OK
-        || (objPtr = Tcl_GetObjResult(interp)) == NULL
-        || Tcl_GetIntFromObj(interp, objPtr, &m->nxc) != TCL_OK) {
-      ssSetErrorStatus(S, "can't get number of states");
-      return;
-    }
     if (!(m->u = getVariables(m, "input"))) {
       ssSetErrorStatus(S, "can't get inputs");
       return;
@@ -692,8 +708,8 @@ static void mdlInitializeSizes(SimStruct *S)
       return;
     }
     if (m->nz > 0) {
-      m->z = calloc(m->nz, sizeof(fmi2Real));
-      m->pre_z = calloc(m->nz, sizeof(fmi2Real));
+      m->z = (fmi2Real *)calloc(m->nz, sizeof(fmi2Real));
+      m->pre_z = (fmi2Real *)calloc(m->nz, sizeof(fmi2Real));
     }
 
     /* clean-up interp for potential upcoming error messages */
@@ -712,36 +728,36 @@ static void mdlInitializeSizes(SimStruct *S)
     m->fmi2CallbackFunctions.componentEnvironment = m;
 
     /* support FMI 2.0 with prefix "fmi2" and 2.0 RC1 with prefix "fmi" */
-    version_id = 2;
+    i = 2;
     if (DLSYM(m->handle, "fmi2Instantiate") == NULL
 	&& DLSYM(m->handle, "fmiInstantiate") != NULL)
-      version_id = 1;
+      i = 1;
 
-    INIT_FUNCTION(S, m, version_id, Instantiate);
-    INIT_FUNCTION(S, m, version_id, SetDebugLogging);
-    INIT_FUNCTION(S, m, version_id, SetupExperiment);
-    INIT_FUNCTION(S, m, version_id, EnterInitializationMode);
-    INIT_FUNCTION(S, m, version_id, ExitInitializationMode);
-    INIT_FUNCTION(S, m, version_id, NewDiscreteStates);
-    INIT_FUNCTION(S, m, version_id, EnterContinuousTimeMode);
-    INIT_FUNCTION(S, m, version_id, CompletedIntegratorStep);
-    INIT_FUNCTION(S, m, version_id, EnterEventMode);
-    INIT_FUNCTION(S, m, version_id, Reset);
-    INIT_FUNCTION(S, m, version_id, Terminate);
-    INIT_FUNCTION(S, m, version_id, FreeInstance);
-    INIT_FUNCTION(S, m, version_id, SetTime);
-    INIT_FUNCTION(S, m, version_id, SetContinuousStates);
-    INIT_FUNCTION(S, m, version_id, SetReal);
-    INIT_FUNCTION(S, m, version_id, SetBoolean);
-    INIT_FUNCTION(S, m, version_id, SetInteger);
-    INIT_FUNCTION(S, m, version_id, SetString);
-    INIT_FUNCTION(S, m, version_id, GetContinuousStates);
-    INIT_FUNCTION(S, m, version_id, GetDerivatives);
-    INIT_FUNCTION(S, m, version_id, GetEventIndicators);
-    INIT_FUNCTION(S, m, version_id, GetReal);
-    INIT_FUNCTION(S, m, version_id, GetBoolean);
-    INIT_FUNCTION(S, m, version_id, GetInteger);
-    INIT_FUNCTION(S, m, version_id, GetString);
+    INIT_FUNCTION(S, m, i, Instantiate);
+    INIT_FUNCTION(S, m, i, SetDebugLogging);
+    INIT_FUNCTION(S, m, i, SetupExperiment);
+    INIT_FUNCTION(S, m, i, EnterInitializationMode);
+    INIT_FUNCTION(S, m, i, ExitInitializationMode);
+    INIT_FUNCTION(S, m, i, NewDiscreteStates);
+    INIT_FUNCTION(S, m, i, EnterContinuousTimeMode);
+    INIT_FUNCTION(S, m, i, CompletedIntegratorStep);
+    INIT_FUNCTION(S, m, i, EnterEventMode);
+    INIT_FUNCTION(S, m, i, Reset);
+    INIT_FUNCTION(S, m, i, Terminate);
+    INIT_FUNCTION(S, m, i, FreeInstance);
+    INIT_FUNCTION(S, m, i, SetTime);
+    INIT_FUNCTION(S, m, i, SetContinuousStates);
+    INIT_FUNCTION(S, m, i, SetReal);
+    INIT_FUNCTION(S, m, i, SetBoolean);
+    INIT_FUNCTION(S, m, i, SetInteger);
+    INIT_FUNCTION(S, m, i, SetString);
+    INIT_FUNCTION(S, m, i, GetContinuousStates);
+    INIT_FUNCTION(S, m, i, GetDerivatives);
+    INIT_FUNCTION(S, m, i, GetEventIndicators);
+    INIT_FUNCTION(S, m, i, GetReal);
+    INIT_FUNCTION(S, m, i, GetBoolean);
+    INIT_FUNCTION(S, m, i, GetInteger);
+    INIT_FUNCTION(S, m, i, GetString);
   }
   else
     free(fmuName);
@@ -873,7 +889,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   int idx[NUM_BASETYPES];
   InputRealPtrsType uPtrs;
   mxArray *param;
-  double *vals;
+  double *vals, *xc;
 
   GET_MODELDATA(S, m);
 
@@ -966,11 +982,15 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   }
 
   /* set states */
-  if (m->nxc > 0 &&
-      (*m->fmi2SetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
-      != fmi2OK) {
-    ssSetErrorStatus(S, "can't set continuous states of FMU");
-    return;
+  if (m->nxc > 0) {
+    vals = ssGetContStates(S);
+    xc = m->xc->r;
+    for (i = 0; i < m->nxc; i++)
+      xc[m->xc_perm[i]] = *vals++;
+    if ((*m->fmi2SetContinuousStates)(m->fmu, xc, m->nxc) != fmi2OK) {
+      ssSetErrorStatus(S, "can't set continuous states of FMU");
+      return;
+    }
   }
 
   /* set inputs */
@@ -1110,14 +1130,21 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 static void mdlUpdate(SimStruct *S, int_T tid)
 {
   Hxi_ModelData *m;
+  double *vals, *xc;
+  int i;
 
   GET_MODELDATA(S, m);
 
-  if (m->nxc > 0 &&
-      (*m->fmi2GetContinuousStates)(m->fmu, ssGetContStates(S), m->nxc)
-      != fmi2OK) {
-    ssSetErrorStatus(S, "can't get continuous states of FMU");
-    return;
+  /* get states */
+  if (m->nxc > 0) {
+    xc = m->xc->r;
+    if ((*m->fmi2GetContinuousStates)(m->fmu, xc, m->nxc) != fmi2OK) {
+      ssSetErrorStatus(S, "can't get continuous states of FMU");
+      return;
+    }
+    vals = ssGetContStates(S);
+    for (i = 0; i < m->nxc; i++)
+      *vals++ = xc[m->xc_perm[i]];
   }
 }
 
@@ -1130,13 +1157,21 @@ static void mdlUpdate(SimStruct *S, int_T tid)
 static void mdlDerivatives(SimStruct *S)
 {
   Hxi_ModelData *m;
+  double *vals, *dx;
+  int i;
 
   GET_MODELDATA(S, m);
 
-  if (m->nxc > 0 &&
-      (*m->fmi2GetDerivatives)(m->fmu, ssGetdX(S), m->nxc) != fmi2OK) {
-    ssSetErrorStatus(S, "can't get derivatives of FMU");
-    return;
+  /* get derivatives */
+  if (m->nxc > 0) {
+    dx = m->xc->r;
+    if ((*m->fmi2GetDerivatives)(m->fmu, dx, m->nxc) != fmi2OK) {
+      ssSetErrorStatus(S, "can't get continuous states of FMU");
+      return;
+    }
+    vals = ssGetdX(S);
+    for (i = 0; i < m->nxc; i++)
+      *vals++ = dx[m->xc_perm[i]];
   }
 }
 

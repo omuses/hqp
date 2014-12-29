@@ -159,13 +159,13 @@ proc ::fmi::readModelDescription {fmuPath} {
     }
 
     # collect variables per category
-    foreach category {"parameter" "state" "input" "output"} {
-	set ::fmu::${fmuName}::${category}Names {}
-	set ::fmu::${fmuName}::${category}Indices {}
-	set ::fmu::${fmuName}::${category}References {}
-	set ::fmu::${fmuName}::${category}BaseTypes {}
-	set ::fmu::${fmuName}::${category}NominalValues {}
-	set ::fmu::${fmuName}::${category}StartValues {}
+    foreach category {"parameter" "state" "derivative" "input" "output"} {
+	set _${category}Names {}
+	set _${category}Indices {}
+	set _${category}References {}
+	set _${category}BaseTypes {}
+	set _${category}NominalValues {}
+	set _${category}StartValues {}
     }
     set index 1
     foreach modelVariable $fmiElements(ModelVariables) {
@@ -205,6 +205,9 @@ proc ::fmi::readModelDescription {fmuPath} {
 	if {[lsearch $stateIndices $index] >= 0} {
 	    lappend categories "state"
 	}
+	if {[lsearch $derivativeIndices $index] >= 0} {
+	    lappend categories "derivative"
+	}
 	if {[regexp ^(parameter|input|output)$ $v(causality)]} {
 	    lappend categories $v(causality)
 	}
@@ -214,12 +217,12 @@ proc ::fmi::readModelDescription {fmuPath} {
 	}
 	# store variable infos
 	foreach category $categories {
-	    lappend ::fmu::${fmuName}::${category}Names $v(name)
-	    lappend ::fmu::${fmuName}::${category}Indices $index
-	    lappend ::fmu::${fmuName}::${category}References $v(valueReference)
-	    lappend ::fmu::${fmuName}::${category}BaseTypes $vBaseType
-	    lappend ::fmu::${fmuName}::${category}NominalValues $v(nominal)
-	    lappend ::fmu::${fmuName}::${category}StartValues $v(start)
+	    lappend _${category}Names $v(name)
+	    lappend _${category}Indices $index
+	    lappend _${category}References $v(valueReference)
+	    lappend _${category}BaseTypes $vBaseType
+	    lappend _${category}NominalValues $v(nominal)
+	    lappend _${category}StartValues $v(start)
 	}
 	# keep mapping from valueReference to name per base type
 	set typeId [string tolower [string index $vBaseType 0]]
@@ -228,18 +231,43 @@ proc ::fmi::readModelDescription {fmuPath} {
 	incr index
     }
 
+    # sort variables alphabetically and export them to ::fmu::${fmuName}
+    foreach category {"parameter" "state" "derivative" "input" "output"} {
+	set names {}
+	set indices {}
+	set references {}
+	set baseTypes {}
+	set nominalValues {}
+	set startValues {}
+	set permutation {}
+	if {$category != "derivative"} {
+	    # re-use ordering of states for derivatives
+	    set idxs [lsort -indices -dictionary [set _${category}Names]]
+	}
+	foreach idx $idxs {
+	    lappend names [lindex [set _${category}Names] $idx]
+	    lappend indices [lindex [set _${category}Indices] $idx]
+	    lappend references [lindex [set _${category}References] $idx]
+	    lappend baseTypes [lindex [set _${category}BaseTypes] $idx]
+	    lappend nominalValues [lindex [set _${category}NominalValues] $idx]
+	    lappend startValues [lindex [set _${category}StartValues] $idx]
+	    lappend permutation $idx
+	}
+	set ::fmu::${fmuName}::${category}Names $names
+	set ::fmu::${fmuName}::${category}Indices $indices
+	set ::fmu::${fmuName}::${category}References $references
+	set ::fmu::${fmuName}::${category}BaseTypes $baseTypes
+	set ::fmu::${fmuName}::${category}NominalValues $nominalValues
+	set ::fmu::${fmuName}::${category}StartValues $startValues
+	set ::fmu::${fmuName}::${category}Permutation $permutation
+    }
+
     # get model structure
     # use zero based indices counted per category
     if {$fmiVersion >= 2.0} {
         set catIdx 0
-        foreach category {parameter state input output} {
+        foreach category {parameter state derivative input output} {
             foreach index [set ::fmu::${fmuName}::${category}Indices] {
-                set mapIndex($index) $catIdx
-                incr catIdx
-            }
-        }
-        foreach category {derivative} {
-            foreach index [set ${category}Indices] {
                 set mapIndex($index) $catIdx
                 incr catIdx
             }
