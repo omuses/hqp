@@ -338,8 +338,8 @@ void Omu_Model::setup_model(double t0)
   // determine number of parameters
   mxArray *arg;
   _mdl_np = 0;
-  for (int j = 0; j < _mdl_nargs; j++) {
-    arg = _mx_args[j];
+  for (i = 0; i < _mdl_nargs; i++) {
+    arg = _mx_args[i];
     // only consider parameters in double format for accessing via mxGetPr()
     if (mxIsDouble(arg))
       _mdl_np += mxGetNumberOfElements(arg);
@@ -353,6 +353,11 @@ void Omu_Model::setup_model(double t0)
     if (Tcl_VarEval(theInterp, "mdl_x_start ${::fmu::", _mdl_name,
 		    "::stateStartValues}", NULL) != TCL_OK)
       m_error(E_INTERN, "can't obtain start values for states of FMU");
+    // replace undefined start values for states with zero because
+    // they might stay undefined if they are initialized from parameters
+    for (i = 0; i < _mdl_nx; i++)
+      if (!is_finite(_mdl_x_start[i]))
+	_mdl_x_start[i] = 0.0;
   }
   else {
     // get initial states that shall be initialized with mdlInitializeConditions
