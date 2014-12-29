@@ -50,51 +50,7 @@
 
 #include <meschach/matrix.h>
 #include <meschach/sparse.h>
-
-/** @name Additional Meschach functions */
-//@{
-extern IVEC *iv_set(IVEC *, int);
-extern IVEC *iv_part(IVEC *iv, int offs, int dim, IVEC *header);
-extern IVEC *iv_expand(IVEC *iv, int nel, int granul);
-extern IVEC *iv_copy_elements(const IVEC *, IVEC *);
-
-extern VEC *v_set(VEC *, Real);
-extern VEC *v_part(VEC *v, int offs, int dim, VEC *header);
-extern VEC *v_expand(VEC *v, int nel, int granul);
-extern VEC *v_copy_elements(const VEC *, VEC *);
-extern VEC *bd_mv_mlt(const BAND *, const VEC *, VEC *);
-
-extern MAT *m_mltadd(const MAT *, const MAT *, const MAT *, MAT *);
-extern MAT *m_copy_elements(const MAT *, MAT *);
-
-extern Real sp_norm_inf(SPMAT *);
-extern SPMAT *sp_copy3(const SPMAT *, SPMAT *);
-extern int sp_update_val(SPMAT *, int, int, Real);
-extern void sp_insert_mat(SPMAT *dst, int i_offs, int j_offs, const MAT *src);
-extern void symsp_insert_symmat(SPMAT *dst, int offs, const MAT *src);
-extern void sp_update_mat(SPMAT *dst, int i_offs, int j_offs, const MAT *src);
-extern void sp_extract_mat(const SPMAT *src, int i_offs, int j_offs, MAT *dst);
-extern void symsp_extract_mat(const SPMAT *src, int offs, MAT *dst);
-extern void sp_insert_mrow(SPMAT *dst, int i_offs, int j_offs,
-			   const MAT *src, int i);
-extern void sp_update_mrow(SPMAT *dst, int i_offs, int j_offs,
-			   const MAT *src, int i);
-extern void sp_extract_mrow(const SPMAT *src, int i_offs, int j_offs,
-			    MAT *dst, int i);
-extern SPMAT *sp_ident(SPMAT *);
-extern SPMAT *sp_ones(SPMAT *);
-extern VEC *sp_mv_mltadd(const VEC *v1, const VEC *v2, const SPMAT *A,
-			 Real alpha, VEC *out);
-extern VEC *sp_vm_mltadd(const VEC *v1, const VEC *v2, const SPMAT *A,
-			 Real alpha, VEC *out);
-extern VEC *sp_mv_symmlt(SPMAT *A, const VEC *v, VEC *out);
-
-extern Real sprow_inprod(const SPROW *r1, const VEC *inner, const SPROW *r2);
-extern void sprow_zero(SPROW *row);
-
-extern SPMAT *spLUfactor2(SPMAT *A, PERM *px);
-extern SPMAT *sp_transp(const SPMAT *, SPMAT *);
-//@}
+#include <meschach/addon2_hqp.h>
 
 /**
  * @name BKP factor and solve routines
@@ -113,28 +69,6 @@ extern VEC *bdBKPsolve(const BAND *A, const PERM *pivot, const PERM *relief,
 extern SPMAT *spBKPfactor(SPMAT *, PERM *pivot, Real tol);
 extern VEC *spBKPsolve(const SPMAT *, const PERM *pivot,
 		       const VEC *b, VEC *x);
-//@}
-
-/**
- * @name Routines for copying sparse matrices into sparse/band matrices
- *   ("sym" means that only the upper part of a symmetric matrix is filled)
- */
-//@{
-extern void sp_into_sp(const SPMAT *src, Real s, SPMAT *dst,
-		       const PERM *px, int i_offs, int j_offs);
-extern void spT_into_sp(const SPMAT *src, Real s, SPMAT *dst,
-			const PERM *px, int i_offs, int j_offs);
-extern void sp_into_symsp(const SPMAT *src, Real s, SPMAT *dst,
-			  const PERM *px, int i_offs, int j_offs);
-extern void symsp_into_symsp(const SPMAT *src, Real s, SPMAT *dst,
-			     const PERM *px, int offs);
-extern void spT_into_symsp(const SPMAT *src, Real s, SPMAT *dst,
-			   const PERM *px, int i_offs, int j_offs);
-
-extern void sp_into_bd(const SPMAT *sp, Real s, BAND *bd,
-		       const PERM *px, int i_offs, int j_offs);
-extern void spT_into_bd(const SPMAT *sp, Real s, BAND *bd,
-			const PERM *px, int i_offs, int j_offs);
 //@}
 
 /**

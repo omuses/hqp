@@ -11,7 +11,6 @@ CCDEFS = $(MES_INCDIR) $(TCL_INCDIR) $(IF_INCDIR) $(ASCEND_INCDIR) \
 
 SRCS = 	Hqp_Init.C \
 	sprcm.C \
-	Meschach.C \
         spBKP.C \
         matBKP.C \
         bdBKP.C \
