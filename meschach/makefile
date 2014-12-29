@@ -60,7 +60,7 @@ ZLIST1 = zmachine$O zcopy$O zmatio$O zmemory$O zvecop$O zmatop$O znorm$O \
 ZLIST2 = zlufctr$O zsolve$O zmatlab$O zhsehldr$O zqrfctr$O \
          zgivens$O  zhessen$O zschur$O
 LISTHQP = $(LIST1) $(LIST2) sparse$O sprow$O sparseio$O iter0$O splufctr$O \
-	addon_hqp$O spaddon_hqp$O
+	addon_hqp$O spaddon_hqp$O addon2_hqp$O
 
 # they are no longer supported
 # if you use them add oldpart to all and sparse

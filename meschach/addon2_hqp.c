@@ -1,11 +1,11 @@
 /*
- * Meschach.C -- definitions
+ * addon2_hqp -- definitions
  *
  * rf, 8/18/94
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,7 +24,7 @@
  */
 
 #include <math.h>
-#include "Meschach.h"
+#include "addon2_hqp.h"
 
 #define	SPLU_MOD
 
