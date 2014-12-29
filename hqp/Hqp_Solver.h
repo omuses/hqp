@@ -37,8 +37,6 @@
 
 class Hqp_Program;
 
-IF_BASE_DECLARE(Hqp_Solver);
-
 class Hqp_Solver {
 
  protected:
@@ -87,6 +85,6 @@ class Hqp_Solver {
   virtual const char *name()=0;
 };  
 
+HQP_API IF_BASE_DECLARE(Hqp_Solver);
+
 #endif
-
-

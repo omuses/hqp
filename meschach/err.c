@@ -112,7 +112,7 @@ static char *warn_mesg[] = {
 
 #define	MAX_ERRS	100
 
-jmp_buf	restart;
+jmp_buf	m_restart;
 
 
 /* array of pointers to lists of errors */
@@ -295,7 +295,7 @@ int	err_num, line_num,list_num;
        switch ( err_flag )
        {
 	   case EF_SILENT:
-	   longjmp(restart,(err_num==0)? -1 : err_num);
+	   longjmp(m_restart,(err_num==0)? -1 : err_num);
 	   break;
 	   case EF_ABORT:
 	   fprintf(stderr,"\n\"%s\", line %d: %s in function %s()\n",
@@ -315,7 +315,7 @@ int	err_num, line_num,list_num;
 	       fprintf(stdout,"\n\"%s\", line %d: %s in function %s()\n",
 		       file,line_num,err_list[list_num].listp[num],
 		       isascii(*fn_name) ? fn_name : "???");
-	   longjmp(restart,(err_num==0)? -1 : err_num);
+	   longjmp(m_restart,(err_num==0)? -1 : err_num);
 	   break;
 	   default:
 	   fprintf(stderr,"\n\"%s\", line %d: %s in function %s()\n\n",

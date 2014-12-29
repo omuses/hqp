@@ -7,7 +7,7 @@ include ../makedirs
 
 O = $(OBJ_SUFFIX)
 
-CCDEFS = $(HQP_INCDIR) $(MES_INCDIR) $(TCL_INCDIR) $(IF_DEFS)
+CCDEFS = -I. $(HQP_INCDIR) $(MES_INCDIR) $(TCL_INCDIR) $(IF_DEFS)
 
 SRCS = 	If.C \
 	If_List.C \

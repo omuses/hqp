@@ -72,7 +72,7 @@ extern "C" {
       application, i.e. an application that does not enter Tcl_Main.
       It is inlined as in this way the application determines,
       which Tcl version to use. */
-  inline int If_CreateInterp(int argc, char *argv[])
+  static inline int If_CreateInterp(int argc, char *argv[])
   {
     Tcl_Interp *interp;
     char argv0 = '\0';

@@ -31,7 +31,7 @@
 
 /** Vector of optimization variables, including min, max and initial
     attributes. */
-class Omu_VariableVec: public Omu_Vec {
+class OMU_API Omu_VariableVec: public Omu_Vec {
   			// base class holds variable values
  public:
   VECP min;		///< minimal permitted values (default: -Inf)
@@ -66,7 +66,7 @@ class Omu_VariableVec: public Omu_Vec {
 /** Vector of state variables, including sensitivity matrices Sx, Su and Sq
     that hold sensitivities wrt initial states, controls and parameters,
     respectively. */
-class Omu_StateVec: public Omu_Vec {
+class OMU_API Omu_StateVec: public Omu_Vec {
 public:
   MATP Sx;	///< sensitivity matrix wrt initial states
   MATP Su;	///< sensitivity matrix wrt control parameters
@@ -106,7 +106,7 @@ public:
 typedef Omu_VariableVec Omu_Vector;
 
 /** Extend Omu_VariableVec with attributes for optimization criterion. */
-class Omu_OptVarVec: public Omu_VariableVec {
+class OMU_API Omu_OptVarVec: public Omu_VariableVec {
 public:
   VECP 	weight1;	///< weight for linear objective term (default: 0.0)
   VECP 	weight2;	///< weight for quadratic objective term (default: 0.0)

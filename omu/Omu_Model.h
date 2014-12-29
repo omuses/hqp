@@ -32,6 +32,8 @@
 #include <Meschach.h>
 #include <Hxi_SFunction.h>
 
+#include "Omu.h"
+
 /** Error kind used for failed S-function methods */
 #define SMETHOD_ERROR E_FORMAT
 /** Call an S-function method, including logging and error handling. */
@@ -63,7 +65,7 @@
  * Basic functionality for formulating an optimization problem for
  * a model given as S-function or Functional Model Unit (FMU).
  */
-class Omu_Model {
+class OMU_API Omu_Model {
 
  private:
   If_List	_ifList_model; 	///< container for interface elements

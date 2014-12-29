@@ -40,19 +40,23 @@
 // IF_CLASS_ALLOC:  manually allocate on machines without static constructors
 //
 
-#define IF_BASE_DECLARE(base) class base; \
+#define IF_BASE_DECLARE(base) \
+  If_ClassList<base> *&If_ClassList_##base(); \
   extern If_ClassList<base> *theIf_ClassList_##base;
 
 #define IF_BASE_DEFINE(base) \
-  If_ClassList<base> *theIf_ClassList_##base = NULL;
+  If_ClassList<base> *theIf_ClassList_##base = NULL; \
+  If_ClassList<base> *&If_ClassList_##base() { \
+    return theIf_ClassList_##base; \
+  }
 
 #ifndef IF_CLASS_STATIC
 #define IF_CLASS_DEFINE(id, type, base) \
-  static If_Class<type,base> if_class_##type(id, theIf_ClassList_##base);
+  static If_Class<type,base> if_class_##type(id, If_ClassList_##base());
 #else
 #define IF_CLASS_DEFINE(id, type, base)
 #define IF_CLASS_ALLOC(id, type, base) \
-  new If_Class<type,base>(id, theIf_ClassList_##base);
+  new If_Class<type,base>(id, If_ClassList_##base());
 #endif
 
 //
@@ -68,7 +72,7 @@
 
 class If_idListElement;
 
-class If_idList: public If_List {
+class IF_API If_idList: public If_List {
  protected:
   char		*_cand_names;
   size_t	_cand_names_size;

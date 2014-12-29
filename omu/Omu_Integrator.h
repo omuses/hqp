@@ -34,8 +34,6 @@
 #include "Omu_Vars.h"
 #include "Omu_Deps.h"
 
-IF_BASE_DECLARE(Omu_Integrator);
-
 /**
  * Interface for a solver for differential (algebraic) equations. The solver
  * is employed internally to numerically integrate continuous-time model
@@ -307,5 +305,6 @@ class Omu_Integrator {
   Omu_DepVec	*_Fcs; 	///< residual arguments for all stages
 };  
 
-#endif
+OMU_API IF_BASE_DECLARE(Omu_Integrator);
 
+#endif

@@ -29,12 +29,7 @@
 #include <tcl.h>
 #include <If_String.h>
 
-#include "Hqp_Omuses.h"
-
-/** define OMU_API when compiling a Dynamic Link Library (DLL) */
-#ifndef OMU_API
-#define OMU_API 
-#endif
+#include "Omu.h"
 
 #ifdef IF_CLASS_STATIC
 //--------------------------------------------------------------------------
@@ -53,6 +48,7 @@
 #include "Omu_IntRKsuite.h"
 #include "Omu_IntDASPK.h"
 #endif
+#include "Hqp_Omuses.h"
 #include "Prg_DynamicOpt.h"
 #include "Prg_DynamicEst.h"
 

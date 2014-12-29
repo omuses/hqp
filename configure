@@ -628,8 +628,11 @@ ODC_MACH_OBJS
 OMU_MACH_OBJS
 HQP_DOCP_MACH_OBJS
 HQP_MACH_OBJS
-IF_DEFS
+ODC_DEFS
+OMU_DEFS
 HQP_DEFS
+IF_DEFS
+MES_DEFS
 ASCEND_SRCS
 ASCEND_INCDIR
 CUTE_SRCS
@@ -647,13 +650,11 @@ FORTRAN_COMP
 fortran_gfortran
 fortran_g77
 fortran_f77
-ADOLCDEF
 ASRCS
 ADOL_LIBDIR
 ADOL_INCDIR
 TCL_LIBDIR
 TCL_INCDIR
-OMU_DEFS
 MEX_EXTENSION
 MEX_SCRIPT
 MEX_LIBS
@@ -2214,9 +2215,11 @@ DEVELOPMENT_VERSION=yes
 # Note: don't use AC_DEFINE(_UNQUOTED) to avoid default DEFS,
 # like PACKAGE_TAR, etc.
 ALL_DEFS=""
+MES_DEFS=""
+IF_DEFS=""
 HQP_DEFS=""
 OMU_DEFS=""
-IF_DEFS=""
+ODC_DEFS=""
 
 # collect machine objects required for linking
 HQP_MACH_OBJS=""
@@ -4409,9 +4412,14 @@ fi
         MKLIB_SUFFIX=".dll"
         LD="$SHLD"
         LIB_SUFFIX=".dll"
+	MES_DEFS="$MES_DEFS -DMESCH_API=__declspec\(dllexport\)"
+	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
 	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
-	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
+	ODC_DEFS="$ODC_DEFS -DMESCH_API=__declspec\(dllimport\)"
+	ODC_DEFS="$ODC_DEFS -DIF_API=__declspec\(dllimport\)"
+	ODC_DEFS="$ODC_DEFS -DHQP_API=__declspec\(dllimport\)"
+	ODC_DEFS="$ODC_DEFS -DOMU_API=__declspec\(dllimport\)"
       else
         LD="link -lib -nologo -nodefaultlib:msvcrt"
         LIB_SUFFIX=".lib"
@@ -4812,8 +4820,6 @@ fi
 
 
 
-
-
 # add MEX libs to machine objects
 if test "$hqp_libs_resolved" = "bake-in"; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
@@ -4955,15 +4961,15 @@ $as_echo "file not found" >&6; }
     as_fn_error $? "Specify path of ADOL-C via --with-adolc" "$LINENO" 5
   fi
 
-  OMU_DEFS="$OMU_DEFS $ADOLCDEF"
   HQP_DEFS="$HQP_DEFS $ADOLCDEF"
+  OMU_DEFS="$OMU_DEFS $ADOLCDEF"
+  ODC_DEFS="$ODC_DEFS $ADOLCDEF"
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
   ODC_MACH_OBJS="$ODC_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
 else
   ASRCS=""
   ADOLCDEF=""
 fi
-
 
 
 
@@ -5514,6 +5520,9 @@ fi
 # -----------------------------------------------------------------------
 # 	Substitute specific settings
 # -----------------------------------------------------------------------
+
+
+
 
 
 

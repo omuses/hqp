@@ -1,9 +1,16 @@
 2014-12-29  <rfranke>
 
-	* meschach/err.c, meschach/matdef.h
+	* iftcl/*.h, hqp/*.h, omu/*.h, makedefs.in, configure.in, configure:
+	  - add declaration specifiers for DLL generation
+
+	* odc/Makefile.in:
+	  - add BatchReactor_bare to non ADOL-C examples
+
+	* meschach/err.[hc], meschach/matdef.h:
+	  - rename global restart to m_restart
 	  - remove unused code
 
-	* hqp/Meschach.[hC], meschach/addon2_hqp.[hc]
+	* hqp/Meschach.[hC], meschach/addon2_hqp.[hc], hqp/Makefile, meschach/makefile:
 	  - move Meschach addons from hqp/Meschach to meschach/addon2_hqp
 
 	* hxi/fmi.tcl, hxi/sfun_fmu.c:

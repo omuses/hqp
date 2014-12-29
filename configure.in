@@ -14,9 +14,11 @@ DEVELOPMENT_VERSION=yes
 # Note: don't use AC_DEFINE(_UNQUOTED) to avoid default DEFS,
 # like PACKAGE_TAR, etc.
 ALL_DEFS=""
+MES_DEFS=""
+IF_DEFS=""
 HQP_DEFS=""
 OMU_DEFS=""
-IF_DEFS=""
+ODC_DEFS=""
 
 # collect machine objects required for linking
 HQP_MACH_OBJS=""
@@ -306,9 +308,14 @@ if test $uname_found = "yes" ; then
         MKLIB_SUFFIX=".dll"
         LD="$SHLD"
         LIB_SUFFIX=".dll"
+	MES_DEFS="$MES_DEFS -DMESCH_API=__declspec\(dllexport\)"
+	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
 	HQP_DEFS="$HQP_DEFS -DHQP_API=__declspec\(dllexport\)"
 	OMU_DEFS="$OMU_DEFS -DOMU_API=__declspec\(dllexport\)"
-	IF_DEFS="$IF_DEFS -DIF_API=__declspec\(dllexport\)"
+	ODC_DEFS="$ODC_DEFS -DMESCH_API=__declspec\(dllimport\)"
+	ODC_DEFS="$ODC_DEFS -DIF_API=__declspec\(dllimport\)"
+	ODC_DEFS="$ODC_DEFS -DHQP_API=__declspec\(dllimport\)"
+	ODC_DEFS="$ODC_DEFS -DOMU_API=__declspec\(dllimport\)"
       else
         LD="link -lib -nologo -nodefaultlib:msvcrt"
         LIB_SUFFIX=".lib"
@@ -531,8 +538,6 @@ AC_SUBST(MEX_LIBS)
 AC_SUBST(MEX_SCRIPT)
 AC_SUBST(MEX_EXTENSION)
 
-AC_SUBST(OMU_DEFS)
-
 # add MEX libs to machine objects
 if test "$hqp_libs_resolved" = "bake-in"; then
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(MEX_LIBDIR) \$(MEX_LIBS)"
@@ -649,8 +654,9 @@ if test "$omu_adolc" != no; then
     AC_MSG_ERROR([Specify path of ADOL-C via --with-adolc])
   fi
 
-  OMU_DEFS="$OMU_DEFS $ADOLCDEF"
   HQP_DEFS="$HQP_DEFS $ADOLCDEF"
+  OMU_DEFS="$OMU_DEFS $ADOLCDEF"
+  ODC_DEFS="$ODC_DEFS $ADOLCDEF"
   OMU_MACH_OBJS="$OMU_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
   ODC_MACH_OBJS="$ODC_MACH_OBJS \$(ADOL_LIBDIR) ${LDLIB_PREFIX}adolc${LDLIB_SUFFIX}"
 else
@@ -661,7 +667,6 @@ fi
 AC_SUBST(ADOL_INCDIR)
 AC_SUBST(ADOL_LIBDIR)
 AC_SUBST(ASRCS)
-AC_SUBST(ADOLCDEF)
 
 # -----------------------------------------------------------------------
 # 	Configure DASPK and RKsuite if enabled
@@ -879,8 +884,11 @@ AC_SUBST(ASCEND_SRCS)
 # 	Substitute specific settings
 # -----------------------------------------------------------------------
 
-AC_SUBST(HQP_DEFS)
+AC_SUBST(MES_DEFS)
 AC_SUBST(IF_DEFS)
+AC_SUBST(HQP_DEFS)
+AC_SUBST(OMU_DEFS)
+AC_SUBST(ODC_DEFS)
 
 AC_SUBST(HQP_MACH_OBJS)
 AC_SUBST(HQP_DOCP_MACH_OBJS)

@@ -41,8 +41,6 @@ class Hqp_Solver;
 class Hqp_SqpProgram;
 class Hqp_HL;
 
-IF_BASE_DECLARE(Hqp_SqpSolver);
-
 class Hqp_SqpSolver {
 
  protected:
@@ -118,5 +116,6 @@ class Hqp_SqpSolver {
   Real norm_grd_L() {return _norm_grd_L;}
 };  
 
+HQP_API IF_BASE_DECLARE(Hqp_SqpSolver);
 
 #endif

@@ -35,12 +35,10 @@
 
 class Hqp_SqpProgram;
 
-IF_BASE_DECLARE(Hqp_MipSolver);
-
 /**
  *  Base class for a solver for mixed integer problems.
  */
-class Hqp_MipSolver {
+class HQP_API Hqp_MipSolver {
 
  protected:
   If_List	_ifList; 	///< interface elements
@@ -68,5 +66,6 @@ class Hqp_MipSolver {
   virtual const char *name() = 0; ///< name of mixed integer solver
 };  
 
+HQP_API IF_BASE_DECLARE(Hqp_MipSolver);
 
 #endif

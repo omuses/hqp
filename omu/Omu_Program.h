@@ -56,10 +56,10 @@ inline double value(badouble a) {return a.value();}
 
 #include <If_Class.h>
 
-IF_BASE_DECLARE(Omu_Program);
 #ifdef OMU_WITH_ADOLC
 #include "adoublev.h"
 #endif
+
 /**
  * Interface for a multi-stage optimization problem. The problem may be
  * defined in a derived class by overloading the appropriate methods.
@@ -68,7 +68,7 @@ IF_BASE_DECLARE(Omu_Program);
  * (defining the high-level methods) or by providing structural information
  * and derivatives manually (defining the low-level methods).
  */
-class Omu_Program {
+class OMU_API Omu_Program {
 
  public:
 
@@ -363,5 +363,7 @@ private:
 
   bool 		_has_low_level_continuous;
 };  
+
+OMU_API IF_BASE_DECLARE(Omu_Program);
 
 #endif

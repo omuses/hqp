@@ -51,7 +51,7 @@ HQP_LIBDIR = $(LFLAG)../lib $(RFLAG)../lib \
 CXX = @CXX@
 CC = @CC@
 
-CFLAGS = @WFLAG@ -DDEBUG @ADOLCDEF@ \
+CFLAGS = @WFLAG@ -DDEBUG @ODC_DEFS@ \
          ${HQP_INCDIR} ${TCL_INCDIR}
 
 LDFLAGS = ${HQP_LIBDIR} ${TCL_LIBDIR} ${ADOL_LIBDIR}
@@ -73,10 +73,10 @@ ASRCS = Prg_Crane.C \
 	Prg_DID.C \
 	Prg_DID_SFunction.C \
 	Prg_DIC_SFunction.C \
-	Prg_BatchReactor.C \
-	Prg_BatchReactor_bare.C
+	Prg_BatchReactor.C
 
-SRCS = 	Odc_Init.C @ASRCS@
+SRCS = 	Odc_Init.C @ASRCS@ \
+	Prg_BatchReactor_bare.C
 
 OBJS = $(SRCS:.C=$O) Odc_Main$O $(GMALLOC_O)
 

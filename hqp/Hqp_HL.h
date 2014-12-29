@@ -45,8 +45,6 @@
 
 #include "Hqp_impl.h"
 
-IF_BASE_DECLARE(Hqp_HL);
-
 class Hqp_Program;
 class Hqp_SqpProgram;
 
@@ -78,5 +76,6 @@ class Hqp_HL {
   virtual const char *name() = 0;
 };  
 
+HQP_API IF_BASE_DECLARE(Hqp_HL);
 
 #endif

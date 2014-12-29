@@ -33,8 +33,6 @@
 #include "Hqp_impl.h"
 #include "Hqp_Program.h"
 
-IF_BASE_DECLARE(Hqp_SqpProgram);
-
 /**
  *  Base class for formulating nonlinear programs.
  */
@@ -109,6 +107,6 @@ class HQP_API Hqp_SqpProgram {
   virtual const char *name()=0; ///< program name
 };  
 
+HQP_API IF_BASE_DECLARE(Hqp_SqpProgram);
+
 #endif
-
-

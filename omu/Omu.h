@@ -1,12 +1,12 @@
 /**
- *  @file If_ListElement.h
- *     Element of an If_List
+ * @file Omu.h
+ *   declaration of external API for Omuses
  *
- *  rf, 6/22/94
+ * rf, 12/29/14
  */
 
 /*
-    Copyright (C) 1994--1998  Ruediger Franke
+    Copyright (C) 1997--2014  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,33 +24,18 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef If_ListElement_H
-#define If_ListElement_H
+#ifndef Omu_H
+#define Omu_H
 
-#include <string.h>
+/** define OMU_API when compiling a Dynamic Link Library (DLL) */
+#ifndef OMU_API
+#define OMU_API
+#endif
 
-#include "If.h"
+/* include underlying HQP */
+#include <Hqp.h>
 
-/** fast string comparison */
-inline int if_strcmp(const char *str1, const char *str2, int pos=0)
-{
-  return !(str1[pos] == str2[pos] && strcmp( str1, str2) == 0);
-}
-
-/**
- *  Element of a twice concatenated If_List.
- */
-class IF_API If_ListElement {
-  friend class If_List;
-
- private:
-  If_ListElement	*_prev;	///< previous element
-  If_ListElement	*_next;	///< next element
-
- public:    
-  If_ListElement(); 		///< constructor
-  virtual ~If_ListElement(); 	///< destructor
-};
-
+/** initialize Tcl module Omuses */
+extern "C" OMU_API int Omu_Init(Tcl_Interp *interp);
 
 #endif

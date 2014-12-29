@@ -29,9 +29,10 @@
 #define Omu_Vec_H
 
 #include <Meschach.h>
+#include "Omu.h"
 
 /** Vector class with automatic construction / destruction */
-class Omu_Vec: public Mesch::VECP {
+class OMU_API Omu_Vec: public Mesch::VECP {
 public:
   Omu_Vec() {_v = v_resize(v_get(1), 0);} ///< allocate empty vector
   virtual ~Omu_Vec() {v_free(_v);} 	  ///< destroy vector

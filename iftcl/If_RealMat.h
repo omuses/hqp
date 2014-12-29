@@ -28,7 +28,7 @@
 #define If_RealMat_H
 
 // Include file with declaration of vector and matrix type.
-#include "Meschach.h"
+#include <Meschach.h>
 
 #include "If_Variable.h"
 

@@ -52,6 +52,8 @@
 #include <meschach/sparse.h>
 #include <meschach/addon2_hqp.h>
 
+#include <Hqp.h>
+
 /**
  * @name BKP factor and solve routines
  *   Reference: J.R.Bunch, L.Kaufman, and B.N.Parlett:
@@ -105,7 +107,7 @@ namespace Mesch {
 #endif
 
 /** Wrapper for Meschach VEC* */
-class VECP {
+class HQP_API VECP {
 
  protected:
   VEC *_v;	///< wrapped VEC*
@@ -147,7 +149,7 @@ class VECP {
 };
 
 /** Wrapper for Meschach IVEC* */
-class IVECP {
+class HQP_API IVECP {
 
  protected:
   IVEC *_v;	///< wrapped IVEC*
@@ -189,7 +191,7 @@ class IVECP {
 };
 
 /** Wrapper for Meschach PERM* */
-class PERMP {
+class HQP_API PERMP {
 
  protected:
   PERM *_v; 	///< wrapped PERMP
@@ -232,7 +234,7 @@ class PERMP {
 
 /** Wrapper for a row in Meschach MAT.
     It is used if compiled with DEBUG flag. */
-class MATROWP {
+class HQP_API MATROWP {
 
  protected:
   Real *_row; 	///< pointer to data
@@ -266,7 +268,7 @@ class MATROWP {
 };
 
 /** Wrapper for Meschach MAT* */
-class MATP {
+class HQP_API MATP {
 
  protected:
   MAT *_m; 	///< wrapped MAT*

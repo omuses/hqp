@@ -27,9 +27,8 @@
 #ifndef If_Element_H
 #define If_Element_H
 
-#include <tcl.h>
-
 #include "If.h"
+
 #include "If_ListElement.h"
 
 /** global Tcl interpreter that must be initialized by the application */

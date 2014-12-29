@@ -31,7 +31,7 @@
 #include "Omu_Vec.h"
 
 /** Vector extended with structural information for a gradient. */
-class Omu_Gradient: public Mesch::VECP {
+class OMU_API Omu_Gradient: public Mesch::VECP {
   friend class Omu_Dep;
 public:
   /** Create an empty matrix. */
@@ -57,7 +57,7 @@ protected:
 
 
 /** Single dependent variable. */
-class Omu_Dependent {
+class OMU_API Omu_Dependent {
 public:
   /** @name flags for indicating dependencies from independent variables */
   //@{
@@ -112,7 +112,7 @@ protected:
 
 
 /** Matrix extended with structural information for a Jacobian. */
-class Omu_Jacobian: public Mesch::MATP {
+class OMU_API Omu_Jacobian: public Mesch::MATP {
   friend class Omu_DepVec;
 public:
   /** Create an empty matrix. */
@@ -181,7 +181,7 @@ protected:
 
 
 /** Vector of dependent variables. */
-class Omu_DependentVec: public Omu_Vec {
+class OMU_API Omu_DependentVec: public Omu_Vec {
 public:
   Omu_Jacobian Jx;	///< Jacobian wrt x (initial states of sample period)
   Omu_Jacobian Ju;	///< Jacobian wrt u (control parameters of stage)

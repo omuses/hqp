@@ -30,7 +30,7 @@
 #include "Hqp_impl.h"
 
 /** Optimization program for sparse quadratic programming */
-class Hqp_Program {
+class HQP_API Hqp_Program {
 
  public:
 

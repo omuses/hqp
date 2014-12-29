@@ -124,6 +124,7 @@ void	m_version()
 	/* rf, 2014-12-29 */
 	printf("\taddon2_hqp.[hc]: more Meschach add-ons from Hqp\n");
 	printf("\terr.c: remove unused functions float_error() and catch_FPE()\n");
+	printf("\terr.[hc]: rename global restart to m_restart\n");
 	printf("\n");
 }
 

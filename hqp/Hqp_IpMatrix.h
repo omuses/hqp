@@ -39,8 +39,6 @@
 
 class Hqp_Program;
 
-IF_BASE_DECLARE(Hqp_IpMatrix);
-
 class Hqp_IpMatrix {
 
  protected:
@@ -89,5 +87,7 @@ class Hqp_IpMatrix {
 
   virtual const char *name()=0;
 };
+
+HQP_API IF_BASE_DECLARE(Hqp_IpMatrix);
 
 #endif

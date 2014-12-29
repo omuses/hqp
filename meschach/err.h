@@ -40,7 +40,7 @@ MESCH__BEGIN_DECLS
 
 /* Error recovery */
 
-extern	jmp_buf	restart;
+extern MESCH_API jmp_buf m_restart;
 
 /* max. # of error lists */
 #define ERR_LIST_MAX_LEN   10
@@ -75,9 +75,9 @@ MESCH_API const char *m_error_description(); /* return fn_name of last error */
 #define	ERREXIT()	set_err_flag(EF_EXIT)
 #define	ERRABORT()	set_err_flag(EF_ABORT)
 /* don't print message */
-#define	SILENTERR()	if ( ! setjmp(restart) ) set_err_flag(EF_SILENT)
+#define	SILENTERR()	if ( ! setjmp(m_restart) ) set_err_flag(EF_SILENT)
 /* return here on error */
-#define	ON_ERROR()	if ( ! setjmp(restart) ) set_err_flag(EF_JUMP)
+#define	ON_ERROR()	if ( ! setjmp(m_restart) ) set_err_flag(EF_JUMP)
 
 
 /* error types */
@@ -118,17 +118,17 @@ MESCH_API const char *m_error_description(); /* return fn_name of last error */
 #define	m_catch(errnum,ok_part,err_part)	\
 	{	jmp_buf _save;	int _err_num, _old_flag; \
 		_old_flag = set_err_flag(EF_SILENT); \
-		MEM_COPY(restart,_save,sizeof(jmp_buf)); \
-		if ( (_err_num=setjmp(restart)) == 0 ) \
+		MEM_COPY(m_restart,_save,sizeof(jmp_buf)); \
+		if ( (_err_num=setjmp(m_restart)) == 0 ) \
 		{	ok_part; \
 			set_err_flag(_old_flag); \
-			MEM_COPY(_save,restart,sizeof(jmp_buf));	} \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf));	} \
 		else if ( _err_num == errnum ) \
 		{	set_err_flag(_old_flag);  \
-			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf)); \
 			err_part;	} \
 		else {	set_err_flag(_old_flag); \
-			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf)); \
 			m_error(_err_num,"m_catch"); \
 		} \
 	}
@@ -138,14 +138,14 @@ MESCH_API const char *m_error_description(); /* return fn_name of last error */
 #define	m_catchall(ok_part,err_part) \
 	{	jmp_buf _save;	int _err_num, _old_flag; \
 		_old_flag = set_err_flag(EF_SILENT); \
-		MEM_COPY(restart,_save,sizeof(jmp_buf)); \
-		if ( (_err_num=setjmp(restart)) == 0 ) \
+		MEM_COPY(m_restart,_save,sizeof(jmp_buf)); \
+		if ( (_err_num=setjmp(m_restart)) == 0 ) \
 		{	ok_part; \
 			set_err_flag(_old_flag); \
-			MEM_COPY(_save,restart,sizeof(jmp_buf));	} \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf));	} \
 		else \
 		{	set_err_flag(_old_flag);  \
-			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf)); \
 			err_part;	} \
 	}
 
@@ -155,14 +155,14 @@ MESCH_API const char *m_error_description(); /* return fn_name of last error */
 #define	m_tracecatch(ok_part,function) \
 	{	jmp_buf _save;	int _err_num, _old_flag; \
 		_old_flag = set_err_flag(EF_JUMP); \
-		MEM_COPY(restart,_save,sizeof(jmp_buf)); \
-		if ( (_err_num=setjmp(restart)) == 0 ) \
+		MEM_COPY(m_restart,_save,sizeof(jmp_buf)); \
+		if ( (_err_num=setjmp(m_restart)) == 0 ) \
 		{	ok_part; \
 			set_err_flag(_old_flag); \
-			MEM_COPY(_save,restart,sizeof(jmp_buf));	} \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf));	} \
 		else \
 		{	set_err_flag(_old_flag);  \
-			MEM_COPY(_save,restart,sizeof(jmp_buf)); \
+			MEM_COPY(_save,m_restart,sizeof(jmp_buf)); \
 			m_error(_err_num,function);	} \
 	}
 

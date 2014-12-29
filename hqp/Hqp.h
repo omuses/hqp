@@ -27,16 +27,16 @@
 #ifndef Hqp_H
 #define Hqp_H
 
+/** define HQP_API when compiling a Dynamic Link Library (DLL) */
+#ifndef HQP_API
+#define HQP_API
+#endif
+
 /* include command interface */
 #include <If.h>
 
 /* include type declarations */
 #include <Meschach.h>
-
-/** define HQP_API when compiling a Dynamic Link Library (DLL) */
-#ifndef HQP_API
-#define HQP_API 
-#endif
 
 /** initialize Tcl module Hqp */
 extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp);
