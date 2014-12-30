@@ -560,58 +560,57 @@ static void mdlInitializeSizes(SimStruct *S)
   }
 
   /*
-   * Load binary model code
-   */
-  if (Tcl_VarEval(interp, "::fmi::getBinaryPath {", ssGetPath(S), "}",
-		  NULL) != TCL_OK) {
-    ssSetErrorStatus(S, "can't get path of FMU binary");
-    return;
-  }
-  handle = DLOPEN(Tcl_GetStringResult(interp));
-  if (!handle) {
-    ssSetErrorStatus(S, DLERROR());
-    return;
-  }
-
-  /*
-   * Check for Hxi S-function, which is supported alternatively to FMI
-   */
-  Hxi_SimStruct_init_p =
-    (Hxi_SimStruct_init_t*)DLSYM(handle, "Hxi_SimStruct_init");
-  if (Hxi_SimStruct_init_p) {
-    /* store null pointer to model data */
-    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
-                    "::modelData} 0x00", NULL) != TCL_OK) {
-      ssSetErrorStatus(S, "can't store model instance");
-      return;
-    }
-    /* clear own references */
-    free(fmuName);
-    ssSetmdlCheckParameters(S, NULL);
-    ssSetmdlInitializeSizes(S, NULL);
-    ssSetmdlInitializeSampleTimes(S, NULL);
-    ssSetmdlStart(S, NULL);
-    ssSetmdlInitializeConditions(S, NULL);
-    ssSetmdlUpdate(S, NULL);
-    ssSetmdlDerivatives(S, NULL);
-    ssSetmdlJacobian(S, NULL);
-    ssSetmdlOutputs(S, NULL);
-    ssSetmdlTerminate(S, NULL);
-    /* redirect to Hxi S-function */
-    (*Hxi_SimStruct_init_p)(S);
-    Hxi_mdlInitializeSizes(S);
-    return;
-  }
-
-  /*
-   * create new model instance
+   * Create new model instance if needed
    */
   if (m == NULL) {
-    m = (Hxi_ModelData *)calloc(1, sizeof(Hxi_ModelData));
+    /*
+     * Load binary model code
+     */
+    if (Tcl_VarEval(interp, "::fmi::getBinaryPath {", ssGetPath(S), "}",
+                    NULL) != TCL_OK) {
+      ssSetErrorStatus(S, "can't get path of FMU binary");
+      return;
+    }
+    handle = DLOPEN(Tcl_GetStringResult(interp));
+    if (!handle) {
+      ssSetErrorStatus(S, DLERROR());
+      return;
+    }
+
+    /*
+     * Check for Hxi S-function, which is supported alternatively to FMI
+     */
+    Hxi_SimStruct_init_p =
+      (Hxi_SimStruct_init_t*)DLSYM(handle, "Hxi_SimStruct_init");
+    if (Hxi_SimStruct_init_p) {
+      /* store null pointer to model data */
+      if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                      "::modelData} 0x00", NULL) != TCL_OK) {
+        ssSetErrorStatus(S, "can't store model instance");
+        return;
+      }
+      /* clear own references */
+      free(fmuName);
+      ssSetmdlCheckParameters(S, NULL);
+      ssSetmdlInitializeSizes(S, NULL);
+      ssSetmdlInitializeSampleTimes(S, NULL);
+      ssSetmdlStart(S, NULL);
+      ssSetmdlInitializeConditions(S, NULL);
+      ssSetmdlUpdate(S, NULL);
+      ssSetmdlDerivatives(S, NULL);
+      ssSetmdlJacobian(S, NULL);
+      ssSetmdlOutputs(S, NULL);
+      ssSetmdlTerminate(S, NULL);
+      /* redirect to Hxi S-function */
+      (*Hxi_SimStruct_init_p)(S);
+      Hxi_mdlInitializeSizes(S);
+      return;
+    }
 
     /*
      * Initialize FMU environment
      */
+    m = (Hxi_ModelData *)calloc(1, sizeof(Hxi_ModelData));
     m->interp = interp;
     m->fmuName = fmuName;
     m->messageStr = malloc(256);

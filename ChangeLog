@@ -1,6 +1,8 @@
+
 2014-12-30  <rfranke>
 
 	* hxi/sfun_fmu.c:
+	  - avoid repeated loading of a binary FMU
 	  - delay fmi2SetupExperiment until start values have been set
 
 2014-12-29  <rfranke>
