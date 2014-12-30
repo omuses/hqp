@@ -13,6 +13,8 @@
 /odc/Makefile
 /odc/mex.tcl
 /odc/odc
+/odc/*.fmu
+/odc/.*/*
 /*/*.o
 /*/*.obj
 /*/*.so
