@@ -1,3 +1,8 @@
+2014-12-30  <rfranke>
+
+	* hxi/sfun_fmu.c:
+	  - delay fmi2SetupExperiment until start values have been set
+
 2014-12-29  <rfranke>
 
 	* iftcl/*.h, hqp/*.h, omu/*.h, makedefs.in, configure.in, configure:

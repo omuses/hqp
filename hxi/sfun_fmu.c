@@ -862,13 +862,6 @@ static void mdlInitializeConditions(SimStruct *S)
     }
   }
 
-  /* setup experiment (set start time) */
-  if ((*m->fmi2SetupExperiment)(m->fmu, fmi2False, 0.0,
-                                ssGetT(S), fmi2False, 0.0) != fmi2OK) {
-    ssSetErrorStatus(S, "can't setup experiment for FMU");
-    return;
-  }
-
   m->initPending = fmi2True; /* wait until inputs are available */
   m->nextEventTimeDefined = fmi2False;
 }
@@ -1022,6 +1015,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   timeEvent = fmi2False;
   stateEvent = fmi2False;
   if (m->initPending) {
+    /* setup experiment and set start time */
+    if ((*m->fmi2SetupExperiment)(m->fmu, fmi2False, 0.0,
+                                  ssGetT(S), fmi2False, 0.0) != fmi2OK) {
+      ssSetErrorStatus(S, "can't setup experiment for FMU");
+      return;
+    }
     /* initialize FMU */
     if ((*m->fmi2EnterInitializationMode)(m->fmu) != fmi2OK
         || (*m->fmi2ExitInitializationMode)(m->fmu) != fmi2OK) {
