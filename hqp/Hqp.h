@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2014  Ruediger Franke
+    Copyright (C) 1994--2015  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,11 +32,11 @@
 #define HQP_API
 #endif
 
-/* include command interface */
-#include <If.h>
-
 /* include type declarations */
 #include <Meschach.h>
+
+/* include command interface */
+#include <If.h>
 
 /** initialize Tcl module Hqp */
 extern "C" HQP_API int Hqp_Init(Tcl_Interp *interp);

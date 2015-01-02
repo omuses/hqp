@@ -1,3 +1,7 @@
+2015-01-02    <rfranke>
+
+	* hqp/Meschach.h, iftcl/If.h, hqp/Hqp.h:
+	  - adapt inline specifiers to DLL export
 
 2014-12-30  <rfranke>
 

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2014  Ruediger Franke
+    Copyright (C) 1994--2015  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -52,12 +52,13 @@ typedef enum {
 
 #ifdef __cplusplus
 extern "C" {
-#else
-# if defined(_MSC_VER)
-  /** define inline for Microsoft C compiler */
-#  define inline __forceinline
-# endif
 #endif
+
+#if defined(_MSC_VER)
+/** define inline for Microsoft C compiler */
+#define inline __forceinline
+#endif
+
   /** Log a message */
   IF_API void If_Log(const char *category, const char *message, ...);
 
@@ -125,6 +126,10 @@ extern "C" {
     
     return Tcl_GetStringResult(If_Interp());
   }
+
+#if defined(_MSC_VER)
+#undef inline
+#endif
 
 #ifdef __cplusplus
 }

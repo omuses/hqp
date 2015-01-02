@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke and Eckhard Arnold
+    Copyright (C) 1994--2015  Ruediger Franke and Eckhard Arnold
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -41,18 +41,15 @@
 #if !defined(min)
 #define	min(a,b)	((a) < (b) ? (a) : (b))
 #endif
-#if !defined(max)
-#define	max(a,b)	((a) > (b) ? (a) : (b))
-#endif
-#include <string.h> // for sscanf
 
+#include <string.h> // for sscanf
 #include <assert.h>
 
 #include <meschach/matrix.h>
 #include <meschach/sparse.h>
 #include <meschach/addon2_hqp.h>
 
-#include <Hqp.h>
+#include <Hqp.h> // for HQP_API
 
 /**
  * @name BKP factor and solve routines
@@ -104,6 +101,11 @@ namespace Mesch {
    assert (ptr != NULL)
 #else
 #define MESCH_NULL_CHECK(ptr)
+#endif
+
+#if defined(_MSC_VER)
+/** define inline for Microsoft compiler */
+#define inline __forceinline
 #endif
 
 /** Wrapper for Meschach VEC* */
@@ -234,7 +236,7 @@ class HQP_API PERMP {
 
 /** Wrapper for a row in Meschach MAT.
     It is used if compiled with DEBUG flag. */
-class HQP_API MATROWP {
+class MATROWP {
 
  protected:
   Real *_row; 	///< pointer to data
@@ -285,14 +287,14 @@ class HQP_API MATP {
   /// @name Operators for MATP
   //@{
 # ifdef DEBUG
-  MATROWP operator [] (int i)
+  inline MATROWP operator [] (int i)
     {
       MESCH_NULL_CHECK(_m);
       MESCH_BOUNDS_CHECK(i, 0, _m->m);
       return MATROWP(_m->me[i], _m->n);
     }
 # else
-  Real *operator [] (int i)
+  inline Real *operator [] (int i)
     {
       return _m->me[i];
     }
@@ -306,14 +308,14 @@ class HQP_API MATP {
   /// @name Operators for const MATP
   //@{
 # ifdef DEBUG
-  const MATROWP operator [] (int i) const
+  inline const MATROWP operator [] (int i) const
     {
       MESCH_NULL_CHECK(_m);
       MESCH_BOUNDS_CHECK(i, 0, _m->m);
       return MATROWP(_m->me[i], _m->n);
     }
 # else
-  const Real *operator [] (int i) const
+  inline const Real *operator [] (int i) const
     {
       return _m->me[i];
     }
@@ -363,6 +365,10 @@ inline Real sscan_real(const char *str)
   }
   return val;
 }
+
+#if defined(_MSC_VER)
+#undef inline
+#endif
 
 }; // namespace Mesch
 
