@@ -88,7 +88,7 @@ Omu_Model::~Omu_Model()
 {
   int i;
   if (_SS) {
-    SMETHOD_CALL(mdlTerminate, _SS);
+    SMETHOD_CALL_HOLD(mdlTerminate, _SS);
     Hxi_SimStruct_destroy(_SS);
   }
   for (i = 0; i < _mdl_nargs; i++)

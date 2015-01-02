@@ -36,29 +36,37 @@
 
 /** Error kind used for failed S-function methods */
 #define SMETHOD_ERROR E_FORMAT
-/** Call an S-function method, including logging and error handling. */
-#define SMETHOD_CALL(method, S) { \
+/** Log the call to an S-function method. */
+#define SMETHOD_LOG_CALL(method, S) { \
   if (_mdl_logging >= If_LogInfo) \
     If_Log("Info", "%s at %.3f", #method, ssGetT(S)); \
   ssSetErrorStatus(S, NULL); \
-  method(S); \
+}
+/** Log and throw an error from an S-function method. */
+#define SMETHOD_LOG_ERROR(method, S, errnum) { \
   if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(SMETHOD_ERROR, ssGetErrorStatus(S)); \
+    fprintf(stderr, "Error from " #method ": %s\n", ssGetErrorStatus(S)); \
+    if (errnum >= 0) \
+      m_error(errnum, ssGetErrorStatus(S)); \
   } \
 }
 /** Call an S-function method, including logging and error handling. */
+#define SMETHOD_CALL(method, S) { \
+  SMETHOD_LOG_CALL(method, S) \
+  method(S); \
+  SMETHOD_LOG_ERROR(method, S, SMETHOD_ERROR) \
+}
+/** Call an S-function method, including logging. */
+#define SMETHOD_CALL_HOLD(method, S) { \
+  SMETHOD_LOG_CALL(method, S) \
+  method(S); \
+  SMETHOD_LOG_ERROR(method, S, -1) \
+}
+/** Call an S-function method, including logging and error handling. */
 #define SMETHOD_CALL2(method, S, tid) { \
-  if (_mdl_logging >= If_LogInfo) \
-    If_Log("Info", "%s tid %d at %.3f", #method, tid, ssGetT(S)); \
-  ssSetErrorStatus(S, NULL); \
+  SMETHOD_LOG_CALL(method, S) \
   method(S, tid); \
-  if (ssGetErrorStatus(S)) { \
-    fprintf(stderr, "Error from " #method ": %s\n", \
-	    ssGetErrorStatus(S)); \
-    m_error(SMETHOD_ERROR, ssGetErrorStatus(S)); \
-  } \
+  SMETHOD_LOG_ERROR(method, S, SMETHOD_ERROR) \
 }
 
 /**

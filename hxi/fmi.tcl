@@ -41,9 +41,16 @@ proc ::fmi::getResourcesURI {fmuPath} {
 #  @return binary path for respective platform
 proc ::fmi::getBinaryPath {fmuPath} {
     set dirPath [::fmi::getDirPath $fmuPath]
-    set binPath ${dirPath}/binaries/$::fmi::platformSubDir($::tcl_platform(os))
-    set binPath ${binPath}[expr 8*$::tcl_platform(wordSize)]
+    set sysName $::fmi::platformSubDir($::tcl_platform(os))
+    set binPath ${dirPath}/binaries/$sysName[expr 8*$::tcl_platform(wordSize)]
     set fmuName [file rootname [file tail $fmuPath]]
+    # export binPath under win to get optional supplementary dll's loaded
+    if {$sysName == "win"} {
+        if {[string first $binPath $::env(PATH)] != 0} {
+            set ::env(PATH) "$binPath;$::env(PATH)"
+        }
+    }
+    # return path of binary
     set modelIdentifier [set ::fmu::${fmuName}::attributes(modelIdentifier)]
     return ${binPath}/${modelIdentifier}[info sharedlibextension]
 }

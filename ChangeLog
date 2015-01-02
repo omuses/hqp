@@ -1,5 +1,8 @@
 2015-01-02    <rfranke>
 
+	* hxi/hxi.tcl, omu/Omu_Model.[hC]:
+	  - improve loading and release of FMU
+
 	* hqp/Meschach.h, iftcl/If.h, hqp/Hqp.h:
 	  - adapt inline specifiers to DLL export
 
