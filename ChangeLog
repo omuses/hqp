@@ -1,3 +1,11 @@
+2015-01-09    <rfranke>
+
+	* odc/DrumBoiler.mo, odc/drumboiler.tcl, odc/drumboiler_sp.tcl:
+	  - add dynamic and steady-state drum boiler optimization examples
+
+	* odc/omc.tcl
+	  - allow diagnostic messages without raising an error
+
 2015-01-02    <rfranke>
 
 	* hxi/hxi.tcl, omu/Omu_Model.[hC]:

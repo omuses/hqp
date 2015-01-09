@@ -12,9 +12,10 @@ proc compileFMU {mo_file} {
     set mo_file_normalized [file normalize $mo_file]
     # create a temporary directory
     set cwd [pwd]
-    if {![file exists tmp]} {
-	file mkdir tmp
+    if [file exists tmp] {
+	file delete -force tmp
     }
+    file mkdir tmp
     cd tmp
     # create script file for omc
     set fp [open "omc_tcl_commands.mos" w]
@@ -35,9 +36,15 @@ proc compileFMU {mo_file} {
     if {$loadFile != {""}} {
 	error $loadFile
     }
-    set translateModelFMU [join [lrange $logLines 3 end] "\n"]
+    set translateModelFMULines [lrange $logLines 3 end]
+    set translateModelFMU [join $translateModelFMULines "\n"]
+    foreach logLine $translateModelFMULines {
+	if {[string compare -length 6 "Error:" $logLine] == 0} {
+	    error $translateModelFMU
+	}
+    }
     if {$translateModelFMU != {""}} {
-	error $translateModelFMU
+	puts $translateModelFMU
     }
     file copy -force "tmp/$model_name.fmu" .
     file delete -force tmp
