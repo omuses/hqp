@@ -163,6 +163,7 @@ Prg_DynamicEst::~Prg_DynamicEst()
   m_free(_mdl_us);
   m_free(_mdl_x0s);
   iv_free(_exs);
+  v_free(_mdl_p_nominal);
   v_free(_mdl_p_confidence);
   iv_free(_mdl_p_active);
   v_free(_mdl_der_x0_max);
