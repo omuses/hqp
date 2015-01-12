@@ -814,7 +814,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 
 #define MDL_INITIALIZE_CONDITIONS
 /**
- *  Initialize parameters and continuous states.
+ *  Initialize the FMU.
  */
 static void mdlInitializeConditions(SimStruct *S)
 {
@@ -867,7 +867,7 @@ static void mdlInitializeConditions(SimStruct *S)
 
 
 /**
- *  Set states and inputs and obtain outputs y = f(t,p,x,u).
+ *  Set parameters, states and inputs and obtain outputs y = f(t,p,x,u).
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
@@ -1175,10 +1175,13 @@ static void mdlDerivatives(SimStruct *S)
 
 
 /**
- *  Free model instance.
+ *  Free model instance. Don't call fmi2Terminate because:
+ *   - it is not allowed after a possible evaluation error
+ *   - reuse the instance for subsequent evaluations
  */
 static void mdlTerminate(SimStruct *S)
 {
+  /*
   Hxi_ModelData *m;
 
   GET_MODELDATA(S, m);
@@ -1188,6 +1191,7 @@ static void mdlTerminate(SimStruct *S)
     ssSetErrorStatus(S, "can't terminate FMU");
     return;
   }
+  */
 }
 
 /**

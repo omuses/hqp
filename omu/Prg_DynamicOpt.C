@@ -560,12 +560,12 @@ void Prg_DynamicOpt::setup(int k,
       if (!_multistage && k < _K) {
 	// treat control bounds via general constraints
 	if (_mdl_u.min[idx] > -Inf) {
-	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
+	  for (j = max(0, _mdl_u0_nfixed[idx] - _mdl_u_order[idx]); j < upsk; j++)
 	    c.min[spsk*(_nc+_nsc) + upsk*_nsuc + i + j] =
 	      _mdl_u.min[idx] / _mdl_u_nominal[idx];
 	}
 	if (_mdl_u.max[idx] < Inf) {
-	  for (j = _mdl_u0_nfixed[idx] - _mdl_u_order[idx]; j < upsk; j++)
+	  for (j = max(0, _mdl_u0_nfixed[idx] - _mdl_u_order[idx]); j < upsk; j++)
 	    c.max[spsk*(_nc+_nsc) + upsk*_nsuc + i + j] =
 	      _mdl_u.max[idx] / _mdl_u_nominal[idx];
 	}
@@ -963,7 +963,7 @@ void Prg_DynamicOpt::update(int kk,
   // (note: do not access xf to avoid non-linear dependency in update)
   if (!_multistage && kk < _KK) {
     for (i = 0; i < _nu; i++)
-      c[spsk*(_nc+_nsc) + i*spsk + kk%spsk] = x[i] +
+      c[spsk*(_nc+_nsc) + upsk*(_nsuc + i) + kk%upsk] = x[i] +
 	(ts(kk+1)-ts(kk)) * u[i*upsk + kk%upsk]/_t_nominal; // == xf[i]
   }
   // contribution of active outputs
@@ -1453,8 +1453,8 @@ void Prg_DynamicOpt::update_grds(int kk,
     // control bounds if not multistage
     if (!_multistage && kk < _KK) {
       for (i = 0; i < _nu; i++) {
-	c.Jx[spsk*(_nc+_nsc) + i*spsk + kk%spsk][i] = 1.0;
-	c.Ju[spsk*(_nc+_nsc) + i*spsk + kk%spsk][i*upsk + kk%upsk] =
+	c.Jx[spsk*(_nc+_nsc) + upsk*(_nsuc + i) + kk%upsk][i] = 1.0;
+	c.Ju[spsk*(_nc+_nsc) + upsk*(_nsuc + i) + kk%upsk][i*upsk + kk%upsk] =
 	  (ts(kk+1)-ts(kk))/_t_nominal;
       }
     }

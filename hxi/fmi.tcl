@@ -55,12 +55,12 @@ proc ::fmi::getBinaryPath {fmuPath} {
     return ${binPath}/${modelIdentifier}[info sharedlibextension]
 }
 
-## Test if folder with rootname of FMU exists and has same or newer mtime
+## Test if folder with rootname of FMU exists and has the same mtime
 #  @return true in case of success
 proc ::fmi::testExtracted {fmuPath} {
     set dirPath [::fmi::getDirPath $fmuPath]
     if {[file exists $dirPath] &&
-        [file mtime $dirPath] >= [file mtime $fmuPath]} {
+        [file mtime $dirPath] == [file mtime $fmuPath]} {
         return true
     } else {
         return false
