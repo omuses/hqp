@@ -226,7 +226,15 @@ void Prg_DynamicEst::setup_model()
   v_set(_mdl_der_x0_max, Inf);
   iv_set(_mdl_u_order, 1);
   iv_zero(_mdl_y_active);
-  v_ones(_mdl_p_nominal);
+  if (_mdl_is_fmu) {
+    // take over default values from model description
+    if(Tcl_VarEval(theInterp, "mdl_p_nominal ${::fmu::", _mdl_name,
+                   "::parameterNominalValues}", NULL) != TCL_OK)
+      m_error(E_INTERN, "can't obtain nominal parameter values");
+  }
+  else {
+    v_ones(_mdl_p_nominal);
+  }
 }
 
 //--------------------------------------------------------------------------

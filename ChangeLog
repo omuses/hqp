@@ -1,9 +1,14 @@
+2015-01-13    <rfranke>
+
+	* omu/Prg_DynamicEst.C:
+	  - initialize nominal values of parameters from FMU
+
 2015-01-12    <rfranke>
 
 	* hxi/fmi.tcl: extract new FMU having older time stamp as well
 	* hxi/sfun_fmu.c: don't call fmi2Terminate for better reuse existing instance
 	* omu/Prg_DynamicOpt.C: bug fix for pure control vector parameterization
-	* omu/Prg_DynamicEst.C: fix memory leak
+	* omu/Prg_DynamicEst.C: fix memory leak (introduced on 2014-07-30)
 	* odc/Makefile.in: update make clean
 
 2015-01-09    <rfranke>
