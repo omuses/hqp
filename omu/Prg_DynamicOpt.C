@@ -271,6 +271,8 @@ void Prg_DynamicOpt::setup_stages(IVECP ks, VECP ts)
   // setup S-function
   if (_mdl_needs_setup)
     setup_model();
+  else
+    _t0_setup_model = _t0;
 
   // setup optimization problem
   if (_sps < 1) {

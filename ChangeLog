@@ -1,3 +1,9 @@
+2015-02-24    <rfranke>
+
+	* omu/Prg_DynamicOpt.C, omu/Prg_DynamicOpt.C:
+	  - setup_stages always sets _t0_setup_model to ensure
+	    subsequent call to mdlInitializeConditions
+
 2015-01-13    <rfranke>
 
 	* omu/Prg_DynamicEst.C:
