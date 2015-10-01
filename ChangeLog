@@ -1,3 +1,8 @@
+2015-10-01  <rfranke>
+
+	* configure, configure.in:
+	  - release 1.9.8
+
 2015-09-30    <rfranke>
 
 	* omu/Omu_Model.[hC] omu/Prg_DynamicOpt.C, omu/Prg_DynamicOpt.C:
