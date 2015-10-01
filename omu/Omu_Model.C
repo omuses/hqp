@@ -55,6 +55,7 @@ Omu_Model::Omu_Model()
 
   _mdl_logging = If_LogNone;
   _mdl_needs_setup = true;
+  _mdl_needs_init = false;
 
   _SS = NULL;
 
@@ -408,6 +409,7 @@ void Omu_Model::setup_model(double t0)
   }
 
   _mdl_needs_setup = false;
+  _mdl_needs_init = true;
 }
 
 

@@ -106,6 +106,7 @@ class OMU_API Omu_Model {
   /// indicate that setup_model needs to be called
   /// as _mdl_name, _mdl_path, or _mdl_args changed
   bool 		_mdl_needs_setup;
+  bool 		_mdl_needs_init; ///< indicate that initialization is needed
 
   // methods
   virtual void setup_model(double t0); 	///< load S-function

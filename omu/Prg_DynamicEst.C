@@ -245,8 +245,6 @@ void Prg_DynamicEst::setup_stages(IVECP ks, VECP ts)
   // setup S-function
   if (_mdl_needs_setup)
     setup_model();
-  else
-    _t0_setup_model = _t0;
 
   // setup optimization problem
   if (_multistage) {
@@ -845,9 +843,10 @@ void Prg_DynamicEst::consistic(int kk, double t,
   // initialize model in first stage
   // This way model initial conditions get applied as functions of parameters.
   // Don't initialize if time changed, e.g. for subsequent simulation calls
-  if (kk == 0 && t == _t0_setup_model
+  if ((_mdl_needs_init || kk == 0 && t == _t0_setup_model)
       && ssGetmdlInitializeConditions(_SS) != NULL) {
     SMETHOD_CALL(mdlInitializeConditions, _SS);
+    _mdl_needs_init = false;
   }
 
   // disable discrete sample times

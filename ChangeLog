@@ -1,3 +1,9 @@
+2015-09-30    <rfranke>
+
+	* omu/Omu_Model.[hC] omu/Prg_DynamicOpt.C, omu/Prg_DynamicOpt.C:
+	  - introduce flag _mdl_needs_init to call mdlInitializeConditions
+	    only if really needed (fixing change on 2015-02-24)
+
 2015-02-24    <rfranke>
 
 	* omu/Prg_DynamicOpt.C, omu/Prg_DynamicOpt.C:
