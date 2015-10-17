@@ -143,12 +143,25 @@ proc ::fmi::readModelDescription {fmuPath} {
     # identify states
     set stateIndices {}
     set derivativeIndices {}
+    set discreteStateIndices {}
+    set discreteStateNames {}
     if {$fmiVersion < 2.0} {
 	if {$fmuAttributes(numberOfContinuousStates) > 0} {
 	    error "States are not supported in FMI $fmiVersion"
 	}
     } else {
-	# find states through ModelStructure and derivative attribute
+	# find states through ModelStructure
+	foreach element $fmiElements(ModelStructure) {
+	    if {[lindex $element 0] == "DiscreteStates"} {
+		foreach state [lindex $element 2] {
+		    set attributes [lindex $state 1]
+		    set indexIdx [lsearch $attributes "index"]
+		    set stateIdx [lindex $attributes [incr indexIdx]]
+		    lappend stateIndices $stateIdx
+		    lappend discreteStateIndices $stateIdx
+		}
+	    }
+	}
 	foreach element $fmiElements(ModelStructure) {
 	    if {[lindex $element 0] == "Derivatives"} {
 		foreach derivative [lindex $element 2] {
@@ -166,7 +179,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     }
 
     # collect variables per category
-    foreach category {"parameter" "state" "derivative" "input" "output"} {
+    foreach category {"parameter" "derivative" "state" "input" "output"} {
 	set _${category}Names {}
 	set _${category}Indices {}
 	set _${category}References {}
@@ -209,10 +222,12 @@ proc ::fmi::readModelDescription {fmuPath} {
 	# obtain categories (state, parameter, input/output)
 	# note that a variable may be state and output
 	set categories {}
+	if {[lsearch $discreteStateIndices $index] >= 0} {
+	    lappend discreteStateNames $v(name)
+	}
 	if {[lsearch $stateIndices $index] >= 0} {
 	    lappend categories "state"
-	}
-	if {[lsearch $derivativeIndices $index] >= 0} {
+	} elseif {[lsearch $derivativeIndices $index] >= 0} {
 	    lappend categories "derivative"
 	}
 	if {[regexp ^(parameter|input|output)$ $v(causality)]} {
@@ -239,7 +254,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     }
 
     # sort variables alphabetically and export them to ::fmu::${fmuName}
-    foreach category {"parameter" "state" "derivative" "input" "output"} {
+    foreach category {"parameter" "derivative" "state" "input" "output"} {
 	set names {}
 	set indices {}
 	set references {}
@@ -247,11 +262,17 @@ proc ::fmi::readModelDescription {fmuPath} {
 	set nominalValues {}
 	set startValues {}
 	set permutation {}
-	if {$category != "derivative"} {
-	    # re-use ordering of states for derivatives
-	    set idxs [lsort -indices -dictionary [set _${category}Names]]
+	if {$category != "state"} {
+	    set idxs($category) [lsort -indices -dictionary [set _${category}Names]]
+	} else {
+	    # list discrete states before continuous states
+	    set idxs(state) [lsort -indices -dictionary $discreteStateNames]
+	    set nd [llength $idxs(state)]
+	    foreach idx $idxs(derivative) {
+		lappend idxs(state) [expr $idx+$nd]
+	    }
 	}
-	foreach idx $idxs {
+	foreach idx $idxs($category) {
 	    lappend names [lindex [set _${category}Names] $idx]
 	    lappend indices [lindex [set _${category}Indices] $idx]
 	    lappend references [lindex [set _${category}References] $idx]
@@ -310,6 +331,15 @@ proc ::fmi::readModelDescription {fmuPath} {
                 set ::fmu::${fmuName}::${category}Dependencies($var) $deps
             }
         }
+        # process Clocks
+        set clockIntervals {}
+        set idx [lsearch [array names structureElements] Clocks]
+        if {$idx >= 0} {
+            foreach element $structureElements(Clocks) {
+                lappend clockIntervals 1.0 ;# TODO: determine interval
+            }
+        }
+        set ::fmu::${fmuName}::clockIntervals $clockIntervals
     }
 
     # export fmuAttributes

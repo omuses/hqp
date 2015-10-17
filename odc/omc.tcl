@@ -3,7 +3,7 @@
 #
 
 # configuration settings -- may add installation path
-set omc {omc}
+set omc {omc +simCodeTarget=Cpp}
 
 # load Modelica file and translate contained model to FMU
 proc compileFMU {mo_file} {

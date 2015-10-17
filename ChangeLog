@@ -1,3 +1,10 @@
+2015-10-17    <rfranke>
+
+	* hxi/fmi.tcl, hxi/sfun_fmu.c, odc/DID.mo, odc/did_fmu.tcl, odc/omc.tcl,
+	  omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - implement support for discrete-time FMUs
+	  - add discrete-time double integrator example
+
 2015-10-01  <rfranke>
 
 	* configure, configure.in:

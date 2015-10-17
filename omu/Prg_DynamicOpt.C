@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2014  Ruediger Franke
+    Copyright (C) 1997--2015  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -890,6 +890,12 @@ void Prg_DynamicOpt::update(int kk,
   for (i = _mdl_nd; i < _mdl_nx; i++)
     mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
+  // activate time events
+  if (_mdl_nd > 0) {
+    setContinuousTask(false);
+    setSampleHit(true);
+  }
+
   // call mdlOutputs
   SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
@@ -1097,8 +1103,6 @@ void Prg_DynamicOpt::update(int kk,
   // junction conditions for subsequent stage
   if (kk < _KK) {
     if (_mdl_nd > 0) {
-      setContinuousTask(false);
-      setSampleHit(true);
       // call mdlUpdate to get discrete events processed
       if (ssGetmdlUpdate(_SS) != NULL) {
         SMETHOD_CALL2(mdlUpdate, _SS, 0);

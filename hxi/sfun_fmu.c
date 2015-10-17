@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1994--2014  Ruediger Franke
+    Copyright (C) 1994--2015  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -100,6 +100,8 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
  * @{
  */
 
+typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const fmiInteger[], size_t);
+
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof(array[0]))
 #define NUM_BASETYPES ARRAY_SIZE(BaseTypeNames)
 static const char* BaseTypeNames[] = {"Real", "Boolean", "Integer", "String"};
@@ -160,17 +162,21 @@ typedef struct {
   int 			messageStrLen;
 
   int 			np;
+  int 			nxd;
   int 			nxc;
   int 			nu;
   int 			ny;
   int 			nz;
+  int			nc;
   Hxi_ModelVariables 	*p;
-  Hxi_ModelVariables	*xc;
-  int 			*xc_perm;
+  Hxi_ModelVariables	*dx;
+  int 			*dx_perm;
+  Hxi_ModelVariables	*x;
   Hxi_ModelVariables 	*u;
   Hxi_ModelVariables 	*y;
   fmi2Real		*z;
   fmi2Real		*pre_z;
+  fmi2Integer		*cidx;
 
   DLHANDLE 		handle;
   fmi2Component 	fmu;
@@ -202,6 +208,7 @@ typedef struct {
   fmi2SetBooleanTYPE              	*fmi2SetBoolean;
   fmi2SetIntegerTYPE              	*fmi2SetInteger;
   fmi2SetStringTYPE               	*fmi2SetString;
+  fmi2SetClockTYPE               	*fmi2SetClock;
   fmi2GetContinuousStatesTYPE     	*fmi2GetContinuousStates;
   fmi2GetDerivativesTYPE          	*fmi2GetDerivatives;
   fmi2GetEventIndicatorsTYPE       	*fmi2GetEventIndicators;
@@ -522,14 +529,17 @@ static void mdlInitializeSizes(SimStruct *S)
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
+      if (m->cidx != NULL)
+	free(m->cidx);
       if (m->pre_z != NULL)
 	free(m->pre_z);
       if (m->z != NULL)
 	free(m->z);
       freeVariables(m->y);
       freeVariables(m->u);
-      free(m->xc_perm);
-      freeVariables(m->xc);
+      freeVariables(m->x);
+      free(m->dx_perm);
+      freeVariables(m->dx);
       freeVariables(m->p);
       free(m->messageStr);
       free(m->fmuName);
@@ -654,29 +664,37 @@ static void mdlInitializeSizes(SimStruct *S)
     m->np = m->p->nv;
 
     /*
-     * Initialize states and derivatives
+     * Initialize states, derivatives and previous states
      */
-    if (!(m->xc = getVariables(m, "state"))) {
+    if (!(m->dx = getVariables(m, "derivative"))) {
+      ssSetErrorStatus(S, "can't get state derivatives");
+      return;
+    }
+    if (m->dx->nv != m->dx->n[FMI_REAL]) {
+      ssSetErrorStatus(S, "continuous states must be of type real");
+      return;
+    }
+    m->nxc = m->dx->nv;
+    if (!(m->x = getVariables(m, "state"))) {
       ssSetErrorStatus(S, "can't get states");
       return;
     }
-    if (m->xc->nv != m->xc->n[FMI_REAL]) {
-      ssSetErrorStatus(S, "states must be of type real");
-      return;
-    }
-    m->nxc = m->xc->nv;
+    m->nxd = m->x->nv - m->nxc;
+    // hide continuous states because they have special access functions
+    m->x->nv -= m->nxc;
+    m->x->n[FMI_REAL] -= m->nxc;
 
-    m->xc_perm = (int *)malloc(m->nxc * sizeof(int));
+    m->dx_perm = (int *)malloc(m->nxc * sizeof(int));
     for (i = 0; i < m->nxc; i++) {
       sprintf(m->messageStr, "%d", i);
       if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
-                      "::statePermutation} ", m->messageStr, NULL) != TCL_OK
+                      "::derivativePermutation} ", m->messageStr, NULL) != TCL_OK
           || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
-          || Tcl_GetIntFromObj(m->interp, objPtr, &m->xc_perm[i]) != TCL_OK) {
+          || Tcl_GetIntFromObj(m->interp, objPtr, &m->dx_perm[i]) != TCL_OK) {
         ssSetErrorStatus(S, "can't get state permutation of FMU");
         return;
       }
-      if (m->xc_perm[i] < 0 || m->nxc <= m->xc_perm[i]) {
+      if (m->dx_perm[i] < 0 || m->nxc <= m->dx_perm[i]) {
         ssSetErrorStatus(S, "got wrong state permutation of FMU");
         return;
       }
@@ -709,6 +727,24 @@ static void mdlInitializeSizes(SimStruct *S)
     if (m->nz > 0) {
       m->z = (fmi2Real *)calloc(m->nz, sizeof(fmi2Real));
       m->pre_z = (fmi2Real *)calloc(m->nz, sizeof(fmi2Real));
+    }
+
+    /*
+     * Initialize clocks
+     */
+    if (m->nxd > 0) {
+      if (Tcl_VarEval(m->interp, "llength ${::fmu::", m->fmuName,
+                      "::clockIntervals}", NULL) != TCL_OK
+          || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
+          || Tcl_GetIntFromObj(m->interp, objPtr, &m->nc) != TCL_OK) {
+        ssSetErrorStatus(S, "can't get number of clocks");
+        return;
+      }
+      if (m->nc > 0) {
+        m->cidx = (fmi2Integer *)calloc(m->nc, sizeof(fmi2Integer));
+        for (i = 0; i < m->nc; i++)
+          m->cidx[i] = i + 1;
+      }
     }
 
     /* clean-up interp for potential upcoming error messages */
@@ -750,6 +786,7 @@ static void mdlInitializeSizes(SimStruct *S)
     INIT_FUNCTION(S, m, i, SetBoolean);
     INIT_FUNCTION(S, m, i, SetInteger);
     INIT_FUNCTION(S, m, i, SetString);
+    m->fmi2SetClock = (fmi2SetClockTYPE*)DLSYM(m->handle, "fmi2SetClock");
     INIT_FUNCTION(S, m, i, GetContinuousStates);
     INIT_FUNCTION(S, m, i, GetDerivatives);
     INIT_FUNCTION(S, m, i, GetEventIndicators);
@@ -777,8 +814,8 @@ static void mdlInitializeSizes(SimStruct *S)
     return;
   }
 
+  ssSetNumDiscStates(S, m->nxd);
   ssSetNumContStates(S, m->nxc);
-  ssSetNumDiscStates(S, 0);
 
   if (!ssSetNumInputPorts(S, 1)) return;
   ssSetInputPortWidth(S, 0, m->nu);
@@ -787,7 +824,7 @@ static void mdlInitializeSizes(SimStruct *S)
   if (!ssSetNumOutputPorts(S, 1)) return;
   ssSetOutputPortWidth(S, 0, m->ny);
 
-  ssSetNumSampleTimes(S, 1);
+  ssSetNumSampleTimes(S, 1 + m->nc);
   ssSetNumRWork(S, 0);
   ssSetNumIWork(S, 0);
   ssSetNumPWork(S, 1);
@@ -807,8 +844,17 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
+  int i;
+  Hxi_ModelData *m;
+
+  GET_MODELDATA(S, m);
+
   ssSetSampleTime(S, 0, CONTINUOUS_SAMPLE_TIME);
   ssSetOffsetTime(S, 0, 0.0);
+  for (i = 1; i <= m->nc; i++) {
+    ssSetSampleTime(S, i, 1.0); // TODO: obtain actual interval
+    ssSetOffsetTime(S, i, 0.0);
+  }
 }
 
 
@@ -974,11 +1020,42 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   }
 
   /* set states */
+  if (m->nxd > 0) {
+    if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
+      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc) != fmi2OK) {
+        ssSetErrorStatus(S, "can't set clock of FMU");
+        return;
+      }
+    }
+    vals = ssGetRealDiscStates(S);
+    for (j = 0; j < NUM_BASETYPES; j++)
+      idx[j] = 0;
+    for (i = 0; i < m->nxd; i++) {
+      j = m->x->btv[i];
+      switch (j) {
+      case FMI_REAL:
+        m->x->r[idx[j]++] = vals[i];
+        break;
+      case FMI_BOOLEAN:
+        m->x->b[idx[j]++] = vals[i] == 0.0? fmi2False: fmi2True;
+        break;
+      case FMI_INTEGER:
+        m->x->i[idx[j]++] = (fmi2Integer)(vals[i]);
+        break;
+      default:
+        break;
+      }
+    }
+    if (setValues(m, m->x) != fmi2OK) {
+      ssSetErrorStatus(S, "can't set discrete states of FMU");
+      return;
+    }
+  }
   if (m->nxc > 0) {
     vals = ssGetContStates(S);
-    xc = m->xc->r;
+    xc = m->dx->r;
     for (i = 0; i < m->nxc; i++)
-      xc[m->xc_perm[i]] = *vals++;
+      xc[m->dx_perm[i]] = *vals++;
     if ((*m->fmi2SetContinuousStates)(m->fmu, xc, m->nxc) != fmi2OK) {
       ssSetErrorStatus(S, "can't set continuous states of FMU");
       return;
@@ -1129,20 +1206,46 @@ static void mdlUpdate(SimStruct *S, int_T tid)
 {
   Hxi_ModelData *m;
   double *vals, *xc;
-  int i;
+  int idx[NUM_BASETYPES];
+  int i, j;
 
   GET_MODELDATA(S, m);
 
   /* get states */
+  if (m->nxd > 0) {
+    vals = ssGetRealDiscStates(S);
+    if (getValues(m, m->x) != fmi2OK) {
+      ssSetErrorStatus(S, "can't get discrete states of FMU");
+      return;
+    }
+    for (j = 0; j < NUM_BASETYPES; j++)
+      idx[j] = 0;
+    for (i = 0; i < m->nxd; i++) {
+      j = m->x->btv[i];
+      switch (j) {
+      case FMI_REAL:
+        vals[i] = m->x->r[idx[j]++];
+        break;
+      case FMI_BOOLEAN:
+        vals[i] = m->x->b[idx[j]++]? 1.0: 0.0;
+        break;
+      case FMI_INTEGER:
+        vals[i] = m->x->i[idx[j]++];
+        break;
+      default:
+        break;
+      }
+    }
+  }
   if (m->nxc > 0) {
-    xc = m->xc->r;
+    xc = m->dx->r;
     if ((*m->fmi2GetContinuousStates)(m->fmu, xc, m->nxc) != fmi2OK) {
       ssSetErrorStatus(S, "can't get continuous states of FMU");
       return;
     }
     vals = ssGetContStates(S);
     for (i = 0; i < m->nxc; i++)
-      *vals++ = xc[m->xc_perm[i]];
+      *vals++ = xc[m->dx_perm[i]];
   }
 }
 
@@ -1162,14 +1265,14 @@ static void mdlDerivatives(SimStruct *S)
 
   /* get derivatives */
   if (m->nxc > 0) {
-    dx = m->xc->r;
+    dx = m->dx->r;
     if ((*m->fmi2GetDerivatives)(m->fmu, dx, m->nxc) != fmi2OK) {
       ssSetErrorStatus(S, "can't get continuous states of FMU");
       return;
     }
     vals = ssGetdX(S);
     for (i = 0; i < m->nxc; i++)
-      *vals++ = dx[m->xc_perm[i]];
+      *vals++ = dx[m->dx_perm[i]];
   }
 }
 
