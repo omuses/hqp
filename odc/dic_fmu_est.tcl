@@ -163,7 +163,7 @@ if {[catch {package present Tk}]
     $graph element create y1 -xdata $times -ydata $y1 -color blue -symbol ""
     $graph element create y2 -xdata $times -ydata $y2 -color green -symbol ""
     $graph element create y1_ref -xdata $times -ydata $ys_ref \
-	-color blue -linewidth 0 -pixels 3
+	-color blue -linewidth 0 -symbol scross
     $graph axis configure x -title "Time (cumulative)"
     $graph axis configure y -title "Signals"
     pack $graph -fill both -expand true

@@ -112,11 +112,11 @@ if {[catch {package present Tk}]
 	set graph [rbc::graph .graph -title "[prg_name] demo"]
     }
     $graph element create u -xdata $ts -ydata $us -smooth $usmooth \
-	-color red -symbol "" 
+	-color red -pixels 3
     $graph element create y1 -xdata $ts -ydata $y1 -smooth step \
-	-color blue -symbol "" -mapy y2
+	-color blue -pixels 3 -mapy y2
     $graph element create y2 -xdata $ts -ydata $y2 -smooth step \
-	-color green -symbol "" -mapy y2
+	-color green -pixels 3 -mapy y2
     $graph axis configure x -title "Time"
     $graph axis configure y -title "Input"
     $graph axis configure y2 -hide false -title "Outputs"

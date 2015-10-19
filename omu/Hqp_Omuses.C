@@ -715,7 +715,7 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
 
     v_add(c, ck, c);
 
-    if (is_ident_Sx_and_zero_Su) {
+    if (is_ident_Sx_and_zero_Su && cx->n == ck.Jx->n) {
       m_add(cx, ck.Jx, cx);
       m_add(cu, ck.Ju, cu);
     }
