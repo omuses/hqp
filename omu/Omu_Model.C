@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2014  Ruediger Franke
+    Copyright (C) 1997--2015  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -219,6 +219,16 @@ bool Omu_Model::setSampleHit(bool val)
     }
   }
   return hasDiscreteSampleTime;
+}
+
+//--------------------------------------------------------------------------
+void Omu_Model::setSampleTime(double val)
+{
+  for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
+    if (ssGetSampleTime(_SS, i) != CONTINUOUS_SAMPLE_TIME) {
+      ssSetSampleTime(_SS, i, val);
+    }
+  }
 }
 
 //--------------------------------------------------------------------------

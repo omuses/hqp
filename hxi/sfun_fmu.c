@@ -100,7 +100,10 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
  * @{
  */
 
-typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const fmiInteger[], size_t);
+typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const fmiInteger[],
+                                    size_t, fmi2Boolean[]);
+typedef fmi2Status fmi2SetIntervalTYPE(fmi2Component, const fmiInteger[],
+                                       size_t, fmi2Real[]);
 
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof(array[0]))
 #define NUM_BASETYPES ARRAY_SIZE(BaseTypeNames)
@@ -177,6 +180,8 @@ typedef struct {
   fmi2Real		*z;
   fmi2Real		*pre_z;
   fmi2Integer		*cidx;
+  fmi2Boolean		*cact;
+  fmi2Real		*civl;
 
   DLHANDLE 		handle;
   fmi2Component 	fmu;
@@ -209,6 +214,7 @@ typedef struct {
   fmi2SetIntegerTYPE              	*fmi2SetInteger;
   fmi2SetStringTYPE               	*fmi2SetString;
   fmi2SetClockTYPE               	*fmi2SetClock;
+  fmi2SetIntervalTYPE               	*fmi2SetInterval;
   fmi2GetContinuousStatesTYPE     	*fmi2GetContinuousStates;
   fmi2GetDerivativesTYPE          	*fmi2GetDerivatives;
   fmi2GetEventIndicatorsTYPE       	*fmi2GetEventIndicators;
@@ -529,8 +535,12 @@ static void mdlInitializeSizes(SimStruct *S)
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
+      if (m->civl != NULL)
+	free(m->civl);
       if (m->cidx != NULL)
 	free(m->cidx);
+      if (m->cact != NULL)
+	free(m->cact);
       if (m->pre_z != NULL)
 	free(m->pre_z);
       if (m->z != NULL)
@@ -742,8 +752,12 @@ static void mdlInitializeSizes(SimStruct *S)
       }
       if (m->nc > 0) {
         m->cidx = (fmi2Integer *)calloc(m->nc, sizeof(fmi2Integer));
-        for (i = 0; i < m->nc; i++)
+        m->cact = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
+        m->civl = (fmi2Real *)calloc(m->nc, sizeof(fmi2Real));
+        for (i = 0; i < m->nc; i++) {
           m->cidx[i] = i + 1;
+          m->cact[i] = fmi2True;
+        }
       }
     }
 
@@ -787,6 +801,7 @@ static void mdlInitializeSizes(SimStruct *S)
     INIT_FUNCTION(S, m, i, SetInteger);
     INIT_FUNCTION(S, m, i, SetString);
     m->fmi2SetClock = (fmi2SetClockTYPE*)DLSYM(m->handle, "fmi2SetClock");
+    m->fmi2SetInterval = (fmi2SetIntervalTYPE*)DLSYM(m->handle, "fmi2SetInterval");
     INIT_FUNCTION(S, m, i, GetContinuousStates);
     INIT_FUNCTION(S, m, i, GetDerivatives);
     INIT_FUNCTION(S, m, i, GetEventIndicators);
@@ -1022,7 +1037,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   /* set states */
   if (m->nxd > 0) {
     if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
-      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc) != fmi2OK) {
+      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->cact) != fmi2OK) {
         ssSetErrorStatus(S, "can't set clock of FMU");
         return;
       }
@@ -1102,6 +1117,15 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         || (*m->fmi2ExitInitializationMode)(m->fmu) != fmi2OK) {
       ssSetErrorStatus(S, "can't initialize FMU");
       return;
+    }
+    /* set clock interval */
+    if (m->fmi2SetInterval != NULL) {
+      for (i = 0; i < m->nc; i++)
+        m->civl[i] = ssGetSampleTime(S, 1 + i);
+      if ((*m->fmi2SetInterval)(m->fmu, m->cidx, m->nc, m->civl) != fmi2OK) {
+        ssSetErrorStatus(S, "can't set clock interval of FMU");
+        return;
+      }
     }
     enterEventMode = fmi2True;
   }

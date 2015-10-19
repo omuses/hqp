@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2014  Ruediger Franke
+    Copyright (C) 1997--2015  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -129,6 +129,8 @@ class OMU_API Omu_Model {
   /// enable hit for all discrete sample times;
   /// return true if a discrete sample time exists and has been enabled
   bool setSampleHit(bool val);
+  /// set all discrete sample times
+  void setSampleTime(double val);
   //@}
 
  public:

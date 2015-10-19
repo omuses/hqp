@@ -1760,6 +1760,8 @@ void Prg_DynamicOpt::consistic(int kk, double t,
   if ((_mdl_needs_init || kk == 0 && t == _t0_setup_model)
       && ssGetmdlInitializeConditions(_SS) != NULL) {
     // initialize model
+    if (kk < _KK)
+      setSampleTime(ts(kk+1) - ts(kk));
     SMETHOD_CALL(mdlInitializeConditions, _SS);
     _mdl_needs_init = false;
   }

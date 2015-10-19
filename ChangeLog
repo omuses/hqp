@@ -1,3 +1,13 @@
+2015-10-19    <rfranke>
+
+	* hxi/sfun_fmu.c, omu/Omu_Model.[hC],
+	  omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - extend interface of discrete-time FMUs with sample interval
+
+	* odc/{did_fmu_est.tcl, DID.mo, did_fmu.tcl dic_fmu_est.tcl},
+	  omu/Hqp_Omuses.C:
+	  - add discrete-time estimation example
+
 2015-10-17    <rfranke>
 
 	* hxi/fmi.tcl, hxi/sfun_fmu.c, odc/DID.mo, odc/did_fmu.tcl, odc/omc.tcl,

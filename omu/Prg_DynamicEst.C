@@ -698,6 +698,10 @@ void Prg_DynamicEst::update(int kk,
     // compute Measurement, Precision and Covariance matrix
     //
 
+    if (_mdl_nd > 0)
+      // no covariance matrix supported yet
+      return;
+
     // build dx/d(p,x0)
     if (kk == 0) {
       m_zero(_dxdpx0);
@@ -847,8 +851,11 @@ void Prg_DynamicEst::consistic(int kk, double t,
   // initialize model in first stage
   // This way model initial conditions get applied as functions of parameters.
   // Don't initialize if time changed, e.g. for subsequent simulation calls
-  if ((_mdl_needs_init || kk == 0 && t == _t0_setup_model)
+  if ((_mdl_needs_init || kk == 0 && t == _t0_setup_model || kk != 0 && new_experiment)
       && ssGetmdlInitializeConditions(_SS) != NULL) {
+    // initialize model
+    if (kk < _KK)
+      setSampleTime(ts(kk+1) - ts(kk));
     SMETHOD_CALL(mdlInitializeConditions, _SS);
     _mdl_needs_init = false;
   }
