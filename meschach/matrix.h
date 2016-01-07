@@ -37,6 +37,9 @@
 #include	"machine.h"
 #include        "err.h"
 #include 	"meminfo.h"
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 
 /* unsigned integer type */
 #ifndef U_INT_DEF

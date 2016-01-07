@@ -151,7 +151,7 @@ char    **name;
 {
 	MAT     *A;
 	int     i;
-	int     m_flag, o_flag, p_flag, t_flag;
+	int     m_flag, o_flag, p_flag, t_flag, dummy;
 	float   f_temp;
 	Real    d_temp;
 	matlab  mat;
@@ -198,9 +198,9 @@ char    **name;
 	for ( i = 0; i < (int) A->m*A->n; i++ )
 	{
 		if ( p_flag == DOUBLE_PREC )
-		    fread(&d_temp,sizeof(double),1,fp);
+		    dummy = fread(&d_temp,sizeof(double),1,fp);
 		else
-		    fread(&f_temp,sizeof(float),1,fp);
+		    dummy = fread(&f_temp,sizeof(float),1,fp);
 	}
 
 	return A;

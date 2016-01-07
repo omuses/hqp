@@ -124,10 +124,10 @@ if test "$CC" = "gcc -mno-cygwin"; then
 fi
 WFLAG="-W"
 CFLAGS="-O2"
-CXXFLAGS="-O2"
+CXXFLAGS="-O2 -std=c++11"
 if test "$hqp_symbols" = yes; then
   CFLAGS="-g -DDEBUG"
-  CXXFLAGS="-g -DDEBUG"
+  CXXFLAGS="-g -std=c++11 -DDEBUG"
 fi
 if test "$CC" = cl; then
   CC="cl -nologo"

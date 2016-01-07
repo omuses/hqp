@@ -125,6 +125,10 @@ void	m_version()
 	printf("\taddon2_hqp.[hc]: more Meschach add-ons from Hqp\n");
 	printf("\terr.c: remove unused functions float_error() and catch_FPE()\n");
 	printf("\terr.[hc]: rename global restart to m_restart\n");
+	/* E. Arnold 2016-01-06 */
+	printf("\t(various): include unistd.h for isatty()\n");
+	printf("\t(various): typecast (long long)ptr\n");
+	printf("\t(various): handle unused result of fscanf(), fread()\n");
 	printf("\n");
 }
 

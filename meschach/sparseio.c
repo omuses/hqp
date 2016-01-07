@@ -134,11 +134,11 @@ const SPMAT *A;
 	fprintf(fp,"SparseMatrix dump:\n");
 	if ( ! A )
 	{       fprintf(fp,"*** NULL ***\n");   return; }
-	fprintf(fp,"Matrix at 0x%lx\n",(long)A);
+	fprintf(fp,"Matrix at 0x%llx\n",(long long)A);
 	fprintf(fp,"Dimensions: %d by %d\n",A->m,A->n);
 	fprintf(fp,"MaxDimensions: %d by %d\n",A->max_m,A->max_n);
 	fprintf(fp,"flag_col = %d, flag_diag = %d\n",A->flag_col,A->flag_diag);
-	fprintf(fp,"start_row @ 0x%lx:\n",(long)(A->start_row));
+	fprintf(fp,"start_row @ 0x%llx:\n",(long long)(A->start_row));
 	for ( j = 0; j < A->n; j++ )
 	{
 		fprintf(fp,"%d ",A->start_row[j]);
@@ -146,7 +146,7 @@ const SPMAT *A;
 			fprintf(fp,"\n");
 	}
 	fprintf(fp,"\n");
-	fprintf(fp,"start_idx @ 0x%lx:\n",(long)(A->start_idx));
+	fprintf(fp,"start_idx @ 0x%llx:\n",(long long)(A->start_idx));
 	for ( j = 0; j < A->n; j++ )
 	{
 		fprintf(fp,"%d ",A->start_idx[j]);
@@ -154,7 +154,7 @@ const SPMAT *A;
 			fprintf(fp,"\n");
 	}
 	fprintf(fp,"\n");
-	fprintf(fp,"Rows @ 0x%lx:\n",(long)(A->row));
+	fprintf(fp,"Rows @ 0x%llx:\n",(long long)(A->row));
 	if ( ! A->row )
 	{       fprintf(fp,"*** NULL row ***\n");       return; }
 	rows = A->row;
@@ -162,7 +162,7 @@ const SPMAT *A;
 	{
 		fprintf(fp,"row %d: len = %d, maxlen = %d, diag idx = %d\n",
 			i,rows[i].len,rows[i].maxlen,rows[i].diag);
-		fprintf(fp,"element list @ 0x%lx\n",(long)(rows[i].elt));
+		fprintf(fp,"element list @ 0x%llx\n",(long long)(rows[i].elt));
 		if ( ! rows[i].elt )
 		{
 			fprintf(fp,"*** NULL element list ***\n");
@@ -190,7 +190,7 @@ SPMAT  *sp_finput(fp)
 FILE    *fp;
 {
 	int     i, len, ret_val;
-	int     col, curr_col, m, n, tmp, tty;
+	int     col, curr_col, m, n, tmp, tty, dummy;
 	Real  val;
 	SPMAT  *A;
 	SPROW  *rows;
@@ -264,7 +264,7 @@ FILE    *fp;
 	{
 	        ret_val = 0;
 		skipjunk(fp);
-		fscanf(fp,"SparseMatrix:");
+		dummy = fscanf(fp,"SparseMatrix:");
 		skipjunk(fp);
 		if ( (ret_val=fscanf(fp,"%u by %u",&m,&n)) != 2 )
 		    m_error((ret_val == EOF) ? E_EOF : E_FORMAT,"sp_finput");

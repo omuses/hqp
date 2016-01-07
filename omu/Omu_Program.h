@@ -36,7 +36,7 @@
 #undef max
 #endif
 #include <adolc/adouble.h>
-inline double value(badouble a) {return a.value();}
+inline double value(adouble a) {return a.value();}
 #else
   typedef double adouble;
   typedef double* adoublev;

@@ -47,7 +47,9 @@ static	char	rcsid[] = "$Id: err.c,v 1.3 2003/09/10 06:02:25 rfranke Exp $";
 #include	<signal.h>
 #endif
 
-
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
 
 #define		FALSE	0
 #define		TRUE	1

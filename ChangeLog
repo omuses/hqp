@@ -1,3 +1,13 @@
+2016-01-07    <e-arnold>
+
+	* configure:
+	  - add -std=c++11 to CXXFLAGS (required by ADOL-C)
+	* omu/Omu_Pragram.h:
+	  - adapt for ADOL-C 2.5.2
+	* hxi/sfun_fmu.c, odc/Odc_Main.c, meschach/{err.c, ivecop.c, matlab.c,
+	  matrix.h, matrixio.c, memstat.c, sparseio.c, sprow.c, version.c}:
+	  - remove several warnings
+
 2015-10-19    <rfranke>
 
 	* hxi/sfun_fmu.c, omu/Omu_Model.[hC],

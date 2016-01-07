@@ -19,6 +19,9 @@ int Hqp_Init _ANSI_ARGS_((Tcl_Interp *interp));
 int Omu_Init _ANSI_ARGS_((Tcl_Interp *interp));
 int Odc_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
+/** call Tcl procedure hqp_exit for signals SIGINT, SIGFPE and SIGXCPU */
+extern int Hqp_InitSignalHandler();
+
 /*
  * the main function
  */

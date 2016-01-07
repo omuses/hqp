@@ -100,9 +100,9 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
  * @{
  */
 
-typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const fmiInteger[],
+typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const int fmiInteger[],
                                     size_t, fmi2Boolean[]);
-typedef fmi2Status fmi2SetIntervalTYPE(fmi2Component, const fmiInteger[],
+typedef fmi2Status fmi2SetIntervalTYPE(fmi2Component, const int fmiInteger[],
                                        size_t, fmi2Real[]);
 
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof(array[0]))
