@@ -145,11 +145,9 @@ void Omu_Program::ad_realloc(int ndep, int nindep)
 void Omu_Program::ad_free()
 {
 #ifdef OMU_WITH_ADOLC
-  free(*_nz);
-  free(_nz);
-  free(**_Z3);
-  free(*_Z3);
-  free(_Z3);
+  free((char *)*_nz);
+  free((char *)_nz);
+  myfree(_Z3);
   m_free(_Z2);
   m_free(_U2);
 #endif

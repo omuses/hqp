@@ -1,3 +1,8 @@
+2016-01-10    <e-arnold>
+
+	* omu/Omu_Program.C
+	  - use myfree() for ADOL-C 2.6.0
+
 2016-01-07    <e-arnold>
 
 	* configure:
