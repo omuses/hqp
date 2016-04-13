@@ -136,8 +136,17 @@ proc ::fmi::readModelDescription {fmuPath} {
     # collect type definitions
     array unset typeDefinitions
     foreach typeDefinition $fmiElements(TypeDefinitions) {
-	set typeName [lindex [lindex $typeDefinition 1] 1]
-	set typeDefinitions($typeName) [lindex [lindex $typeDefinition 2] 0]
+        if {[lindex $typeDefinition 0] == "SimpleType"} {
+            set typeName [lindex [lindex $typeDefinition 1] 1]
+            set typeDefinitions($typeName) [lindex [lindex $typeDefinition 2] 0]
+        } elseif {[lindex $typeDefinition 0] == "Clocks"} {
+            # process discrete-time clocks
+            set clockIntervals {}
+            foreach element [lindex $typeDefinition 2] {
+                lappend clockIntervals 1.0 ;# TODO: determine interval
+            }
+            set ::fmu::${fmuName}::clockIntervals $clockIntervals
+        }
     }
 
     # identify states
@@ -331,15 +340,6 @@ proc ::fmi::readModelDescription {fmuPath} {
                 set ::fmu::${fmuName}::${category}Dependencies($var) $deps
             }
         }
-        # process Clocks
-        set clockIntervals {}
-        set idx [lsearch [array names structureElements] Clocks]
-        if {$idx >= 0} {
-            foreach element $structureElements(Clocks) {
-                lappend clockIntervals 1.0 ;# TODO: determine interval
-            }
-        }
-        set ::fmu::${fmuName}::clockIntervals $clockIntervals
     }
 
     # export fmuAttributes
