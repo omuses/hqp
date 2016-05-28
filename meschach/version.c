@@ -129,6 +129,8 @@ void	m_version()
 	printf("\t(various): include unistd.h for isatty()\n");
 	printf("\t(various): typecast (long long)ptr\n");
 	printf("\t(various): handle unused result of fscanf(), fread()\n");
+	/* rf, 2016-05-28 */
+	printf("\tmatrix.h, submat.c: make get_row/col macros, similar to set_row/col\n");
 	printf("\n");
 }
 

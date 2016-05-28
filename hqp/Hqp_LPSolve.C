@@ -32,6 +32,7 @@
 #undef REAL
 #undef FLOAT
 #undef DOUBLE
+#undef get_row
 #undef set_row
 
 namespace LPSOLVE {

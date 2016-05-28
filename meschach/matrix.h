@@ -438,8 +438,8 @@ MESCH_API MAT	*_set_col MESCH__P((MAT *A, u_int i, const VEC *out,
 MESCH_API MAT	*_set_row MESCH__P((MAT *A, u_int j, const VEC *out, 
 				    u_int i0));
 
-MESCH_API VEC	*get_row MESCH__P((const MAT *, u_int, VEC *));
-MESCH_API VEC	*get_col MESCH__P((const MAT *, u_int, VEC *));
+MESCH_API VEC	*_get_row MESCH__P((const MAT *, u_int, VEC *));
+MESCH_API VEC	*_get_col MESCH__P((const MAT *, u_int, VEC *));
 MESCH_API VEC	*sub_vec MESCH__P((const VEC *, int, int, VEC *));
 MESCH_API VEC	*mv_mltadd MESCH__P((const VEC *x, const VEC *y, 
 				     const MAT *A, Real s, VEC *out));
@@ -449,8 +449,10 @@ MESCH_API VEC	*vm_mltadd MESCH__P((const VEC *x, const VEC *y,
 
 /* MACROS */
 /* row i of A <- vec */
+#define	get_row(mat,row,vec)	_get_row(mat,row,vec)
 #define	set_row(mat,row,vec)	_set_row(mat,row,vec,0) 
 /* col j of A <- vec */
+#define	get_col(mat,col,vec)	_get_col(mat,col,vec)
 #define	set_col(mat,col,vec)	_set_col(mat,col,vec,0)
 
 

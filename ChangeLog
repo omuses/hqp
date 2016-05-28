@@ -1,3 +1,11 @@
+2016-05-28    <rfranke>
+
+	* meschach/matrix.h, meschach/submat.c, hqp/Hqp_LPSolve.C
+	  - avoid name clash between LPSolve and Meschach for get_row
+
+	* hxi/fmi.tcl
+	  - preserve file attributes when unzipping FMUs
+
 2016-04-13    <rfranke>
 
 	* hxi/fmi.tcl

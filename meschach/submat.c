@@ -32,8 +32,8 @@
 static	char	rcsid[] = "$Id: submat.c,v 1.2 2002/12/09 10:57:47 e_arnold Exp $";
 
 
-/* get_col -- gets a specified column of a matrix and returns it as a vector */
-VEC	*get_col(mat,col,vec)
+/* _get_col -- gets a specified column of a matrix and returns it as a vector */
+VEC	*_get_col(mat,col,vec)
 u_int	  col;
 const MAT *mat;
 VEC	  *vec;
@@ -41,9 +41,9 @@ VEC	  *vec;
    u_int	i;
    
    if ( mat==(MAT *)NULL )
-     m_error(E_NULL,"get_col");
+     m_error(E_NULL,"_get_col");
    if ( col >= mat->n )
-     m_error(E_RANGE,"get_col");
+     m_error(E_RANGE,"_get_col");
    if ( vec==(VEC *)NULL || vec->dim<mat->m )
      vec = v_resize(vec,mat->m);
    
@@ -53,8 +53,8 @@ VEC	  *vec;
    return (vec);
 }
 
-/* get_row -- gets a specified row of a matrix and retruns it as a vector */
-VEC	*get_row(mat,row,vec)
+/* _get_row -- gets a specified row of a matrix and retruns it as a vector */
+VEC	*_get_row(mat,row,vec)
 u_int	  row;
 const MAT *mat;
 VEC	  *vec;
@@ -62,9 +62,9 @@ VEC	  *vec;
    u_int	i;
    
    if ( mat==(MAT *)NULL )
-     m_error(E_NULL,"get_row");
+     m_error(E_NULL,"_get_row");
    if ( row >= mat->m )
-     m_error(E_RANGE,"get_row");
+     m_error(E_RANGE,"_get_row");
    if ( vec==(VEC *)NULL || vec->dim<mat->n )
      vec = v_resize(vec,mat->n);
    
