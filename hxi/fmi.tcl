@@ -487,7 +487,7 @@ proc ::fmi::unzip fmuPath {
 	} else {
 	    set c [read $fd $k]
 	}
-	set directory($name) [dict create date $date time $time \
+	set directory($name) [dict create date $date time $time ea $ea \
 			      size $csz disksize $usz offset $off \
 			      method $method extra $extra comment $c]
     }
@@ -524,6 +524,13 @@ proc ::fmi::unzip fmuPath {
 	set fp [open $pathName wb]
 	puts -nonewline $fp $data
 	close $fp
+	# set file permissions if given
+	set p_u [expr (($ea & 0x1C00000) >> 22)]
+	set p_g [expr (($ea & 0x0380000) >> 19)]
+	set p_o [expr (($ea & 0x0070000) >> 16)]
+	if {$p_u > 0 && $p_g > 0 && $p_o > 0} {
+	    file attributes $pathName -permissions 00$p_u$p_g$p_o
+	}
 	# set file modification time from DOS timestamp
 	# date: |Y|Y|Y|Y|Y|Y|Y|m| |m|m|m|d|d|d|d|d|
 	# time: |H|H|H|H|H|M|M|M| |M|M|M|S|S|S|S|S|.|
