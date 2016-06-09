@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1994--2015  Ruediger Franke
+    Copyright (C) 1994--2016  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -186,6 +186,7 @@ typedef struct {
   DLHANDLE 		handle;
   fmi2Component 	fmu;
   fmi2CallbackFunctions fmi2CallbackFunctions;
+  fmi2Boolean 		debugLogging;
   fmi2Boolean 		initPending;
   /**< delay initialization until inputs are available */
   fmi2Boolean 		nextEventTimeDefined;
@@ -901,25 +902,34 @@ static void mdlInitializeConditions(SimStruct *S)
       ssSetErrorStatus(S, "can't instantiate FMU");
       return;
     }
-    /*
-     * Initialize logging
-     * ToDo: should check categories with modelDescription.xml
-     */
-    if (If_GetInt("mdl_logging", &logging) != IF_OK) {
-      ssSetErrorStatus(S, If_ResultString());
+    m->debugLogging = fmi2False;
+  }
+
+  /*
+   * Initialize logging
+   * ToDo: should check categories with modelDescription.xml
+   */
+  if (If_GetInt("mdl_logging", &logging) != IF_OK) {
+    ssSetErrorStatus(S, If_ResultString());
+    return;
+  }
+  if (logging > 0 && m->debugLogging == fmi2False) {
+    if (logging > ARRAY_SIZE(logOffsets) - 1)
+      logging = ARRAY_SIZE(logOffsets) - 1;
+    if ((*m->fmi2SetDebugLogging)(m->fmu, fmi2True,
+         ARRAY_SIZE(logCategories) - logOffsets[logging],
+         &logCategories[logOffsets[logging]]) > fmi2Warning) {
+      ssSetErrorStatus(S, "can't set debug logging of FMU");
       return;
     }
-    if (logging > 0) {
-      if (logging > ARRAY_SIZE(logOffsets) - 1)
-        logging = ARRAY_SIZE(logOffsets) - 1;
-      if ((*m->fmi2SetDebugLogging)
-          (m->fmu, fmi2True,
-           ARRAY_SIZE(logCategories) - logOffsets[logging],
-           &logCategories[logOffsets[logging]]) > fmi2Warning) {
-        ssSetErrorStatus(S, "can't set debug logging of FMU");
-        return;
-      }
+    m->debugLogging = fmi2True;
+  }
+  else if (logging <= 0 && m->debugLogging == fmi2True) {
+    if ((*m->fmi2SetDebugLogging)(m->fmu, fmi2False, 0, NULL) > fmi2Warning) {
+      ssSetErrorStatus(S, "can't reset debug logging of FMU");
+      return;
     }
+    m->debugLogging = fmi2False;
   }
 
   m->initPending = fmi2True; /* wait until inputs are available */
