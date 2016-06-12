@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2015  Ruediger Franke
+    Copyright (C) 1997--2016  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -1097,11 +1097,16 @@ void Prg_DynamicOpt::update(int kk,
   // junction conditions for subsequent stage
   if (kk < _KK) {
     if (_mdl_nd > 0) {
-      setContinuousTask(false);
-      setSampleHit(true);
       // call mdlUpdate to get discrete events processed
       if (ssGetmdlUpdate(_SS) != NULL) {
+        setSampleHit(true);
+        if (_mdl_is_fmu) {
+          // obtain discrete states at end of sample interval
+          ssSetT(_SS, _taus[kk + 1]);
+          SMETHOD_CALL2(mdlOutputs, _SS, 0);
+        }
         SMETHOD_CALL2(mdlUpdate, _SS, 0);
+        setSampleHit(false);
       }
       // read discrete states from model
       for (i = 0; i < _mdl_nd; i++) {
@@ -1762,10 +1767,11 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     _mdl_needs_init = false;
   }
 
-  // disable discrete sample times
+  // disable discrete sample times for continuous evaluation
   setSampleHit(false);
   // mark continuous sample time and process mdlUpdate in case of success
-  if (setContinuousTask(true)) {
+  // or after initialization of FMU
+  if (setContinuousTask(true) || _mdl_is_fmu && kk == 0) {
     // pass states from optimizer to model
     real_T *mdl_xd = ssGetDiscStates(_SS);
     real_T *mdl_xc = ssGetContStates(_SS);
@@ -1778,9 +1784,13 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     // Note: this is done once at the beginning of a sample interval;
     // no event processing takes place during the integration.
     if (ssGetmdlUpdate(_SS) != NULL) {
+      if (_mdl_is_fmu && kk == 0)
+        setSampleHit(true);
       // also call mdlOutputs as done by Simulink before each mdlUpdate
       SMETHOD_CALL2(mdlOutputs, _SS, 0); 
       SMETHOD_CALL2(mdlUpdate, _SS, 0);
+      if (_mdl_is_fmu && kk == 0)
+        setSampleHit(false);
     }
 
     // take over optimized control inputs from optimizer

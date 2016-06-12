@@ -1046,12 +1046,6 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
   /* set states */
   if (m->nxd > 0) {
-    if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
-      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->cact) != fmi2OK) {
-        ssSetErrorStatus(S, "can't set clock of FMU");
-        return;
-      }
-    }
     vals = ssGetRealDiscStates(S);
     for (j = 0; j < NUM_BASETYPES; j++)
       idx[j] = 0;
@@ -1170,7 +1164,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         return;
       }
     }
-    else
+    if (ssIsSampleHit(S, 1, tid) || m->nxc == 0)
+      /* enter event mode in case of sample hit */
       /* always enter event mode if there are no continuous states */
       enterEventMode = fmi2True;
     if (enterEventMode || timeEvent || stateEvent)
@@ -1179,6 +1174,12 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
   /* process events */
   if (enterEventMode || timeEvent || stateEvent) {
+    if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
+      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->cact) != fmi2OK) {
+        ssSetErrorStatus(S, "can't set clock of FMU");
+        return;
+      }
+    }
     eventInfo.newDiscreteStatesNeeded = fmi2True;
     while (eventInfo.newDiscreteStatesNeeded) {
       (*m->fmi2NewDiscreteStates)(m->fmu, &eventInfo);

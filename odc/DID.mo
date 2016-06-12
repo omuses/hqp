@@ -3,13 +3,11 @@ model DID "Double Integrator Discrete-time"
   parameter Real y1_start = 1 "start value for first state";
   parameter Real y2_start = 0 "start value for second state";
   input Real u(start = -2);
-  Real x1(start = y1_start), x2(start = y2_start);
-  output Real y1, y2;
+  output Real y1(start = y1_start, fixed = true);
+  output Real y2(start = y2_start, fixed = true);
+  Real ud;
 equation
-  when Clock() then
-    x1 = previous(x1) + p * u * interval(u);
-    x2 = previous(x2) + previous(x1) * interval(x1) + 0.5 * p * u * interval(u)^2;
-    y1 = previous(x1);
-    y2 = previous(x2);
-  end when;
+  ud = sample(u, Clock(Clock(/*inferred*/), solverMethod = "ImplicitEuler"));
+  der(y1) = p * ud;
+  der(y2) = previous(y1) + 0.5 * p * ud * interval(ud);
 end DID;
