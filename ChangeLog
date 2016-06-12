@@ -1,3 +1,10 @@
+2016-06-12    <rfranke>
+
+	* omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C, hxi/sfun_fmu.c, hxi/fmi.tcl,
+	  odc/DID.mo, odc/did_fmu_est.tcl, odc/dic_mex_sfunction_est.tcl:
+	  - support optional fixed start values for discrete-time FMUs
+	  - support mixed discrete/continuous FMUs
+
 2016-05-28    <rfranke>
 
 	* meschach/matrix.h, meschach/submat.c, hqp/Hqp_LPSolve.C

@@ -200,7 +200,8 @@ void Prg_DynamicEst::setup_model()
   Omu_Model::setup_model(_t0);
 
   // check for optional S-function methods that are required
-  assert(ssGetmdlDerivatives(_SS) != NULL);
+  if (_mdl_nx > _mdl_nd)
+    assert(ssGetmdlDerivatives(_SS) != NULL);
 
   // adapt sizes of model vectors
   _mdl_p.alloc(_mdl_np);
@@ -616,13 +617,13 @@ void Prg_DynamicEst::update(int kk,
   }
 
   // constraints on time derivatives of initial states
-  if (new_experiment) {
+  if (new_experiment && _mdl_nx > _mdl_nd) {
     real_T *mdl_dx = ssGetdX(_SS);
     SMETHOD_CALL(mdlDerivatives, _SS);
-    for (i = _ny, idx = 0; idx < _mdl_nx; idx++) {
+    for (i = _ny, idx = _mdl_nd; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
-	c[i++] = mdl_dx[idx] / _mdl_x_nominal[idx];
+	c[i++] = mdl_dx[idx - _mdl_nd] / _mdl_x_nominal[idx];
     }
   }
 
@@ -922,13 +923,12 @@ void Prg_DynamicEst::consistic(int kk, double t,
     // take over estimated parameters from optimizer
     for (i = 0; i < _np; i++)
       xt[i] = x[i];
+    // take over regular and estimated states from optimizer
     for (; i < _nx; i++) {
-      // estimated initial states
-      if (new_experiment && kk > 0 && _mdl_x0_active[i - _np])
-        xt[i] = u[i - _np];
-      // regular states
-      else
+      if (kk == 0 || !new_experiment)
         xt[i] = x[i];
+      else
+        xt[i] = u[i - _np];
     }
   }
 }
@@ -981,7 +981,8 @@ void Prg_DynamicEst::continuous(int kk, double t,
   SMETHOD_CALL2(mdlOutputs, _SS, 0); 
 
   // evaluate continuous model equations
-  SMETHOD_CALL(mdlDerivatives, _SS);
+  if (_mdl_nx > _mdl_nd)
+    SMETHOD_CALL(mdlDerivatives, _SS);
 
   // get model derivatives and change to residual form
   real_T *mdl_dx = ssGetdX(_SS);

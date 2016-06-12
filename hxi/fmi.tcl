@@ -154,6 +154,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     set derivativeIndices {}
     set discreteStateIndices {}
     set discreteStateNames {}
+    set continuousStateNames {}
     if {$fmiVersion < 2.0} {
 	if {$fmuAttributes(numberOfContinuousStates) > 0} {
 	    error "States are not supported in FMI $fmiVersion"
@@ -231,10 +232,13 @@ proc ::fmi::readModelDescription {fmuPath} {
 	# obtain categories (state, parameter, input/output)
 	# note that a variable may be state and output
 	set categories {}
+	set stateIndex [lsearch $stateIndices $index]
 	if {[lsearch $discreteStateIndices $index] >= 0} {
 	    lappend discreteStateNames $v(name)
+	} elseif {$stateIndex >= 0} {
+	    lappend continuousStateNames $v(name)
 	}
-	if {[lsearch $stateIndices $index] >= 0} {
+	if {$stateIndex >= 0} {
 	    lappend categories "state"
 	} elseif {[lsearch $derivativeIndices $index] >= 0} {
 	    lappend categories "derivative"
@@ -275,10 +279,14 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    set idxs($category) [lsort -indices -dictionary [set _${category}Names]]
 	} else {
 	    # list discrete states before continuous states
-	    set idxs(state) [lsort -indices -dictionary $discreteStateNames]
-	    set nd [llength $idxs(state)]
-	    foreach idx $idxs(derivative) {
-		lappend idxs(state) [expr $idx+$nd]
+	    set idxs(state) {}
+	    set idxs(discreteState) [lsort -indices -dictionary $discreteStateNames]
+	    foreach idx $idxs(discreteState) {
+		lappend idxs(state) [lsearch $_stateNames [lindex $discreteStateNames $idx]]
+	    }
+	    set idxs(continuousState) [lsort -indices -dictionary $continuousStateNames]
+	    foreach idx $idxs(continuousState) {
+		lappend idxs(state) [lsearch $_stateNames [lindex $continuousStateNames $idx]]
 	    }
 	}
 	foreach idx $idxs($category) {

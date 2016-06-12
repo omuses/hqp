@@ -1009,10 +1009,10 @@ void Prg_DynamicOpt::update(int kk,
     if (_mdl_nx > _mdl_nd) {
       SMETHOD_CALL(mdlDerivatives, _SS);
       real_T *mdl_dx = ssGetdX(_SS);
-      for (idx = 0; idx < _mdl_nx; idx++) {
+      for (idx = _mdl_nd; idx < _mdl_nx; idx++) {
         if (_mdl_x0_active[idx]
             && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
-          c[i] = tscale * mdl_dx[idx] / _mdl_x_nominal[idx];
+          c[i] = tscale * mdl_dx[idx - _mdl_nd] / _mdl_x_nominal[idx];
           i++;
         }
       }
@@ -1677,7 +1677,7 @@ void Prg_DynamicOpt::update_grds(int kk,
   // additional terms at initial time
   if (kk == 0) {
     for (i = spsk*(_nc+_nsc) + upsk*_nsuc, idx = 0; idx < _mdl_ny; idx++) {
-      // contributions of final objective terms
+      // initial objective terms
       if (_mdl_y0.active[idx]) {
         if (_mdl_y0.weight1[idx] != 0.0) {
           for (j = 0; j < _nx; j++)

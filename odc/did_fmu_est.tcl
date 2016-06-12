@@ -1,15 +1,15 @@
 #
 # Parameter and initial state estimation example
-#   for Double integrator (continuous) given as MEX S-function
+#   for Double Integrator (Discrete-time) given as FMU
 #
 
-## compile sfun_dic.c to a MEX S-function
+## translate DID.mo to DID.fmu
 
-puts "Compiling MEX S-function..."
-source mex.tcl
-if {![file exists sfun_dic[mex_extension]]
-    || [file mtime sfun_dic.c] > [file mtime sfun_dic[mex_extension]]} {
-    mex sfun_dic.c
+source omc.tcl
+if {![file exists DID.fmu]
+    || [file mtime DID.mo] > [file mtime DID.fmu]} {
+    puts "Compiling FMU..."
+    compileFMU DID.mo
 }
 
 ## prepare estimation data set
@@ -62,13 +62,8 @@ package require Omuses
 ## configure problem
 
 # optimization program and model name
-prg_name SFunctionEst
-mdl_name sfun_dic
-mdl_path ./sfun_dic[mex_extension sfun_dic]
-
-# S-function arguments (default parameter value)
-# Note: mdl_args expects the syntax of the Simulink block configuration.
-mdl_args        "1.0"
+prg_name DynamicEst
+mdl_path DID.fmu
 
 # setup stages and number of experiments
 prg_K [expr $K1+$K2+1]
@@ -80,7 +75,7 @@ mdl_us [concat $us1 $us2]
 prg_ts [concat $ts1 $ts2]
 
 # define parameters and initial states to estimate
-mdl_p_active    {1}
+mdl_p_active    {1 0 0}
 mdl_x0_active   {1 0}
 
 # interpolation order for inputs
@@ -161,9 +156,12 @@ if {[catch {package present Tk}]
     } else {
 	set graph [rbc::graph .graph -title "[prg_name] demo"]
     }
-    $graph element create u -xdata $times -ydata $us -color red -symbol ""
-    $graph element create y1 -xdata $times -ydata $y1 -color blue -symbol ""
-    $graph element create y2 -xdata $times -ydata $y2 -color green -symbol ""
+    $graph element create u -xdata $times -ydata $us -smooth step \
+        -color red -pixels 3
+    $graph element create y1 -xdata $times -ydata $y1 -smooth step \
+        -color blue -pixels 3
+    $graph element create y2 -xdata $times -ydata $y2 -smooth step \
+        -color green -pixels 3
     $graph element create y1_ref -xdata $times -ydata $ys_ref \
 	-color blue -linewidth 0 -symbol "scross" -pixels 8
     $graph axis configure x -title "Time (cumulative)"
