@@ -590,12 +590,6 @@ void Prg_DynamicEst::update(int kk,
       mdl_xc[i - _mdl_nd] = u[i] * _mdl_x_nominal[i];
   }
 
-  // activate time events
-  if (_mdl_nd > 0) {
-    setContinuousTask(false);
-    setSampleHit(true);
-  }
-
   // obtain model outputs
   SMETHOD_CALL2(mdlOutputs, _SS, 0);
 
@@ -656,6 +650,8 @@ void Prg_DynamicEst::update(int kk,
       f[i] = x[i];
     if (ex == _exs[kk+1]) {
       if (_mdl_nd > 0) {
+        setContinuousTask(false);
+        setSampleHit(true);
         // call mdlUpdate to get discrete events processed
         if (ssGetmdlUpdate(_SS) != NULL) {
           SMETHOD_CALL2(mdlUpdate, _SS, 0);
