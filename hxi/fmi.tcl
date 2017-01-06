@@ -246,9 +246,14 @@ proc ::fmi::readModelDescription {fmuPath} {
 	if {[regexp ^(parameter|input|output)$ $v(causality)]} {
 	    lappend categories $v(causality)
 	}
-        # unify boolean literals to 1 and 0 for easier treatment as numbers
-	if {$categories != {} && $vBaseType == "Boolean"} {
-	    set v(start) [string map {true 1 false 0} $v(start)]
+	# unify boolean literals to 1 and 0 for easier treatment as numbers
+	# moreover add quotes to strings
+	if {$categories != {}} {
+	    if {$vBaseType == "Boolean"} {
+		set v(start) [string map {true 1 false 0} $v(start)]
+	    } elseif {$vBaseType == "String"} {
+		set v(start) '$v(start)'
+	    }
 	}
 	# store variable infos
 	foreach category $categories {
@@ -282,11 +287,11 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    set idxs(state) {}
 	    set idxs(discreteState) [lsort -indices -dictionary $discreteStateNames]
 	    foreach idx $idxs(discreteState) {
-		lappend idxs(state) [lsearch $_stateNames [lindex $discreteStateNames $idx]]
+		lappend idxs(state) [lsearch -exact $_stateNames [lindex $discreteStateNames $idx]]
 	    }
 	    set idxs(continuousState) [lsort -indices -dictionary $continuousStateNames]
 	    foreach idx $idxs(continuousState) {
-		lappend idxs(state) [lsearch $_stateNames [lindex $continuousStateNames $idx]]
+		lappend idxs(state) [lsearch -exact $_stateNames [lindex $continuousStateNames $idx]]
 	    }
 	}
 	foreach idx $idxs($category) {
