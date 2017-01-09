@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1994--2016  Ruediger Franke
+    Copyright (C) 1994--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -92,7 +92,7 @@
 
 #include "simstruc.h"
 
-/** prototype for initialization function exported by Hxi S-function */
+/** signature for initialization function exported by Hxi S-function */
 typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
 
 /**
@@ -101,7 +101,8 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
  */
 
 typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const int fmiInteger[],
-                                    size_t, fmi2Boolean[]);
+                                    size_t, const fmi2Boolean tick[],
+                                    const fmi2Boolean subactive[]);
 typedef fmi2Status fmi2SetIntervalTYPE(fmi2Component, const int fmiInteger[],
                                        size_t, fmi2Real[]);
 
@@ -180,7 +181,8 @@ typedef struct {
   fmi2Real		*z;
   fmi2Real		*pre_z;
   fmi2Integer		*cidx;
-  fmi2Boolean		*cact;
+  fmi2Boolean		*ctck;
+  fmi2Boolean		*csub;
   fmi2Real		*civl;
 
   DLHANDLE 		handle;
@@ -538,10 +540,12 @@ static void mdlInitializeSizes(SimStruct *S)
       free(m->resourcesURI);
       if (m->civl != NULL)
 	free(m->civl);
+      if (m->csub != NULL)
+	free(m->csub);
+      if (m->ctck != NULL)
+	free(m->ctck);
       if (m->cidx != NULL)
 	free(m->cidx);
-      if (m->cact != NULL)
-	free(m->cact);
       if (m->pre_z != NULL)
 	free(m->pre_z);
       if (m->z != NULL)
@@ -753,11 +757,13 @@ static void mdlInitializeSizes(SimStruct *S)
       }
       if (m->nc > 0) {
         m->cidx = (fmi2Integer *)calloc(m->nc, sizeof(fmi2Integer));
-        m->cact = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
+        m->ctck = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
+        m->csub = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
         m->civl = (fmi2Real *)calloc(m->nc, sizeof(fmi2Real));
         for (i = 0; i < m->nc; i++) {
           m->cidx[i] = i + 1;
-          m->cact[i] = fmi2True;
+          m->ctck[i] = fmi2True;
+          m->csub[i] = fmi2False;
         }
       }
     }
@@ -1175,7 +1181,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   /* process events */
   if (enterEventMode || timeEvent || stateEvent) {
     if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
-      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->cact) != fmi2OK) {
+      /* don't update discrete states during continuous task */
+      for (i = 0; i < m->nc; i++)
+        m->csub[i] = ssIsContinuousTask(S, tid) && !m->initPending;
+      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
         ssSetErrorStatus(S, "can't set clock of FMU");
         return;
       }
@@ -1234,7 +1243,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
 #define MDL_UPDATE
 /**
- *  Update discrete states x(k+1) = f(x(k),u(k)).
+ *  Update discrete states x(k) = f(x(k-1),u(k)).
  *  Note: mdlOutputs must have been called before to set states and inputs 
  */
 static void mdlUpdate(SimStruct *S, int_T tid)

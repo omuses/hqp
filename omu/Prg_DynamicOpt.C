@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2016  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -220,6 +220,9 @@ Prg_DynamicOpt::~Prg_DynamicOpt()
 //--------------------------------------------------------------------------
 void Prg_DynamicOpt::setup_model()
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::setup_model");
+
   // load S-function
   Omu_Model::setup_model(_t0);
 
@@ -839,6 +842,9 @@ void Prg_DynamicOpt::setup_struct(int k,
 void Prg_DynamicOpt::init_simulation(int k,
 				     Omu_VariableVec &x, Omu_VariableVec &u)
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::init_simulation at k = %d", k);
+
   // initial states
   if (k == 0 || _multistage > 1)
     v_copy(x.initial, x);
@@ -851,6 +857,9 @@ void Prg_DynamicOpt::update(int kk,
 			    Omu_DependentVec &f, Omu_Dependent &f0,
 			    Omu_DependentVec &c)
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::update at kk = %d", kk);
+
   int i, idx, is, isc, isf, iscf;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
   int upsk = _multistage? 1: _KK;
@@ -1099,6 +1108,7 @@ void Prg_DynamicOpt::update(int kk,
     if (_mdl_nd > 0) {
       // call mdlUpdate to get discrete events processed
       if (ssGetmdlUpdate(_SS) != NULL) {
+        setContinuousTask(false);
         setSampleHit(true);
         if (_mdl_is_fmu) {
           // obtain discrete states at end of sample interval
@@ -1107,6 +1117,7 @@ void Prg_DynamicOpt::update(int kk,
         }
         SMETHOD_CALL2(mdlUpdate, _SS, 0);
         setSampleHit(false);
+        setContinuousTask(true);
       }
       // read discrete states from model
       for (i = 0; i < _mdl_nd; i++) {
@@ -1160,6 +1171,9 @@ void Prg_DynamicOpt::update_grds(int kk,
 				 Omu_DependentVec &f, Omu_Dependent &f0,
 				 Omu_DependentVec  &c)
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::update_grds at kk = %d", kk);
+
   int i, idx, ii, iidx0, iidx, isc, iscdx, is, j, jdx, rdx;
   int isf, iscf, iscfdx, ixf;
   int spsk = kk < _KK? (_multistage? _sps: _KK): 1; // one sample at final time
@@ -1726,6 +1740,9 @@ void Prg_DynamicOpt::consistic(int kk, double t,
 			       const Omu_StateVec &x, const Omu_Vec &u,
 			       Omu_DependentVec &xt)
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::consistic at kk = %d, t = %.3f", kk, t);
+
   int i, idx;
 
   // initialize model inputs
@@ -1784,12 +1801,12 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     // Note: this is done once at the beginning of a sample interval;
     // no event processing takes place during the integration.
     if (ssGetmdlUpdate(_SS) != NULL) {
-      if (_mdl_is_fmu && kk == 0)
+      if (_mdl_is_fmu)
         setSampleHit(true);
       // also call mdlOutputs as done by Simulink before each mdlUpdate
       SMETHOD_CALL2(mdlOutputs, _SS, 0); 
       SMETHOD_CALL2(mdlUpdate, _SS, 0);
-      if (_mdl_is_fmu && kk == 0)
+      if (_mdl_is_fmu)
         setSampleHit(false);
     }
 
@@ -1832,6 +1849,9 @@ void Prg_DynamicOpt::continuous(int kk, double t,
 				const Omu_StateVec &x, const Omu_Vec &u,
 				const Omu_StateVec &dx, Omu_DependentVec &F)
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::continuous at kk = %d, t = %.3f", kk, t);
+
   int i, idx;
   int upsk = _multistage? 1: _KK;
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
@@ -1911,6 +1931,9 @@ void Prg_DynamicOpt::continuous_grds(int kk, double t,
 				     const Omu_StateVec &dx,
 				     Omu_DependentVec &F)
 {
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::continuous_grds at kk = %d, t = %.3f", kk, t);
+
   if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
     // call predefined continuous_grds for numerical differentiation

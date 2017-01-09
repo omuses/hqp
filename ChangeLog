@@ -1,4 +1,11 @@
-2017-01-06  Ruediger Franke  <rfranke>
+2017-01-09    <rfranke>
+
+	* hxi/sfun_fmu.c, omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	 - introduce subactive evaluation mode for discrete FMUs
+	   (needed to initialize clocked variables during consistic)
+	 - add log messages
+
+2017-01-06    <rfranke>
 
 	* hxi/fmi.tcl
 	 - fix sorting of state names with subscripts
