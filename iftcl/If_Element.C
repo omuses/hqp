@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2002  Ruediger Franke
+    Copyright (C) 1994--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -65,20 +65,20 @@ int If_Element::tclCmd(ClientData cld, Tcl_Interp *interp,
 		       int objc, Tcl_Obj *CONST objv[])
 {
   If_Element *element = (If_Element *)cld;
+  int ret = TCL_ERROR;
 
   m_catchall(// try
 	     // use tractcatch to get error message printed to stderr
 	     m_tracecatch(// try
-			  return element->invoke(interp, objc, objv),
+			  ret = element->invoke(interp, objc, objv),
 			  // catch and throw
 			  m_error_description()),
 	     // catch
 	     Tcl_AppendResult(interp, "error invoking ",
 			      element->ifName(), ": ", m_error_description(),
-			      NULL);
-	     return TCL_ERROR);
+			      NULL));
 
-  return TCL_ERROR; // this shall never be reached
+  return ret;
 }
 
 

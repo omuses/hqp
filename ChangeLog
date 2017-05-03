@@ -1,3 +1,13 @@
+2017-05-03    <rfranke>
+
+	* iftcl/If_Element.C:
+	  - catch errors of nested calls to If_Element::tclCmd
+	* omu/Hqp_Omuses.C, omu/Omu_Dependents.h, omu/Omu_Deps.C,
+	  omu/Prg_DynamicOpt.[hC]:
+	  - pass Lagrange multipliers to DynamicOpt program
+	* configure.in, configure:
+	  - change to development version 1.9.9
+
 2017-01-09    <rfranke>
 
 	* hxi/sfun_fmu.c, omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
