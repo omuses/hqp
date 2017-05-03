@@ -151,6 +151,7 @@ proc ::fmi::readModelDescription {fmuPath} {
 
     # identify states
     set stateIndices {}
+    set previousIndices {}
     set derivativeIndices {}
     set discreteStateIndices {}
     set discreteStateNames {}
@@ -169,6 +170,11 @@ proc ::fmi::readModelDescription {fmuPath} {
 		    set stateIdx [lindex $attributes [incr indexIdx]]
 		    lappend stateIndices $stateIdx
 		    lappend discreteStateIndices $stateIdx
+		    set sVar [lindex $fmiElements(ModelVariables) [expr $stateIdx-1]]
+		    set typeAttributes [lindex [lindex [lindex $sVar 2] 0] 1]
+		    set attributes [lindex $sVar 1]
+		    set pIdx [lsearch $attributes "previous"]
+		    lappend previousIndices [lindex $attributes [incr pIdx]]
 		}
 	    }
 	}
@@ -189,7 +195,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     }
 
     # collect variables per category
-    foreach category {"parameter" "derivative" "state" "input" "output"} {
+    foreach category {"parameter" "derivative" "previous" "state" "input" "output"} {
 	set _${category}Names {}
 	set _${category}Indices {}
 	set _${category}References {}
@@ -240,6 +246,8 @@ proc ::fmi::readModelDescription {fmuPath} {
 	}
 	if {$stateIndex >= 0} {
 	    lappend categories "state"
+	} elseif {[lsearch $previousIndices $index] >= 0} {
+	    lappend categories "previous"
 	} elseif {[lsearch $derivativeIndices $index] >= 0} {
 	    lappend categories "derivative"
 	}
@@ -272,7 +280,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     }
 
     # sort variables alphabetically and export them to ::fmu::${fmuName}
-    foreach category {"parameter" "derivative" "state" "input" "output"} {
+    foreach category {"parameter" "state" "previous" "derivative" "input" "output"} {
 	set names {}
 	set indices {}
 	set references {}
@@ -316,7 +324,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     # use zero based indices counted per category
     if {$fmiVersion >= 2.0} {
         set catIdx 0
-        foreach category {parameter state derivative input output} {
+        foreach category {parameter state previous derivative input output} {
             foreach index [set ::fmu::${fmuName}::${category}Indices] {
                 set mapIndex($index) $catIdx
                 incr catIdx

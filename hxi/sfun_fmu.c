@@ -102,9 +102,9 @@ typedef void (Hxi_SimStruct_init_t)(SimStruct *S);
 
 typedef fmi2Status fmi2SetClockTYPE(fmi2Component, const int fmiInteger[],
                                     size_t, const fmi2Boolean tick[],
-                                    const fmi2Boolean subactive[]);
+                                    const fmi2Boolean* subactive);
 typedef fmi2Status fmi2SetIntervalTYPE(fmi2Component, const int fmiInteger[],
-                                       size_t, fmi2Real[]);
+                                       size_t, const fmi2Real[]);
 
 #define ARRAY_SIZE(array) (sizeof(array)/sizeof(array[0]))
 #define NUM_BASETYPES ARRAY_SIZE(BaseTypeNames)
@@ -173,6 +173,8 @@ typedef struct {
   int 			nz;
   int			nc;
   Hxi_ModelVariables 	*p;
+  Hxi_ModelVariables	*pre_x;
+  double		*pre_x_vals;
   Hxi_ModelVariables	*dx;
   int 			*dx_perm;
   Hxi_ModelVariables	*x;
@@ -555,6 +557,8 @@ static void mdlInitializeSizes(SimStruct *S)
       freeVariables(m->x);
       free(m->dx_perm);
       freeVariables(m->dx);
+      freeVariables(m->pre_x);
+      free(m->pre_x_vals);
       freeVariables(m->p);
       free(m->messageStr);
       free(m->fmuName);
@@ -681,6 +685,12 @@ static void mdlInitializeSizes(SimStruct *S)
     /*
      * Initialize states, derivatives and previous states
      */
+    if (!(m->pre_x = getVariables(m, "previous"))) {
+      ssSetErrorStatus(S, "can't get previous states");
+      return;
+    }
+    m->nxd = m->pre_x->nv;
+    m->pre_x_vals = (fmi2Real *)calloc(m->nxd, sizeof(fmi2Real));
     if (!(m->dx = getVariables(m, "derivative"))) {
       ssSetErrorStatus(S, "can't get state derivatives");
       return;
@@ -694,7 +704,10 @@ static void mdlInitializeSizes(SimStruct *S)
       ssSetErrorStatus(S, "can't get states");
       return;
     }
-    m->nxd = m->x->nv - m->nxc;
+    if (m->nxd + m->nxc != m->x->nv) {
+      ssSetErrorStatus(S, "inconsistent number of states");
+      return;
+    }
     // hide continuous states because they have special access functions
     m->x->nv -= m->nxc;
     m->x->n[FMI_REAL] -= m->nxc;
@@ -1183,7 +1196,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
       /* don't update discrete states during continuous task */
       for (i = 0; i < m->nc; i++)
-        m->csub[i] = ssIsContinuousTask(S, tid) && !m->initPending;
+        m->csub[i] = ssIsContinuousTask(S, tid);
       if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
         ssSetErrorStatus(S, "can't set clock of FMU");
         return;

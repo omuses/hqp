@@ -1,5 +1,7 @@
 2017-05-03    <rfranke>
 
+	* hxi/fmi.tcl, hxi/sfun_fmu.c:
+	  - treat discrete states based on previous values
 	* iftcl/If_Element.C:
 	  - catch errors of nested calls to If_Element::tclCmd
 	* omu/Hqp_Omuses.C, omu/Omu_Dependents.h, omu/Omu_Deps.C,
