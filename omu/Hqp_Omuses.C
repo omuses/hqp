@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2014  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -689,6 +689,10 @@ void Hqp_Omuses::update_stage(int k, const VECP x, const VECP u,
       fk.adapt_size(nf);
     }
     v_zero(ck);
+
+    // initialize Lagrange multipliers
+    v_copy(rf, fk.lambda);
+    v_copy(rc, ck.lambda);
 
     // call update
     _prg->update(kk, x0k, uk, xfk, fk, f0k, ck);

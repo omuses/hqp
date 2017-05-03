@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2007  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -30,6 +30,7 @@
 Omu_DepVec::Omu_DepVec()
 {
   c_setup = false;
+  lambda = v_resize(v_get(1), 0);
   _linear_flags = iv_resize(iv_get(1), 0);
   _linear_vars = iv_resize(iv_get(1), 0);
 }
@@ -39,6 +40,7 @@ Omu_DepVec::~Omu_DepVec()
 {
   iv_free(_linear_vars);
   iv_free(_linear_flags);
+  v_free(lambda);
 }
 
 //--------------------------------------------------------------------------
@@ -52,6 +54,7 @@ void Omu_DepVec::size(int dim, int nx, int nu, int ndx, int nxf, int nq)
   assert(nu == 0 || nq == 0);
 
   v_resize(_v, dim);
+  v_resize(lambda, dim);
   iv_resize(_linear_flags, dim);
   Jx.size(dim, nx);
   Ju.size(dim, nu);
@@ -61,6 +64,7 @@ void Omu_DepVec::size(int dim, int nx, int nu, int ndx, int nxf, int nq)
   iv_resize(_linear_vars, nx + nu + ndx + nxf + nq);
 
   v_zero(_v);
+  v_zero(lambda);
   iv_zero(_linear_flags);
   iv_zero(_linear_vars);
   _required_J = true;
@@ -72,6 +76,7 @@ void Omu_DepVec::adapt_size(int dim)
   assert(dim <= _v->max_dim); // may not re-allocate memory
   assert(dim <= _linear_flags->max_dim);
   _v->dim = dim;
+  lambda->dim = dim;
   _linear_flags->dim = dim;
   Jx.adapt_size(dim);
   Ju.adapt_size(dim);

@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2014  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -324,6 +324,7 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
   double 	_t_nominal; 	///< nominal time (used internally for scaling)
 
   VECP 		_mdl_y_bias;	///< bias correction (offset) for outputs 
+  VECP 		_mdl_y_lambda;	///< max Lagrange multiplier for constraints
 
   int		_nx;	///< number of states for optimizer
   int		_nu;	///< number of optimized control inputs
@@ -609,6 +610,9 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
 
   /// bias for outputs
   const VECP mdl_y_bias() const {return _mdl_y_bias;}
+
+  /// max Lagrange multiplier of all constraints for the respective output
+  const VECP mdl_y_lambda() const {return _mdl_y_lambda;}
 
   /// lower bounds for model outputs
   const VECP mdl_y_min() const {return _mdl_y.min;}

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright (C) 1997--2007  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -188,6 +188,8 @@ public:
   Omu_Jacobian Jdx;	///< Jacobian wrt dx (time derivative of x)
   Omu_Jacobian Jxf;	///< Jacobian wrt xf (final states of sample period)
   Omu_Jacobian Jq;	///< Jacobian wrt q (sensitivity parameters)
+
+  VECP lambda;		///< Lagrange multiplier of associated constraint
 
   Omu_DependentVec();
 

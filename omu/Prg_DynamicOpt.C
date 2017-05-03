@@ -57,6 +57,11 @@ typedef If_Method<Prg_DynamicOpt> If_Cmd;
 IF_CLASS_DEFINE("DynamicOpt", Prg_DynamicOpt, Omu_Program);
 IF_CLASS_DEFINE("SFunctionOpt", Prg_SFunctionOpt, Omu_Program);
 
+inline double absmax(double a, double b)
+{
+  return fabs(a) > fabs(b)? a: b;
+}
+
 //--------------------------------------------------------------------------
 Prg_DynamicOpt::Prg_DynamicOpt()
 {
@@ -78,6 +83,7 @@ Prg_DynamicOpt::Prg_DynamicOpt()
   _t_nominal = 1.0;
   _mdl_y_order = iv_get(_mdl_ny);
   _mdl_y_bias = v_get(_mdl_ny);
+  _mdl_y_lambda = v_get(_mdl_ny);
   v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
   v_set(_mdl_der_x0_min, -Inf);
@@ -89,6 +95,7 @@ Prg_DynamicOpt::Prg_DynamicOpt()
   iv_set(_mdl_x_periodic, 0);
   iv_set(_mdl_y_order, 1);
   v_set(_mdl_y_bias, 0.0);
+  v_set(_mdl_y_lambda, 0.0);
 
   // numbers of optimization variables
   _nu = 0;
@@ -167,6 +174,7 @@ Prg_DynamicOpt::Prg_DynamicOpt()
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_y_order)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_bias)));
+  _ifList.append(new If_RealVec(GET_CB(const VECP, "", mdl_y_lambda)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_ref)));
@@ -206,6 +214,7 @@ Prg_DynamicOpt::~Prg_DynamicOpt()
   m_free(_mdl_xs);
   m_free(_mdl_us);
   v_free(_mdl_y_bias);
+  v_free(_mdl_y_lambda);
   iv_free(_mdl_y_order);
   iv_free(_mdl_x_periodic);
   iv_free(_mdl_u_periodic);
@@ -254,6 +263,7 @@ void Prg_DynamicOpt::setup_model()
   iv_resize(_mdl_x_periodic, _mdl_nx);
   iv_resize(_mdl_y_order, _mdl_ny);
   v_resize(_mdl_y_bias, _mdl_ny);
+  v_resize(_mdl_y_lambda, _mdl_ny);
   iv_set(_mdl_x0_active, 0);
   v_set(_mdl_der_x0_min, -Inf);
   v_set(_mdl_der_x0_max, Inf);
@@ -264,6 +274,7 @@ void Prg_DynamicOpt::setup_model()
   iv_set(_mdl_x_periodic, 0);
   iv_set(_mdl_y_order, 1);
   v_set(_mdl_y_bias, 0.0);
+  v_set(_mdl_y_lambda, 0.0);
 }
 
 //--------------------------------------------------------------------------
@@ -867,6 +878,10 @@ void Prg_DynamicOpt::update(int kk,
   double tscale = _t_active && kk < _KK?
     (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
   double help;
+  bool with_grds = f.is_required_J() || f0.is_required_g() || c.is_required_J();
+
+  if (with_grds && kk == 0)
+    v_zero(_mdl_y_lambda);
 
   // initialize model inputs
   real_T *mdl_u = NULL;
@@ -981,6 +996,8 @@ void Prg_DynamicOpt::update(int kk,
     // assign used outputs to constraints
     if (_mdl_y.active[idx]) {
       c[i + kk%spsk] = mdl_y[idx] / _mdl_y_nominal[idx];
+      if (with_grds)
+        _mdl_y_lambda[idx] = absmax(c.lambda[i + kk%spsk], _mdl_y_lambda[idx]);
       i += spsk;
     }
     // calculate objective term
@@ -1001,10 +1018,14 @@ void Prg_DynamicOpt::update(int kk,
 
       if (_mdl_y_soft.min[idx] > -Inf) {
 	c[spsk*_nc + isc + kk%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
+	if (with_grds)
+	  _mdl_y_lambda[idx] = absmax(c.lambda[spsk*_nc + isc + kk%spsk], _mdl_y_lambda[idx]);
 	isc += spsk;
       }
       if (_mdl_y_soft.max[idx] < Inf) {
 	c[spsk*_nc + isc + kk%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] - help;
+	if (with_grds)
+	  _mdl_y_lambda[idx] = absmax(c.lambda[spsk*_nc + isc + kk%spsk], _mdl_y_lambda[idx]);
 	isc += spsk;
       }
       is += spsk;
@@ -1030,6 +1051,8 @@ void Prg_DynamicOpt::update(int kk,
       // assign used outputs to constraints
       if (_mdl_y0.active[idx]) {
 	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
+	if (with_grds)
+	  _mdl_y_lambda[idx] = absmax(c.lambda[i], _mdl_y_lambda[idx]);
 	i++;
       }
       // initial objective terms
@@ -1047,6 +1070,8 @@ void Prg_DynamicOpt::update(int kk,
       // assign used outputs to constraints
       if (_mdl_yf.active[idx]) {
 	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
+	if (with_grds)
+	  _mdl_y_lambda[idx] = absmax(c.lambda[i], _mdl_y_lambda[idx]);
 	i++;
       }
       // final objective terms
@@ -1064,10 +1089,14 @@ void Prg_DynamicOpt::update(int kk,
 
         if (_mdl_yf_soft.min[idx] > -Inf) {
           c[spsk*(_nc+_nsc) + _ncf + iscf] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
+          if (with_grds)
+            _mdl_y_lambda[idx] = absmax(c.lambda[spsk*(_nc+_nsc) + _ncf + iscf], _mdl_y_lambda[idx]);
           iscf++;
         }
         if (_mdl_yf_soft.max[idx] < Inf) {
           c[spsk*(_nc+_nsc) + _ncf + iscf] = mdl_y[idx] / _mdl_y_nominal[idx] - help;
+          if (with_grds)
+            _mdl_y_lambda[idx] = absmax(c.lambda[spsk*(_nc+_nsc) + _ncf + iscf], _mdl_y_lambda[idx]);
           iscf++;
         }
         isf++;
@@ -1159,7 +1188,7 @@ void Prg_DynamicOpt::update(int kk,
   }
 
   // obtain Jacobians if required
-  if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
+  if (with_grds) {
     update_grds(kk, x, u, xf, f, f0, c);
   }
 }
@@ -1169,7 +1198,7 @@ void Prg_DynamicOpt::update_grds(int kk,
 				 const Omu_StateVec &x, const Omu_Vec &u,
 				 const Omu_StateVec &xf,
 				 Omu_DependentVec &f, Omu_Dependent &f0,
-				 Omu_DependentVec  &c)
+				 Omu_DependentVec &c)
 {
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DynamicOpt::update_grds at kk = %d", kk);
@@ -1781,6 +1810,7 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     if (kk < _KK)
       setSampleTime(ts(kk+1) - ts(kk));
     SMETHOD_CALL(mdlInitializeConditions, _SS);
+    //m_error(E_FORMAT, "halloballo");
     _mdl_needs_init = false;
   }
 
