@@ -324,18 +324,23 @@ proc ::fmi::readModelDescription {fmuPath} {
     # use zero based indices counted per category
     if {$fmiVersion >= 2.0} {
         set catIdx 0
-        foreach category {parameter state previous derivative input output} {
+        foreach category {parameter state previous derivative input} {
             foreach index [set ::fmu::${fmuName}::${category}Indices] {
                 set mapIndex($index) $catIdx
                 incr catIdx
             }
+        }
+        # separate mapOIndex for outputs to treat aliases
+        foreach index [set ::fmu::${fmuName}::outputIndices] {
+            set mapOIndex($index) $catIdx
+            incr catIdx
         }
         foreach element $fmiElements(ModelStructure) {
             set structureElements([lindex $element 0]) [lindex $element 2]
         }
 	# collect given ModelStructure elements
 	set categories {}
-	foreach category {output derivative discreteState} {
+	foreach category {discreteState derivative output} {
             set elementName [string replace $category 0 0 \
                                  [string toupper [string index $category 0]]]s
 	    if {[lsearch [array names structureElements] $elementName] >= 0} {
@@ -343,6 +348,7 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    }
 	}
 	# process ModelStructure elements
+        set nnz 0
         foreach category $categories {
             set elementName [string replace $category 0 0 \
                                  [string toupper [string index $category 0]]]s
@@ -353,14 +359,21 @@ proc ::fmi::readModelDescription {fmuPath} {
                     # no dependencies given
                     continue
                 }
-                set var $mapIndex($structureAttributes(index))
+                if {[string index $category 0] == "o"} {
+                    set var $mapOIndex($structureAttributes(index))
+                } else {
+                    set var $mapIndex($structureAttributes(index))
+                }
                 set deps {}
                 foreach dependency $structureAttributes(dependencies) {
                     lappend deps $mapIndex($dependency)
+                    incr nnz
                 }
-                set ::fmu::${fmuName}::${category}Dependencies($var) $deps
+                set ::fmu::${fmuName}::${category}Dependencies($var) \
+                    [lsort -integer $deps]
             }
         }
+        set ::fmu::${fmuName}::numberOfDependencies $nnz
     }
 
     # export fmuAttributes

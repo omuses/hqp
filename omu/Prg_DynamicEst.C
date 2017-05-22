@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 
-#include <If_Int.h>
 #include <If_Real.h>
 #include <If_RealVec.h>
 #include <If_RealMat.h>

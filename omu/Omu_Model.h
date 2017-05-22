@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2015  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -87,6 +87,7 @@ class OMU_API Omu_Model {
   mxArray	**_mx_args; 	///< S-function parameters after parsing
   int 		_mdl_nargs; 	///< number of S-function arguments
   If_LogLevel 	_mdl_logging;	///< log level for debugging
+  bool 		_mdl_jac; 	///< use Jacobian provided by model
 
   double 	_t0_setup_model;///< time used for initialization of model
   int		_mdl_np;	///< number of model parameters
@@ -108,8 +109,25 @@ class OMU_API Omu_Model {
   bool 		_mdl_needs_setup;
   bool 		_mdl_needs_init; ///< indicate that initialization is needed
 
+  IVECP 	_mdl_jac_y_active; // mark outputs for Jacobian
+  IVECP 	_mdl_jac_u_active; // mark inputs for Jacobian
+ private:
+  /// model Jacobian in row major
+  IVECP 	_mdl_jac_jc;   // col indices
+  IVECP 	_mdl_jac_ir;   // start index for each row in jc
+  IVECP 	_mdl_jac_deps; // help variable for dependencies
+  const IVECP 	mdl_jac_deps() const {return _mdl_jac_deps;}
+  void 		set_mdl_jac_deps(const IVECP v) {
+    _mdl_jac_deps = iv_copy(v, _mdl_jac_deps);
+  }
+
+ protected:
   // methods
   virtual void setup_model(double t0); 	///< load S-function
+
+  void setup_jac();
+  void setup_jac_row(const char *category, int idx,
+                     int jc_offset, int ir_offset);
 
   /**
    * @name Helper methods for reading and writing S-function arguments.
@@ -166,6 +184,11 @@ class OMU_API Omu_Model {
     else
       _mdl_logging = (If_LogLevel)logging;
   }
+
+  /** flag about use of model provided Jacobian */
+  bool mdl_jac() const {return _mdl_jac;}
+  /** set flag about use of model provided Jacobian */
+  void set_mdl_jac(bool val) {_mdl_jac = val;}
 
   /** parameters */
   const VECP mdl_p() const {return _mdl_p;}

@@ -869,6 +869,17 @@ static void mdlInitializeSizes(SimStruct *S)
 
   /* No long jumps */
   ssSetOptions(S, SS_OPTION_EXCEPTION_FREE_CODE);
+  /* Setup Jacobian */
+  if (Tcl_VarEval(m->interp, "set ::fmu::", m->fmuName,
+		  "::numberOfDependencies", NULL) != TCL_OK
+      || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
+      || Tcl_GetIntFromObj(m->interp, objPtr, &i) != TCL_OK
+      || i <= 0) {
+    ssSetErrorStatus(S, "can't get numberOfDependencies of FMU");
+    return;
+  }
+  else
+    ssSetJacobianNzMax(S, i);
 }
 
 
@@ -1333,6 +1344,261 @@ static void mdlDerivatives(SimStruct *S)
   }
 }
 
+#define MDL_JACOBIAN
+/**
+ *  Obtain Jacobian J = d(dxc(t),xd(k),y)/d(xc(t),xd(k-1),u)
+ */
+static void mdlJacobian(SimStruct *S)
+{
+  Hxi_ModelData *m;
+  double *pr; /* Jacobian elements */
+  int *ir;    /* row indices */
+  int *jc;    /* start index for each column */
+  int i, j, jjac, jdx, offs; /* different indices */
+  int idx[NUM_BASETYPES];
+  InputRealPtrsType uPtrs;
+  double *v, *w, dvj, vj_bak;
+
+  GET_MODELDATA(S, m);
+
+  /* get previous states */
+  if (m->nxd > 0) {
+    if (getValues(m, m->pre_x) != fmi2OK) {
+      ssSetErrorStatus(S, "can't get previous states of FMU");
+      return;
+    }
+    for (j = 0; j < NUM_BASETYPES; j++)
+      idx[j] = 0;
+    for (i = 0; i < m->nxd; i++) {
+      j = m->x->btv[i];
+      switch (j) {
+      case FMI_REAL:
+        m->pre_x_vals[i] = m->x->r[idx[j]++];
+        break;
+      case FMI_BOOLEAN:
+        m->pre_x_vals[i] = m->x->b[idx[j]++]? 1.0: 0.0;
+        break;
+      case FMI_INTEGER:
+        m->pre_x_vals[i] = m->x->i[idx[j]++];
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  /* get Jacobian variables */
+  pr = ssGetJacobianPr(S);
+  ir = ssGetJacobianIr(S);
+  jc = ssGetJacobianJc(S);
+
+  /* activate all clocks */
+  for (i = 1; i <= m->nc; i++) {
+    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 1;
+  }
+
+  /* obtain finite differences for derivatives and outputs */
+  if (m->nxc + m->ny > 0) {
+    /* set clocks to subactive, i.e. no evaluation of states */
+    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
+
+    /* initialize current values */
+    if (m->nxd > 0)
+      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+    mdlOutputs(S, 0);
+    if (m->nxc > 0)
+      mdlDerivatives(S);
+    if (m->nxd > 0)
+      mdlUpdate(S, 0);
+
+    for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
+      w = ssGetdX(S);
+      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
+        pr[jdx] = w[ir[jdx]];
+      offs = m->nxc;
+      w = ssGetRealDiscStates(S);
+      for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
+        pr[jdx] = w[ir[jdx] - offs];
+      offs += m->nxd;
+      w = ssGetOutputPortRealSignal(S, 0);
+      for (; jdx < jc[j+1]; jdx++)
+        pr[jdx] = w[ir[jdx] - offs];
+    }
+
+    /* obtain finite differences */
+    v = ssGetContStates(S);
+    for (j = 0; j < m->nxc; j++) {
+      vj_bak = v[j];
+      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+      v[j] += dvj;
+
+      if (m->nxd > 0)
+        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      mdlOutputs(S, 0);
+      if (m->nxc > 0)
+        mdlDerivatives(S);
+
+      w = ssGetdX(S);
+      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
+        pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+      offs = m->nxc + m->nxd;
+      for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetOutputPortRealSignal(S, 0);
+      for (; jdx < jc[j+1] && ir[jdx] < offs + m->ny; jdx++)
+        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+      v[j] = vj_bak;
+    }
+
+    v = ssGetRealDiscStates(S);
+    for (jjac = m->nxc, j = 0; j < m->nxd; jjac++, j++) {
+      memcpy(v, m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      vj_bak = v[j];
+      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+      v[j] += dvj;
+
+      mdlOutputs(S, 0);
+      if (m->nxc > 0)
+        mdlDerivatives(S);
+
+      w = ssGetdX(S);
+      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < m->nxc; jdx++)
+        pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+      offs = m->nxc + m->nxd;
+      for (; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetOutputPortRealSignal(S, 0);
+      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->ny; jdx++)
+        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+      v[j] = vj_bak;
+    }
+
+    uPtrs = ssGetInputPortRealSignalPtrs(S, 0);
+    for (jjac = m->nxc + m->nxd, j = 0; j < m->nu; jjac++, j++) {
+      if (jc[jjac] == jc[jjac+1])
+        continue; /* inactive input */
+      vj_bak = *uPtrs[j];
+      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+      *uPtrs[j] += dvj;
+
+      if (m->nxd > 0)
+        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      mdlOutputs(S, 0);
+      if (m->nxc > 0)
+        mdlDerivatives(S);
+
+      w = ssGetdX(S);
+      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < m->nxc; jdx++)
+        pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+      offs = m->nxc + m->nxd;
+      for (; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetOutputPortRealSignal(S, 0);
+      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->ny; jdx++)
+        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+      *uPtrs[j] = vj_bak;
+    }
+  }
+
+  /* obtain finite differences for discrete-time states */
+  if (m->nxd > 0) {
+    /* set clocks to active, i.e. evaluation of states */
+    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 0;
+
+    /* initialize current values */
+    memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+    mdlOutputs(S, 0);
+    mdlUpdate(S, 0);
+
+    offs = m->nxc;
+    for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
+      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetRealDiscStates(S);
+      for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
+        pr[jdx] = w[ir[jdx] - offs];
+    }
+
+    /* obtain finite differences */
+    v = ssGetContStates(S);
+    for (j = 0; j < m->nxc; j++) {
+      vj_bak = v[j];
+      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+      v[j] += dvj;
+
+      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      mdlOutputs(S, 0);
+      mdlUpdate(S, 0);
+
+      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetRealDiscStates(S);
+      for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
+        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+      v[j] = vj_bak;
+    }
+
+    v = ssGetRealDiscStates(S);
+    for (jjac = m->nxc, j = 0; j < m->nxd; jjac++, j++) {
+      memcpy(v, m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      vj_bak = v[j];
+      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+      v[j] += dvj;
+
+      mdlOutputs(S, 0);
+      mdlUpdate(S, 0);
+
+      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetRealDiscStates(S);
+      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->nxd; jdx++)
+        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+      v[j] = vj_bak;
+    }
+
+    uPtrs = ssGetInputPortRealSignalPtrs(S, 0);
+    for (jjac = m->nxc + m->nxd, j = 0; j < m->nu; jjac++, j++) {
+      if (jc[jjac] == jc[jjac+1])
+        continue; /* inactive input */
+      vj_bak = *uPtrs[j];
+      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+      *uPtrs[j] += dvj;
+
+      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      mdlOutputs(S, 0);
+      mdlUpdate(S, 0);
+
+      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+        ;
+      w = ssGetRealDiscStates(S);
+      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->nxd; jdx++)
+        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+      *uPtrs[j] = vj_bak;
+    }
+  }
+
+  /* reset current values */
+  /* set clocks to subactive, i.e. get outputs for previous states */
+  ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
+  if (m->nxd > 0)
+    memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+  mdlOutputs(S, 0);
+  if (m->nxc > 0)
+    mdlDerivatives(S);
+  if (m->nxd > 0)
+    mdlUpdate(S, 0);
+
+  /* deactivate all clocks */
+  for (i = 1; i <= m->nc; i++) {
+    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 0;
+  }
+}
 
 /**
  *  Free model instance. Don't call fmi2Terminate because:

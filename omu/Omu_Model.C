@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2015  Ruediger Franke
+    Copyright (C) 1997--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,7 +28,9 @@
 
 #include <Hxi_mx_parse.h>
 
+#include <If_Bool.h>
 #include <If_Int.h>
+#include <If_IntVec.h>
 #include <If_RealVec.h>
 #include <If_String.h>
 
@@ -54,6 +56,7 @@ Omu_Model::Omu_Model()
   _mx_args = NULL;
 
   _mdl_logging = If_LogNone;
+  _mdl_jac = true;
   _mdl_needs_setup = true;
   _mdl_needs_init = false;
 
@@ -72,7 +75,14 @@ Omu_Model::Omu_Model()
   _mdl_u_nominal = v_get(_mdl_nu);
   _mdl_y_nominal = v_get(_mdl_ny);
 
+  _mdl_jac_y_active = IVNULL;
+  _mdl_jac_u_active = IVNULL;
+  _mdl_jac_jc = IVNULL;
+  _mdl_jac_ir = IVNULL;
+  _mdl_jac_deps = IVNULL;
+
   _ifList_model.append(new If_Int(GET_SET_CB(int, mdl_logging)));
+  _ifList_model.append(new If_Bool(GET_SET_CB(bool, mdl_jac)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x_start)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_u_start)));
@@ -82,6 +92,7 @@ Omu_Model::Omu_Model()
   _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_name)));
   _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_path)));
   _ifList_model.append(new If_String(GET_SET_CB(const char *, mdl_args)));
+  _ifList_model.append(new If_IntVec(GET_SET_CB(const IVECP, mdl_jac_deps)));
 }
 
 //--------------------------------------------------------------------------
@@ -96,6 +107,11 @@ Omu_Model::~Omu_Model()
     mxDestroyArray(_mx_args[i]);
   delete [] _mx_args;
 
+  iv_free(_mdl_jac_deps);
+  iv_free(_mdl_jac_ir);
+  iv_free(_mdl_jac_jc);
+  iv_free(_mdl_jac_u_active);
+  iv_free(_mdl_jac_y_active);
   v_free(_mdl_y_nominal);
   v_free(_mdl_u_nominal);
   v_free(_mdl_x_nominal);
@@ -331,12 +347,18 @@ void Omu_Model::setup_model(double t0)
     }
   }
 
+  // setup active variables for Jacobian
+  _mdl_jac_y_active = iv_resize(_mdl_jac_y_active, _mdl_ny);
+  _mdl_jac_u_active = iv_resize(_mdl_jac_u_active, _mdl_nu);
+  iv_zero(_mdl_jac_y_active);
+  iv_zero(_mdl_jac_u_active);
+
   // set simulation time
   ssSetT(_SS, t0);
   _t0_setup_model = t0;
 
   // initialize and check sample times of model
-  mdlInitializeSampleTimes(_SS);
+  SMETHOD_CALL(mdlInitializeSampleTimes, _SS);
   if (ssGetNumSampleTimes(_SS) < 1)
     m_warning(WARN_UNKNOWN,
 	      "Omu_Model::setup_model: no sample times initialized");
@@ -422,5 +444,98 @@ void Omu_Model::setup_model(double t0)
   _mdl_needs_init = true;
 }
 
+//-------------------------------------------------------------------------
+void Omu_Model::setup_jac()
+{
+  int offs, idx;
+  int ir_offset = 0;
+
+  // allocate storage for Jacobian structure
+  _mdl_jac_jc = iv_resize(_mdl_jac_jc, ssGetJacobianNzMax(_SS));
+  _mdl_jac_ir = iv_resize(_mdl_jac_ir, _mdl_nx + _mdl_ny + 1);
+
+  // setup sparse structure of Jacobian for active variables
+  _mdl_jac_ir[ir_offset] = 0;
+  offs = _mdl_np;
+  for (idx = 0; idx < _mdl_nd; idx++, ir_offset++) {
+    setup_jac_row("discreteState", offs + idx, _mdl_jac_ir[ir_offset], ir_offset);
+  }
+  offs = _mdl_np + _mdl_nx + _mdl_nd;
+  for (; idx < _mdl_nx; idx++, ir_offset++) {
+    setup_jac_row("derivative", offs + idx, _mdl_jac_ir[ir_offset], ir_offset);
+  }
+  offs = _mdl_np + _mdl_nx + _mdl_nx + _mdl_nu;
+  for (idx = 0; idx < _mdl_ny; idx++, ir_offset++) {
+    if (_mdl_jac_y_active[idx])
+      setup_jac_row("output", offs + idx, _mdl_jac_ir[ir_offset], ir_offset);
+    else
+      // empty row
+      _mdl_jac_ir[ir_offset + 1] = _mdl_jac_ir[ir_offset];
+  }
+
+  //
+  // setup sparse structure for FMU using Jacobian format of S-function
+  //
+  int_T *ir = ssGetJacobianIr(_SS);
+  int_T *jc = ssGetJacobianJc(_SS);
+  int i, m = _mdl_nx + _mdl_ny;
+  int j, jdx, n = _mdl_nx + _mdl_nu;
+
+  // count row elements per column
+  memset(jc, 0, (n + 1)*sizeof(int_T));
+  for (i = 0; i < m; i++) {
+    for (jdx = _mdl_jac_ir[i]; jdx < _mdl_jac_ir[i + 1]; jdx++) {
+      j = _mdl_jac_jc[jdx] - _mdl_np;
+      if (j >= 2*_mdl_nx)
+        j -= _mdl_nx; // input
+      else if (j >= _mdl_nd)
+        j -= _mdl_nd; // continuous state or previous
+      jc[j + 1] ++;
+    }
+  }
+  // accumulate row start indices
+  for (j = 0; j < n; j++) {
+    jc[j+1] += jc[j];
+  }
+  // fill in row indices
+  for (j = n; j > 0; j--) {
+    jc[j] -= jc[j] - jc[j-1];
+  }
+  for (i = 0; i < m; i++) {
+    for (jdx = _mdl_jac_ir[i]; jdx < _mdl_jac_ir[i + 1]; jdx++) {
+      j = _mdl_jac_jc[jdx] - _mdl_np;
+      if (j >= 2*_mdl_nx)
+        j -= _mdl_nx; // input
+      else if (j >= _mdl_nd)
+        j -= _mdl_nd; // continuous state or previous
+      ir[jc[j + 1]] = i;
+      jc[j + 1] ++;
+    }
+  }
+}
+
+//-------------------------------------------------------------------------
+void Omu_Model::setup_jac_row(const char *category, int idx,
+                              int jc_offset, int ir_offset)
+{
+  // obtain column indices from model description
+  Tcl_Obj *idxObj = Tcl_NewIntObj(idx);
+  Tcl_IncrRefCount(idxObj);
+  if (Tcl_VarEval(If_Interp(), "mdl_jac_deps ${::fmu::", _mdl_name, "::",
+                  category, "Dependencies(", Tcl_GetString(idxObj), ")}",
+                  NULL) != TCL_OK)
+    m_error(E_INTERN, "can't get model structure");
+  Tcl_DecrRefCount(idxObj);
+
+  // take over dependencies from previous/derivatives and active inputs
+  int offs = _mdl_np + 2*_mdl_nx;
+  for (int i = 0; i < _mdl_jac_deps->dim; i++) {
+    int j = _mdl_jac_deps[i];
+    if (offs <= j && j < offs + _mdl_nu && _mdl_jac_u_active[j - offs] == 0)
+      continue;
+    _mdl_jac_jc[jc_offset++] = j;
+  }
+  _mdl_jac_ir[ir_offset + 1] = jc_offset;
+}
 
 //==========================================================================

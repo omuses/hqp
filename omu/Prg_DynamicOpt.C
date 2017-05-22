@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 
-#include <If_Int.h>
 #include <If_Real.h>
 #include <If_RealVec.h>
 #include <If_RealMat.h>
@@ -761,6 +760,15 @@ void Prg_DynamicOpt::setup_struct(int k,
 {
   int i, idx, j;
 
+  if (k == 0 && ssGetmdlJacobian(_SS) != NULL) {
+    for (idx = 0; idx < _mdl_ny; idx++) {
+      _mdl_jac_y_active[idx] = _mdl_y.active[idx] || _mdl_y_soft.active[idx]
+        || _mdl_y0.active[idx] || _mdl_yf.active[idx] || _mdl_yf_soft.active[idx];
+    }
+    iv_copy(_mdl_u.active, _mdl_jac_u_active);
+    setup_jac();
+  }
+
   // consistic just takes states from optimizer
   // note: possible changes due to discrete events (mdlUpdate) are neglected
   m_ident(xt.Jx);
@@ -1215,7 +1223,7 @@ void Prg_DynamicOpt::update_grds(int kk,
   double help;
   int analyticJac = 0;
 
-  if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
+  if (!_mdl_jac || ssGetmdlJacobian(_SS) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
     // call predefined update_grds for numerical differentiation
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
@@ -1547,7 +1555,7 @@ void Prg_DynamicOpt::update_grds(int kk,
 	// note: f.Jxf has only _nx columns, but _nx+_ns rows
 	// that is why don't set f.Jxf[i][i] = 0.0;
 	f.Ju[i][upsk*(_nu+_nsu) + (i-_nx+1)*spsk-1] = 1.0;
-      for (; i < _nx + _ns; i++)
+      for (; i < _nx + _ns + _nsf; i++)
 	f.Ju[i][upsk*(_nu+_nsu) + spsk*_ns + i - _nx - _ns] = 1.0;
     }
   }

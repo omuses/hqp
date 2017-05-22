@@ -1,3 +1,10 @@
+2017-05-22    <rfranke>
+
+	* hxi/sfun_fmu.c, hxi/fmi.tcl:
+	  - add mdlJacobian to FMU interface
+	* omu/Omu_Model.[hC], omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - treat sparse pattern of Jacobian
+
 2017-05-03    <rfranke>
 
 	* hxi/fmi.tcl, hxi/sfun_fmu.c:
