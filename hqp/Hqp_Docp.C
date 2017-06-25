@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2014  Ruediger Franke
+    Copyright (C) 1994--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -28,6 +28,7 @@
 
 #include "Hqp_Docp.h"
 #include "Hqp_Program.h"
+#include "Hqp_omp.h"
 
 #include <If_Int.h>
 #include <If_IntVec.h>
@@ -183,11 +184,45 @@ const int Hqp_Docp::Periodical = 1;
 //-------------------------------------------------------------------------
 Hqp_Docp::Hqp_Docp()
 {
-  _xk = &_xk_head;
-  _uk = &_uk_head;
-  _fk = &_fk_head;
-  _s1 = &_s1_head;
-  _s2 = &_s2_head;
+  _ncpu = omp_get_max_threads();
+  _xk = new VECP [_ncpu];
+  _uk = new VECP [_ncpu];
+  _fk = new VECP [_ncpu];
+  _s1 = new VECP [_ncpu];
+  _s2 = new VECP [_ncpu];
+  _ck = new VECP [_ncpu];
+  _fkx = new MATP [_ncpu];
+  _fku = new MATP [_ncpu];
+  _ckx = new MATP [_ncpu];
+  _cku = new MATP [_ncpu];
+  _Lkxx = new MATP [_ncpu];
+  _Lkuu = new MATP [_ncpu];
+  _Lkxu = new MATP [_ncpu];
+  _vfk = new VECP [_ncpu];
+  _vck = new VECP [_ncpu];
+  _xk_head = new VEC [_ncpu];
+  _uk_head = new VEC [_ncpu];
+  _fk_head = new VEC [_ncpu];
+  _s1_head = new VEC [_ncpu];
+  _s2_head = new VEC [_ncpu];
+  for (int tn = 0; tn < _ncpu; tn++) {
+    _xk[tn] = &_xk_head[tn];
+    _uk[tn] = &_uk_head[tn];
+    _fk[tn] = &_fk_head[tn];
+    _s1[tn] = &_s1_head[tn];
+    _s2[tn] = &_s2_head[tn];
+    _ck[tn] = v_get(1);
+    _fkx[tn] = m_get(1, 1);
+    _fku[tn] = m_get(1, 1);
+    _ckx[tn] = m_get(1, 1);
+    _cku[tn] = m_get(1, 1);
+    _Lkxx[tn] = m_get(1, 1);
+    _Lkuu[tn] = m_get(1, 1);
+    _Lkxu[tn] = m_get(1, 1);
+    _vfk[tn] = v_get(1);
+    _vck[tn] = v_get(1);
+  }
+  _f0 = v_get(1);
   _k0 = 0;
   _kf = 50;
   _nxs = iv_get(1);
@@ -201,6 +236,7 @@ Hqp_Docp::Hqp_Docp()
   _xu_ub = new Hqp_DocpAssoc;
   _f_lin = iv_get(1);
   _f_start = iv_get(1);
+  _xu_start = iv_get(1);
   _cns_eq = new Hqp_DocpAssoc;
   _cns_lb = new Hqp_DocpAssoc;
   _cns_ub = new Hqp_DocpAssoc;
@@ -217,6 +253,8 @@ Hqp_Docp::Hqp_Docp()
 			       IF_GET_CB(const IVECP, Hqp_Docp, nus)));
   _ifList.append(new If_Int("prg_fbd_evals", 
 			    IF_GET_CB(int, Hqp_Docp, fbd_evals)));
+  _ifList.append(new If_Int("prg_ncpu",
+			    IF_GET_CB(int, Hqp_Docp, ncpu)));
 }  
 
 //-------------------------------------------------------------------------
@@ -230,6 +268,7 @@ Hqp_Docp::~Hqp_Docp()
   iv_free(_nxs);
   v_free(_xus_init);
   iv_free(_xus_integer);
+  iv_free(_xu_start);
   iv_free(_f_start);
   iv_free(_f_lin);
   delete _cns_eq;
@@ -238,6 +277,39 @@ Hqp_Docp::~Hqp_Docp()
   iv_free(_cns_lin);
   iv_free(_cns_start);
   iv_free(_f0_lin);
+  v_free(_f0);
+  for (int tn = 0; tn < _ncpu; tn++) {
+    v_free(_ck[tn]);
+    m_free(_fkx[tn]);
+    m_free(_fku[tn]);
+    m_free(_ckx[tn]);
+    m_free(_cku[tn]);
+    m_free(_Lkxx[tn]);
+    m_free(_Lkuu[tn]);
+    m_free(_Lkxu[tn]);
+    v_free(_vfk[tn]);
+    v_free(_vck[tn]);
+  }
+  delete [] _xk;
+  delete [] _uk;
+  delete [] _fk;
+  delete [] _s1;
+  delete [] _s2;
+  delete [] _ck;
+  delete [] _fkx;
+  delete [] _fku;
+  delete [] _ckx;
+  delete [] _cku;
+  delete [] _Lkxx;
+  delete [] _Lkuu;
+  delete [] _Lkxu;
+  delete [] _vfk;
+  delete [] _vck;
+  delete [] _xk_head;
+  delete [] _uk_head;
+  delete [] _fk_head;
+  delete [] _s1_head;
+  delete [] _s2_head;
 }
 
 //-------------------------------------------------------------------------
@@ -369,7 +441,9 @@ void Hqp_Docp::setup_x()
   iv_resize(_xus_integer, 0);
   nsp = 0;
   nfsp = 0;
+  v_resize(_f0, K+1);
   iv_resize(_f_start, K+2);	// two additional
+  iv_resize(_xu_start, K+1);
   iv_resize(_nxs, K+1);
   iv_resize(_nus, K+1);
 
@@ -429,6 +503,9 @@ void Hqp_Docp::setup_x()
     // grow sizes of vectors for initial values and integer settings
     v_expand(_xus_init, x->dim + u->dim, _granul);
     iv_expand(_xus_integer, x->dim + u->dim, _granul);
+
+    // store start index into global _x vector
+    _xu_start[k] = nsp;
 
     // parse state variables and bounds
     for (i = 0; i < (int)x->dim; i++) {
@@ -605,8 +682,8 @@ void Hqp_Docp::setup_qp()
     nu = _nus[k];
     nf = _f_start[k+1] - _f_start[k];
     nc = _cns_start[k+1] - _cns_start[k];
-    v_part(_x, kxu, nx, _xk);
-    v_part(_x, kxu+nx, nu, _uk);
+    v_part(_x, kxu, nx, _xk[0]);
+    v_part(_x, kxu+nx, nu, _uk[0]);
     m_resize(fx, nf, nx);
     m_resize(fu, nf, nu);
     iv_part(_f_lin, _f_start[k], nf, &f_lin);
@@ -617,10 +694,10 @@ void Hqp_Docp::setup_qp()
     m_resize(Luu, nu, nu);
     m_resize(Lxu, nx, nu);
 
-    v_part(_qp->c, kxu, nx, _s1);	// f0x
-    v_part(_qp->c, kxu+nx, nu, _s2);	// f0u
-    v_ones(_s1);
-    v_ones(_s2);
+    v_part(_qp->c, kxu, nx, _s1[0]);	// f0x
+    v_part(_qp->c, kxu+nx, nu, _s2[0]);	// f0u
+    v_ones(_s1[0]);
+    v_ones(_s2[0]);
     _f0_lin[k] = 0;
 
     m_ones(fx);
@@ -635,9 +712,9 @@ void Hqp_Docp::setup_qp()
     m_ones(Luu);
     m_ones(Lxu);
   
-    setup_struct(_k0+k, _xk, _uk,
+    setup_struct(_k0+k, _xk[0], _uk[0],
 		 fx, fu, &f_lin,
-		 _s1, _s2, _f0_lin[k],
+		 _s1[0], _s2[0], _f0_lin[k],
 		 cx, cu, &c_lin,
 		 Lxx, Luu, Lxu);
 
@@ -736,12 +813,13 @@ void Hqp_Docp::simulate()
     nu = _nus[k];
     nf = _f_start[k+1] - _f_start[k];
     nc = _cns_start[k+1] - _cns_start[k];
-    v_part(_x, kxu, nx, _xk);
-    v_part(_x, kxu+nx, nu, _uk);
-    v_part(_x, kxu+nx+nu, nf, _fk);
-    init_simulation(_k0+k, _xk, _uk);
+    v_part(_x, kxu, nx, _xk[0]);
+    v_part(_x, kxu+nx, nu, _uk[0]);
+    v_part(_x, kxu+nx+nu, nf, _fk[0]);
+    init_simulation(_k0+k, _xk[0], _uk[0]);
+    f0k = 0.0;
     c = v_resize(c, nc);
-    update_vals(_k0+k, _xk, _uk, _fk, f0k, c);
+    update_vals(_k0+k, _xk[0], _uk[0], _fk[0], f0k, c);
     _f += f0k;
     kxu += nx+nu;
   }
@@ -752,66 +830,57 @@ void Hqp_Docp::simulate()
 //-------------------------------------------------------------------------
 void Hqp_Docp::update_fbd()
 {
-  int i, k, kxu, kf;
-  int nx, nu, nf, nc;
-  int offs, iend;
-  Real f0, f0k;
-  Real *v_ve;
-  VECP c;
-  int K = _kf - _k0;
+  int k, K = _kf - _k0;
 
-  // update user--calculated values
-
-  c = v_get(1);
-  kf = 0;
-  kxu = 0;
-  f0 = 0.0;
+  #pragma omp parallel for
   for (k = 0; k <= K; k++) {
-    nx = _nxs[k];
-    nu = _nus[k];
-    nf = _f_start[k+1] - _f_start[k];
-    nc = _cns_start[k+1] - _cns_start[k];
-    v_part(_x, kxu, nx, _xk);
-    v_part(_x, kxu+nx, nu, _uk);
-    v_part(_qp->b, kf, nf, _fk);
-    v_resize(c, nc);
-    v_zero(_fk);
-    f0k = 0.0;
+    int tn = omp_get_thread_num();
+    //fprintf(stdout, "k = %d, tn = %d\n", k, tn);
+    VECP xk = _xk[tn];
+    VECP uk = _uk[tn];
+    VECP fk = _fk[tn];
+    VECP ck = _ck[tn];
+    int nx = _nxs[k];
+    int nu = _nus[k];
+    int kxu = _xu_start[k];
+    int kf = _f_start[k];
+    int nf = _f_start[k+1] - kf;
+    int nc = _cns_start[k+1] - _cns_start[k];
 
-    update_vals(_k0+k, _xk, _uk, _fk, f0k, c);
+    v_part(_x, kxu, nx, xk);
+    v_part(_x, kxu+nx, nu, uk);
+    v_part(_qp->b, kf, nf, fk);
+    v_resize(ck, nc);
+    v_zero(fk);
+    _f0[k] = 0.0;
 
-    v_sub(_fk, v_part(_x, kxu+nx+nu, nf, _xk), _fk);
+    update_vals(_k0+k, xk, uk, fk, _f0[k], ck);
 
-    f0 += f0k;
+    v_sub(fk, v_part(_x, kxu+nx+nu, nf, xk), fk);
 
     // break if f0 is not finite
-    if (!is_finite(f0))
-      break;
+    //if (!is_finite(_f0[k]))
+    //  break;
 
-    offs = _cns_start[k];
-    v_ve = _qp->b->ve + _cns_eq->offs;
-    iend = _cns_eq->start[k+1];
+    int offs = _cns_start[k];
+    Real *v_ve = _qp->b->ve + _cns_eq->offs;
+    int i, iend = _cns_eq->start[k+1];
     for (i = _cns_eq->start[k]; i < iend; i++)
-      v_ve[i] = c[_cns_eq->idxs[i]-offs] - _cns_eq->vals[i];
+      v_ve[i] = ck[_cns_eq->idxs[i]-offs] - _cns_eq->vals[i];
 
     v_ve = _qp->d->ve + _cns_lb->offs;
     iend = _cns_lb->start[k+1];
     for (i = _cns_lb->start[k]; i < iend; i++)
-      v_ve[i] = c[_cns_lb->idxs[i]-offs] - _cns_lb->vals[i];
+      v_ve[i] = ck[_cns_lb->idxs[i]-offs] - _cns_lb->vals[i];
 
     v_ve = _qp->d->ve + _cns_ub->offs;
     iend = _cns_ub->start[k+1];
     for (i = _cns_ub->start[k]; i < iend; i++)
-      v_ve[i] = _cns_ub->vals[i] - c[_cns_ub->idxs[i]-offs];
-
-    kf += nf;
-    kxu += nx+nu;
+      v_ve[i] = _cns_ub->vals[i] - ck[_cns_ub->idxs[i]-offs];
   }
 
-  v_free(c);
-
   // take over calculated objective value
-  _f = f0;
+  _f = v_sum(_f0);
 
   // update state/control bounds and initial/final states
   update_bounds();
@@ -858,12 +927,12 @@ void Hqp_Docp::update_bounds()
   // update initial/final state constraints
 
   iend = min(_nxs[0], _nxs[K]);
-  v_part(_x, 0, _nxs[0], _xk);
-  v_part(_x, _x->dim - _nxs[K], _nxs[K], _fk);
+  v_part(_x, 0, _nxs[0], _xk[0]);
+  v_part(_x, _x->dim - _nxs[K], _nxs[K], _fk[0]);
   offs = _f_lin->dim + _xu_eq->dim + _cns_eq->dim;
   for (i = 0; i < iend; i++) {
     if (_x_type[i] & Periodical) {
-      _qp->b->ve[offs] = _xk[i] - _fk[i];
+      _qp->b->ve[offs] = _xk[0][i] - _fk[0][i];
       offs++;
     }
   }
@@ -872,51 +941,47 @@ void Hqp_Docp::update_bounds()
 //-------------------------------------------------------------------------
 void Hqp_Docp::update(const VECP y, const VECP z)
 {
-  int i, iend, k;
-  int K = _kf - _k0;
-  int nx, nu, nf, nc;
-  int kf, kxu;
-  MATP fx, fu, cx, cu;
+  int k, K = _kf - _k0;
   SPMAT *A = _qp->A;
-  MATP Lxx, Luu, Lxu;
-  VECP c, vc, vf;
-  Real f0, f0k;
-  Real *v_ve;
-  int offs;
 
   if ((const VEC *)y == NULL || (const VEC *)z == NULL)
     m_error(E_NULL, "Hqp_Docp::update");
   if (y->dim != _qp->b->dim || z->dim != _qp->d->dim)
     m_error(E_SIZES, "Hqp_Docp::update");
 
-  c = v_get(1);
-
-  fx = m_get(1, 1);
-  fu = m_get(1, 1);
-  cx = m_get(1, 1);
-  cu = m_get(1, 1);
-  Lxx = m_get(1, 1);
-  Luu = m_get(1, 1);
-  Lxu = m_get(1, 1);
-  vf = v_get(1);
-  vc = v_get(1);
-
-  kxu = 0;
-  kf = 0;
-  f0 = 0.0;
+  #pragma omp parallel for
   for (k = 0; k <= K; k++) {
-    nx = _nxs[k];
-    nu = _nus[k];
-    nf = _f_start[k+1] - _f_start[k];
-    nc = _cns_start[k+1] - _cns_start[k];
+    int tn = omp_get_thread_num();
+    VECP xk = _xk[tn];
+    VECP uk = _uk[tn];
+    VECP fk = _fk[tn];
+    VECP ck = _ck[tn];
+    MATP fx = _fkx[tn];
+    MATP fu = _fku[tn];
+    MATP cx = _ckx[tn];
+    MATP cu = _cku[tn];
+    MATP Lxx = _Lkxx[tn];
+    MATP Luu = _Lkuu[tn];
+    MATP Lxu = _Lkxu[tn];
+    VECP vf = _vfk[tn];
+    VECP vc = _vck[tn];
+    VECP s1 = _s1[tn];
+    VECP s2 = _s2[tn];
+    int nx = _nxs[k];
+    int nu = _nus[k];
+    int kxu = _xu_start[k];
+    int kf = _f_start[k];
+    int nf = _f_start[k+1] - kf;
+    int nc = _cns_start[k+1] - _cns_start[k];
+    int i;
 
-    v_part(_x, kxu, nx, _xk);
-    v_part(_x, kxu+nx, nu, _uk);
-    v_part(_qp->b, kf, nf, _fk);
-    c = v_resize(c, nc);
+    v_part(_x, kxu, nx, xk);
+    v_part(_x, kxu+nx, nu, uk);
+    v_part(_qp->b, kf, nf, fk);
+    v_resize(ck, nc);
 
-    v_part(_qp->c, kxu, nx, _s1);	// f0x
-    v_part(_qp->c, kxu+nx, nu, _s2);	// f0u
+    v_part(_qp->c, kxu, nx, s1);	// f0x
+    v_part(_qp->c, kxu+nx, nu, s2);	// f0u
     m_resize(fx, nf, nx);
     m_resize(fu, nf, nu);
     m_resize(cx, nc, nx);
@@ -928,8 +993,8 @@ void Hqp_Docp::update(const VECP y, const VECP z)
     v_resize(vf, nf);
 
     // prepare value update
-    v_zero(_fk);
-    f0k = 0.0;
+    v_zero(fk);
+    _f0[k] = 0.0;
 
     // multiplier for system equations
     for (i = 0; i < nf; i++)
@@ -946,36 +1011,34 @@ void Hqp_Docp::update(const VECP y, const VECP z)
     sp_extract_mat(_qp->Q, kxu, kxu+nx, Lxu);
     sp_extract_mat(_qp->Q, kxu+nx, kxu+nx, Luu);
 
-    update_stage(_k0+k, _xk, _uk,
-		 _fk, f0k, c,
-		 fx, fu, _s1, _s2, cx, cu,
+    update_stage(_k0+k, xk, uk,
+		 fk, _f0[k], ck,
+		 fx, fu, s1, s2, cx, cu,
 		 vf, vc, Lxx, Luu, Lxu);
 
     // value update
 
-    v_sub(_fk, v_part(_x, kxu+nx+nu, nf, _xk), _fk);
-
-    f0 += f0k;
+    v_sub(fk, v_part(_x, kxu+nx+nu, nf, xk), fk);
 
     // break if _f is not finite
-    if (!is_finite(f0))
-      break;
+    //if (!is_finite(_f0[k]))
+    //  break;
 
-    offs = _cns_start[k];
-    v_ve = _qp->b->ve + _cns_eq->offs;
-    iend = _cns_eq->start[k+1];
+    int offs = _cns_start[k];
+    Real *v_ve = _qp->b->ve + _cns_eq->offs;
+    int iend = _cns_eq->start[k+1];
     for (i = _cns_eq->start[k]; i < iend; i++)
-      v_ve[i] = c[_cns_eq->idxs[i]-offs] - _cns_eq->vals[i];
+      v_ve[i] = ck[_cns_eq->idxs[i]-offs] - _cns_eq->vals[i];
 
     v_ve = _qp->d->ve + _cns_lb->offs;
     iend = _cns_lb->start[k+1];
     for (i = _cns_lb->start[k]; i < iend; i++)
-      v_ve[i] = c[_cns_lb->idxs[i]-offs] - _cns_lb->vals[i];
+      v_ve[i] = ck[_cns_lb->idxs[i]-offs] - _cns_lb->vals[i];
 
     v_ve = _qp->d->ve + _cns_ub->offs;
     iend = _cns_ub->start[k+1];
     for (i = _cns_ub->start[k]; i < iend; i++)
-      v_ve[i] = _cns_ub->vals[i] - c[_cns_ub->idxs[i]-offs];
+      v_ve[i] = _cns_ub->vals[i] - ck[_cns_ub->idxs[i]-offs];
 
     // derivatives update
 
@@ -998,27 +1061,13 @@ void Hqp_Docp::update(const VECP y, const VECP z)
     sp_update_mat(_qp->Q, kxu, kxu, Lxx);
     sp_update_mat(_qp->Q, kxu+nx, kxu+nx, Luu);
     sp_update_mat(_qp->Q, kxu, kxu+nx, Lxu);
-
-    kf += nf;
-    kxu += nx+nu;
   }
 
   // take over calculated objective value
-  _f = f0;
+  _f = v_sum(_f0);
 
   // update state/control bounds and initial/final states
   update_bounds();
-
-  v_free(c);
-  m_free(fx);
-  m_free(fu);
-  m_free(cx);
-  m_free(cu);
-  m_free(Lxx);
-  m_free(Luu);
-  m_free(Lxu);
-  v_free(vc);
-  v_free(vf);
 }
 
 //-------------------------------------------------------------------------

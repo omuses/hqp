@@ -23,6 +23,7 @@
  */
 
 #include "Prg_DynamicOpt.h"
+#include "Hqp_omp.h"
 
 #include <stdlib.h>
 
@@ -236,7 +237,7 @@ void Prg_DynamicOpt::setup_model()
 
   // check for optional S-function methods that are required
   if (_mdl_nx > _mdl_nd)
-    assert(ssGetmdlDerivatives(_SS) != NULL);
+    assert(ssGetmdlDerivatives(_SS[0]) != NULL);
 
   // adapt sizes of model vectors
   _mdl_x0.alloc(_mdl_nx);
@@ -759,8 +760,9 @@ void Prg_DynamicOpt::setup_struct(int k,
 				  Omu_Dependent &f0, Omu_DependentVec &c)
 {
   int i, idx, j;
+  SimStruct *S = _SS[0];
 
-  if (k == 0 && ssGetmdlJacobian(_SS) != NULL) {
+  if (k == 0 && _mdl_is_fmu && _mdl_jac && ssGetmdlJacobian(S) != NULL) {
     for (idx = 0; idx < _mdl_ny; idx++) {
       _mdl_jac_y_active[idx] = _mdl_y.active[idx] || _mdl_y_soft.active[idx]
         || _mdl_y0.active[idx] || _mdl_yf.active[idx] || _mdl_yf_soft.active[idx];
@@ -887,17 +889,18 @@ void Prg_DynamicOpt::update(int kk,
     (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: tscale_1;
   double help;
   bool with_grds = f.is_required_J() || f0.is_required_g() || c.is_required_J();
+  SimStruct *S = _SS[omp_get_thread_num()];
 
   if (with_grds && kk == 0)
     v_zero(_mdl_y_lambda);
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
+  if (ssGetNumInputPorts(S) > 0) {
+    if (ssGetInputPortRequiredContiguous(S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(S, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx]) {
@@ -912,23 +915,23 @@ void Prg_DynamicOpt::update(int kk,
   }
 
   // set simulation time
-  ssSetT(_SS, _taus[kk]);
+  ssSetT(S, _taus[kk]);
 
   // pass current states to model
-  real_T *mdl_xd = ssGetDiscStates(_SS);
-  real_T *mdl_xc = ssGetContStates(_SS);
+  real_T *mdl_xd = ssGetDiscStates(S);
+  real_T *mdl_xc = ssGetContStates(S);
   for (i = 0; i < _mdl_nd; i++)
     mdl_xd[i] = x[i] * _mdl_x_nominal[i];
   for (i = _mdl_nd; i < _mdl_nx; i++)
     mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
   // call mdlOutputs
-  SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+  SMETHOD_CALL2(mdlOutputs, S, 0);
 
   // obtain model outputs
   real_T *mdl_y = NULL;
-  if (ssGetNumOutputPorts(_SS) > 0)
-    mdl_y = ssGetOutputPortRealSignal(_SS, 0);
+  if (ssGetNumOutputPorts(S) > 0)
+    mdl_y = ssGetOutputPortRealSignal(S, 0);
 
   // correct model outputs with bias
   for (idx = 0; idx < _mdl_ny; idx++)
@@ -1045,8 +1048,8 @@ void Prg_DynamicOpt::update(int kk,
     i = spsk*(_nc+_nsc) + upsk*_nsuc;
     // constraints on derivatives of initial states
     if (_mdl_nx > _mdl_nd) {
-      SMETHOD_CALL(mdlDerivatives, _SS);
-      real_T *mdl_dx = ssGetdX(_SS);
+      SMETHOD_CALL(mdlDerivatives, S);
+      real_T *mdl_dx = ssGetdX(S);
       for (idx = _mdl_nd; idx < _mdl_nx; idx++) {
         if (_mdl_x0_active[idx]
             && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf)) {
@@ -1144,17 +1147,17 @@ void Prg_DynamicOpt::update(int kk,
   if (kk < _KK) {
     if (_mdl_nd > 0) {
       // call mdlUpdate to get discrete events processed
-      if (ssGetmdlUpdate(_SS) != NULL) {
-        setContinuousTask(false);
-        setSampleHit(true);
+      if (ssGetmdlUpdate(S) != NULL) {
+        setContinuousTask(S, false);
+        setSampleHit(S, true);
         if (_mdl_is_fmu) {
           // obtain discrete states at end of sample interval
-          ssSetT(_SS, _taus[kk + 1]);
-          SMETHOD_CALL2(mdlOutputs, _SS, 0);
+          ssSetT(S, _taus[kk + 1]);
+          SMETHOD_CALL2(mdlOutputs, S, 0);
         }
-        SMETHOD_CALL2(mdlUpdate, _SS, 0);
-        setSampleHit(false);
-        setContinuousTask(true);
+        SMETHOD_CALL2(mdlUpdate, S, 0);
+        setSampleHit(S, false);
+        setContinuousTask(S, true);
       }
       // read discrete states from model
       for (i = 0; i < _mdl_nd; i++) {
@@ -1222,8 +1225,9 @@ void Prg_DynamicOpt::update_grds(int kk,
   int t_scale_ix = _mdl_nd + _t_scale_i;
   double help;
   int analyticJac = 0;
+  SimStruct *S = _SS[omp_get_thread_num()];
 
-  if (!_mdl_jac || ssGetmdlJacobian(_SS) == NULL || _t_active) {
+  if (!_mdl_jac || ssGetmdlJacobian(S) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
     // call predefined update_grds for numerical differentiation
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
@@ -1233,21 +1237,21 @@ void Prg_DynamicOpt::update_grds(int kk,
     // exploit mdlJacobian to obtain c.Jx
     int mdl_u_idx, mdl_x_idx, mdl_dx_idx, mdl_y_idx;
     int mdl_nc = _mdl_nx - _mdl_nd; // number of continuous states
-    real_T *pr = ssGetJacobianPr(_SS);
-    int_T *ir = ssGetJacobianIr(_SS);
-    int_T *jc = ssGetJacobianJc(_SS);
+    real_T *pr = ssGetJacobianPr(S);
+    int_T *ir = ssGetJacobianIr(S);
+    int_T *jc = ssGetJacobianJc(S);
 
     // restore states after mdlUpdate has been processed
     // call mdlOutputs
-    real_T *mdl_xd = ssGetDiscStates(_SS);
-    real_T *mdl_xc = ssGetContStates(_SS);
+    real_T *mdl_xd = ssGetDiscStates(S);
+    real_T *mdl_xc = ssGetContStates(S);
     for (i = 0; i < _mdl_nd; i++)
       mdl_xd[i] = x[i] * _mdl_x_nominal[i];
     for (i = _mdl_nd; i < _mdl_nx; i++)
       mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
-    SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+    SMETHOD_CALL2(mdlOutputs, S, 0);
 
-    mdlJacobian(_SS);
+    SMETHOD_CALL(mdlJacobian, S);
 
     m_zero(c.Jx);
     m_zero(c.Ju);
@@ -1781,14 +1785,16 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     If_Log("Info", "Prg_DynamicOpt::consistic at kk = %d, t = %.3f", kk, t);
 
   int i, idx;
+  int tn = omp_get_thread_num();
+  SimStruct *S = _SS[tn];
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
+  if (ssGetNumInputPorts(S) > 0) {
+    if (ssGetInputPortRequiredContiguous(S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(S, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
@@ -1807,29 +1813,32 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     _taus[kk] = _taus[kk-1] +  _mdl_us[kk-1][_t_scale_idx] * (ts(kk) - ts(kk-1));
 
   // set simulation time
-  ssSetT(_SS, _taus[kk]);
+  ssSetT(S, _taus[kk]);
+  if (kk < _KK) {
+    if (_t_scale_idx < 0)
+      setSampleTime(S, ts(kk+1) - ts(kk));
+    else
+      setSampleTime(S, mdl_u[_t_scale_idx] * (ts(kk+1) - ts(kk)));
+  }
 
   // initialize model in first stage
   // This way model initial conditions get applied as functions of parameters.
   // Don't initialize if time changed, e.g. for subsequent simulation calls
-  if ((_mdl_needs_init || kk == 0 && t == _t0_setup_model)
-      && ssGetmdlInitializeConditions(_SS) != NULL) {
+  if ((_mdl_needs_init[tn] || kk == 0 && t == _t0_setup_model)
+      && ssGetmdlInitializeConditions(S) != NULL) {
     // initialize model
-    if (kk < _KK)
-      setSampleTime(ts(kk+1) - ts(kk));
-    SMETHOD_CALL(mdlInitializeConditions, _SS);
-    //m_error(E_FORMAT, "halloballo");
-    _mdl_needs_init = false;
+    SMETHOD_CALL(mdlInitializeConditions, S);
+    _mdl_needs_init[tn] = 0;
   }
 
   // disable discrete sample times for continuous evaluation
-  setSampleHit(false);
+  setSampleHit(S, false);
   // mark continuous sample time and process mdlUpdate in case of success
   // or after initialization of FMU
-  if (setContinuousTask(true) || _mdl_is_fmu && kk == 0) {
+  if (setContinuousTask(S, true) || _mdl_is_fmu && kk == 0) {
     // pass states from optimizer to model
-    real_T *mdl_xd = ssGetDiscStates(_SS);
-    real_T *mdl_xc = ssGetContStates(_SS);
+    real_T *mdl_xd = ssGetDiscStates(S);
+    real_T *mdl_xc = ssGetContStates(S);
     for (i = 0; i < _mdl_nd; i++)
       mdl_xd[i] = x[i] * _mdl_x_nominal[i];
     for (i = _mdl_nd; i < _mdl_nx; i++)
@@ -1838,14 +1847,14 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     // call mdlUpdate to get discrete events processed
     // Note: this is done once at the beginning of a sample interval;
     // no event processing takes place during the integration.
-    if (ssGetmdlUpdate(_SS) != NULL) {
+    if (ssGetmdlUpdate(S) != NULL) {
       if (_mdl_is_fmu)
-        setSampleHit(true);
+        setSampleHit(S, true);
       // also call mdlOutputs as done by Simulink before each mdlUpdate
-      SMETHOD_CALL2(mdlOutputs, _SS, 0); 
-      SMETHOD_CALL2(mdlUpdate, _SS, 0);
+      SMETHOD_CALL2(mdlOutputs, S, 0);
+      SMETHOD_CALL2(mdlUpdate, S, 0);
       if (_mdl_is_fmu)
-        setSampleHit(false);
+        setSampleHit(S, false);
     }
 
     // take over optimized control inputs from optimizer
@@ -1895,14 +1904,15 @@ void Prg_DynamicOpt::continuous(int kk, double t,
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
   double tscale = _t_active?
     (x[_mdl_nd + _t_scale_i] + u[_t_scale_i*upsk + kk%upsk])* _t_scale_nominal: 1.0;
+  SimStruct *S = _SS[omp_get_thread_num()];
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
+  if (ssGetNumInputPorts(S) > 0) {
+    if (ssGetInputPortRequiredContiguous(S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(S, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
   for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_u.active[idx])
@@ -1919,11 +1929,11 @@ void Prg_DynamicOpt::continuous(int kk, double t,
   double tau = _taus[kk] * (1 - rt) + _taus[kk+1] * rt;
 
   // set simulation time
-  ssSetT(_SS, tau);
+  ssSetT(S, tau);
 
   // pass current states to model
-  real_T *mdl_xd = ssGetDiscStates(_SS);
-  real_T *mdl_xc = ssGetContStates(_SS);
+  real_T *mdl_xd = ssGetDiscStates(S);
+  real_T *mdl_xc = ssGetContStates(S);
   for (i = 0; i < _mdl_nd; i++)
     mdl_xd[i] = x[i] * _mdl_x_nominal[i];
   for (i = _mdl_nd; i < _mdl_nx; i++)
@@ -1932,14 +1942,14 @@ void Prg_DynamicOpt::continuous(int kk, double t,
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
   // (furthermore a model may check for discrete changes in mdlOutputs)
-  SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+  SMETHOD_CALL2(mdlOutputs, S, 0);
 
   // evaluate continuous model equations
   if (_mdl_nx > _mdl_nd)
-    SMETHOD_CALL(mdlDerivatives, _SS);
+    SMETHOD_CALL(mdlDerivatives, S);
 
   // get model derivatives and change to residual form
-  real_T *mdl_dx = ssGetdX(_SS);
+  real_T *mdl_dx = ssGetdX(S);
   for (i = _mdl_nd; i < _mdl_nx; i++)
     F[_nu + i] = tscale*mdl_dx[i - _mdl_nd]/_mdl_x_nominal[i] - dx[_nu + i];
 
@@ -1972,7 +1982,8 @@ void Prg_DynamicOpt::continuous_grds(int kk, double t,
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DynamicOpt::continuous_grds at kk = %d, t = %.3f", kk, t);
 
-  if (ssGetmdlJacobian(_SS) == NULL || _t_active) {
+  SimStruct *S = _SS[omp_get_thread_num()];
+  if (ssGetmdlJacobian(S) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
     // call predefined continuous_grds for numerical differentiation
     Omu_Program::continuous_grds(kk, t, x, u, dx, F, Omu_Dependent::WRT_x);
@@ -1982,11 +1993,11 @@ void Prg_DynamicOpt::continuous_grds(int kk, double t,
     int i, idx, j, jdx, rdx;
     int mdl_u_idx, mdl_x_idx;
     int mdl_nc = _mdl_nx - _mdl_nd; // number of continuous states
-    real_T *pr = ssGetJacobianPr(_SS);
-    int_T *ir = ssGetJacobianIr(_SS);
-    int_T *jc = ssGetJacobianJc(_SS);
+    real_T *pr = ssGetJacobianPr(S);
+    int_T *ir = ssGetJacobianIr(S);
+    int_T *jc = ssGetJacobianJc(S);
 
-    mdlJacobian(_SS);
+    mdlJacobian(S);
 
     // obtain Jx
     m_zero(F.Jx);

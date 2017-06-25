@@ -23,6 +23,7 @@
  */
 
 #include "Prg_DynamicEst.h"
+#include "Hqp_omp.h"
 
 #include <stdlib.h>
 
@@ -203,7 +204,7 @@ void Prg_DynamicEst::setup_model()
 
   // check for optional S-function methods that are required
   if (_mdl_nx > _mdl_nd)
-    assert(ssGetmdlDerivatives(_SS) != NULL);
+    assert(ssGetmdlDerivatives(_SS[0]) != NULL);
 
   // adapt sizes of model vectors
   _mdl_p.alloc(_mdl_np);
@@ -559,17 +560,18 @@ void Prg_DynamicEst::update(int kk,
   int i, j, idx;
   int ex = _exs[kk];
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
+  SimStruct *S = _SS[omp_get_thread_num()];
 
   // set simulation time
-  ssSetT(_SS, ts(kk));
+  ssSetT(S, ts(kk));
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
+  if (ssGetNumInputPorts(S) > 0) {
+    if (ssGetInputPortRequiredContiguous(S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(S, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
   for (idx = 0; idx < _mdl_nu; idx++)
     mdl_u[idx] = _mdl_us[kk][idx];
@@ -579,13 +581,13 @@ void Prg_DynamicEst::update(int kk,
   // Note: initialization is required if model copies mx_args to private memory
   if (_np > 0) {
     write_active_mx_args(x);
-    //if (ssGetmdlInitializeConditions(_SS) != NULL)
-    //  SMETHOD_CALL(mdlInitializeConditions, _SS);
+    //if (ssGetmdlInitializeConditions(S) != NULL)
+    //  SMETHOD_CALL(mdlInitializeConditions, S);
   }
 
   // pass current states to model
-  real_T *mdl_xd = ssGetDiscStates(_SS);
-  real_T *mdl_xc = ssGetContStates(_SS);
+  real_T *mdl_xd = ssGetDiscStates(S);
+  real_T *mdl_xc = ssGetContStates(S);
   if (kk == 0 || !new_experiment) {
     for (i = 0; i < _mdl_nd; i++)
       mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
@@ -600,12 +602,12 @@ void Prg_DynamicEst::update(int kk,
   }
 
   // obtain model outputs
-  SMETHOD_CALL2(mdlOutputs, _SS, 0);
+  SMETHOD_CALL2(mdlOutputs, S, 0);
 
   // store outputs in constraints
   real_T *mdl_y = NULL;
-  if (ssGetNumOutputPorts(_SS) > 0)
-    mdl_y = ssGetOutputPortRealSignal(_SS, 0);
+  if (ssGetNumOutputPorts(S) > 0)
+    mdl_y = ssGetOutputPortRealSignal(S, 0);
   for (i = 0, idx = 0; idx < _mdl_ny; idx++) {
     if (_mdl_y_active[idx]) {
       c[i++] = mdl_y[idx] / _mdl_y_nominal[idx];
@@ -626,8 +628,8 @@ void Prg_DynamicEst::update(int kk,
 
   // constraints on time derivatives of initial states
   if (new_experiment && _mdl_nx > _mdl_nd) {
-    real_T *mdl_dx = ssGetdX(_SS);
-    SMETHOD_CALL(mdlDerivatives, _SS);
+    real_T *mdl_dx = ssGetdX(S);
+    SMETHOD_CALL(mdlDerivatives, S);
     for (i = _ny, idx = _mdl_nd; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
@@ -660,17 +662,17 @@ void Prg_DynamicEst::update(int kk,
     if (ex == _exs[kk+1]) {
       if (_mdl_nd > 0) {
         // call mdlUpdate to get discrete events processed
-        if (ssGetmdlUpdate(_SS) != NULL) {
-          setContinuousTask(false);
-          setSampleHit(true);
+        if (ssGetmdlUpdate(S) != NULL) {
+          setContinuousTask(S, false);
+          setSampleHit(S, true);
           if (_mdl_is_fmu) {
             // obtain discrete states at end of sample interval
-            ssSetT(_SS, ts(kk + 1));
-            SMETHOD_CALL2(mdlOutputs, _SS, 0);
+            ssSetT(S, ts(kk + 1));
+            SMETHOD_CALL2(mdlOutputs, S, 0);
           }
-          SMETHOD_CALL2(mdlUpdate, _SS, 0);
-          setSampleHit(false);
-          setContinuousTask(true);
+          SMETHOD_CALL2(mdlUpdate, S, 0);
+          setSampleHit(S, false);
+          setContinuousTask(S, true);
         }
         // read discrete states from model
         for (i = 0; i < _mdl_nd; i++) {
@@ -840,17 +842,21 @@ void Prg_DynamicEst::consistic(int kk, double t,
   int i;
   int ex = _exs[kk];
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
+  int tn = omp_get_thread_num();
+  SimStruct *S = _SS[tn];
 
   // set simulation time
-  ssSetT(_SS, t);
+  ssSetT(S, t);
+  if (kk < _KK)
+    setSampleTime(S, ts(kk+1) - ts(kk));
 
   // initialize model inputs
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
+  if (ssGetNumInputPorts(S) > 0) {
+    if (ssGetInputPortRequiredContiguous(S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(S, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
   for (i = 0; i < _mdl_nu; i++)
     mdl_u[i] = _mdl_us[kk][i];
@@ -860,29 +866,27 @@ void Prg_DynamicEst::consistic(int kk, double t,
   // Note: initialization is required if model copies mx_args to private memory
   if (_np > 0) {
     write_active_mx_args(x);
-    //if (ssGetmdlInitializeConditions(_SS) != NULL)
-    //  SMETHOD_CALL(mdlInitializeConditions, _SS);
+    //if (ssGetmdlInitializeConditions(S) != NULL)
+    //  SMETHOD_CALL(mdlInitializeConditions, S);
   }
   // initialize model in first stage
   // This way model initial conditions get applied as functions of parameters.
   // Don't initialize if time changed, e.g. for subsequent simulation calls
-  if ((_mdl_needs_init || kk == 0 && t == _t0_setup_model || kk != 0 && new_experiment)
-      && ssGetmdlInitializeConditions(_SS) != NULL) {
+  if ((_mdl_needs_init[tn] || kk == 0 && t == _t0_setup_model || kk != 0 && new_experiment)
+      && ssGetmdlInitializeConditions(S) != NULL) {
     // initialize model
-    if (kk < _KK)
-      setSampleTime(ts(kk+1) - ts(kk));
-    SMETHOD_CALL(mdlInitializeConditions, _SS);
-    _mdl_needs_init = false;
+    SMETHOD_CALL(mdlInitializeConditions, S);
+    _mdl_needs_init[tn] = 0;
   }
 
   // disable discrete sample times for continuous evaluation
-  setSampleHit(false);
+  setSampleHit(S, false);
   // mark continuous sample time and process mdlUpdate in case of success
   // or after initialization of FMU
-  if (setContinuousTask(true) || _mdl_is_fmu && new_experiment) {
+  if (setContinuousTask(S, true) || _mdl_is_fmu && new_experiment) {
     // pass states from optimizer to model
-    real_T *mdl_xd = ssGetDiscStates(_SS);
-    real_T *mdl_xc = ssGetContStates(_SS);
+    real_T *mdl_xd = ssGetDiscStates(S);
+    real_T *mdl_xc = ssGetContStates(S);
     if (kk == 0 || !new_experiment) {
       for (i = 0; i < _mdl_nd; i++)
         mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
@@ -899,14 +903,14 @@ void Prg_DynamicEst::consistic(int kk, double t,
     // call mdlUpdate to get discrete events processed
     // Note: this is done once at the beginning of a sample interval;
     // no event processing takes place during the integration.
-    if (ssGetmdlUpdate(_SS) != NULL) {
+    if (ssGetmdlUpdate(S) != NULL) {
       if (_mdl_is_fmu)
-        setSampleHit(true);
+        setSampleHit(S, true);
       // also call mdlOutputs as done by Simulink before each mdlUpdate
-      SMETHOD_CALL2(mdlOutputs, _SS, 0); 
-      SMETHOD_CALL2(mdlUpdate, _SS, 0);
+      SMETHOD_CALL2(mdlOutputs, S, 0);
+      SMETHOD_CALL2(mdlUpdate, S, 0);
       if (_mdl_is_fmu)
-        setSampleHit(false);
+        setSampleHit(S, false);
     }
 
     // take over estimated parameters from optimizer
@@ -955,18 +959,19 @@ void Prg_DynamicEst::continuous(int kk, double t,
     If_Log("Info", "Prg_DynamicEst::continuous at kk = %d, t = %.3f", kk, t);
 
   int i;
+  SimStruct *S = _SS[omp_get_thread_num()];
 
   // set simulation time
-  ssSetT(_SS, t);
+  ssSetT(S, t);
 
   // initialize model inputs using linear interpolation over time
   double rt = (t - ts(kk)) / (ts(kk+1) - ts(kk));
   real_T *mdl_u = NULL;
-  if (ssGetNumInputPorts(_SS) > 0) {
-    if (ssGetInputPortRequiredContiguous(_SS, 0))
-      mdl_u = (real_T *)ssGetInputPortRealSignal(_SS, 0);
+  if (ssGetNumInputPorts(S) > 0) {
+    if (ssGetInputPortRequiredContiguous(S, 0))
+      mdl_u = (real_T *)ssGetInputPortRealSignal(S, 0);
     else
-      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(_SS, 0);
+      mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
   for (i = 0; i < _mdl_nu; i++) {
     if (_mdl_u_order[i] == 0)
@@ -980,13 +985,13 @@ void Prg_DynamicEst::continuous(int kk, double t,
   // Note: initialization is required if model copies mx_args to private memory
   if (_np > 0) {
     write_active_mx_args(x);
-    //if (ssGetmdlInitializeConditions(_SS) != NULL)
-    //  SMETHOD_CALL(mdlInitializeConditions, _SS);
+    //if (ssGetmdlInitializeConditions(S) != NULL)
+    //  SMETHOD_CALL(mdlInitializeConditions, S);
   }
 
   // pass current states to model
-  real_T *mdl_xd = ssGetDiscStates(_SS);
-  real_T *mdl_xc = ssGetContStates(_SS);
+  real_T *mdl_xd = ssGetDiscStates(S);
+  real_T *mdl_xc = ssGetContStates(S);
   for (i = 0; i < _mdl_nd; i++)
     mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
   for (i = _mdl_nd; i < _mdl_nx; i++)
@@ -994,14 +999,14 @@ void Prg_DynamicEst::continuous(int kk, double t,
 
   // set model outputs before calculating derivatives
   // (note: this is required for sub-blocks providing inputs other blocks)
-  SMETHOD_CALL2(mdlOutputs, _SS, 0); 
+  SMETHOD_CALL2(mdlOutputs, S, 0);
 
   // evaluate continuous model equations
   if (_mdl_nx > _mdl_nd)
-    SMETHOD_CALL(mdlDerivatives, _SS);
+    SMETHOD_CALL(mdlDerivatives, S);
 
   // get model derivatives and change to residual form
-  real_T *mdl_dx = ssGetdX(_SS);
+  real_T *mdl_dx = ssGetdX(S);
   for (i = _mdl_nd; i < _mdl_nx; i++)
     F[_np + i] = mdl_dx[i - _mdl_nd]/_mdl_x_nominal[i] - dx[_np + i];
 

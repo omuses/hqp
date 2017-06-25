@@ -1,3 +1,14 @@
+2017-06-29    <rfranke>
+
+	* hqp/Hqp_omp.h, hqp/Hqp_Docp.[hC], omu/Omu_Model.[hC]
+	  omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - extend model update with pragma omp parallel for
+	    (so far only working with hqp_docp example)
+	* configure, configure.in:
+	  - add option --enable-omp
+	* hxi/sfun_fmu.c, omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - set sample time during each update
+
 2017-05-22    <rfranke>
 
 	* hxi/sfun_fmu.c, hxi/fmi.tcl:

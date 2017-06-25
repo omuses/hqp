@@ -748,6 +748,7 @@ ac_user_opts='
 enable_option_checking
 with_tcl
 enable_symbols
+enable_omp
 enable_shared
 enable_mex
 with_matlab
@@ -1380,15 +1381,16 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-symbols      enable symbols for debugging
-  --disable-shared    disable dynamic loading of HQP/Omuses
-  --enable-mex     include MEX S-function interface with Omuses
-  --enable-adolc     enable ADOL-C for automatic differentiation
-  --enable-fortran    include DASPK and RKsuite with Omuses
-  --enable-gmalloc    link ODC with GNU malloc
-  --enable-lpsolve     include mixed integer solver lp_solve with HQP
-  --enable-cute     include CUTE interface with HQP
-  --enable-ascend     include preliminary Ascend4 interface with HQP
+  --enable-symbols        enable symbols for debugging
+  --enable-omp            enable OpenMP
+  --disable-shared        disable dynamic loading of HQP/Omuses
+  --enable-mex            include MEX S-function interface with Omuses
+  --enable-adolc          enable ADOL-C for automatic differentiation
+  --enable-fortran        include DASPK and RKsuite with Omuses
+  --enable-gmalloc        link ODC with GNU malloc
+  --enable-lpsolve        include mixed integer solver lp_solve with HQP
+  --enable-cute           include CUTE interface with HQP
+  --enable-ascend         include preliminary Ascend4 interface with HQP
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -3517,6 +3519,29 @@ $as_echo "${gcc_bug}" >&6; }
   if test $gcc_bug = yes; then
     as_fn_error $? "\"Your $CXX is buggy -- please install a newer version.\"" "$LINENO" 5
   fi
+fi
+
+# -----------------------------------------------------------------------
+# 	OpenMP
+# -----------------------------------------------------------------------
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-omp" >&5
+$as_echo_n "checking --enable-omp... " >&6; }
+# Check whether --enable-omp was given.
+if test "${enable_omp+set}" = set; then :
+  enableval=$enable_omp; hqp_omp=$enableval
+else
+  hqp_omp=no
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $hqp_omp" >&5
+$as_echo "$hqp_omp" >&6; }
+
+if test "$hqp_omp" = yes; then
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_OMP -fopenmp"
+  HQP_MACH_OBJS="$HQP_MACH_OBJS -fopenmp"
+  OMU_DEFS="$OMU_DEFS -DHQP_WITH_OMP -fopenmp"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS -fopenmp"
 fi
 
 # -----------------------------------------------------------------------

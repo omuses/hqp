@@ -1152,15 +1152,6 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       ssSetErrorStatus(S, "can't initialize FMU");
       return;
     }
-    /* set clock interval */
-    if (m->fmi2SetInterval != NULL) {
-      for (i = 0; i < m->nc; i++)
-        m->civl[i] = ssGetSampleTime(S, 1 + i);
-      if ((*m->fmi2SetInterval)(m->fmu, m->cidx, m->nc, m->civl) != fmi2OK) {
-        ssSetErrorStatus(S, "can't set clock interval of FMU");
-        return;
-      }
-    }
     enterEventMode = fmi2True;
   }
   else if (ssIsMinorTimeStep(S))
@@ -1205,6 +1196,15 @@ static void mdlOutputs(SimStruct *S, int_T tid)
   /* process events */
   if (enterEventMode || timeEvent || stateEvent) {
     if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
+      /* set clock interval */
+      if (m->fmi2SetInterval != NULL) {
+        for (i = 0; i < m->nc; i++)
+          m->civl[i] = ssGetSampleTime(S, 1 + i);
+        if ((*m->fmi2SetInterval)(m->fmu, m->cidx, m->nc, m->civl) != fmi2OK) {
+          ssSetErrorStatus(S, "can't set clock interval of FMU");
+          return;
+        }
+      }
       /* don't update discrete states during continuous task */
       for (i = 0; i < m->nc; i++)
         m->csub[i] = ssIsContinuousTask(S, tid);

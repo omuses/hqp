@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 
+#include <Hqp_omp.h>
 #include <Hxi_mx_parse.h>
 
 #include <If_Bool.h>
@@ -37,6 +38,10 @@
 // redefine assert to throw an error instead of aborting
 #undef assert
 #define assert(expr) if (!(expr)) m_error(E_INTERN, "assert(" #expr ")");
+
+#define GET_CB(vartype, name) \
+  #name, \
+  IF_GET_CB(vartype, Omu_Model, name)
 
 #define GET_SET_CB(vartype, name) \
   #name, \
@@ -55,12 +60,16 @@ Omu_Model::Omu_Model()
   _mdl_nargs = 0;
   _mx_args = NULL;
 
+  _mdl_ncpu = omp_get_max_threads();
   _mdl_logging = If_LogNone;
   _mdl_jac = true;
   _mdl_needs_setup = true;
-  _mdl_needs_init = false;
+  _mdl_needs_init = iv_get(_mdl_ncpu);
+  iv_set(_mdl_needs_init, 0);
 
-  _SS = NULL;
+  _SS = new SimStruct* [_mdl_ncpu];
+  for (int tn = 0; tn < _mdl_ncpu; tn++)
+    _SS[tn] = NULL;
 
   _mdl_np = 0;
   _mdl_nd = 0;
@@ -81,6 +90,7 @@ Omu_Model::Omu_Model()
   _mdl_jac_ir = IVNULL;
   _mdl_jac_deps = IVNULL;
 
+  _ifList_model.append(new If_Int(GET_CB(int, mdl_ncpu)));
   _ifList_model.append(new If_Int(GET_SET_CB(int, mdl_logging)));
   _ifList_model.append(new If_Bool(GET_SET_CB(bool, mdl_jac)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
@@ -98,15 +108,21 @@ Omu_Model::Omu_Model()
 //--------------------------------------------------------------------------
 Omu_Model::~Omu_Model()
 {
-  int i;
-  if (_SS) {
-    SMETHOD_CALL_HOLD(mdlTerminate, _SS);
-    Hxi_SimStruct_destroy(_SS);
+  int i, tn;
+
+  for (tn = 0; tn < _mdl_ncpu; tn++) {
+    if (_SS[tn]) {
+      SMETHOD_CALL_HOLD(mdlTerminate, _SS[tn]);
+      Hxi_SimStruct_destroy(_SS[tn]);
+    }
   }
+  delete [] _SS;
+
   for (i = 0; i < _mdl_nargs; i++)
     mxDestroyArray(_mx_args[i]);
   delete [] _mx_args;
 
+  iv_free(_mdl_needs_init);
   iv_free(_mdl_jac_deps);
   iv_free(_mdl_jac_ir);
   iv_free(_mdl_jac_jc);
@@ -147,6 +163,7 @@ void Omu_Model::set_mdl_args(const char *arg_str)
   const char *str, *str1;
   mxArray **args;
   int i, nargs = 0;
+  SimStruct *S = _SS[0];
 
   // parse args
   str = arg_str;
@@ -158,7 +175,7 @@ void Omu_Model::set_mdl_args(const char *arg_str)
   }
   args = new mxArray* [nargs];
   for (i = 0; i < nargs; i++) {
-    args[i] = Hxi::mx_parse_argument(_SS, str);
+    args[i] = Hxi::mx_parse_argument(S, str);
     str = Hxi::mx_forward_argument(str);
     if (*str == ',')
       str = Hxi::mx_forward_whitespaces(++str);  // skip arg delimiter
@@ -212,12 +229,12 @@ void Omu_Model::write_mx_args(VECP p)
 }
 
 //--------------------------------------------------------------------------
-bool Omu_Model::setContinuousTask(bool val)
+bool Omu_Model::setContinuousTask(SimStruct *S, bool val)
 {
   bool hasContinuousSampleTime = false;
-  for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
-    if (ssGetSampleTime(_SS, i) == CONTINUOUS_SAMPLE_TIME) {
-      ssGetSampleHitPtr(_SS)[ssGetSampleTimeTaskID(_SS, i)] = val;
+  for (int i = 0; i < ssGetNumSampleTimes(S); i++) {
+    if (ssGetSampleTime(S, i) == CONTINUOUS_SAMPLE_TIME) {
+      ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = val;
       hasContinuousSampleTime = val;
     }
   }
@@ -225,12 +242,12 @@ bool Omu_Model::setContinuousTask(bool val)
 }
 
 //--------------------------------------------------------------------------
-bool Omu_Model::setSampleHit(bool val)
+bool Omu_Model::setSampleHit(SimStruct *S, bool val)
 {
   bool hasDiscreteSampleTime = false;
-  for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
-    if (ssGetSampleTime(_SS, i) != CONTINUOUS_SAMPLE_TIME) {
-      ssGetSampleHitPtr(_SS)[ssGetSampleTimeTaskID(_SS, i)] = val;
+  for (int i = 0; i < ssGetNumSampleTimes(S); i++) {
+    if (ssGetSampleTime(S, i) != CONTINUOUS_SAMPLE_TIME) {
+      ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = val;
       hasDiscreteSampleTime = val;
     }
   }
@@ -238,11 +255,11 @@ bool Omu_Model::setSampleHit(bool val)
 }
 
 //--------------------------------------------------------------------------
-void Omu_Model::setSampleTime(double val)
+void Omu_Model::setSampleTime(SimStruct *S, double val)
 {
-  for (int i = 0; i < ssGetNumSampleTimes(_SS); i++) {
-    if (ssGetSampleTime(_SS, i) != CONTINUOUS_SAMPLE_TIME) {
-      ssSetSampleTime(_SS, i, val);
+  for (int i = 0; i < ssGetNumSampleTimes(S); i++) {
+    if (ssGetSampleTime(S, i) != CONTINUOUS_SAMPLE_TIME) {
+      ssSetSampleTime(S, i, val);
     }
   }
 }
@@ -250,122 +267,131 @@ void Omu_Model::setSampleTime(double val)
 //--------------------------------------------------------------------------
 void Omu_Model::setup_model(double t0)
 {
-  int i;
+  int i, tn;
 
-  // setup S-function
-  if (_SS) {
-    SMETHOD_CALL(mdlTerminate, _SS);
-    Hxi_SimStruct_destroy(_SS);
-  }
+  for (tn = 0; tn < _mdl_ncpu; tn++) {
+    // setup S-function
+    if (_SS[tn]) {
+      SMETHOD_CALL(mdlTerminate, _SS[tn]);
+      Hxi_SimStruct_destroy(_SS[tn]);
+    }
 
-  _SS = Hxi_SimStruct_create(_mdl_path[0] != '\0'? _mdl_path: _mdl_name);
-  if (ssGetErrorStatus(_SS)) {
-    fprintf(stderr, "Error creating SimStruct: %s\n", ssGetErrorStatus(_SS));
-    m_error(E_FORMAT, ssGetErrorStatus(_SS));
-  }
+    _SS[tn] = Hxi_SimStruct_create(_mdl_path[0] != '\0'? _mdl_path: _mdl_name);
+    if (ssGetErrorStatus(_SS[tn])) {
+      fprintf(stderr, "Error creating SimStruct: %s\n", ssGetErrorStatus(_SS[tn]));
+      m_error(E_FORMAT, ssGetErrorStatus(_SS[tn]));
+    }
 
-  // initialize model name (FMU name is initialized by model from path below)
-  if (!_mdl_is_fmu)
-    ssSetModelName(_SS, _mdl_name);
+    // initialize model name (FMU name is initialized by model from path below)
+    if (!_mdl_is_fmu)
+      ssSetModelName(_SS[tn], _mdl_name);
 
-  // (re-)parse model arguments to
-  // adapt mxArray to SimStruct of loaded S-function (MEX or Hxi)
-  set_mdl_args(_mdl_args);
+    // (re-)parse model arguments to
+    // adapt mxArray to SimStruct of loaded S-function (MEX or Hxi)
+    if (tn == 0)
+      set_mdl_args(_mdl_args);
 
-  // initialize S-function parameters
-  ssSetSFcnParamsCount(_SS, _mdl_nargs);
-  for (i = 0; i < _mdl_nargs; i++)
-    ssSetSFcnParam(_SS, i, _mx_args[i]);
+    // initialize S-function parameters
+    ssSetSFcnParamsCount(_SS[tn], _mdl_nargs);
+    for (i = 0; i < _mdl_nargs; i++)
+      ssSetSFcnParam(_SS[tn], i, _mx_args[i]);
 
-  // initialize solver
-  // (note: variable step size is indicated as the model must allow
-  //  simulation time stepping back)
-  ssSetVariableStepSolver(_SS, 1);
-  // (note: preselect major time steps requiring complete model evaluation --
-  //  minor time steps would require support for events and zero crossings)
-  ssSetMinorTimeStep(_SS, 0);
+    // initialize solver
+    // (note: variable step size is indicated as the model must allow
+    //  simulation time stepping back)
+    ssSetVariableStepSolver(_SS[tn], 1);
+    // (note: preselect major time steps requiring complete model evaluation --
+    //  minor time steps would require support for events and zero crossings)
+    ssSetMinorTimeStep(_SS[tn], 0);
 
-  // initialize model
-  SMETHOD_CALL(mdlInitializeSizes, _SS);
-  // exploit model description available for FMU
-  if (_mdl_is_fmu) {
-    // obtain model name
-    free(_mdl_name);
-    _mdl_name = strdup(ssGetModelName(_SS));
-
-    // obtain parameters from model description if no mdl_args given
-    if (_mdl_nargs == 0 && ssGetNumSFcnParams(_SS) > 0) {
-      if (Tcl_VarEval(theInterp, "::set {::fmu::", _mdl_name,
-                      "::parameterStartValues}", NULL) != TCL_OK) {
-        m_error(E_INTERN, "can't get parameter values");
+    // initialize model
+    SMETHOD_CALL(mdlInitializeSizes, _SS[tn]);
+    // exploit model description available for FMU
+    if (_mdl_is_fmu) {
+      // obtain model name
+      if (tn == 0) {
+        free(_mdl_name);
+        _mdl_name = strdup(ssGetModelName(_SS[tn]));
       }
-      set_mdl_args(Tcl_GetStringResult(theInterp));
-      Tcl_ResetResult(theInterp);
-      ssSetSFcnParamsCount(_SS, _mdl_nargs);
-      for (i = 0; i < _mdl_nargs; i++)
-        ssSetSFcnParam(_SS, i, _mx_args[i]);
-    }
-  }
-  // check numbers of expected and given model parameters
-  if (ssGetNumSFcnParams(_SS) != ssGetSFcnParamsCount(_SS)) {
-    fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
-	    ssGetNumSFcnParams(_SS), ssGetSFcnParamsCount(_SS));
-    m_error(E_FORMAT, "Omu_Model::setup_model: parameter count mismatch");
-  }
 
-  // obtain model sizes
-  _mdl_nd = ssGetNumDiscStates(_SS);
-  _mdl_nx = _mdl_nd + ssGetNumContStates(_SS);
-  // count inputs of ports as long as they are contiguous in memory
-  // (this limitation is because later on we will only access port 0)
-  _mdl_nu = 0;
-  for (i = 0; i < ssGetNumInputPorts(_SS); i++) {
-    if (ssGetInputPortWidth(_SS, i) < 1)
-      continue;
-    if (*ssGetInputPortRealSignalPtrs(_SS, i)
-	== *ssGetInputPortRealSignalPtrs(_SS, 0) + _mdl_nu)
-      _mdl_nu += ssGetInputPortWidth(_SS, i);
-    else {
+      // obtain parameters from model description if no mdl_args given
+      if (_mdl_nargs == 0 && ssGetNumSFcnParams(_SS[tn]) > 0) {
+        if (tn == 0) {
+          if (Tcl_VarEval(theInterp, "::set {::fmu::", _mdl_name,
+                          "::parameterStartValues}", NULL) != TCL_OK) {
+            m_error(E_INTERN, "can't get parameter values");
+          }
+          set_mdl_args(Tcl_GetStringResult(theInterp));
+          Tcl_ResetResult(theInterp);
+        }
+        ssSetSFcnParamsCount(_SS[tn], _mdl_nargs);
+        for (i = 0; i < _mdl_nargs; i++)
+          ssSetSFcnParam(_SS[tn], i, _mx_args[i]);
+      }
+    }
+    // check numbers of expected and given model parameters
+    if (ssGetNumSFcnParams(_SS[tn]) != ssGetSFcnParamsCount(_SS[tn])) {
+      fprintf(stderr, "Parameter count mismatch: expected: %d, provided: %d\n",
+              ssGetNumSFcnParams(_SS[tn]), ssGetSFcnParamsCount(_SS[tn]));
+      m_error(E_FORMAT, "Omu_Model::setup_model: parameter count mismatch");
+    }
+
+    // obtain model sizes
+    if (tn == 0) {
+      _mdl_nd = ssGetNumDiscStates(_SS[tn]);
+      _mdl_nx = _mdl_nd + ssGetNumContStates(_SS[tn]);
+      // count inputs of ports as long as they are contiguous in memory
+      // (this limitation is because later on we will only access port 0)
+      _mdl_nu = 0;
+      for (i = 0; i < ssGetNumInputPorts(_SS[tn]); i++) {
+        if (ssGetInputPortWidth(_SS[tn], i) < 1)
+          continue;
+        if (*ssGetInputPortRealSignalPtrs(_SS[tn], i)
+            == *ssGetInputPortRealSignalPtrs(_SS[tn], 0) + _mdl_nu)
+          _mdl_nu += ssGetInputPortWidth(_SS[tn], i);
+        else {
+          m_warning(WARN_UNKNOWN,
+                    "Omu_Model::setup_model: ignoring non-contiguous inputs");
+          break;
+        }
+      }
+      // count outputs of ports as long as they are contiguous in memory
+      // (this limitation is because later on we will only access port 0)
+      _mdl_ny = 0;
+      for (i = 0; i < ssGetNumOutputPorts(_SS[tn]); i++) {
+        if (ssGetOutputPortWidth(_SS[tn], i) < 1)
+          continue;
+        if (ssGetOutputPortRealSignal(_SS[tn], i)
+            == ssGetOutputPortRealSignal(_SS[tn], 0) + _mdl_ny)
+          _mdl_ny += ssGetOutputPortWidth(_SS[tn], i);
+        else {
+          m_warning(WARN_UNKNOWN,
+                    "Omu_Model::setup_model: ignoring non-contiguous outputs");
+          break;
+        }
+      }
+
+      // setup active variables for Jacobian
+      _mdl_jac_y_active = iv_resize(_mdl_jac_y_active, _mdl_ny);
+      _mdl_jac_u_active = iv_resize(_mdl_jac_u_active, _mdl_nu);
+      iv_zero(_mdl_jac_y_active);
+      iv_zero(_mdl_jac_u_active);
+    }
+
+    // set simulation time
+    ssSetT(_SS[tn], t0);
+    _t0_setup_model = t0;
+
+    // initialize and check sample times of model
+    SMETHOD_CALL(mdlInitializeSampleTimes, _SS[tn]);
+    if (ssGetNumSampleTimes(_SS[tn]) < 1)
       m_warning(WARN_UNKNOWN,
-		"Omu_Model::setup_model: ignoring non-contiguous inputs");
-      break;
-    }
+                "Omu_Model::setup_model: no sample times initialized");
+
+    // start using S-function
+    if (ssGetmdlStart(_SS[tn]) != NULL)
+      mdlStart(_SS[tn]);
   }
-  // count outputs of ports as long as they are contiguous in memory
-  // (this limitation is because later on we will only access port 0)
-  _mdl_ny = 0;
-  for (i = 0; i < ssGetNumOutputPorts(_SS); i++) {
-    if (ssGetOutputPortWidth(_SS, i) < 1)
-      continue;
-    if (ssGetOutputPortRealSignal(_SS, i)
-	== ssGetOutputPortRealSignal(_SS, 0) + _mdl_ny)
-      _mdl_ny += ssGetOutputPortWidth(_SS, i);
-    else {
-      m_warning(WARN_UNKNOWN,
-		"Omu_Model::setup_model: ignoring non-contiguous outputs");
-      break;
-    }
-  }
-
-  // setup active variables for Jacobian
-  _mdl_jac_y_active = iv_resize(_mdl_jac_y_active, _mdl_ny);
-  _mdl_jac_u_active = iv_resize(_mdl_jac_u_active, _mdl_nu);
-  iv_zero(_mdl_jac_y_active);
-  iv_zero(_mdl_jac_u_active);
-
-  // set simulation time
-  ssSetT(_SS, t0);
-  _t0_setup_model = t0;
-
-  // initialize and check sample times of model
-  SMETHOD_CALL(mdlInitializeSampleTimes, _SS);
-  if (ssGetNumSampleTimes(_SS) < 1)
-    m_warning(WARN_UNKNOWN,
-	      "Omu_Model::setup_model: no sample times initialized");
-
-  // start using S-function
-  if (ssGetmdlStart(_SS) != NULL)
-    mdlStart(_SS);
 
   // get parameters
   // determine number of parameters
@@ -397,11 +423,11 @@ void Omu_Model::setup_model(double t0)
     // Note: initialization might also be postponed by the model to the next
     //       mdlOutputs/mdlUpdate call, e.g. if initial states depend on inputs,
     //       however, don't call these methods here as inputs are not known.
-    if (ssGetmdlInitializeConditions(_SS) != NULL) {
-      SMETHOD_CALL(mdlInitializeConditions, _SS);
+    if (ssGetmdlInitializeConditions(_SS[0]) != NULL) {
+      SMETHOD_CALL(mdlInitializeConditions, _SS[0]);
     }
-    real_T *mdl_xd = ssGetDiscStates(_SS);
-    real_T *mdl_xc = ssGetContStates(_SS);
+    real_T *mdl_xd = ssGetDiscStates(_SS[0]);
+    real_T *mdl_xc = ssGetContStates(_SS[0]);
     for (i = 0; i < _mdl_nd; i++)
       _mdl_x_start[i] = mdl_xd[i];
     for (i = _mdl_nd; i < _mdl_nx; i++)
@@ -425,7 +451,7 @@ void Omu_Model::setup_model(double t0)
   v_resize(_mdl_y_nominal, _mdl_ny);
   if (_mdl_is_fmu) {
     // take over default values from model description
-    if(Tcl_VarEval(theInterp, "mdl_u_nominal ${::fmu::", _mdl_name,
+    if (Tcl_VarEval(theInterp, "mdl_u_nominal ${::fmu::", _mdl_name,
                    "::inputNominalValues}", NULL) != TCL_OK ||
        Tcl_VarEval(theInterp, "mdl_x_nominal ${::fmu::", _mdl_name,
                    "::stateNominalValues}", NULL) != TCL_OK ||
@@ -441,7 +467,7 @@ void Omu_Model::setup_model(double t0)
   }
 
   _mdl_needs_setup = false;
-  _mdl_needs_init = true;
+  iv_set(_mdl_needs_init, 1);
 }
 
 //-------------------------------------------------------------------------
@@ -449,9 +475,10 @@ void Omu_Model::setup_jac()
 {
   int offs, idx;
   int ir_offset = 0;
+  SimStruct *S = _SS[0];
 
   // allocate storage for Jacobian structure
-  _mdl_jac_jc = iv_resize(_mdl_jac_jc, ssGetJacobianNzMax(_SS));
+  _mdl_jac_jc = iv_resize(_mdl_jac_jc, ssGetJacobianNzMax(S));
   _mdl_jac_ir = iv_resize(_mdl_jac_ir, _mdl_nx + _mdl_ny + 1);
 
   // setup sparse structure of Jacobian for active variables
@@ -476,8 +503,8 @@ void Omu_Model::setup_jac()
   //
   // setup sparse structure for FMU using Jacobian format of S-function
   //
-  int_T *ir = ssGetJacobianIr(_SS);
-  int_T *jc = ssGetJacobianJc(_SS);
+  int_T *ir = ssGetJacobianIr(S);
+  int_T *jc = ssGetJacobianJc(S);
   int i, m = _mdl_nx + _mdl_ny;
   int j, jdx, n = _mdl_nx + _mdl_nu;
 

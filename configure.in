@@ -113,7 +113,7 @@ AC_SUBST(VERSION)
 
 AC_MSG_CHECKING([--enable-symbols])
 AC_ARG_ENABLE(symbols,
-    [  --enable-symbols      enable symbols for debugging],
+    [  --enable-symbols        enable symbols for debugging],
     [hqp_symbols=$enableval], [hqp_symbols=no])
 AC_MSG_RESULT($hqp_symbols)
 
@@ -172,6 +172,23 @@ if test "$GXX" = yes; then
 fi
 
 # -----------------------------------------------------------------------
+# 	OpenMP
+# -----------------------------------------------------------------------
+
+AC_MSG_CHECKING([--enable-omp])
+AC_ARG_ENABLE(omp,
+    [  --enable-omp            enable OpenMP],
+    [hqp_omp=$enableval], [hqp_omp=no])
+AC_MSG_RESULT($hqp_omp)
+
+if test "$hqp_omp" = yes; then
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_OMP -fopenmp"
+  HQP_MACH_OBJS="$HQP_MACH_OBJS -fopenmp"
+  OMU_DEFS="$OMU_DEFS -DHQP_WITH_OMP -fopenmp"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS -fopenmp"
+fi
+
+# -----------------------------------------------------------------------
 # 	Check for includes
 # -----------------------------------------------------------------------
 
@@ -183,7 +200,7 @@ fi
 
 AC_MSG_CHECKING([--disable-shared])
 AC_ARG_ENABLE(shared,
-    [  --disable-shared    disable dynamic loading of HQP/Omuses],
+    [  --disable-shared        disable dynamic loading of HQP/Omuses],
     [hqp_shared=$enableval], [hqp_shared=yes])
 if test "$hqp_shared" = yes; then
   AC_MSG_RESULT(no)
@@ -418,7 +435,7 @@ AC_PROG_INSTALL
 
 AC_MSG_CHECKING([--enable-mex])
 AC_ARG_ENABLE(mex,
-    [  --enable-mex     include MEX S-function interface with Omuses],
+    [  --enable-mex            include MEX S-function interface with Omuses],
     [omu_mex=$enableval], [omu_mex=no])
 AC_MSG_RESULT($omu_mex)
 
@@ -615,7 +632,7 @@ IF_DEFS="-DUSE_COMPAT_CONST=1 $IF_DEFS"
 
 AC_MSG_CHECKING([--enable-adolc])
 AC_ARG_ENABLE(adolc,
-    [  --enable-adolc     enable ADOL-C for automatic differentiation],
+    [  --enable-adolc          enable ADOL-C for automatic differentiation],
     [omu_adolc=$enableval], [omu_adolc=no])
 AC_MSG_RESULT($omu_adolc)
 
@@ -689,7 +706,7 @@ RKSUITE_COMPILE_CMD=""
 
 AC_MSG_CHECKING([--enable-fortran])
 AC_ARG_ENABLE(fortran,
-    [  --enable-fortran    include DASPK and RKsuite with Omuses],
+    [  --enable-fortran        include DASPK and RKsuite with Omuses],
     [omu_fortran=$enableval], [omu_fortran=no])
 AC_MSG_RESULT($omu_fortran)
 
@@ -789,7 +806,7 @@ GMALLOC_O=""
 
 AC_MSG_CHECKING([--enable-gmalloc])
 AC_ARG_ENABLE(gmalloc,
-    [  --enable-gmalloc    link ODC with GNU malloc],
+    [  --enable-gmalloc        link ODC with GNU malloc],
     [odc_gmalloc=$enableval], [odc_gmalloc=no])
 AC_MSG_RESULT($odc_gmalloc)
 
@@ -823,7 +840,7 @@ AC_SUBST(GMALLOC_O)
 
 AC_MSG_CHECKING([--enable-lpsolve])
 AC_ARG_ENABLE(lpsolve,
-    [  --enable-lpsolve     include mixed integer solver lp_solve with HQP],
+    [  --enable-lpsolve        include mixed integer solver lp_solve with HQP],
     [hqp_lpsolve=$enableval], [hqp_lpsolve=no])
 AC_MSG_RESULT($hqp_lpsolve)
 
@@ -846,7 +863,7 @@ AC_SUBST(LPSOLVE_SRCS)
 
 AC_MSG_CHECKING([--enable-cute])
 AC_ARG_ENABLE(cute,
-    [  --enable-cute     include CUTE interface with HQP],
+    [  --enable-cute           include CUTE interface with HQP],
     [hqp_cute=$enableval], [hqp_cute=no])
 AC_MSG_RESULT($hqp_cute)
 
@@ -865,7 +882,7 @@ AC_SUBST(CUTE_SRCS)
 
 AC_MSG_CHECKING([--enable-ascend])
 AC_ARG_ENABLE(ascend,
-    [  --enable-ascend     include preliminary Ascend4 interface with HQP],
+    [  --enable-ascend         include preliminary Ascend4 interface with HQP],
     [hqp_ascend=$enableval], [hqp_ascend=no])
 AC_MSG_RESULT($hqp_ascend)
 

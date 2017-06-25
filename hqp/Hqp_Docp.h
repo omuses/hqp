@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1994--2014  Ruediger Franke
+    Copyright (C) 1994--2017  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -112,22 +112,37 @@ class HQP_API Hqp_Docp: public Hqp_SqpProgram {
   /** number of function evaluations */
   int fbd_evals() const {return _fbd_evals;}
 
+  /** number of cpus */
+  int ncpu() const {return _ncpu;}
+
   //@}
 
  private:
 
   int	_k0;
   int	_kf;
-  VECP	_xk;			// subvector into _x
-  VECP	_uk;			// subvector into _x
-  VECP	_fk;			// subvector into _x
-  VECP	_s1;			// subvector 1
-  VECP	_s2;			// subvector 2
-  VEC	_xk_head;
-  VEC	_uk_head;
-  VEC	_fk_head;
-  VEC	_s1_head;
-  VEC	_s2_head;
+  int	_ncpu;
+  VECP	*_xk;			// subvector into _x
+  VECP	*_uk;			// subvector into _x
+  VECP	*_fk;			// subvector into _x
+  VECP	*_s1;			// subvector 1
+  VECP	*_s2;			// subvector 2
+  VECP	*_ck;
+  VECP	_f0;
+  MATP	*_fkx;
+  MATP	*_fku;
+  MATP	*_ckx;
+  MATP	*_cku;
+  MATP	*_Lkxx;
+  MATP	*_Lkuu;
+  MATP	*_Lkxu;
+  VECP	*_vfk;
+  VECP	*_vck;
+  VEC	*_xk_head;
+  VEC	*_uk_head;
+  VEC	*_fk_head;
+  VEC	*_s1_head;
+  VEC	*_s2_head;
   IVECP _x_type;
 
   int 	_fbd_evals;		// number of function evaluation
@@ -166,6 +181,7 @@ class HQP_API Hqp_Docp: public Hqp_SqpProgram {
   Hqp_DocpAssoc *_xu_ub;	// upper bounds
   IVECP	_f_lin;			// mark linear state equations
   IVECP	_f_start;		// start indizes into _f_lin for each k
+  IVECP	_xu_start;		// start indizes into _x for each k
 
   // additional constraints
   //-----------------------

@@ -79,11 +79,12 @@ class OMU_API Omu_Model {
   If_List	_ifList_model; 	///< container for interface elements
 
  protected:
+  int		_mdl_ncpu; 	///< number of cpus
   char 		*_mdl_name;	///< S-function or FMU name
   char 		*_mdl_path;	///< S-function or FMU path for loading
   bool 		_mdl_is_fmu; 	///< indicate a Function Model Unit
   char 		*_mdl_args;	///< S-function parameters
-  SimStruct 	*_SS;		///< pointer to %SimStruct
+  SimStruct 	**_SS;		///< pointers to %SimStruct
   mxArray	**_mx_args; 	///< S-function parameters after parsing
   int 		_mdl_nargs; 	///< number of S-function arguments
   If_LogLevel 	_mdl_logging;	///< log level for debugging
@@ -107,7 +108,7 @@ class OMU_API Omu_Model {
   /// indicate that setup_model needs to be called
   /// as _mdl_name, _mdl_path, or _mdl_args changed
   bool 		_mdl_needs_setup;
-  bool 		_mdl_needs_init; ///< indicate that initialization is needed
+  IVECP 	_mdl_needs_init; ///< indicate that initialization is needed
 
   IVECP 	_mdl_jac_y_active; // mark outputs for Jacobian
   IVECP 	_mdl_jac_u_active; // mark inputs for Jacobian
@@ -143,12 +144,12 @@ class OMU_API Omu_Model {
   //@{
   /// enable continuous sample time;
   /// return true if a continuous sample time exists and has been enabled
-  bool setContinuousTask(bool val);
+  bool setContinuousTask(SimStruct *S, bool val);
   /// enable hit for all discrete sample times;
   /// return true if a discrete sample time exists and has been enabled
-  bool setSampleHit(bool val);
+  bool setSampleHit(SimStruct *S, bool val);
   /// set all discrete sample times
-  void setSampleTime(double val);
+  void setSampleTime(SimStruct *S, double val);
   //@}
 
  public:
@@ -172,6 +173,9 @@ class OMU_API Omu_Model {
   /** String representation of S-function arguments */
   const char *mdl_args() const {return _mdl_args;}
   void set_mdl_args(const char *str);	///< set S-function arguments
+
+  /** number of cpus */
+  int mdl_ncpu() const {return _mdl_ncpu;}
 
   /** Log level for debugging */
   int mdl_logging() const {return _mdl_logging;}
@@ -219,7 +223,6 @@ class OMU_API Omu_Model {
   const VECP mdl_y_nominal() const {return _mdl_y_nominal;}
   /** set nominal outputs */
   void set_mdl_y_nominal(const VECP v) {v_copy_elements(v, _mdl_y_nominal);}
-
   //@}
 };  
 
