@@ -1,0 +1,125 @@
+#
+# Double Integrator (Discrete-time) example
+#   formulating the model in Modelica and running an FMU,
+#   doing parallel multiple shooting if HQP was configured with --enable-omp
+#
+
+## translate DID.mo to DID.fmu
+
+source omc.tcl
+if {![file exists DID.fmu]
+    || [file mtime DID.mo] > [file mtime DID.fmu]} {
+    puts "Compiling FMU..."
+    compileFMU DID.mo
+}
+
+## run optimization
+
+puts "Running optimization..."
+package require Omuses
+
+## configure problem
+
+# optimization program and model name
+prg_name DOCP
+mdl_path DID.fmu
+
+# setup stages and sample periods per stage
+prg_K 60
+prg_setup_stages
+
+# model inputs and sample time points
+set K [prg_K]
+set dt [expr 1.0/$K]
+set us {}
+set ts {}
+for {set k 0} {$k <= $K} {incr k} {
+    lappend us -2.0
+    lappend ts [expr $dt*$k]
+}
+mdl_us $us
+prg_ts $ts
+
+# initial states
+mdl_x0 		{1.0 0.0}
+
+# path constraints at all times
+mdl_y_max 	{Inf 0.1}
+
+# constraints at final time
+mdl_yf_min 	{-1.0 0.0}
+mdl_yf_max 	{-1.0 0.0}
+
+# interpolation order for inputs
+mdl_u_order 	{0}
+
+# determine controlled (active) inputs
+mdl_u_active 	{1}
+
+# define optimization objective
+mdl_u_weight2 	{1.0}
+
+## setup and solve problem
+
+# setup optimization problem
+prg_setup
+
+# simulate initial solution
+prg_simulate
+
+# initialize optimizer
+sqp_init
+
+# drive solution
+catch hqp_solve result
+
+# output results
+puts "Result   : $result"
+puts "Objective: [prg_f]"
+puts "Obj-evals: [prg_fbd_evals]"
+puts "CPUs     : [prg_ncpu]"
+
+# plot result
+puts "Plotting resulting signals..."
+if {[catch {package present Tk}] 
+    || ([catch {package require BLT}] ?
+	[catch {package require rbc}] : 0)} {
+    puts "Skipping plot as no blt::graph available."
+} else {
+
+    # read results and form vector of cumulative times
+    set ts [prg_ts]
+    set us [mdl_us]
+    set ys [mdl_ys]
+    set K [prg_K]
+    set y1 {}
+    set y2 {}
+    for {set k 0} {$k <= $K} {incr k} {
+	lappend y1 [lindex [lindex $ys $k] 0]
+	lappend y2 [lindex [lindex $ys $k] 1]
+    }
+    if {[mdl_u_order] == 0} {
+	set usmooth "step"
+    } else {
+	set usmooth "linear"
+    }
+
+    # create blt::graph in a toplevel window and plot data
+    destroy .graph
+    if {![catch {package present BLT}]} {
+	set graph [blt::graph .graph -title "[prg_name] demo"]
+    } else {
+	set graph [rbc::graph .graph -title "[prg_name] demo"]
+    }
+    $graph element create u -xdata $ts -ydata $us -smooth $usmooth \
+	-color red -pixels 3
+    $graph element create y1 -xdata $ts -ydata $y1 -smooth step \
+	-color blue -pixels 3 -mapy y2
+    $graph element create y2 -xdata $ts -ydata $y2 -smooth step \
+	-color green -pixels 3 -mapy y2
+    $graph axis configure x -title "Time"
+    $graph axis configure y -title "Input"
+    $graph axis configure y2 -hide false -title "Outputs"
+    pack $graph -fill both -expand true
+    wm deiconify .	;# bring window to front
+}

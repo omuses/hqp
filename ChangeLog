@@ -1,9 +1,17 @@
-2017-06-29    <rfranke>
+2017-06-28    <rfranke>
+
+	* omu/Prg_DOCP.[hC], omu/Omu_Init.C, omu/Omu_Model.[hC], hxi/sfun_fmu.c:
+	  - extend FMU interface for parallel model evaluation
+	* hqp/Hqp_Docp.[hC]:
+	  - make number of CPUs configurable
+	* odc/did_docp.tcl:
+	  - add example
+
+2017-06-25    <rfranke>
 
 	* hqp/Hqp_omp.h, hqp/Hqp_Docp.[hC], omu/Omu_Model.[hC]
 	  omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
 	  - extend model update with pragma omp parallel for
-	    (so far only working with hqp_docp example)
 	* configure, configure.in:
 	  - add option --enable-omp
 	* hxi/sfun_fmu.c, omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:

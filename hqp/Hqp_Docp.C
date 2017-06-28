@@ -182,9 +182,9 @@ void Hqp_DocpAssoc::sv_mltadd_vec(int k, Real s, const VECP z,
 const int Hqp_Docp::Periodical = 1;
 
 //-------------------------------------------------------------------------
-Hqp_Docp::Hqp_Docp()
+Hqp_Docp::Hqp_Docp(int ncpu)
 {
-  _ncpu = omp_get_max_threads();
+  _ncpu = ncpu;
   _xk = new VECP [_ncpu];
   _uk = new VECP [_ncpu];
   _fk = new VECP [_ncpu];
@@ -222,7 +222,7 @@ Hqp_Docp::Hqp_Docp()
     _vfk[tn] = v_get(1);
     _vck[tn] = v_get(1);
   }
-  _f0 = v_get(1);
+  _f0 = v_get(_ncpu);
   _k0 = 0;
   _kf = 50;
   _nxs = iv_get(1);
@@ -254,7 +254,8 @@ Hqp_Docp::Hqp_Docp()
   _ifList.append(new If_Int("prg_fbd_evals", 
 			    IF_GET_CB(int, Hqp_Docp, fbd_evals)));
   _ifList.append(new If_Int("prg_ncpu",
-			    IF_GET_CB(int, Hqp_Docp, ncpu)));
+                            IF_GET_CB(int, Hqp_Docp, ncpu),
+                            IF_SET_CB(int, Hqp_Docp, set_ncpu)));
 }  
 
 //-------------------------------------------------------------------------
@@ -441,7 +442,6 @@ void Hqp_Docp::setup_x()
   iv_resize(_xus_integer, 0);
   nsp = 0;
   nfsp = 0;
-  v_resize(_f0, K+1);
   iv_resize(_f_start, K+2);	// two additional
   iv_resize(_xu_start, K+1);
   iv_resize(_nxs, K+1);
@@ -832,14 +832,16 @@ void Hqp_Docp::update_fbd()
 {
   int k, K = _kf - _k0;
 
-  #pragma omp parallel for
+  v_zero(_f0);
+
+  #pragma omp parallel for num_threads(_ncpu)
   for (k = 0; k <= K; k++) {
     int tn = omp_get_thread_num();
-    //fprintf(stdout, "k = %d, tn = %d\n", k, tn);
     VECP xk = _xk[tn];
     VECP uk = _uk[tn];
     VECP fk = _fk[tn];
     VECP ck = _ck[tn];
+    double f0k = 0.0;
     int nx = _nxs[k];
     int nu = _nus[k];
     int kxu = _xu_start[k];
@@ -852,10 +854,10 @@ void Hqp_Docp::update_fbd()
     v_part(_qp->b, kf, nf, fk);
     v_resize(ck, nc);
     v_zero(fk);
-    _f0[k] = 0.0;
 
-    update_vals(_k0+k, xk, uk, fk, _f0[k], ck);
+    update_vals(_k0+k, xk, uk, fk, f0k, ck);
 
+    _f0[tn] += f0k;
     v_sub(fk, v_part(_x, kxu+nx+nu, nf, xk), fk);
 
     // break if f0 is not finite
@@ -948,14 +950,16 @@ void Hqp_Docp::update(const VECP y, const VECP z)
     m_error(E_NULL, "Hqp_Docp::update");
   if (y->dim != _qp->b->dim || z->dim != _qp->d->dim)
     m_error(E_SIZES, "Hqp_Docp::update");
+  v_zero(_f0);
 
-  #pragma omp parallel for
+  #pragma omp parallel for num_threads(_ncpu)
   for (k = 0; k <= K; k++) {
     int tn = omp_get_thread_num();
     VECP xk = _xk[tn];
     VECP uk = _uk[tn];
     VECP fk = _fk[tn];
     VECP ck = _ck[tn];
+    double f0k = 0.0;
     MATP fx = _fkx[tn];
     MATP fu = _fku[tn];
     MATP cx = _ckx[tn];
@@ -994,7 +998,6 @@ void Hqp_Docp::update(const VECP y, const VECP z)
 
     // prepare value update
     v_zero(fk);
-    _f0[k] = 0.0;
 
     // multiplier for system equations
     for (i = 0; i < nf; i++)
@@ -1012,12 +1015,13 @@ void Hqp_Docp::update(const VECP y, const VECP z)
     sp_extract_mat(_qp->Q, kxu+nx, kxu+nx, Luu);
 
     update_stage(_k0+k, xk, uk,
-		 fk, _f0[k], ck,
+		 fk, f0k, ck,
 		 fx, fu, s1, s2, cx, cu,
 		 vf, vc, Lxx, Luu, Lxu);
 
     // value update
 
+    _f0[tn] += f0k;
     v_sub(fk, v_part(_x, kxu+nx+nu, nf, xk), fk);
 
     // break if _f is not finite

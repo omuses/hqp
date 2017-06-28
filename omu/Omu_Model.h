@@ -154,8 +154,8 @@ class OMU_API Omu_Model {
 
  public:
 
-  Omu_Model();		///< constructor
-  ~Omu_Model();		///< destructor
+  Omu_Model(int ncpu = 1); ///< constructor
+  ~Omu_Model();            ///< destructor
 
   /**
    * @name Member access methods (no If prefix)

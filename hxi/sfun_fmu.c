@@ -159,6 +159,7 @@ typedef struct {
   Tcl_Interp 		*interp; /*< used for model description and logging */
 
   char 			*fmuName;
+  char 			*fmuTime;
   char 			*guid;
   char 			*generationTool;
   char 			*resourcesURI;
@@ -478,10 +479,12 @@ static void mdlInitializeSizes(SimStruct *S)
   char *fmuName;
   int doesDirectoryExist;
   int doesDescriptionExist;
+  int doesInstanceExist;
   Hxi_ModelData *m;
   DLHANDLE handle;
   Hxi_SimStruct_init_t *Hxi_SimStruct_init_p;
   int i;
+  char tnStr[10];
 
   /*
    * Get Tcl interpreter
@@ -514,29 +517,54 @@ static void mdlInitializeSizes(SimStruct *S)
   }
 
   /*
-   * Lookup existing model data
+   * Test if XML model description has been parsed before
    */
+  if (!doesDirectoryExist) {
+    doesDescriptionExist = 0;
+  }
+  else if (Tcl_VarEval(interp, "info exists ::fmu::", fmuName, "::attributes",
+                       NULL) != TCL_OK
+           || (objPtr = Tcl_GetObjResult(interp)) == NULL
+           || Tcl_GetBooleanFromObj(interp, objPtr, &doesDescriptionExist) != TCL_OK) {
+    ssSetErrorStatus(S, Tcl_GetStringResult(interp));
+    return;
+  }
+
+  /*
+   * Lookup existing model instance and its mtime
+   */
+  sprintf(tnStr, "%d", ssGetOptions(S));
   if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
-                  "::modelData}", NULL) == TCL_OK) {
+                  "::modelData", tnStr, "}", NULL) == TCL_OK) {
     if (sscanf(Tcl_GetStringResult(interp), "0x%p", &m) != 1) {
       ssSetErrorStatus(S, "can't get previously stored model instance");
       return;
     }
-    doesDescriptionExist = 1;
+    if (m == NULL) {
+      doesInstanceExist = 1; /* Hxi S-function */
+    }
+    else if (Tcl_VarEval(interp, "expr {[file mtime ", ssGetPath(S), "] == ",
+                         m->fmuTime, "}", NULL) != TCL_OK
+             || (objPtr = Tcl_GetObjResult(interp)) == NULL
+             || Tcl_GetBooleanFromObj(interp, objPtr, &doesInstanceExist) != TCL_OK) {
+      ssSetErrorStatus(S, "can't check mtime of FMU");
+      return;
+    }
   }
   else {
     m = NULL;
-    doesDescriptionExist = 0;
+    doesInstanceExist = 0;
   }
 
   /*
    * Release old model instance and extract new binary code
    */
-  if (!doesDirectoryExist || !doesDescriptionExist) {
+  if (!doesDirectoryExist || !doesDescriptionExist || !doesInstanceExist) {
     if (m != NULL) {
       /* free previously allocated model instance */
       if (m->fmu != NULL)
         (*m->fmi2FreeInstance)(m->fmu);
+      free(m->fmuTime);
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
@@ -575,16 +603,18 @@ static void mdlInitializeSizes(SimStruct *S)
         return;
       }
     }
-    /* read model description */
-    if (Tcl_VarEval(interp, "::fmi::readModelDescription {", ssGetPath(S), "}",
-                    NULL) != TCL_OK) {
-      ssSetErrorStatus(S, "can't read model description of FMU");
-      return;
-    }
-    if (strcmp(Tcl_GetStringResult(interp), "2") < 0) {
-      Tcl_ResetResult(interp);
-      ssSetErrorStatus(S, "require FMI version 2.0");
-      return;
+    if (!doesDirectoryExist || !doesDescriptionExist) {
+      /* read model description */
+      if (Tcl_VarEval(interp, "::fmi::readModelDescription {", ssGetPath(S), "}",
+                      NULL) != TCL_OK) {
+        ssSetErrorStatus(S, "can't read model description of FMU");
+        return;
+      }
+      if (strcmp(Tcl_GetStringResult(interp), "2") < 0) {
+        Tcl_ResetResult(interp);
+        ssSetErrorStatus(S, "require FMI version 2.0");
+        return;
+      }
     }
   }
 
@@ -614,7 +644,7 @@ static void mdlInitializeSizes(SimStruct *S)
     if (Hxi_SimStruct_init_p) {
       /* store null pointer to model data */
       if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
-                      "::modelData} 0x00", NULL) != TCL_OK) {
+                      "::modelData", tnStr, "} 0x00", NULL) != TCL_OK) {
         ssSetErrorStatus(S, "can't store model instance");
         return;
       }
@@ -647,10 +677,16 @@ static void mdlInitializeSizes(SimStruct *S)
     /* store pointer to model data for repeated calls */
     sprintf(m->messageStr, "0x%p", m);
     if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
-                    "::modelData} ", m->messageStr, NULL) != TCL_OK) {
+                    "::modelData", tnStr, "} ", m->messageStr, NULL) != TCL_OK) {
       ssSetErrorStatus(S, "can't store model instance");
       return;
     }
+    /* get modification time */
+    if (Tcl_VarEval(interp, "file mtime ", ssGetPath(S), NULL) != TCL_OK) {
+      ssSetErrorStatus(S, "can't get mtime of FMU");
+      return;
+    }
+    m->fmuTime = strdup(Tcl_GetStringResult(interp));
     /* get guid */
     if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
                     "::attributes(guid)}", NULL) != TCL_OK) {

@@ -39,7 +39,7 @@ class HQP_API Hqp_Docp: public Hqp_SqpProgram {
 
  public:
 
-  Hqp_Docp(); 			///< constructor
+  Hqp_Docp(int ncpu = 1); 	///< constructor
   ~Hqp_Docp(); 			///< destructor
 
   void	horizon(int k0, int kf);///< setup
@@ -114,6 +114,11 @@ class HQP_API Hqp_Docp: public Hqp_SqpProgram {
 
   /** number of cpus */
   int ncpu() const {return _ncpu;}
+  void set_ncpu(int val) {
+    if (val < 1 || val > (int)_f0->dim)
+      m_error(E_SIZES, "ncpu must not exceed constructor value");
+    _ncpu = val;
+  }
 
   //@}
 

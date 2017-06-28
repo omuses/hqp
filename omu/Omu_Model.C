@@ -49,7 +49,7 @@
   IF_SET_CB(vartype, Omu_Model, set_##name)
 
 //--------------------------------------------------------------------------
-Omu_Model::Omu_Model()
+Omu_Model::Omu_Model(int ncpu)
 {
   _mdl_name = strdup("SFunction");
   _mdl_path = strdup("");
@@ -60,7 +60,7 @@ Omu_Model::Omu_Model()
   _mdl_nargs = 0;
   _mx_args = NULL;
 
-  _mdl_ncpu = omp_get_max_threads();
+  _mdl_ncpu = ncpu;
   _mdl_logging = If_LogNone;
   _mdl_jac = true;
   _mdl_needs_setup = true;
@@ -305,6 +305,8 @@ void Omu_Model::setup_model(double t0)
     ssSetMinorTimeStep(_SS[tn], 0);
 
     // initialize model
+    if (_mdl_is_fmu)
+      ssSetOptions(_SS[tn], tn);
     SMETHOD_CALL(mdlInitializeSizes, _SS[tn]);
     // exploit model description available for FMU
     if (_mdl_is_fmu) {
@@ -476,10 +478,12 @@ void Omu_Model::setup_jac()
   int offs, idx;
   int ir_offset = 0;
   SimStruct *S = _SS[0];
+  int m = _mdl_nx + _mdl_ny; // number of rows
+  int n = _mdl_nx + _mdl_nu; // number of cols
 
   // allocate storage for Jacobian structure
   _mdl_jac_jc = iv_resize(_mdl_jac_jc, ssGetJacobianNzMax(S));
-  _mdl_jac_ir = iv_resize(_mdl_jac_ir, _mdl_nx + _mdl_ny + 1);
+  _mdl_jac_ir = iv_resize(_mdl_jac_ir, m + 1);
 
   // setup sparse structure of Jacobian for active variables
   _mdl_jac_ir[ir_offset] = 0;
@@ -505,8 +509,7 @@ void Omu_Model::setup_jac()
   //
   int_T *ir = ssGetJacobianIr(S);
   int_T *jc = ssGetJacobianJc(S);
-  int i, m = _mdl_nx + _mdl_ny;
-  int j, jdx, n = _mdl_nx + _mdl_nu;
+  int i, j, jdx;
 
   // count row elements per column
   memset(jc, 0, (n + 1)*sizeof(int_T));
@@ -538,6 +541,12 @@ void Omu_Model::setup_jac()
       ir[jc[j + 1]] = i;
       jc[j + 1] ++;
     }
+  }
+
+  // copy Jacobian structure to all instances
+  for (int tn = 1; tn < _mdl_ncpu; tn++) {
+    memcpy(ssGetJacobianIr(_SS[tn]), ir, ssGetJacobianNzMax(S) * sizeof(int_T));
+    memcpy(ssGetJacobianJc(_SS[tn]), jc, (n + 1) * sizeof(int_T));
   }
 }
 
