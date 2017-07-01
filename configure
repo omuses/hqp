@@ -748,8 +748,8 @@ ac_user_opts='
 enable_option_checking
 with_tcl
 enable_symbols
-enable_omp
 enable_shared
+enable_omp
 enable_mex
 with_matlab
 with_matlab_libs
@@ -1382,8 +1382,8 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-symbols        enable symbols for debugging
-  --enable-omp            enable OpenMP
   --disable-shared        disable dynamic loading of HQP/Omuses
+  --enable-omp            enable OpenMP
   --enable-mex            include MEX S-function interface with Omuses
   --enable-adolc          enable ADOL-C for automatic differentiation
   --enable-fortran        include DASPK and RKsuite with Omuses
@@ -3522,29 +3522,6 @@ $as_echo "${gcc_bug}" >&6; }
 fi
 
 # -----------------------------------------------------------------------
-# 	OpenMP
-# -----------------------------------------------------------------------
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-omp" >&5
-$as_echo_n "checking --enable-omp... " >&6; }
-# Check whether --enable-omp was given.
-if test "${enable_omp+set}" = set; then :
-  enableval=$enable_omp; hqp_omp=$enableval
-else
-  hqp_omp=no
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $hqp_omp" >&5
-$as_echo "$hqp_omp" >&6; }
-
-if test "$hqp_omp" = yes; then
-  HQP_DEFS="$HQP_DEFS -DHQP_WITH_OMP -fopenmp"
-  HQP_MACH_OBJS="$HQP_MACH_OBJS -fopenmp"
-  OMU_DEFS="$OMU_DEFS -DHQP_WITH_OMP -fopenmp"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS -fopenmp"
-fi
-
-# -----------------------------------------------------------------------
 # 	Check for includes
 # -----------------------------------------------------------------------
 
@@ -3601,6 +3578,10 @@ else
   TCL_LIBS="${LDLIB_PREFIX}tcl${TCL_VERSION}${LDLIB_SUFFIX}"
 fi
 TCL_STUB_LIB="${LDLIB_PREFIX}tclstub${TCL_VERSION}${LDLIB_SUFFIX}"
+
+# default OpenMP flags
+OMP_CFLAG="-fopenmp"
+OMP_LFLAG="-fopenmp"
 
 # Extract the first word of "uname", so it can be a program name with args.
 set dummy uname; ac_word=$2
@@ -4466,6 +4447,8 @@ fi
       fi
       SHLD="$SHLD -out:"
       LD="$LD -out:"
+      OMP_CFLAG="-openmp"
+      OMP_LFLAG=""
       ;;
   esac
 fi
@@ -4661,6 +4644,29 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
+
+# -----------------------------------------------------------------------
+# 	OpenMP
+# -----------------------------------------------------------------------
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-omp" >&5
+$as_echo_n "checking --enable-omp... " >&6; }
+# Check whether --enable-omp was given.
+if test "${enable_omp+set}" = set; then :
+  enableval=$enable_omp; hqp_omp=$enableval
+else
+  hqp_omp=no
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $hqp_omp" >&5
+$as_echo "$hqp_omp" >&6; }
+
+if test "$hqp_omp" = yes; then
+  HQP_DEFS="$HQP_DEFS -DHQP_WITH_OMP $OMP_CFLAG"
+  HQP_MACH_OBJS="$HQP_MACH_OBJS $OMP_LFLAG"
+  OMU_DEFS="$OMU_DEFS -DHQP_WITH_OMP $OMP_CFLAG"
+  OMU_MACH_OBJS="$OMU_MACH_OBJS $OMP_LFLAG"
+fi
 
 # -----------------------------------------------------------------------
 # 	Configure support for MEX
