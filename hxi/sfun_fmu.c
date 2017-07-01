@@ -159,7 +159,7 @@ typedef struct {
   Tcl_Interp 		*interp; /*< used for model description and logging */
 
   char 			*fmuName;
-  char 			*fmuTime;
+  long 			fmuTime;
   char 			*guid;
   char 			*generationTool;
   char 			*resourcesURI;
@@ -477,6 +477,7 @@ static void mdlInitializeSizes(SimStruct *S)
   Tcl_Interp *interp;
   Tcl_Obj *objPtr;
   char *fmuName;
+  long fmuTime;
   int doesDirectoryExist;
   int doesDescriptionExist;
   int doesInstanceExist;
@@ -484,7 +485,7 @@ static void mdlInitializeSizes(SimStruct *S)
   DLHANDLE handle;
   Hxi_SimStruct_init_t *Hxi_SimStruct_init_p;
   int i;
-  char tnStr[10];
+  char tnStr[20];
 
   /*
    * Get Tcl interpreter
@@ -533,6 +534,9 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Lookup existing model instance and its mtime
    */
+  m = NULL;
+  doesInstanceExist = 0;
+  fmuTime = 0;
   sprintf(tnStr, "%d", ssGetOptions(S));
   if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
                   "::modelData", tnStr, "}", NULL) == TCL_OK) {
@@ -543,17 +547,16 @@ static void mdlInitializeSizes(SimStruct *S)
     if (m == NULL) {
       doesInstanceExist = 1; /* Hxi S-function */
     }
-    else if (Tcl_VarEval(interp, "expr {[file mtime ", ssGetPath(S), "] == ",
-                         m->fmuTime, "}", NULL) != TCL_OK
-             || (objPtr = Tcl_GetObjResult(interp)) == NULL
-             || Tcl_GetBooleanFromObj(interp, objPtr, &doesInstanceExist) != TCL_OK) {
-      ssSetErrorStatus(S, "can't check mtime of FMU");
-      return;
+    else {
+      /* get modification time */
+      if (Tcl_VarEval(interp, "file mtime {", ssGetPath(S), "}" , NULL) != TCL_OK
+          || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
+          || Tcl_GetLongFromObj(m->interp, objPtr, &fmuTime) != TCL_OK) {
+        ssSetErrorStatus(S, "can't get mtime of FMU");
+        return;
+      }
+      doesInstanceExist = (fmuTime == m->fmuTime);
     }
-  }
-  else {
-    m = NULL;
-    doesInstanceExist = 0;
   }
 
   /*
@@ -564,7 +567,6 @@ static void mdlInitializeSizes(SimStruct *S)
       /* free previously allocated model instance */
       if (m->fmu != NULL)
         (*m->fmi2FreeInstance)(m->fmu);
-      free(m->fmuTime);
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
@@ -672,6 +674,7 @@ static void mdlInitializeSizes(SimStruct *S)
     m = (Hxi_ModelData *)calloc(1, sizeof(Hxi_ModelData));
     m->interp = interp;
     m->fmuName = fmuName;
+    m->fmuTime = fmuTime;
     m->messageStr = malloc(256);
     m->messageStrLen = 256;
     /* store pointer to model data for repeated calls */
@@ -681,12 +684,6 @@ static void mdlInitializeSizes(SimStruct *S)
       ssSetErrorStatus(S, "can't store model instance");
       return;
     }
-    /* get modification time */
-    if (Tcl_VarEval(interp, "file mtime ", ssGetPath(S), NULL) != TCL_OK) {
-      ssSetErrorStatus(S, "can't get mtime of FMU");
-      return;
-    }
-    m->fmuTime = strdup(Tcl_GetStringResult(interp));
     /* get guid */
     if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
                     "::attributes(guid)}", NULL) != TCL_OK) {
@@ -906,7 +903,7 @@ static void mdlInitializeSizes(SimStruct *S)
   /* No long jumps */
   ssSetOptions(S, SS_OPTION_EXCEPTION_FREE_CODE);
   /* Setup Jacobian */
-  if (Tcl_VarEval(m->interp, "set ::fmu::", m->fmuName,
+  if (Tcl_VarEval(m->interp, "::set ::fmu::", m->fmuName,
 		  "::numberOfDependencies", NULL) != TCL_OK
       || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
       || Tcl_GetIntFromObj(m->interp, objPtr, &i) != TCL_OK

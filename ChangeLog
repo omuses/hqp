@@ -1,3 +1,13 @@
+2017-07-01    <rfranke>
+
+	* configure, configure.in:
+	  - add configuration of OpenMP flag for cl
+	* hxi/sfun_fmu.c:
+	  - treat FMU paths with whitespaces and special characters
+	* omu/Prg_DOCP.C, omu/Prg_DynamicOpt.C:
+	  - fix evaluation of Jacobian for soft constraints without weight
+	  - always use states for optimized inputs
+
 2017-06-28    <rfranke>
 
 	* omu/Prg_DOCP.[hC], omu/Omu_Init.C, omu/Omu_Model.[hC], hxi/sfun_fmu.c:

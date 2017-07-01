@@ -1302,10 +1302,12 @@ void Prg_DynamicOpt::update_grds(int kk,
 	  if (_mdl_y_soft.active[mdl_y_idx] == 1) {
 	    // need to loop to obtain isc considering active outputs
 	    for (; iscdx < ir[rdx]; iscdx++) {
-	      if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
-		isc += spsk;
-	      if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
-		isc += spsk;
+	      if (_mdl_y_soft.active[iscdx - _mdl_nx] == 1) {
+		if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+		  isc += spsk;
+		if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+		  isc += spsk;
+	      }
 	    }
 	    if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
 	      c.Jx[isc + kk%spsk][j] = pr[rdx] /
@@ -1344,10 +1346,12 @@ void Prg_DynamicOpt::update_grds(int kk,
 	  if (kk == _KK && _mdl_yf_soft.active[mdl_y_idx] == 1) {
 	    // need to loop to obtain iscf considering active outputs
 	    for (; iscfdx < ir[rdx]; iscfdx++) {
-	      if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
-		iscf++;
-	      if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
-		iscf++;
+	      if (_mdl_yf_soft.active[iscfdx - _mdl_nx] == 1) {
+		if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
+		  iscf++;
+		if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
+		  iscf++;
+	      }
 	    }
 	    if (_mdl_yf_soft.min[mdl_y_idx] > -Inf) {
 	      c.Jx[iscf][j] = pr[rdx] /
@@ -1412,10 +1416,12 @@ void Prg_DynamicOpt::update_grds(int kk,
 	    if (_mdl_y_soft.active[mdl_y_idx] == 1) {
 	      // need to loop to obtain isc considering active outputs
 	      for (; iscdx < ir[rdx]; iscdx++) {
-		if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
-		  isc += spsk;
-		if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
-		  isc += spsk;
+		if (_mdl_y_soft.active[iscdx - _mdl_nx] == 1) {
+		  if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+		    isc += spsk;
+		  if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+		    isc += spsk;
+		}
 	      }
 	      if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
 		c.Jx[isc + kk%spsk][j] = pr[rdx] /
@@ -1454,10 +1460,12 @@ void Prg_DynamicOpt::update_grds(int kk,
 	    if (kk == _KK && _mdl_yf_soft.active[mdl_y_idx] == 1) {
 	      // need to loop to obtain iscf considering active outputs
 	      for (; iscfdx < ir[rdx]; iscfdx++) {
-		if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
-		  iscf++;
-		if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
-		  iscf++;
+		if (_mdl_yf_soft.active[iscfdx - _mdl_nx] == 1) {
+		  if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
+		    iscf++;
+		  if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
+		    iscf++;
+		}
 	      }
 	      if (_mdl_yf_soft.min[mdl_y_idx] > -Inf) {
 		c.Jx[iscf][j] = pr[rdx] /

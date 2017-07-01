@@ -358,12 +358,14 @@ void Prg_DOCP::setup_vars(int k,
         _t_scale_i = _nu;
       if (_mdl_u.active[idx]) {
 	_nu++;
-        if (_mdl_der_u.min[idx] > -Inf || _mdl_der_u.max[idx] < Inf ||
+        if (true || _mdl_der_u.min[idx] > -Inf || _mdl_der_u.max[idx] < Inf ||
             _mdl_der_u.weight1[idx] != 0.0 || _mdl_der_u.weight2[idx] != 0.0 ||
             (_mdl_der_u_soft.min[idx] > -Inf || _mdl_der_u_soft.max[idx] < Inf) 
             && (_mdl_der_u_soft.weight1[idx] != 0.0
                 || _mdl_der_u_soft.weight2[idx] != 0.0) ||
             _mdl_u_periodic[idx]) {
+          // introduce additional state for input as derivative needed
+          // Note: always introduce state for now as this appears more reliable
           _mdl_der_u.active[idx] = 1;
           _ndu++;
         }
@@ -752,7 +754,7 @@ void Prg_DOCP::setup_struct(int k, const VECP x, const VECP u,
     }
 
     real_T *pr = ssGetJacobianPr(S);
-    int i_end = ssGetJacobianJc(S)[_mdl_nx + _mdl_ny];
+    int i_end = ssGetJacobianJc(S)[_mdl_nx + _mdl_nu];
     for (i = 0; i < i_end; i++)
       *pr++ = 1.0;
     fetch_jac(S, k, 1.0, x, u, fx, fu, cx, cu);
@@ -1472,10 +1474,12 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
         if (_mdl_y_soft.active[mdl_y_idx] == 1) {
           // need to loop to obtain isc considering active outputs
           for (; iscdx < ir[rdx]; iscdx++) {
-            if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
-              isc += spsk;
-            if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
-              isc += spsk;
+            if (_mdl_y_soft.active[iscdx - _mdl_nx] == 1) {
+              if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+                isc += spsk;
+              if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+                isc += spsk;
+            }
           }
           if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
             cx[isc + k%spsk][j] = pr[rdx] /
@@ -1488,7 +1492,7 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
           }
           if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
             isc -= spsk;
-          }
+	  }
         }
         // constraints (used model outputs) at initial time
         if (k == 0 && _mdl_y0.active[mdl_y_idx]) {
@@ -1514,10 +1518,12 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
         if (k == _K && _mdl_yf_soft.active[mdl_y_idx] == 1) {
           // need to loop to obtain iscf considering active outputs
           for (; iscfdx < ir[rdx]; iscfdx++) {
-            if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
-              iscf++;
-            if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
-              iscf++;
+            if (_mdl_yf_soft.active[iscfdx - _mdl_nx] == 1) {
+              if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
+                iscf++;
+              if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
+                iscf++;
+            }
           }
           if (_mdl_yf_soft.min[mdl_y_idx] > -Inf) {
             cx[iscf][j] = pr[rdx] /
@@ -1564,10 +1570,12 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
           if (_mdl_y_soft.active[mdl_y_idx] == 1) {
             // need to loop to obtain isc considering active outputs
             for (; iscdx < ir[rdx]; iscdx++) {
-              if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
-                isc += spsk;
-              if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
-                isc += spsk;
+              if (_mdl_y_soft.active[iscdx - _mdl_nx] == 1) {
+                if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+                  isc += spsk;
+                if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+                  isc += spsk;
+              }
             }
             if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
               cx[isc + k%spsk][j] = pr[rdx] /
@@ -1606,10 +1614,12 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
           if (k == _K && _mdl_yf_soft.active[mdl_y_idx] == 1) {
             // need to loop to obtain iscf considering active outputs
             for (; iscfdx < ir[rdx]; iscfdx++) {
-              if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
-                iscf++;
-              if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
-                iscf++;
+              if (_mdl_yf_soft.active[iscfdx - _mdl_nx] == 1) {
+                if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
+                  iscf++;
+                if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
+                  iscf++;
+              }
             }
             if (_mdl_yf_soft.min[mdl_y_idx] > -Inf) {
               cx[iscf][j] = pr[rdx] /
@@ -1654,10 +1664,12 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
           if (_mdl_y_soft.active[mdl_y_idx] == 1) {
             // need to loop to obtain isc considering active outputs
             for (; iscdx < ir[rdx]; iscdx++) {
-              if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
-                isc += spsk;
-              if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
-                isc += spsk;
+              if (_mdl_y_soft.active[iscdx - _mdl_nx] == 1) {
+                if (_mdl_y_soft.min[iscdx - _mdl_nx] > -Inf)
+                  isc += spsk;
+                if (_mdl_y_soft.max[iscdx - _mdl_nx] < Inf)
+                  isc += spsk;
+              }
             }
             if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
               cu[isc + k%spsk][ju] = pr[rdx] /
@@ -1696,10 +1708,12 @@ void Prg_DOCP::fetch_jac(SimStruct *S,
           if (k == _K && _mdl_yf_soft.active[mdl_y_idx] == 1) {
             // need to loop to obtain iscf considering active outputs
             for (; iscfdx < ir[rdx]; iscfdx++) {
-              if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
-                iscf++;
-              if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
-                iscf++;
+              if (_mdl_yf_soft.active[iscfdx - _mdl_nx] == 1) {
+                if (_mdl_yf_soft.min[iscfdx - _mdl_nx] > -Inf)
+                  iscf++;
+                if (_mdl_yf_soft.max[iscfdx - _mdl_nx] < Inf)
+                  iscf++;
+              }
             }
             if (_mdl_yf_soft.min[mdl_y_idx] > -Inf) {
               cu[iscf][ju] = pr[rdx] /
