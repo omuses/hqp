@@ -802,11 +802,12 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
   double help;
   int tn = omp_get_thread_num();
   SimStruct *S = _SS[tn];
+  bool with_lambda = (k == 0 && _c_lambda != VNULL);
 
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DOCP::update_vals at k = %d, tn = %d", k, tn);
 
-  if (_c_lambda != VNULL)
+  if (with_lambda)
     v_zero(_mdl_y_lambda);
 
   // initialize model inputs
@@ -942,7 +943,7 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
     // assign used outputs to constraints
     if (_mdl_y.active[idx]) {
       c[i + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx];
-      if (_c_lambda != VNULL)
+      if (with_lambda)
         _mdl_y_lambda[idx] = absmax(_c_lambda[i + k%spsk], _mdl_y_lambda[idx]);
       i += spsk;
     }
@@ -964,13 +965,13 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
 
       if (_mdl_y_soft.min[idx] > -Inf) {
 	c[spsk*_nc + isc + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
-	if (_c_lambda != VNULL)
+	if (with_lambda)
 	  _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*_nc + isc + k%spsk], _mdl_y_lambda[idx]);
 	isc += spsk;
       }
       if (_mdl_y_soft.max[idx] < Inf) {
 	c[spsk*_nc + isc + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] - help;
-	if (_c_lambda != VNULL)
+	if (with_lambda)
 	  _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*_nc + isc + k%spsk], _mdl_y_lambda[idx]);
 	isc += spsk;
       }
@@ -986,7 +987,7 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
       // assign used outputs to constraints
       if (_mdl_y0.active[idx]) {
 	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
-	if (_c_lambda != VNULL)
+	if (with_lambda)
 	  _mdl_y_lambda[idx] = absmax(_c_lambda[i], _mdl_y_lambda[idx]);
 	i++;
       }
@@ -1005,7 +1006,7 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
       // assign used outputs to constraints
       if (_mdl_yf.active[idx]) {
 	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
-	if (_c_lambda != VNULL)
+	if (with_lambda)
 	  _mdl_y_lambda[idx] = absmax(_c_lambda[i], _mdl_y_lambda[idx]);
 	i++;
       }
@@ -1024,13 +1025,13 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
 
         if (_mdl_yf_soft.min[idx] > -Inf) {
           c[spsk*(_nc+_nsc) + _ncf + iscf] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
-          if (_c_lambda != VNULL)
+          if (with_lambda)
             _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*(_nc+_nsc) + _ncf + iscf], _mdl_y_lambda[idx]);
           iscf++;
         }
         if (_mdl_yf_soft.max[idx] < Inf) {
           c[spsk*(_nc+_nsc) + _ncf + iscf] = mdl_y[idx] / _mdl_y_nominal[idx] - help;
-          if (_c_lambda != VNULL)
+          if (with_lambda)
             _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*(_nc+_nsc) + _ncf + iscf], _mdl_y_lambda[idx]);
           iscf++;
         }
@@ -1166,7 +1167,8 @@ void Prg_DOCP::update_stage(int k, const VECP x, const VECP u,
     if (k == 0)
       _c_lambda = rc;
     update_vals(k, x, u, f, f0, c);
-    _c_lambda = VNULL;
+    if (k == 0)
+      _c_lambda = VNULL;
     analyticJac = 1;
 
     // restore states after mdlUpdate has been processed

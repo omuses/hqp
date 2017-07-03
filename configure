@@ -4662,6 +4662,7 @@ fi
 $as_echo "$hqp_omp" >&6; }
 
 if test "$hqp_omp" = yes; then
+  IF_DEFS="$IF_DEFS $OMP_CFLAG"
   HQP_DEFS="$HQP_DEFS -DHQP_WITH_OMP $OMP_CFLAG"
   HQP_MACH_OBJS="$HQP_MACH_OBJS $OMP_LFLAG"
   OMU_DEFS="$OMU_DEFS -DHQP_WITH_OMP $OMP_CFLAG"

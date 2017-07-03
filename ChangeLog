@@ -1,3 +1,10 @@
+2017-07-03    <rfranke>
+
+	* iftcl/If.C, hxi/sfun_fmu.c, omu/Prg_DOCP.C, configure, configure.in:
+	  - restrict logging during parallel execution to master thread
+	* omu/Prg_DOCP.C:
+	  - obtain mdl_y_lambda only at initial time point
+
 2017-07-01    <rfranke>
 
 	* configure, configure.in:

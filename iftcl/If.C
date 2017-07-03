@@ -37,21 +37,24 @@ extern "C" void If_Log(const char *category, const char *message, ...)
   va_list args;
   int n;
 
-  va_start(args, message);
-  if (logMessage == NULL)
-    logMessage = (char *)malloc(logMessageLength);
-  n = vsnprintf(logMessage, logMessageLength, message, args);
-  /* enlarge logMessage up to max 16 KB */
-  if (n >= logMessageLength && n < 16*1024) {
-    free(logMessage);
-    logMessage = (char *)malloc(n+1);
-    logMessageLength = n+1;
-    vsnprintf(logMessage, logMessageLength, message, args);
-  }
-  va_end(args);
+  #pragma omp master
+  {
+    va_start(args, message);
+    if (logMessage == NULL)
+      logMessage = (char *)malloc(logMessageLength);
+    n = vsnprintf(logMessage, logMessageLength, message, args);
+    /* enlarge logMessage up to max 16 KB */
+    if (n >= logMessageLength && n < 16*1024) {
+      free(logMessage);
+      logMessage = (char *)malloc(n+1);
+      logMessageLength = n+1;
+      vsnprintf(logMessage, logMessageLength, message, args);
+    }
+    va_end(args);
 
-  Tcl_VarEval(theInterp, "puts {", category, ": ", logMessage, "}", NULL);
-  Tcl_Eval(theInterp, "update idletasks");
+    Tcl_VarEval(theInterp, "puts {", category, ": ", logMessage, "}", NULL);
+    Tcl_Eval(theInterp, "update idletasks");
+  }
 }
 
 //--------------------------------------------------------------------------

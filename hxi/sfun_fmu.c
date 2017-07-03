@@ -165,6 +165,7 @@ typedef struct {
   char 			*resourcesURI;
   char 			*messageStr;
   int 			messageStrLen;
+  int 			logging;
 
   int 			np;
   int 			nxd;
@@ -191,7 +192,6 @@ typedef struct {
   DLHANDLE 		handle;
   fmi2Component 	fmu;
   fmi2CallbackFunctions fmi2CallbackFunctions;
-  fmi2Boolean 		debugLogging;
   fmi2Boolean 		initPending;
   /**< delay initialization until inputs are available */
   fmi2Boolean 		nextEventTimeDefined;
@@ -944,7 +944,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 static void mdlInitializeConditions(SimStruct *S)
 {
   Hxi_ModelData *m;
-  int logging;
+  int ret, logging;
 
   GET_MODELDATA(S, m);
 
@@ -965,34 +965,41 @@ static void mdlInitializeConditions(SimStruct *S)
       ssSetErrorStatus(S, "can't instantiate FMU");
       return;
     }
-    m->debugLogging = fmi2False;
+    m->logging = 0;
   }
 
   /*
    * Initialize logging
    * ToDo: should check categories with modelDescription.xml
    */
-  if (If_GetInt("mdl_logging", &logging) != IF_OK) {
+  logging = 0;
+  ret = IF_OK;
+  #pragma omp master
+  {
+    ret = If_GetInt("mdl_logging", &logging);
+  }
+  if (ret != IF_OK) {
     ssSetErrorStatus(S, If_ResultString());
     return;
   }
-  if (logging > 0 && m->debugLogging == fmi2False) {
-    if (logging > ARRAY_SIZE(logOffsets) - 1)
-      logging = ARRAY_SIZE(logOffsets) - 1;
-    if ((*m->fmi2SetDebugLogging)(m->fmu, fmi2True,
-         ARRAY_SIZE(logCategories) - logOffsets[logging],
-         &logCategories[logOffsets[logging]]) > fmi2Warning) {
-      ssSetErrorStatus(S, "can't set debug logging of FMU");
-      return;
+  if (logging > ARRAY_SIZE(logOffsets) - 1)
+    logging = ARRAY_SIZE(logOffsets) - 1;
+  if (m->logging != logging) {
+    if (logging > 0) {
+      if ((*m->fmi2SetDebugLogging)(m->fmu, fmi2True,
+           ARRAY_SIZE(logCategories) - logOffsets[logging],
+           &logCategories[logOffsets[logging]]) > fmi2Warning) {
+        ssSetErrorStatus(S, "can't set debug logging of FMU");
+        return;
+      }
     }
-    m->debugLogging = fmi2True;
-  }
-  else if (logging <= 0 && m->debugLogging == fmi2True) {
-    if ((*m->fmi2SetDebugLogging)(m->fmu, fmi2False, 0, NULL) > fmi2Warning) {
-      ssSetErrorStatus(S, "can't reset debug logging of FMU");
-      return;
+    else {
+      if ((*m->fmi2SetDebugLogging)(m->fmu, fmi2False, 0, NULL) > fmi2Warning) {
+        ssSetErrorStatus(S, "can't reset debug logging of FMU");
+        return;
+      }
     }
-    m->debugLogging = fmi2False;
+    m->logging = logging;
   }
 
   m->initPending = fmi2True; /* wait until inputs are available */
