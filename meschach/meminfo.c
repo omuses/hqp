@@ -312,8 +312,8 @@ int old_size,new_size;
 {
    MEM_CONNECT *mlist;
 
-if (list != 0)
-  fprintf(stderr, "list is != 0\n");
+   if (list != 0)
+     fprintf(stderr, "list is != 0\n");
    
    if ( list < 0 || list >= MEM_CONNECT_MAX_LISTS )
      return;
@@ -326,6 +326,8 @@ if (list != 0)
    if ( old_size < 0 || new_size < 0 )
      m_error(E_NEG,"mem_bytes_list");
 
+ #pragma omp critical
+ {
    mlist->info_sum[type].bytes += new_size - old_size;
    
    /* check if the number of bytes is non-negative */
@@ -344,6 +346,7 @@ if (list != 0)
 	 }
       }
    }
+ }
 }
 
 
@@ -369,6 +372,8 @@ int type,list,num;
        || mlist->free_funcs[type] == NULL )
      return;
 
+ #pragma omp critical
+ {
    mlist->info_sum[type].numvar += num;
    
    /* check if the number of variables is non-negative */
@@ -386,5 +391,6 @@ int type,list,num;
 	 }
       }
    }
+ }
 }
 

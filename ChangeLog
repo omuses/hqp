@@ -1,3 +1,10 @@
+2017-07-15    <rfranke>
+
+	* meschach/meminfo.c, meschach/version.c, configure.in, configure:
+	  - add pragma omp critical to memory supervision
+	* hxi/sfun_fmu.c:
+	  - prevent call to clock functions in continuous FMUs
+
 2017-07-03    <rfranke>
 
 	* iftcl/If.C, hxi/sfun_fmu.c, omu/Prg_DOCP.C, configure, configure.in:

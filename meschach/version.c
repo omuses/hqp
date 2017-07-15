@@ -131,6 +131,8 @@ void	m_version()
 	printf("\t(various): handle unused result of fscanf(), fread()\n");
 	/* rf, 2016-05-28 */
 	printf("\tmatrix.h, submat.c: make get_row/col macros, similar to set_row/col\n");
+	/* rf, 2017-07-15 */
+	printf("\tmeminfo.c: add pragma omp critical to memory supervision\n");
 	printf("\n");
 }
 

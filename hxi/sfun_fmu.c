@@ -1225,7 +1225,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         return;
       }
     }
-    if (ssIsSampleHit(S, 1, tid) || m->nxc == 0)
+    if (m->nc > 0 && ssIsSampleHit(S, 1, tid) || m->nxc == 0)
       /* enter event mode in case of sample hit */
       /* always enter event mode if there are no continuous states */
       enterEventMode = fmi2True;
@@ -1235,7 +1235,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
   /* process events */
   if (enterEventMode || timeEvent || stateEvent) {
-    if (ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
+    if (m->nc > 0 && ssIsSampleHit(S, 1, tid) && m->fmi2SetClock != NULL) {
       /* set clock interval */
       if (m->fmi2SetInterval != NULL) {
         for (i = 0; i < m->nc; i++)
