@@ -793,24 +793,22 @@ static void mdlInitializeSizes(SimStruct *S)
     /*
      * Initialize clocks
      */
-    if (m->nxd > 0) {
-      if (Tcl_VarEval(m->interp, "llength ${::fmu::", m->fmuName,
-                      "::clockIntervals}", NULL) != TCL_OK
-          || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
-          || Tcl_GetIntFromObj(m->interp, objPtr, &m->nc) != TCL_OK) {
-        ssSetErrorStatus(S, "can't get number of clocks");
-        return;
-      }
-      if (m->nc > 0) {
-        m->cidx = (fmi2Integer *)calloc(m->nc, sizeof(fmi2Integer));
-        m->ctck = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
-        m->csub = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
-        m->civl = (fmi2Real *)calloc(m->nc, sizeof(fmi2Real));
-        for (i = 0; i < m->nc; i++) {
-          m->cidx[i] = i + 1;
-          m->ctck[i] = fmi2True;
-          m->csub[i] = fmi2False;
-        }
+    if (Tcl_VarEval(m->interp, "llength ${::fmu::", m->fmuName,
+                    "::clockIntervals}", NULL) != TCL_OK
+        || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
+        || Tcl_GetIntFromObj(m->interp, objPtr, &m->nc) != TCL_OK) {
+      ssSetErrorStatus(S, "can't get number of clocks");
+      return;
+    }
+    if (m->nc > 0) {
+      m->cidx = (fmi2Integer *)calloc(m->nc, sizeof(fmi2Integer));
+      m->ctck = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
+      m->csub = (fmi2Boolean *)calloc(m->nc, sizeof(fmi2Boolean));
+      m->civl = (fmi2Real *)calloc(m->nc, sizeof(fmi2Real));
+      for (i = 0; i < m->nc; i++) {
+        m->cidx[i] = i + 1;
+        m->ctck[i] = fmi2True;
+        m->csub[i] = fmi2False;
       }
     }
 
