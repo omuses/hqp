@@ -68,11 +68,15 @@ int If_Element::tclCmd(ClientData cld, Tcl_Interp *interp,
   int ret = TCL_ERROR;
 
   m_catchall(// try
+#ifdef DEBUG
 	     // use tractcatch to get error message printed to stderr
 	     m_tracecatch(// try
+#endif
 			  ret = element->invoke(interp, objc, objv),
+#ifdef DEBUG
 			  // catch and throw
 			  m_error_description()),
+#endif
 	     // catch
 	     Tcl_AppendResult(interp, "error invoking ",
 			      element->ifName(), ": ", m_error_description(),

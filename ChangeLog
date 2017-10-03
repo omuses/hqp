@@ -1,5 +1,8 @@
 2017-10-03    <rfranke>
 
+	* iftcl/If_Element.C:
+	  - trace exception details only if compiled with DEBUG flag
+
 	* hxi/sfun_fmu.c, hxi/Hxi_SimStruct.C, omu/Prg_DynamicOpt.C:
 	  - treat missing FMI Jacobian
 
