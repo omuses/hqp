@@ -905,7 +905,7 @@ static void mdlInitializeSizes(SimStruct *S)
 		  "::numberOfDependencies", NULL) != TCL_OK
       || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
       || Tcl_GetIntFromObj(m->interp, objPtr, &i) != TCL_OK
-      || i <= 0) {
+      || i < 0) {
     ssSetErrorStatus(S, "can't get numberOfDependencies of FMU");
     return;
   }

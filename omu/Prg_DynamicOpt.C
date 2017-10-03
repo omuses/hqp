@@ -1991,7 +1991,7 @@ void Prg_DynamicOpt::continuous_grds(int kk, double t,
     If_Log("Info", "Prg_DynamicOpt::continuous_grds at kk = %d, t = %.3f", kk, t);
 
   SimStruct *S = _SS[omp_get_thread_num()];
-  if (ssGetmdlJacobian(S) == NULL || _t_active) {
+  if (!_mdl_jac || ssGetmdlJacobian(S) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
     // call predefined continuous_grds for numerical differentiation
     Omu_Program::continuous_grds(kk, t, x, u, dx, F, Omu_Dependent::WRT_x);

@@ -461,12 +461,12 @@ public:
   int_T setJacobianNzMax(int_T nnz) {
     if (nnz < 0) {
       // nnz == -1 allocates space for a full Jacobian
-      nnz = (_xc.size() + _xd.size() + _y.size())
-        * (_xc.size() + _dxc.size() + _u.size());
+      nnz = (_dxc.size() + _xd.size() + _y.size())
+        * (_xc.size() + _xd.size() + _u.size());
     }
     _jacobianPr.resize(nnz, _dummy);
     _jacobianIr.resize(nnz);
-    _jacobianJc.resize(nnz);
+    _jacobianJc.resize(_xc.size() + _xd.size() + _u.size() + 1);
     return _jacobianPr.size();
   }
   /** Get number of non-zero elements in Jacobian. */
