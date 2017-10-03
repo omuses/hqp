@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 2006    Hartmut Linke
+    Copyright (C) 2006--2017   Hartmut Linke and Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -32,9 +32,6 @@
 #include <assert.h>
 #include <math.h>
 #include <time.h>
-
-//#include <omp.h> // Note: need automatic configuration
-//extern "C" int omp_get_max_threads();
 
 extern "C" {
 #include <meschach/sparse2.h>
@@ -69,18 +66,16 @@ Hqp_IpPardiso::Hqp_IpPardiso()
   _pardiso_libname = strdup("mkl_core"); // MKL 10.2.5.035
   _pardiso_funcname = strdup("mkl_pds_pardiso"); // MKL 10.2.5.035
   _pardiso_fp = NULL;
-  _nparallel = 2; // Note: could use omp_get_max_threads();
 
   _reinit = -1;
 
-  _iv = iv_resize(iv_get(1),0);
-  _jv = iv_resize(iv_get(1),0);
+  _iv = NULL;
+  _jv = NULL;
   _v = v_resize(v_get(1),0);
   _v_raw = v_resize(v_get(1),0);
 
   _ifList.append(new If_Int("mat_sbw", &_sbw));
   _ifList.append(new If_Real("mat_tol", &_tol));
-  _ifList.append(new If_Int(GET_SET_CB(int, "mat_", nparallel)));
   _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_libname)));
   _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_funcname)));
 }
@@ -98,8 +93,10 @@ Hqp_IpPardiso::~Hqp_IpPardiso()
 
   v_free(_v);
   v_free(_v_raw);
-  iv_free(_iv);
-  iv_free(_jv);
+  if (_iv != NULL)
+    free(_iv);
+  if (_jv != NULL)
+    free(_jv);
 
   free(_pardiso_libname);
   free(_pardiso_funcname);
@@ -111,13 +108,13 @@ void Hqp_IpPardiso::free_pardiso()
 
   //  Termination and release of memory of Pardiso solver
   double ddum;
-  int idum;
+  long idum;
 
   _phase = -1;        // Release internal memory
 
   if (_pardiso_fp) {
     (*_pardiso_fp) (_pardiso_pt, &_maxfct, &_mnum, &_mtype, &_phase,
-                    &_dim, &ddum, _iv->ive, _jv->ive, &idum, &_nrhs,
+                    &_dim, &ddum, _iv, _jv, &idum, &_nrhs,
                     _pardiso_parm, &_msglvl, &ddum, &ddum, &_error);
   }
 }
@@ -127,7 +124,7 @@ void Hqp_IpPardiso::reinit_pardiso()
 {
 
   double ddum;
-  int idum;
+  long idum;
 
   if (!_pardiso_fp)
     m_error(E_NULL, "Hqp_IpPardiso::reinit_pardiso");
@@ -138,7 +135,7 @@ void Hqp_IpPardiso::reinit_pardiso()
   _phase = 11;
 
   (*_pardiso_fp)(_pardiso_pt, &_maxfct, &_mnum, &_mtype, &_phase,
-                 &_dim, _v->ve, _iv->ive, _jv->ive, &idum, &_nrhs,
+                 &_dim, _v->ve, _iv, _jv, &idum, &_nrhs,
                  _pardiso_parm, &_msglvl, &ddum, &ddum, &_error);
 
   if (_error != 0) {
@@ -204,12 +201,12 @@ void Hqp_IpPardiso::init(const Hqp_Program *qp)
   }
   _pardiso_parm[0] = 1;        // No solver default
   _pardiso_parm[1] = 2;        // 1 -> MMD reordering algorithm; 2 -> Fill-in reordering from METIS
-  _pardiso_parm[2] = _nparallel;// Number of processors
+  _pardiso_parm[2] = 0;        // Reserved; was Number of processors
   _pardiso_parm[3] = 0;        // No iterative-direct algorithm
   _pardiso_parm[4] = 0;        // No user fill-in reducing permutation
   _pardiso_parm[5] = 0;        // Write solution into x
   _pardiso_parm[6] = 0;        // Not in use
-  _pardiso_parm[7] = 0;        // Max numbers of iterative refinement steps
+  _pardiso_parm[7] = 3;        // Max numbers of iterative refinement steps
   _pardiso_parm[8] = 0;        // Not in use
   _pardiso_parm[9] = 8;        // Perturb the pivot elements with 1E-8
   _pardiso_parm[10] = 2;       // Use nonsymmetric permutation and scaling MPS
@@ -250,7 +247,7 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
   int i, j_end, j_idx, k, nnz_row, col;
   const row_elt *elt;
   double ddum;
-  int idum;
+  long idum;
 
   AT = sp_get(_n, _me, 10);
   AT = sp_transp(qp->A, AT);
@@ -265,7 +262,7 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
     nnz_row += AT->row[i].len;
     nnz_row += CT->row[i].len;
 
-    if((_reinit == 0) && (nnz_row != (_iv->ive[i+1] - _iv->ive[i])))
+    if((_reinit == 0) && (nnz_row != (_iv[i+1] - _iv[i])))
       _reinit = 1;
     _nnz += nnz_row;
 
@@ -277,43 +274,45 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
   // this should only occur according to changes of the hessian
   // structure  -> reinit pardiso solver
 
-  if(_reinit != 0) {
-    iv_resize(_iv,_dim+1);
-	iv_zero(_iv);
+  if (_reinit != 0) {
+    if (_iv != NULL)
+      free(_iv);
+    _iv = (long *)calloc(_dim+1, sizeof(long));
 
-	iv_resize(_jv,_nnz+_me+_m);
-	iv_zero(_jv);
+    if (_jv != NULL)
+      free(_jv);
+    _jv = (long *)calloc(_nnz+_me+_m, sizeof(long));
 
-	_iv->ive[_dim] = _nnz+_me+_m;
+    _iv[_dim] = _nnz+_me+_m + 1;
 
-	v_resize(_v,_nnz+_me+_m);
-	v_zero(_v);
+    v_resize(_v,_nnz+_me+_m);
+    v_zero(_v);
 
-	v_resize(_v_raw,_nnz+_me+_m);
-	v_zero(_v_raw);
+    v_resize(_v_raw,_nnz+_me+_m);
+    v_zero(_v_raw);
   }
   else 
-	_iv->ive[_dim] = _nnz+_me+_m;
+    _iv[_dim] = _nnz+_me+_m + 1;
 
   // fill up data
 
   k = 0;
 
-  for( i = 0; i < _n; i++) {
+  for (i = 0; i < _n; i++) {
 
-    _iv->ive[i] = k;
+    _iv[i] = k + 1;
     elt = qp->Q->row[i].elt;
     j_end = qp->Q->row[i].len;
     for (j_idx=0; j_idx < j_end; j_idx++, elt++) {
       if (elt->col >= i) {
-		  col = _jv->ive[k] - 1;
+	col = _jv[k] - 1;
 	// look for changes of the hessian structure
 	// -> reinit pardiso solver
 	if((_reinit == 0) && (elt->col != col)) {
 	  _reinit = 1;
 	  printf("row:  %d  col: %d   col_old: %d \n",i,elt->col, col);
 	}
-	_jv->ive[k] = elt->col;
+	_jv[k] = elt->col + 1;
 	_v_raw->ve[k++] = -elt->val;
       }
     }
@@ -321,38 +320,31 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
     elt = AT->row[i].elt;
     j_end = AT->row[i].len;
     for (j_idx=0; j_idx < j_end; j_idx++, elt++) {
-	  _jv->ive[k] = elt->col+_n;
-	  _v_raw->ve[k++] = elt->val;
+      _jv[k] = elt->col+_n + 1;
+      _v_raw->ve[k++] = elt->val;
     }
 
     elt = CT->row[i].elt;
     j_end = CT->row[i].len;
     for (j_idx=0; j_idx < j_end; j_idx++, elt++) {
-	  _jv->ive[k] = elt->col+_n+_me;
-	  _v_raw->ve[k++] = elt->val;
+      _jv[k] = elt->col+_n+_me + 1;
+      _v_raw->ve[k++] = elt->val;
     }
   }
 
-  for( i = _n; i < _n+_me; i++) {
-	_iv->ive[i] = k;
-	_jv->ive[k] = i;
-	_v_raw->ve[k++] = 0.0;
+  for (i = _n; i < _n+_me; i++) {
+    _iv[i] = k + 1;
+    _jv[k] = i + 1;
+    _v_raw->ve[k++] = 0.0;
   }
 
-   for( i = _n+_me; i < _n+_me+_m; i++) {
-	_iv->ive[i] = k;
-	_jv->ive[k] = i;
-	_v_raw->ve[k++] = 1.0;
+  for (i = _n+_me; i < _n+_me+_m; i++) {
+    _iv[i] = k + 1;
+    _jv[k] = i + 1;
+    _v_raw->ve[k++] = 1.0;
   }
 
-  v_copy(_v_raw,_v);
-
-  // switch to Fortran numerbering schema
-  for( i = 0; i < (int) _iv->dim; i++)
-	_iv->ive[i] = _iv->ive[i]+1;
-
-  for( i = 0; i < (int) _jv->dim; i++)
-	_jv->ive[i] = _jv->ive[i]+1;
+  v_copy(_v_raw, _v);
 
   _phase = 11;
 
@@ -361,7 +353,7 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
     if (!_pardiso_fp)
       m_error(E_NULL, "Hqp_IpPardiso::init");
     (*_pardiso_fp) (_pardiso_pt, &_maxfct, &_mnum, &_mtype, &_phase,
-                    &_dim, _v->ve, _iv->ive, _jv->ive, &idum, &_nrhs,
+                    &_dim, _v->ve, _iv, _jv, &idum, &_nrhs,
                     _pardiso_parm, &_msglvl, &ddum, &ddum, &_error);
   }
 
@@ -386,12 +378,13 @@ void Hqp_IpPardiso::factor(const Hqp_Program *, const VEC *z, const VEC *w)
     m_error(E_NULL, "Hqp_IpPardiso::factor");
 
   double  ddum, wz;
-  int     i, i0, idum;
+  int     i, i0;
+  long   idum;
 
   v_copy(_v_raw,_v);
 
   // insert slacks
-  i0 = _iv->ive[_n+_me]-1;
+  i0 = _iv[_n+_me]-1;
   for (i = 0; i < _m; i++) {
     wz = w->ve[i] / z->ve[i];
     _v->ve[i+i0] = wz;
@@ -406,7 +399,7 @@ void Hqp_IpPardiso::factor(const Hqp_Program *, const VEC *z, const VEC *w)
   start = clock();
 
   (*_pardiso_fp) (_pardiso_pt, &_maxfct, &_mnum, &_mtype, &_phase,
-                  &_dim, _v->ve, _iv->ive, _jv->ive, &idum, &_nrhs,
+                  &_dim, _v->ve, _iv, _jv, &idum, &_nrhs,
                   _pardiso_parm, &_msglvl, &ddum, &ddum, &_error);
 
   finish = clock();
@@ -426,7 +419,7 @@ void Hqp_IpPardiso::step(const Hqp_Program *qp, const VEC *z, const VEC *w,
 		       const VEC *r4, VEC *dx, VEC *dy, VEC *dz, VEC *dw)
 {
 
-  int idum;
+  long idum;
   VEC v;
 
   assert((int)r1->dim == _n && (int)dx->dim == _n);
@@ -454,7 +447,7 @@ void Hqp_IpPardiso::step(const Hqp_Program *qp, const VEC *z, const VEC *w,
   start = clock();
 
   (*_pardiso_fp) (_pardiso_pt, &_maxfct, &_mnum, &_mtype, &_phase,
-                  &_dim, _v->ve, _iv->ive, _jv->ive, &idum, &_nrhs,
+                  &_dim, _v->ve, _iv, _jv, &idum, &_nrhs,
                   _pardiso_parm, &_msglvl, _r123->ve, _xyz->ve, &_error);
 
   finish = clock();

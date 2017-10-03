@@ -5,12 +5,12 @@
  *
  * hl, 2006/11/22
  *
- * derived from Hqp_IpSpBKP.h (developed by Ruediger Franke)
+ * derived from Hqp_IpSpBKP.h
  *
  */
 
 /*
-    Copyright (C) 2006   Hartmut Linke
+    Copyright (C) 2006--2017   Hartmut Linke and Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -35,10 +35,12 @@
 #include "Hqp_DynLoad.h"
 
 /** Signature of used PARDISO function (version 3) */
-typedef int (pardiso_ft)
-	(void *, int *, int *, int *, int *, int *,
-	double *, int *, int *, int *, int *, int *,
-	int *, double *, double *, int *);
+typedef void (pardiso_ft)
+	(void *, long *, long *, long *, long *, long *,
+	double *, long *, long *, long *, long *, long *,
+	long *, double *, double *, long *);
+
+class LVEC;
 
 /**
    Solve the Jacobian matrix of Interior Point algorithms 
@@ -69,26 +71,25 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   char          *_pardiso_libname; ///< name of library containing solver
   char          *_pardiso_funcname;///< name of Pardiso function
   pardiso_ft    *_pardiso_fp;   ///< pointer to Pardiso function
-  int 		_nparallel;     ///< number of processor cores to use
 
   void	        *_pardiso_pt[64];
-  int           _pardiso_parm[64];
+  long          _pardiso_parm[64];
 
   int           _reinit;
 
-  IVEC          *_iv;
-  IVEC          *_jv;
+  long          *_iv;
+  long          *_jv;
   VEC           *_v;
   VEC           *_v_raw;
 
-  int           _maxfct;        ///< Maximum number of numerical factorizations
-  int           _mnum;          ///< Which factorization to use
-  int           _msglvl;        ///< Print statistical information in file
-  int           _error;         ///< Initialize error flag
-  int           _mtype;         ///< Real symmetric matrix
-  int           _nrhs;          ///< Number of right hand sides
-  int           _phase;         ///< solution phase of the PARDISO solver
-  int           _dim;           ///< dimension of  equation system 
+  long          _maxfct;        ///< Maximum number of numerical factorizations
+  long          _mnum;          ///< Which factorization to use
+  long          _msglvl;        ///< Print statistical information in file
+  long          _error;         ///< Initialize error flag
+  long          _mtype;         ///< Real symmetric matrix
+  long          _nrhs;          ///< Number of right hand sides
+  long          _phase;         ///< solution phase of the PARDISO solver
+  long          _dim;           ///< dimension of  equation system
 
   //@}
 
@@ -121,11 +122,6 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   const char *pardiso_funcname() const {return _pardiso_funcname;}
   /// set name of pardiso function
   void set_pardiso_funcname(const char *value);
-
-  /// number of processor cores to use
-  int nparallel() const {return _nparallel;}
-  /// set number of processor cores to use
-  void set_nparallel(int value) {_nparallel = value;}
 
   //@}
 
