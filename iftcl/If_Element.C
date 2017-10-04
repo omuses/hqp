@@ -28,6 +28,13 @@
 
 #include <meschach/err.h>
 
+// use tracecatch to get error message printed to stderr in DEBUG mode
+#ifdef DEBUG
+#define if_tracecatch(ok_part, function) m_tracecatch(ok_part, function)
+#else
+#define if_tracecatch(ok_part, function) ok_part
+#endif
+
 //--------------------------------------------------------------------------
 Tcl_Interp *theInterp = NULL;
 
@@ -68,15 +75,11 @@ int If_Element::tclCmd(ClientData cld, Tcl_Interp *interp,
   int ret = TCL_ERROR;
 
   m_catchall(// try
-#ifdef DEBUG
-	     // use tractcatch to get error message printed to stderr
-	     m_tracecatch(// try
-#endif
-			  ret = element->invoke(interp, objc, objv),
-#ifdef DEBUG
-			  // catch and throw
-			  m_error_description()),
-#endif
+	     // use tracecatch to get error message printed to stderr
+	     if_tracecatch(// try
+			   ret = element->invoke(interp, objc, objv),
+			   // catch and throw
+			   m_error_description()),
 	     // catch
 	     Tcl_AppendResult(interp, "error invoking ",
 			      element->ifName(), ": ", m_error_description(),

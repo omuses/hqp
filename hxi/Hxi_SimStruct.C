@@ -459,14 +459,19 @@ public:
 
   /** Set number of non-zero elements in Jacobian. */
   int_T setJacobianNzMax(int_T nnz) {
+    int_T nu = 0;
+    for (int_T port = 0; port < _u.size(); port++)
+      nu += _u[port].size();
     if (nnz < 0) {
       // nnz == -1 allocates space for a full Jacobian
-      nnz = (_dxc.size() + _xd.size() + _y.size())
-        * (_xc.size() + _xd.size() + _u.size());
+      int_T ny = 0;
+      for (int_T port = 0; port < _y.size(); port++)
+	ny += _y[port].size();
+      nnz = (_dxc.size() + _xd.size() + ny) * (_xc.size() + _xd.size() + nu);
     }
     _jacobianPr.resize(nnz, _dummy);
     _jacobianIr.resize(nnz);
-    _jacobianJc.resize(_xc.size() + _xd.size() + _u.size() + 1);
+    _jacobianJc.resize(_xc.size() + _xd.size() + nu + 1);
     return _jacobianPr.size();
   }
   /** Get number of non-zero elements in Jacobian. */
