@@ -1,7 +1,7 @@
 /**
- * @file Hqp_IpPardiso.h 
+ * @file Hqp_IpPARDISO.h
  *   solve the Jacobian matrix of Interior Point algorithms using
- *   the Parallel direct solver Pardiso
+ *   the Parallel direct solver PARDISO
  *
  * hl, 2006/11/22
  *
@@ -14,7 +14,7 @@
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; 
+    License as published by the Free Software Foundation;
     version 2 of the License.
 
     This library is distributed in the hope that it will be useful,
@@ -28,30 +28,24 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Hqp_IpPardiso_H
-#define Hqp_IpPardiso_H
+#ifndef Hqp_IpPARDISO_H
+#define Hqp_IpPARDISO_H
 
 #include "Hqp_IpMatrix.h"
 #include "Hqp_DynLoad.h"
 
-/** Signature of used PARDISO function (version 3) */
-typedef void (pardiso_ft)
-	(void *, long *, long *, long *, long *, long *,
-	double *, long *, long *, long *, long *, long *,
-	long *, double *, double *, long *);
-
-class LVEC;
+#include "pardiso_wrapper.h"
 
 /**
-   Solve the Jacobian matrix of Interior Point algorithms 
-   using the Pardiso solver. 
+   Solve the Jacobian matrix of Interior Point algorithms
+   using the PARDISO solver.
 
-   The solver is loaded dynamically at runtime from the 
+   The solver is loaded dynamically at runtime from the
    Intel Math Kernel Library per default (tested with MKL 10.2.5.035).
    The library containing the solver and the function name can be
    configured using mat_pardiso_libname and mat_pardiso_funcname, respectively.
  */
-class Hqp_IpPardiso: public Hqp_IpMatrix {
+class Hqp_IpPARDISO: public Hqp_IpMatrix {
 
  protected:
   int		_n, _me, _m, _nnz; ///< dimensions
@@ -68,9 +62,8 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   //@{
 
   Hqp_DynLoad 	_dl;            ///< dynamic load of solver library
-  char          *_pardiso_libname; ///< name of library containing solver
-  char          *_pardiso_funcname;///< name of Pardiso function
-  pardiso_ft    *_pardiso_fp;   ///< pointer to Pardiso function
+  pardiso_ft    *_pardiso_fp;   ///< pointer to PARDISO function
+  int 		_ncpu;          ///< number of processor cores to use
 
   void	        *_pardiso_pt[64];
   long          _pardiso_parm[64];
@@ -97,8 +90,8 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
   void          reinit_pardiso();
 
  public:
-        Hqp_IpPardiso();
-   	~Hqp_IpPardiso();
+        Hqp_IpPARDISO();
+   	~Hqp_IpPARDISO();
   
   void	init(const Hqp_Program *);
   void	update(const Hqp_Program *);
@@ -113,19 +106,14 @@ class Hqp_IpPardiso: public Hqp_IpMatrix {
    */
   //@{
 
-  /// library containing solver
-  const char *pardiso_libname() const {return _pardiso_libname;}
-  /// set library containing solver
-  void set_pardiso_libname(const char *value);
-
-  /// name of pardiso function
-  const char *pardiso_funcname() const {return _pardiso_funcname;}
-  /// set name of pardiso function
-  void set_pardiso_funcname(const char *value);
+  /// number of processor cores to use
+  int ncpu() const {return _ncpu;}
+  /// set number of processor cores to use
+  void set_ncpu(int value);
 
   //@}
 
-  const char *name() {return "Pardiso";}
+  const char *name() {return "PARDISO";}
 };
 
 #endif

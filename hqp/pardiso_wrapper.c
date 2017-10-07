@@ -1,13 +1,13 @@
 /**
- * @file Hqp_omp.h
- *   interface to OpenMP
+ * @file pardiso_wrapper.C
+ *   implement interface to MKL PARDISO
  *
- * rf, 6/29/17
+ * rf, 2017/10/07
  *
  */
 
 /*
-    Copyright (C) 1994--2017  Ruediger Franke
+    Copyright (C) 2006--2017   Hartmut Linke and Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -25,27 +25,16 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Hqp_omp_H
-#define Hqp_omp_H
+#include "pardiso_wrapper.h"
 
-#ifdef HQP_WITH_OMP
-#include <omp.h>
-// Note: may reduce CPUs with environment variable OMP_NUM_THREADS
-#else
-// Default OMP functions for single threading
-inline int omp_get_max_threads()
+/** MKL PARDISO function */
+pardiso_ft mkl_pds_pardiso;
+
+void pardiso_wrapper(void *pt, long *maxfct, long *mnum, long *mtype,
+                     long *phase, long *n, double *a, long *ia, long *ja,
+                     long *perm, long *nrhs, long *iparm, long *msglvl,
+                     double *b, double *x, long *error)
 {
-  return 1;
+  mkl_pds_pardiso(pt, maxfct, mnum, mtype, phase, n, a, ia, ja, perm, nrhs,
+                  iparm, msglvl, b, x, error);
 }
-
-inline void omp_set_num_threads(int)
-{
-}
-
-inline int omp_get_thread_num()
-{
-  return 0;
-}
-#endif
-
-#endif

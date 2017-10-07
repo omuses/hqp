@@ -1,9 +1,9 @@
 /*
- * Hqp_IpPardiso.C -- class definition
+ * Hqp_IpPARDISO.C -- class definition
  *
  * hl, 2006/11/22
  *
- * rf, 2010/08/14: add dynamic load of Pardiso solver
+ * rf, 2010/08/14: add dynamic load of PARDISO solver
  *
  */
 
@@ -12,7 +12,7 @@
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; 
+    License as published by the Free Software Foundation;
     version 2 of the License.
 
     This library is distributed in the hope that it will be useful,
@@ -26,8 +26,9 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Hqp_IpPardiso.h"
+#include "Hqp_IpPARDISO.h"
 #include "Hqp_Program.h"
+#include "Hqp_omp.h"
 
 #include <assert.h>
 #include <math.h>
@@ -44,16 +45,16 @@ extern "C" {
 
 #define GET_SET_CB(vartype, prefix, name) \
   GET_CB(vartype, prefix, name), \
-  IF_SET_CB(vartype, Hqp_IpPardiso, set_##name)
+  IF_SET_CB(vartype, Hqp_IpPARDISO, set_##name)
 
 #define GET_CB(vartype, prefix, name) \
   prefix#name, \
-  IF_GET_CB(vartype, Hqp_IpPardiso, name)
+  IF_GET_CB(vartype, Hqp_IpPARDISO, name)
 
-IF_CLASS_DEFINE("Pardiso", Hqp_IpPardiso, Hqp_IpMatrix);
+IF_CLASS_DEFINE("PARDISO", Hqp_IpPARDISO, Hqp_IpMatrix);
 
 //--------------------------------------------------------------------------
-Hqp_IpPardiso::Hqp_IpPardiso()
+Hqp_IpPARDISO::Hqp_IpPARDISO()
 {
   _n = _me = _m = 0;
   _sbw = -1;
@@ -63,9 +64,8 @@ Hqp_IpPardiso::Hqp_IpPardiso()
   _r123 = VNULL;
   _xyz = VNULL;
 
-  _pardiso_libname = strdup("mkl_core"); // MKL 10.2.5.035
-  _pardiso_funcname = strdup("mkl_pds_pardiso"); // MKL 10.2.5.035
   _pardiso_fp = NULL;
+  _ncpu = omp_get_max_threads();
 
   _reinit = -1;
 
@@ -76,12 +76,11 @@ Hqp_IpPardiso::Hqp_IpPardiso()
 
   _ifList.append(new If_Int("mat_sbw", &_sbw));
   _ifList.append(new If_Real("mat_tol", &_tol));
-  _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_libname)));
-  _ifList.append(new If_String(GET_SET_CB(const char *, "mat_", pardiso_funcname)));
+  _ifList.append(new If_Int(GET_SET_CB(int, "mat_", ncpu)));
 }
 
 //--------------------------------------------------------------------------
-Hqp_IpPardiso::~Hqp_IpPardiso()
+Hqp_IpPARDISO::~Hqp_IpPARDISO()
 {
 
   free_pardiso();
@@ -97,16 +96,20 @@ Hqp_IpPardiso::~Hqp_IpPardiso()
     free(_iv);
   if (_jv != NULL)
     free(_jv);
-
-  free(_pardiso_libname);
-  free(_pardiso_funcname);
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::free_pardiso()
+void Hqp_IpPARDISO::set_ncpu(int value)
+{
+  omp_set_num_threads(value);
+  _ncpu = value;
+}
+
+//--------------------------------------------------------------------------
+void Hqp_IpPARDISO::free_pardiso()
 {
 
-  //  Termination and release of memory of Pardiso solver
+  //  Termination and release of memory of PARDISO solver
   double ddum;
   long idum;
 
@@ -120,14 +123,14 @@ void Hqp_IpPardiso::free_pardiso()
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::reinit_pardiso()
+void Hqp_IpPARDISO::reinit_pardiso()
 {
 
   double ddum;
   long idum;
 
   if (!_pardiso_fp)
-    m_error(E_NULL, "Hqp_IpPardiso::reinit_pardiso");
+    m_error(E_NULL, "Hqp_IpPARDISO::reinit_pardiso");
 
   if(_reinit == 1)
     free_pardiso();
@@ -140,7 +143,7 @@ void Hqp_IpPardiso::reinit_pardiso()
 
   if (_error != 0) {
     fprintf(stderr, "\nERROR during symbolic factorization: %d", _error);
-    m_error(E_CONV, "Pardiso symbolic factorization");
+    m_error(E_CONV, "PARDISO symbolic factorization");
   }
 
   _reinit = 0;
@@ -150,38 +153,17 @@ void Hqp_IpPardiso::reinit_pardiso()
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::set_pardiso_libname(const char *value)
-{
-  if (strcmp(value, _pardiso_libname) != 0) {
-    free(_pardiso_libname);
-    _pardiso_libname = strdup(value);
-    _pardiso_fp = NULL; // needs to be loaded in Hqp_IpPardiso::init
-    _dl.close();
-  }
-}
-
-//--------------------------------------------------------------------------
-void Hqp_IpPardiso::set_pardiso_funcname(const char *value)
-{
-  if (strcmp(value, _pardiso_funcname) != 0) {
-    free(_pardiso_funcname);
-    _pardiso_funcname = strdup(value);
-    _pardiso_fp = NULL; // needs to be loaded in Hqp_IpPardiso::init
-  }
-}
-
-//--------------------------------------------------------------------------
-void Hqp_IpPardiso::init(const Hqp_Program *qp)
+void Hqp_IpPARDISO::init(const Hqp_Program *qp)
 {
   int i;
 
   // load solver
   if (!_pardiso_fp) {
-    _dl.open(_pardiso_libname);
-    _pardiso_fp = (pardiso_ft*)_dl.symbol(_pardiso_funcname);
+    _dl.open("pardiso" SHLIB_SUFFIX);
+    _pardiso_fp = (pardiso_ft*)_dl.symbol("pardiso_wrapper");
   }
   if (!_pardiso_fp)
-    m_error(E_NULL, "Hqp_IpPardiso::init");
+    m_error(E_NULL, "Hqp_IpPARDISO::init");
 
   _n = qp->c->dim;
   _me = qp->b->dim;
@@ -195,7 +177,7 @@ void Hqp_IpPardiso::init(const Hqp_Program *qp)
   _r123 = v_resize(_r123, _dim);
   _xyz = v_resize(_xyz, _dim);
 
-  // Setup Pardiso control parameters
+  // Setup PARDISO control parameters
   for (i = 0; i < 64; i++) {
     _pardiso_parm[i] = 0;
   }
@@ -240,7 +222,7 @@ void Hqp_IpPardiso::init(const Hqp_Program *qp)
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::update(const Hqp_Program *qp)
+void Hqp_IpPARDISO::update(const Hqp_Program *qp)
 {
 
   SPMAT  *AT, *CT;
@@ -349,9 +331,9 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
   _phase = 11;
 
   if(_reinit != 0) {
-    printf("Reinitialization of Pardiso solver!\n");
+    printf("Reinitialization of PARDISO solver!\n");
     if (!_pardiso_fp)
-      m_error(E_NULL, "Hqp_IpPardiso::init");
+      m_error(E_NULL, "Hqp_IpPARDISO::init");
     (*_pardiso_fp) (_pardiso_pt, &_maxfct, &_mnum, &_mtype, &_phase,
                     &_dim, _v->ve, _iv, _jv, &idum, &_nrhs,
                     _pardiso_parm, &_msglvl, &ddum, &ddum, &_error);
@@ -361,7 +343,7 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
 
   if (_error != 0) {
     fprintf(stderr, "\nERROR during symbolic factorization: %d", _error);
-    m_error(E_CONV, "Pardiso symbolic factorization");
+    m_error(E_CONV, "PARDISO symbolic factorization");
   }
 
   sp_free(CT);
@@ -370,12 +352,12 @@ void Hqp_IpPardiso::update(const Hqp_Program *qp)
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::factor(const Hqp_Program *, const VEC *z, const VEC *w)
+void Hqp_IpPARDISO::factor(const Hqp_Program *, const VEC *z, const VEC *w)
 {
   assert((int)z->dim == _m && (int)w->dim == _m);
 
   if (!_pardiso_fp)
-    m_error(E_NULL, "Hqp_IpPardiso::factor");
+    m_error(E_NULL, "Hqp_IpPARDISO::factor");
 
   double  ddum, wz;
   int     i, i0;
@@ -404,17 +386,17 @@ void Hqp_IpPardiso::factor(const Hqp_Program *, const VEC *z, const VEC *w)
 
   finish = clock();
   duration = (double)(finish - start) / CLOCKS_PER_SEC;
-  // printf( "Hqp_IpRedPardiso::factor():  %2.8f seconds\n", duration );
+  // printf( "Hqp_IpRedPARDISO::factor():  %2.8f seconds\n", duration );
 
   if (_error != 0) {
     fprintf(stderr, "\nERROR during numerical factorization: %d", _error);
-    m_error(E_CONV, "Pardiso numerical factorization");
+    m_error(E_CONV, "PARDISO numerical factorization");
   }
 
 }
 
 //--------------------------------------------------------------------------
-void Hqp_IpPardiso::step(const Hqp_Program *qp, const VEC *z, const VEC *w,
+void Hqp_IpPARDISO::step(const Hqp_Program *qp, const VEC *z, const VEC *w,
 		       const VEC *r1, const VEC *r2, const VEC *r3,
 		       const VEC *r4, VEC *dx, VEC *dy, VEC *dz, VEC *dw)
 {
@@ -428,7 +410,7 @@ void Hqp_IpPardiso::step(const Hqp_Program *qp, const VEC *z, const VEC *w,
   assert((int)r4->dim == _m && (int)dw->dim == _m);
 
   if (!_pardiso_fp)
-    m_error(E_NULL, "Hqp_IpPardiso::step");
+    m_error(E_NULL, "Hqp_IpPARDISO::step");
 
   // copy, scale and permutate [r1;r2;r3] into _r123
   // calculate, permutate and scale x
@@ -452,11 +434,11 @@ void Hqp_IpPardiso::step(const Hqp_Program *qp, const VEC *z, const VEC *w,
 
   finish = clock();
   duration = (double)(finish - start) / CLOCKS_PER_SEC;
-  // printf( "Hqp_IpRedPardiso::solve():  %2.8f seconds\n", duration );
+  // printf( "Hqp_IpRedPARDISO::solve():  %2.8f seconds\n", duration );
 
   if (_error != 0) {
     fprintf(stderr, "\nERROR during solution: %d", _error);
-    m_error(E_CONV, "Pardiso solution");
+    m_error(E_CONV, "PARDISO solution");
   }
 
   v_copy(v_part(_xyz, 0, _n, &v), dx);

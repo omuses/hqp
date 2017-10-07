@@ -1,3 +1,12 @@
+2017-10-07    <rfranke>
+
+	* hqp/Hqp_IpPARDISO.[hC], Hqp_Init.C, Hqp_omp.h:
+	  - rename from Hqp_IpPardiso.[hC]
+	  - add mat_ncpu option accessing OpenMP
+
+	* hqp/pardiso_wrapper.[hc], configure, configure.in, makedefs.in:
+	  - compile and link MKL PARDISO into separate shared object
+
 2017-10-03    <rfranke>
 
 	* hqp/Hqp_IpPardiso.[hC]:

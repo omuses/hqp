@@ -25,7 +25,7 @@ SRCS = 	Hqp_Init.C \
 	Hqp_IpSpBKP.C \
 	Hqp_IpRedSpBKP.C \
 	Hqp_IpLQDOCP.C \
-	Hqp_IpPardiso.C \
+	Hqp_IpPARDISO.C \
 	t_mesch.C \
 	Hqp_IpSpSC.C \
 	meschext_hl.C \
@@ -63,6 +63,12 @@ hqp_solve.c: tpc hqp_solve.tcl
 
 tpc:
 	$(CC) -o tpc tpc.c
+
+# call "make pardiso" manually
+pardiso:
+	$(CC) -c $(CFLAGS) $(PARDISO_DEFS) pardiso_wrapper.c
+	$(LD)pardiso$(MKLIB_SUFFIX) pardiso_wrapper$O $(PARDISO_MACH_OBJS)
+	rm pardiso_wrapper$O
 
 .C$O:
 	$(CXX) -c $(CXXFLAGS) $(CCDEFS) $<
