@@ -61,7 +61,7 @@ Omu_Model::Omu_Model(int ncpu)
   _mx_args = NULL;
 
   _mdl_ncpu = ncpu;
-  _mdl_logging = If_LogNone;
+  _mdl_logging = If_LogError;
   _mdl_jac = true;
   _mdl_needs_setup = true;
   _mdl_needs_init = iv_get(_mdl_ncpu);

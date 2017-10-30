@@ -1,3 +1,10 @@
+2017-10-30    <rfranke>
+
+	* hxi/sfun_fmu.c:
+	  - call fmi2GetDirectionalDerivative if provided by FMU
+	* omu/Omu_Model.C:
+	  - change default model logging from If_LogNone to If_LogError
+
 2017-10-07    <rfranke>
 
 	* hqp/Hqp_IpPARDISO.[hC], Hqp_Init.C, Hqp_omp.h:

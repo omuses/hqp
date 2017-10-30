@@ -163,6 +163,7 @@ typedef struct {
   char 			*guid;
   char 			*generationTool;
   char 			*resourcesURI;
+  int   		providesDirectionalDerivative;
   char 			*messageStr;
   int 			messageStrLen;
   int 			logging;
@@ -228,6 +229,8 @@ typedef struct {
   fmi2GetBooleanTYPE              	*fmi2GetBoolean;
   fmi2GetIntegerTYPE              	*fmi2GetInteger;
   fmi2GetStringTYPE               	*fmi2GetString;
+  fmi2GetDirectionalDerivativeTYPE 	*fmi2GetDirectionalDerivative;
+  fmi2ValueReference               	*vrUnknown;
   /**
    * @}
    */
@@ -570,6 +573,8 @@ static void mdlInitializeSizes(SimStruct *S)
       free(m->guid);
       free(m->generationTool);
       free(m->resourcesURI);
+      if (m->vrUnknown != NULL)
+        free(m->vrUnknown);
       if (m->civl != NULL)
 	free(m->civl);
       if (m->csub != NULL)
@@ -705,6 +710,13 @@ static void mdlInitializeSizes(SimStruct *S)
       return;
     }
     m->resourcesURI = strdup(Tcl_GetStringResult(interp));
+    /* get providesDirectionalDerivative attribute */
+    if (Tcl_VarEval(interp, "::set {::fmu::", fmuName,
+                    "::attributes(providesDirectionalDerivative)}", NULL) != TCL_OK
+        || (objPtr = Tcl_GetObjResult(interp)) == NULL
+        || Tcl_GetBooleanFromObj(interp, objPtr, &m->providesDirectionalDerivative) != TCL_OK) {
+      m->providesDirectionalDerivative = 0;
+    }
 
     /* 
      * Initialize parameters
@@ -860,6 +872,11 @@ static void mdlInitializeSizes(SimStruct *S)
     INIT_FUNCTION(S, m, i, GetBoolean);
     INIT_FUNCTION(S, m, i, GetInteger);
     INIT_FUNCTION(S, m, i, GetString);
+    if (m->providesDirectionalDerivative) {
+      INIT_FUNCTION(S, m, i, GetDirectionalDerivative);
+      m->vrUnknown = (fmi2ValueReference *)calloc(m->nxc + m->nxd + m->ny,
+                                                  sizeof(fmi2ValueReference));
+    }
   }
   else
     free(fmuName);
@@ -900,6 +917,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
   /* No long jumps */
   ssSetOptions(S, SS_OPTION_EXCEPTION_FREE_CODE);
+
   /* Setup Jacobian */
   if (Tcl_VarEval(m->interp, "::set ::fmu::", m->fmuName,
 		  "::numberOfDependencies", NULL) != TCL_OK
@@ -1396,6 +1414,9 @@ static void mdlJacobian(SimStruct *S)
   int idx[NUM_BASETYPES];
   InputRealPtrsType uPtrs;
   double *v, *w, dvj, vj_bak;
+  fmi2ValueReference vrKnown[1];
+  fmi2Real dvKnown[1];
+  size_t nUnknown;
 
   GET_MODELDATA(S, m);
 
@@ -1435,7 +1456,7 @@ static void mdlJacobian(SimStruct *S)
     ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 1;
   }
 
-  /* obtain finite differences for derivatives and outputs */
+  /* obtain partial derivatives for state derivatives and outputs */
   if (m->nxc + m->ny > 0) {
     /* set clocks to subactive, i.e. no evaluation of states */
     ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
@@ -1449,99 +1470,129 @@ static void mdlJacobian(SimStruct *S)
     if (m->nxd > 0)
       mdlUpdate(S, 0);
 
-    for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
-      w = ssGetdX(S);
-      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
-        pr[jdx] = w[ir[jdx]];
-      offs = m->nxc;
-      w = ssGetRealDiscStates(S);
-      for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
-        pr[jdx] = w[ir[jdx] - offs];
-      offs += m->nxd;
-      w = ssGetOutputPortRealSignal(S, 0);
-      for (; jdx < jc[j+1]; jdx++)
-        pr[jdx] = w[ir[jdx] - offs];
-    }
-
-    /* obtain finite differences */
-    v = ssGetContStates(S);
-    for (j = 0; j < m->nxc; j++) {
-      vj_bak = v[j];
-      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
-      v[j] += dvj;
-
-      if (m->nxd > 0)
-        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-      mdlOutputs(S, 0);
-      if (m->nxc > 0)
-        mdlDerivatives(S);
-
-      w = ssGetdX(S);
-      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
-        pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+    if (m->providesDirectionalDerivative) {
+      dvKnown[0] = 1.0;
       offs = m->nxc + m->nxd;
-      for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetOutputPortRealSignal(S, 0);
-      for (; jdx < jc[j+1] && ir[jdx] < offs + m->ny; jdx++)
-        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
-
-      v[j] = vj_bak;
+      for (j = 0; j < offs + m->nu; j++) {
+        if (j < m->nxc)
+          vrKnown[0] = m->x->vr[FMI_REAL][j];
+        else if (j < offs)
+          vrKnown[0] = m->pre_x->vr[FMI_REAL][j - m->nxc];
+        else if (jc[j] == jc[j+1])
+          continue; /* inactive input */
+        else
+          vrKnown[0] = m->u->vr[FMI_REAL][j - offs];
+        nUnknown = 0;
+        for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
+          m->vrUnknown[nUnknown++] = m->dx->vr[FMI_REAL][ir[jdx]];
+        for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+          /* list discrete states here because pr is filled directly */
+          m->vrUnknown[nUnknown++] = m->x->vr[FMI_REAL][ir[jdx] - m->nxc];
+        for (; jdx < jc[j+1] && ir[jdx] < m->nxc + m->ny; jdx++)
+          m->vrUnknown[nUnknown++] = m->y->vr[FMI_REAL][ir[jdx] - offs];
+        if (nUnknown > 0 && (*m->fmi2GetDirectionalDerivative)
+            (m->fmu, m->vrUnknown, nUnknown, vrKnown, 1, dvKnown, &pr[jc[j]])
+            != fmi2OK) {
+          ssSetErrorStatus(S, "can't get directional derivative of FMU");
+          return;
+        }
+      }
     }
+    else {
+      /* obtain finite differences */
+      for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
+        w = ssGetdX(S);
+        for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
+          pr[jdx] = w[ir[jdx]];
+        offs = m->nxc;
+        w = ssGetRealDiscStates(S);
+        for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
+          pr[jdx] = w[ir[jdx] - offs];
+        offs += m->nxd;
+        w = ssGetOutputPortRealSignal(S, 0);
+        for (; jdx < jc[j+1]; jdx++)
+          pr[jdx] = w[ir[jdx] - offs];
+      }
 
-    v = ssGetRealDiscStates(S);
-    for (jjac = m->nxc, j = 0; j < m->nxd; jjac++, j++) {
-      memcpy(v, m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-      vj_bak = v[j];
-      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
-      v[j] += dvj;
-
-      mdlOutputs(S, 0);
-      if (m->nxc > 0)
-        mdlDerivatives(S);
-
-      w = ssGetdX(S);
-      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < m->nxc; jdx++)
-        pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+      v = ssGetContStates(S);
       offs = m->nxc + m->nxd;
-      for (; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetOutputPortRealSignal(S, 0);
-      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->ny; jdx++)
-        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+      for (j = 0; j < m->nxc; j++) {
+        vj_bak = v[j];
+        dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+        v[j] += dvj;
 
-      v[j] = vj_bak;
-    }
+        if (m->nxd > 0)
+          memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+        mdlOutputs(S, 0);
+        if (m->nxc > 0)
+          mdlDerivatives(S);
 
-    uPtrs = ssGetInputPortRealSignalPtrs(S, 0);
-    for (jjac = m->nxc + m->nxd, j = 0; j < m->nu; jjac++, j++) {
-      if (jc[jjac] == jc[jjac+1])
-        continue; /* inactive input */
-      vj_bak = *uPtrs[j];
-      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
-      *uPtrs[j] += dvj;
+        w = ssGetdX(S);
+        for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
+          pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+        for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetOutputPortRealSignal(S, 0);
+        for (; jdx < jc[j+1] && ir[jdx] < offs + m->ny; jdx++)
+          pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
 
-      if (m->nxd > 0)
-        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-      mdlOutputs(S, 0);
-      if (m->nxc > 0)
-        mdlDerivatives(S);
+        v[j] = vj_bak;
+      }
 
-      w = ssGetdX(S);
-      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < m->nxc; jdx++)
-        pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
-      offs = m->nxc + m->nxd;
-      for (; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetOutputPortRealSignal(S, 0);
-      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->ny; jdx++)
-        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+      v = ssGetRealDiscStates(S);
+      for (jjac = m->nxc, j = 0; j < m->nxd; jjac++, j++) {
+        memcpy(v, m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+        vj_bak = v[j];
+        dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+        v[j] += dvj;
 
-      *uPtrs[j] = vj_bak;
+        mdlOutputs(S, 0);
+        if (m->nxc > 0)
+          mdlDerivatives(S);
+
+        w = ssGetdX(S);
+        for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < m->nxc; jdx++)
+          pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+        offs = m->nxc + m->nxd;
+        for (; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetOutputPortRealSignal(S, 0);
+        for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->ny; jdx++)
+          pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+        v[j] = vj_bak;
+      }
+
+      uPtrs = ssGetInputPortRealSignalPtrs(S, 0);
+      for (jjac = m->nxc + m->nxd, j = 0; j < m->nu; jjac++, j++) {
+        if (jc[jjac] == jc[jjac+1])
+          continue; /* inactive input */
+        vj_bak = *uPtrs[j];
+        dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+        *uPtrs[j] += dvj;
+
+        if (m->nxd > 0)
+          memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+        mdlOutputs(S, 0);
+        if (m->nxc > 0)
+          mdlDerivatives(S);
+
+        w = ssGetdX(S);
+        for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < m->nxc; jdx++)
+          pr[jdx] = (w[ir[jdx]] - pr[jdx]) / dvj;
+        offs = m->nxc + m->nxd;
+        for (; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetOutputPortRealSignal(S, 0);
+        for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->ny; jdx++)
+          pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+
+        *uPtrs[j] = vj_bak;
+      }
     }
   }
 
-  /* obtain finite differences for discrete-time states */
+  /* obtain partial derivatives for discrete-time states */
   if (m->nxd > 0) {
     /* set clocks to active, i.e. evaluation of states */
     ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 0;
@@ -1551,73 +1602,101 @@ static void mdlJacobian(SimStruct *S)
     mdlOutputs(S, 0);
     mdlUpdate(S, 0);
 
-    offs = m->nxc;
-    for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
-      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetRealDiscStates(S);
-      for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
-        pr[jdx] = w[ir[jdx] - offs];
+    if (m->providesDirectionalDerivative) {
+      dvKnown[0] = 1.0;
+      offs = m->nxc + m->nxd;
+      for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
+        if (j < m->nxc)
+          vrKnown[0] = m->x->vr[FMI_REAL][j];
+        if (j < offs)
+          vrKnown[0] = m->pre_x->vr[FMI_REAL][j - m->nxc];
+        else if (jc[j] == jc[j+1])
+          continue; /* inactive input */
+        else
+          vrKnown[0] = m->u->vr[FMI_REAL][j - offs];
+        nUnknown = 0;
+        for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
+          ;
+        jjac = jdx;
+        for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+          m->vrUnknown[nUnknown++] = m->x->vr[FMI_REAL][ir[jdx] - m->nxc];
+        if (nUnknown > 0 && (*m->fmi2GetDirectionalDerivative)
+            (m->fmu, m->vrUnknown, nUnknown, vrKnown, 1, dvKnown, &pr[jjac])
+            != fmi2OK) {
+          ssSetErrorStatus(S, "can't get directional derivative of FMU states");
+          return;
+        }
+      }
     }
+    else {
+      /* obtain finite differences */
+      offs = m->nxc;
+      for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
+        for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetRealDiscStates(S);
+        for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
+          pr[jdx] = w[ir[jdx] - offs];
+      }
 
-    /* obtain finite differences */
-    v = ssGetContStates(S);
-    for (j = 0; j < m->nxc; j++) {
-      vj_bak = v[j];
-      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
-      v[j] += dvj;
+      v = ssGetContStates(S);
+      for (j = 0; j < m->nxc; j++) {
+        vj_bak = v[j];
+        dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+        v[j] += dvj;
 
-      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-      mdlOutputs(S, 0);
-      mdlUpdate(S, 0);
+        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+        mdlOutputs(S, 0);
+        mdlUpdate(S, 0);
 
-      for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetRealDiscStates(S);
-      for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
-        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+        for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetRealDiscStates(S);
+        for (; jdx < jc[j+1] && ir[jdx] < offs + m->nxd; jdx++)
+          pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
 
-      v[j] = vj_bak;
-    }
+        v[j] = vj_bak;
+      }
 
-    v = ssGetRealDiscStates(S);
-    for (jjac = m->nxc, j = 0; j < m->nxd; jjac++, j++) {
-      memcpy(v, m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-      vj_bak = v[j];
-      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
-      v[j] += dvj;
+      v = ssGetRealDiscStates(S);
+      for (jjac = m->nxc, j = 0; j < m->nxd; jjac++, j++) {
+        memcpy(v, m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+        vj_bak = v[j];
+        dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+        v[j] += dvj;
 
-      mdlOutputs(S, 0);
-      mdlUpdate(S, 0);
+        mdlOutputs(S, 0);
+        mdlUpdate(S, 0);
 
-      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetRealDiscStates(S);
-      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->nxd; jdx++)
-        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+        for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetRealDiscStates(S);
+        for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->nxd; jdx++)
+          pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
 
-      v[j] = vj_bak;
-    }
+        v[j] = vj_bak;
+      }
 
-    uPtrs = ssGetInputPortRealSignalPtrs(S, 0);
-    for (jjac = m->nxc + m->nxd, j = 0; j < m->nu; jjac++, j++) {
-      if (jc[jjac] == jc[jjac+1])
-        continue; /* inactive input */
-      vj_bak = *uPtrs[j];
-      dvj = 1e-4 * fabs(vj_bak) + 1e-6;
-      *uPtrs[j] += dvj;
+      uPtrs = ssGetInputPortRealSignalPtrs(S, 0);
+      for (jjac = m->nxc + m->nxd, j = 0; j < m->nu; jjac++, j++) {
+        if (jc[jjac] == jc[jjac+1])
+          continue; /* inactive input */
+        vj_bak = *uPtrs[j];
+        dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+        *uPtrs[j] += dvj;
 
-      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-      mdlOutputs(S, 0);
-      mdlUpdate(S, 0);
+        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+        mdlOutputs(S, 0);
+        mdlUpdate(S, 0);
 
-      for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
-        ;
-      w = ssGetRealDiscStates(S);
-      for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->nxd; jdx++)
-        pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
+        for (jdx = jc[jjac]; jdx < jc[jjac+1] && ir[jdx] < offs; jdx++)
+          ;
+        w = ssGetRealDiscStates(S);
+        for (; jdx < jc[jjac+1] && ir[jdx] < offs + m->nxd; jdx++)
+          pr[jdx] = (w[ir[jdx] - offs] - pr[jdx]) / dvj;
 
-      *uPtrs[j] = vj_bak;
+        *uPtrs[j] = vj_bak;
+      }
     }
   }
 
