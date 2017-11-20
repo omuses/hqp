@@ -1,3 +1,8 @@
+2017-11-20    <rfranke>
+
+	* hxi/sfun_fmu.c:
+	  - support mdlJacobian for models with non-real variables
+
 2017-10-30    <rfranke>
 
 	* hxi/sfun_fmu.c:

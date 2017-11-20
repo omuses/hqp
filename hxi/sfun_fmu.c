@@ -121,6 +121,7 @@ typedef enum {
 /** Vector of FMU variables with different base types */
 typedef struct {
   int nv;			/**< overall number of variables */
+  fmi2ValueReference *vrv; 	/**< value reference per variable */
   BaseTypes *btv;		/**< base type per variable */
   int n[NUM_BASETYPES];		/**< number of variables per base type */
   fmi2ValueReference *vr[NUM_BASETYPES]; /**< value references per base type */
@@ -304,6 +305,7 @@ static void freeVariables(Hxi_ModelVariables *vars)
       free(vars->vr[j]);
   }
   free(vars->btv);
+  free(vars->vrv);
   free(vars);
 }
 
@@ -328,6 +330,7 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   /* allocate Hxi_ModelVariables data structure and obtain base types */
   vars = (Hxi_ModelVariables *)malloc(sizeof(Hxi_ModelVariables));
   vars->nv = n;
+  vars->vrv = (fmi2ValueReference *)malloc(n*sizeof(fmi2ValueReference));
   vars->btv = (BaseTypes *)malloc(n*sizeof(BaseTypes));
   vars->r = NULL;
   vars->b = NULL;
@@ -384,6 +387,7 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
       freeVariables(vars);
       return NULL;
     }
+    vars->vrv[i] = ref;
     j = vars->btv[i];
     if (idx[j] >= vars->n[j]) {
       /* inconsistent References vs. BaseTypes */
@@ -1475,21 +1479,21 @@ static void mdlJacobian(SimStruct *S)
       offs = m->nxc + m->nxd;
       for (j = 0; j < offs + m->nu; j++) {
         if (j < m->nxc)
-          vrKnown[0] = m->x->vr[FMI_REAL][j];
+          vrKnown[0] = m->x->vrv[j];
         else if (j < offs)
-          vrKnown[0] = m->pre_x->vr[FMI_REAL][j - m->nxc];
+          vrKnown[0] = m->pre_x->vrv[j - m->nxc];
         else if (jc[j] == jc[j+1])
           continue; /* inactive input */
         else
-          vrKnown[0] = m->u->vr[FMI_REAL][j - offs];
+          vrKnown[0] = m->u->vrv[j - offs];
         nUnknown = 0;
         for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
-          m->vrUnknown[nUnknown++] = m->dx->vr[FMI_REAL][ir[jdx]];
+          m->vrUnknown[nUnknown++] = m->dx->vrv[ir[jdx]];
         for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
           /* list discrete states here because pr is filled directly */
-          m->vrUnknown[nUnknown++] = m->x->vr[FMI_REAL][ir[jdx] - m->nxc];
+          m->vrUnknown[nUnknown++] = m->x->vrv[ir[jdx] - m->nxc];
         for (; jdx < jc[j+1] && ir[jdx] < m->nxc + m->ny; jdx++)
-          m->vrUnknown[nUnknown++] = m->y->vr[FMI_REAL][ir[jdx] - offs];
+          m->vrUnknown[nUnknown++] = m->y->vrv[ir[jdx] - offs];
         if (nUnknown > 0 && (*m->fmi2GetDirectionalDerivative)
             (m->fmu, m->vrUnknown, nUnknown, vrKnown, 1, dvKnown, &pr[jc[j]])
             != fmi2OK) {
@@ -1607,19 +1611,19 @@ static void mdlJacobian(SimStruct *S)
       offs = m->nxc + m->nxd;
       for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {
         if (j < m->nxc)
-          vrKnown[0] = m->x->vr[FMI_REAL][j];
+          vrKnown[0] = m->x->vrv[j];
         if (j < offs)
-          vrKnown[0] = m->pre_x->vr[FMI_REAL][j - m->nxc];
+          vrKnown[0] = m->pre_x->vrv[j - m->nxc];
         else if (jc[j] == jc[j+1])
           continue; /* inactive input */
         else
-          vrKnown[0] = m->u->vr[FMI_REAL][j - offs];
+          vrKnown[0] = m->u->vrv[j - offs];
         nUnknown = 0;
         for (jdx = jc[j]; jdx < jc[j+1] && ir[jdx] < m->nxc; jdx++)
           ;
         jjac = jdx;
         for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
-          m->vrUnknown[nUnknown++] = m->x->vr[FMI_REAL][ir[jdx] - m->nxc];
+          m->vrUnknown[nUnknown++] = m->x->vrv[ir[jdx] - m->nxc];
         if (nUnknown > 0 && (*m->fmi2GetDirectionalDerivative)
             (m->fmu, m->vrUnknown, nUnknown, vrKnown, 1, dvKnown, &pr[jjac])
             != fmi2OK) {
