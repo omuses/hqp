@@ -1,3 +1,9 @@
+2018-03-05  <rfranke>
+
+	* omu/Prg_DOCP.C (update_vals):
+	  - evaluate initial clock during initialization
+	  - initialize states from parameters
+
 2017-11-20    <rfranke>
 
 	* hxi/sfun_fmu.c:

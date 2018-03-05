@@ -848,6 +848,17 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
       setSampleTime(S, mdl_u[_t_scale_idx] * (ts(k+1) - ts(k)));
   }
 
+  // pass current states to model
+  real_T *mdl_xd = ssGetDiscStates(S);
+  real_T *mdl_xc = ssGetContStates(S);
+  bool needs_update = true;
+  for (i = 0; i < _mdl_nd; i++) {
+    mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+  }
+  for (i = _mdl_nd; i < _mdl_nx; i++) {
+    mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
+  }
+
   // initialize model in first stage
   // Don't initialize if time changed, e.g. for subsequent simulation calls
   if ((_mdl_needs_init[tn] || k == 0 && ts(k) == _t0_setup_model)
@@ -856,20 +867,51 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
     SMETHOD_CALL(mdlInitializeConditions, S);
     _mdl_needs_init[tn] = 0;
     // call mdlOutputs because implementation may be delayed
+    // call mdlUpdate and disable continuous task to trigger initial clock
+    if (_mdl_is_fmu) {
+      setSampleHit(S, true);
+      setContinuousTask(S, false);
+    }
     SMETHOD_CALL2(mdlOutputs, S, 0);
+    if (ssGetmdlUpdate(S) != NULL) {
+      SMETHOD_CALL2(mdlUpdate, S, 0);
+    }
+    if (_mdl_is_fmu) {
+      setSampleHit(S, false);
+      setContinuousTask(S, true);
+    }
+    needs_update = false;
+    // take active initial states from solver
+    for (i = 0; i < _mdl_nd; i++) {
+      if (_mdl_x0_active[i]) {
+        mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+        needs_update = true;
+      }
+    }
+    for (i = _mdl_nd; i < _mdl_nx; i++) {
+      if (_mdl_x0_active[i]) {
+        mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
+        needs_update = true;
+      }
+    }
   }
 
-  // pass current states to model,
-  // overriding possible initialization from parameters
-  real_T *mdl_xd = ssGetDiscStates(S);
-  real_T *mdl_xc = ssGetContStates(S);
-  for (i = 0; i < _mdl_nd; i++) {
-    mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+  // call mdlOutputs/mdlUpdate to get outputs for current states
+  // enable continuous task to not update states here
+  if (needs_update) {
+    if (_mdl_is_fmu) {
+      setSampleHit(S, true);
+      setContinuousTask(S, true);
+    }
+    // also call mdlOutputs as done by Simulink before each mdlUpdate
+    SMETHOD_CALL2(mdlOutputs, S, 0);
+    if (ssGetmdlUpdate(S) != NULL) {
+      SMETHOD_CALL2(mdlUpdate, S, 0);
+    }
+    if (_mdl_is_fmu) {
+      setSampleHit(S, false);
+    }
   }
-  for (i = _mdl_nd; i < _mdl_nx; i++) {
-    mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
-  }
-  SMETHOD_CALL2(mdlOutputs, S, 0);
 
   // obtain model outputs
   real_T *mdl_y = NULL;
