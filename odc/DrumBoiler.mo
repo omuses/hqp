@@ -3,7 +3,7 @@ model DrumBoiler "Process model for dynamic and steady-state optimization exampl
   Modelica.Blocks.Interfaces.RealOutput sigma_D(unit = "N/mm2") "thermal stress of drum" annotation(Placement(transformation(extent = {{100, -66}, {112, -54}}, rotation = 0)));
 equation
   sigma_D = (-1e3 * der(evaporator.T_D)) + 1e-5 * evaporator.p;
-  annotation(uses(Modelica(version = "3.2.1")), experiment(StopTime = 3600), Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}), graphics), Documentation(info = "<html>
+  annotation(uses(Modelica(version = "3.2.2")), experiment(StopTime = 3600), Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}), graphics), Documentation(info = "<html>
   <p>This process model serves as simple test case for optimization. It exhibits the following features:</p>
   <p><ul>
   <li>based on the Modelica Standard Library, including Media and Fluid</li>

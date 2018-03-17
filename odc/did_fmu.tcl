@@ -61,6 +61,7 @@ mdl_u_active 	{1}
 mdl_u_weight2 	{1.0}
 
 ## setup and solve problem
+prg_integrator Euler
 
 # setup optimization problem
 prg_setup

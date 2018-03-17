@@ -1,5 +1,7 @@
 2018-03-17  <rfranke>
 
+	* odc/CSTR.mo, odc/cstr.tcl, odc/omc.tcl:
+	  - add CSTR example for discrete-time optimal control
 	* hxi/sfun_fmu.c:
 	  - support fmi2GetDirectionalDerivative for models with discrete states
 	* omu/Omu_Model.[hC]:
