@@ -91,7 +91,8 @@ class OMU_API Omu_Model {
   bool 		_mdl_jac; 	///< use Jacobian provided by model
 
   double 	_t0_setup_model;///< time used for initialization of model
-  int		_mdl_np;	///< number of model parameters
+  int		_mdl_np_total;	///< number of model parameters (incl. strings)
+  int		_mdl_np;	///< number of numeric model parameters
   int		_mdl_nd;	///< number of discrete-time states
   int		_mdl_nx;	///< number of model states (incl. discrete)
   int		_mdl_nu;	///< number of model inputs

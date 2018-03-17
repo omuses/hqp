@@ -71,6 +71,7 @@ Omu_Model::Omu_Model(int ncpu)
   for (int tn = 0; tn < _mdl_ncpu; tn++)
     _SS[tn] = NULL;
 
+  _mdl_np_total = 0;
   _mdl_np = 0;
   _mdl_nd = 0;
   _mdl_nx = 0;
@@ -402,8 +403,12 @@ void Omu_Model::setup_model(double t0)
   for (i = 0; i < _mdl_nargs; i++) {
     arg = _mx_args[i];
     // only consider parameters in double format for accessing via mxGetPr()
-    if (mxIsDouble(arg))
+    if (mxIsDouble(arg)) {
+      _mdl_np_total += mxGetNumberOfElements(arg);
       _mdl_np += mxGetNumberOfElements(arg);
+    }
+    else
+      _mdl_np_total += 1; // string parameter
   }
   v_resize(_mdl_p, _mdl_np);
   read_mx_args(_mdl_p);
@@ -487,15 +492,15 @@ void Omu_Model::setup_jac()
 
   // setup sparse structure of Jacobian for active variables
   _mdl_jac_ir[ir_offset] = 0;
-  offs = _mdl_np;
+  offs = _mdl_np_total;
   for (idx = 0; idx < _mdl_nd; idx++, ir_offset++) {
     setup_jac_row("discreteState", offs + idx, _mdl_jac_ir[ir_offset], ir_offset);
   }
-  offs = _mdl_np + _mdl_nx + _mdl_nd;
+  offs = _mdl_np_total + _mdl_nx + _mdl_nd;
   for (; idx < _mdl_nx; idx++, ir_offset++) {
     setup_jac_row("derivative", offs + idx, _mdl_jac_ir[ir_offset], ir_offset);
   }
-  offs = _mdl_np + _mdl_nx + _mdl_nx + _mdl_nu;
+  offs = _mdl_np_total + _mdl_nx + _mdl_nx + _mdl_nu;
   for (idx = 0; idx < _mdl_ny; idx++, ir_offset++) {
     if (_mdl_jac_y_active[idx])
       setup_jac_row("output", offs + idx, _mdl_jac_ir[ir_offset], ir_offset);
@@ -515,7 +520,7 @@ void Omu_Model::setup_jac()
   memset(jc, 0, (n + 1)*sizeof(int_T));
   for (i = 0; i < m; i++) {
     for (jdx = _mdl_jac_ir[i]; jdx < _mdl_jac_ir[i + 1]; jdx++) {
-      j = _mdl_jac_jc[jdx] - _mdl_np;
+      j = _mdl_jac_jc[jdx] - _mdl_np_total;
       if (j >= 2*_mdl_nx)
         j -= _mdl_nx; // input
       else if (j >= _mdl_nd)
@@ -533,7 +538,7 @@ void Omu_Model::setup_jac()
   }
   for (i = 0; i < m; i++) {
     for (jdx = _mdl_jac_ir[i]; jdx < _mdl_jac_ir[i + 1]; jdx++) {
-      j = _mdl_jac_jc[jdx] - _mdl_np;
+      j = _mdl_jac_jc[jdx] - _mdl_np_total;
       if (j >= 2*_mdl_nx)
         j -= _mdl_nx; // input
       else if (j >= _mdl_nd)
@@ -564,7 +569,7 @@ void Omu_Model::setup_jac_row(const char *category, int idx,
   Tcl_DecrRefCount(idxObj);
 
   // take over dependencies from previous/derivatives and active inputs
-  int offs = _mdl_np + 2*_mdl_nx;
+  int offs = _mdl_np_total + 2*_mdl_nx;
   for (int i = 0; i < _mdl_jac_deps->dim; i++) {
     int j = _mdl_jac_deps[i];
     if (offs <= j && j < offs + _mdl_nu && _mdl_jac_u_active[j - offs] == 0)

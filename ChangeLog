@@ -1,3 +1,12 @@
+2018-03-17  <rfranke>
+
+	* hxi/sfun_fmu.c:
+	  - support fmi2GetDirectionalDerivative for models with discrete states
+	* omu/Omu_Model.[hC]:
+	  - consider string parameters during setup of sparse Jacobian
+	* omu/Prg_DOCP.C (update_vals):
+	  - fix initialization of states for parallel multiple shooting
+
 2018-03-05  <rfranke>
 
 	* omu/Prg_DOCP.C (update_vals):

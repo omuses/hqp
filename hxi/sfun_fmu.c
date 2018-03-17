@@ -1475,6 +1475,13 @@ static void mdlJacobian(SimStruct *S)
       mdlUpdate(S, 0);
 
     if (m->providesDirectionalDerivative) {
+      /* set all clocks and mark them subactive */
+      for (i = 0; i < m->nc; i++)
+        m->csub[i] = 1;
+      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
+        ssSetErrorStatus(S, "can't set clock of FMU");
+        return;
+      }
       dvKnown[0] = 1.0;
       offs = m->nxc + m->nxd;
       for (j = 0; j < offs + m->nu; j++) {
@@ -1492,7 +1499,7 @@ static void mdlJacobian(SimStruct *S)
         for (; jdx < jc[j+1] && ir[jdx] < offs; jdx++)
           /* list discrete states here because pr is filled directly */
           m->vrUnknown[nUnknown++] = m->x->vrv[ir[jdx] - m->nxc];
-        for (; jdx < jc[j+1] && ir[jdx] < m->nxc + m->ny; jdx++)
+        for (; jdx < jc[j+1] && ir[jdx] < offs + m->ny; jdx++)
           m->vrUnknown[nUnknown++] = m->y->vrv[ir[jdx] - offs];
         if (nUnknown > 0 && (*m->fmi2GetDirectionalDerivative)
             (m->fmu, m->vrUnknown, nUnknown, vrKnown, 1, dvKnown, &pr[jc[j]])
@@ -1607,6 +1614,13 @@ static void mdlJacobian(SimStruct *S)
     mdlUpdate(S, 0);
 
     if (m->providesDirectionalDerivative) {
+      /* set all clocks and mark them active */
+      for (i = 0; i < m->nc; i++)
+        m->csub[i] = 0;
+      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
+        ssSetErrorStatus(S, "can't set clock of FMU");
+        return;
+      }
       dvKnown[0] = 1.0;
       offs = m->nxc + m->nxd;
       for (j = 0; j < m->nxc + m->nxd + m->nu; j++) {

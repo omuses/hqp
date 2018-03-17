@@ -883,13 +883,13 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
     needs_update = false;
     // take active initial states from solver
     for (i = 0; i < _mdl_nd; i++) {
-      if (_mdl_x0_active[i]) {
+      if (_mdl_x0_active[i] || k > 0) {
         mdl_xd[i] = x[i] * _mdl_x_nominal[i];
         needs_update = true;
       }
     }
     for (i = _mdl_nd; i < _mdl_nx; i++) {
-      if (_mdl_x0_active[i]) {
+      if (_mdl_x0_active[i] || k > 0) {
         mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
         needs_update = true;
       }
