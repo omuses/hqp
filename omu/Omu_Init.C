@@ -49,7 +49,7 @@
 #include "Omu_IntDASPK.h"
 #endif
 #include "Hqp_Omuses.h"
-#include "Prg_DOCP.h"
+#include "Prg_DTOpt.h"
 #include "Prg_DynamicOpt.h"
 #include "Prg_DynamicEst.h"
 
@@ -68,7 +68,7 @@ static void Omu_ClassAlloc()
   IF_CLASS_ALLOC("DASPK", Omu_IntDASPK, Omu_Integrator);
   IF_CLASS_ALLOC("RKsuite", Omu_IntRKsuite, Omu_Integrator);
 #endif
-  IF_CLASS_ALLOC("DOCP", Prg_DOCP, Hqp_SqpProgram);
+  IF_CLASS_ALLOC("DTOpt", Prg_DTOpt, Hqp_SqpProgram);
   IF_CLASS_ALLOC("Omuses", Hqp_Omuses, Hqp_SqpProgram);
   IF_CLASS_ALLOC("DynamicOpt", Prg_DynamicOpt, Omu_Program);
   IF_CLASS_ALLOC("DynamicEst", Prg_DynamicEst, Omu_Program);

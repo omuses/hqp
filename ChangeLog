@@ -1,3 +1,11 @@
+2018-04-17  <rfranke>
+
+	* omu/Prg_DTOpt.[hC], omu/Omu_Init.C, omu/Makefile,
+	  odc/cstr.tcl, odc/did_dtopt.tcl:
+	  - rename DOCP to DTOpt program
+	* odc/omc.tcl:
+	  - update to OpenModelica 1.13 with analytic Jacobian
+
 2018-03-17  <rfranke>
 
 	* odc/CSTR.mo, odc/cstr.tcl, odc/omc.tcl:

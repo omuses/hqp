@@ -20,6 +20,9 @@ proc compileFMU {mo_file} {
     # create script file for omc
     set fp [open "omc_tcl_commands.mos" w]
     puts $fp "// temporary file with omc commands"
+    puts $fp "setCommandLineOptions(\"--std=3.3\");"
+    puts $fp "setCommandLineOptions(\"+simCodeTarget=Cpp\");"
+    puts $fp "setCommandLineOptions(\"-d=-disableDirectionalDerivatives\");"
     puts $fp "loadFile(\"$mo_file_normalized\");"
     puts $fp "getErrorString();"
     puts $fp "translateModelFMU($model_name, version=\"2.0\");"
@@ -31,22 +34,7 @@ proc compileFMU {mo_file} {
 	error "Could not compile FMU: $log"
     }
     cd $cwd
-    set logLines [split $log "\n"]
-    set loadFile [lindex $logLines 1]
-    if {$loadFile != {""}} {
-	error $loadFile
-    }
-    set translateModelFMULines [lrange $logLines 3 end]
-    set translateModelFMU [join $translateModelFMULines "\n"]
-    foreach logLine $translateModelFMULines {
-	if {[string compare -length 6 "Error:" $logLine] == 0} {
-	    error $translateModelFMU
-	}
-    }
-    if {$translateModelFMU != {""}} {
-	puts $translateModelFMU
-    }
     file copy -force "tmp/$model_name.fmu" .
     file delete -force tmp
-    return [lindex $log 2]
+    return [file rootname $mo_file_normalized].fmu
 }

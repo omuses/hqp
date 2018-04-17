@@ -24,7 +24,7 @@ package require Omuses
 ## configure problem
 
 # optimization program and model name
-prg_name DOCP
+prg_name DTOpt
 mdl_path CSTR.fmu
 
 # setup stages and sample periods per stage

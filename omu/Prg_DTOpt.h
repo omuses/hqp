@@ -1,5 +1,5 @@
 /**
- * @file Prg_DOCP.h
+ * @file Prg_DTOpt.h
  *    Discrete-time Optimal Control Problem for a model given
  *    as Functional Model Unit (FMU) or as S-function.
  *
@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2017  Ruediger Franke
+    Copyright (C) 1997--2018  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -26,8 +26,8 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef Prg_DOCP_H
-#define Prg_DOCP_H
+#ifndef Prg_DTOpt_H
+#define Prg_DTOpt_H
 
 #include <Hqp_Docp.h>
 #include "Omu_Model.h"
@@ -37,12 +37,12 @@
    Discrete-time optimal control program for a model given as S-function or 
    Functional Model Unit (FMU). The program is treated with
    multi-stage control vector parameterization.
-   Compared to Prg_DynamicOpt, Prg_DOCP supports multi-threading for
+   Compared to Prg_DynamicOpt, Prg_DTOpt supports multi-threading for
    parallel multiple shooting and exploits the sparse structure of an FMU.
    It does not support continuous-time equations and only covers one
    sample period per stage / shooting interval.
  */
-class Prg_DOCP: public Hqp_Docp, public Omu_Model {
+class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
 
  protected:
   Omu_VariableVec _mdl_x0;	///< initial states for optimization
@@ -166,10 +166,10 @@ class Prg_DOCP: public Hqp_Docp, public Omu_Model {
 
  public:
 
-  Prg_DOCP();		///< constructor
-  ~Prg_DOCP();		///< destructor
+  Prg_DTOpt();		///< constructor
+  ~Prg_DTOpt();		///< destructor
 
-  const char *name() {return "DOCP";} ///< name DOCP
+  const char *name() {return "DTOpt";} ///< name DTOpt
 
   /**
    * @name Access methods for program specific members (If prefix: prg_)

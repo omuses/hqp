@@ -1,10 +1,10 @@
 /*
- * Prg_DOCP.C -- class definition
+ * Prg_DTOpt.C -- class definition
  *
  */
 
 /*
-    Copyright (C) 1997--2017  Ruediger Franke
+    Copyright (C) 1997--2018  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -22,7 +22,7 @@
     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Prg_DOCP.h"
+#include "Prg_DTOpt.h"
 #include "Hqp_omp.h"
 
 #include <stdlib.h>
@@ -42,20 +42,20 @@
 
 #define GET_SET_CB(vartype, prefix, name) \
   GET_CB(vartype, prefix, name), \
-  IF_SET_CB(vartype, Prg_DOCP, set_##name)
+  IF_SET_CB(vartype, Prg_DTOpt, set_##name)
 
 #define GET_CB(vartype, prefix, name) \
   prefix#name, \
-  IF_GET_CB(vartype, Prg_DOCP, name)
+  IF_GET_CB(vartype, Prg_DTOpt, name)
 
 // Throw E_CONV as errors occuring during solution are generally
 // due to bad values and need to be treated (esp. during stepsize check).
 #undef SMETHOD_ERROR
 #define SMETHOD_ERROR E_CONV
 
-typedef If_Method<Prg_DOCP> If_Cmd;
+typedef If_Method<Prg_DTOpt> If_Cmd;
 
-IF_CLASS_DEFINE("DOCP", Prg_DOCP, Hqp_SqpProgram);
+IF_CLASS_DEFINE("DTOpt", Prg_DTOpt, Hqp_SqpProgram);
 
 inline double absmax(double a, double b)
 {
@@ -63,7 +63,7 @@ inline double absmax(double a, double b)
 }
 
 //--------------------------------------------------------------------------
-Prg_DOCP::Prg_DOCP()
+Prg_DTOpt::Prg_DTOpt()
   : Hqp_Docp(omp_get_max_threads())
   , Omu_Model(ncpu())
 {
@@ -121,9 +121,9 @@ Prg_DOCP::Prg_DOCP()
   _taus = v_get(_K+1);
 
   _ifList.append(new If_Cmd("prg_setup_model",
-			    &Prg_DOCP::setup_model, this));
+			    &Prg_DTOpt::setup_model, this));
   _ifList.append(new If_Cmd("prg_setup_stages",
-			    &Prg_DOCP::setup_stages, this));
+			    &Prg_DTOpt::setup_stages, this));
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", K)));
   _ifList.append(new If_Real(GET_SET_CB(double, "prg_", t0)));
   _ifList.append(new If_Real(GET_SET_CB(double, "prg_", tf)));
@@ -216,7 +216,7 @@ Prg_DOCP::Prg_DOCP()
 }
 
 //--------------------------------------------------------------------------
-Prg_DOCP::~Prg_DOCP()
+Prg_DTOpt::~Prg_DTOpt()
 {
   v_free(_taus);
   v_free(_ts);
@@ -235,10 +235,10 @@ Prg_DOCP::~Prg_DOCP()
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::setup_model()
+void Prg_DTOpt::setup_model()
 {
   if (_mdl_logging >= If_LogInfo)
-    If_Log("Info", "Prg_DOCP::setup_model");
+    If_Log("Info", "Prg_DTOpt::setup_model");
 
   // load FMU or S-function
   Omu_Model::setup_model(_t0);
@@ -281,7 +281,7 @@ void Prg_DOCP::setup_model()
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::setup_horizon(int &k0, int &kf)
+void Prg_DTOpt::setup_horizon(int &k0, int &kf)
 {
   // call setup_stages if this wasn't already done through the interface
   if (!_stages_ok)
@@ -294,12 +294,12 @@ void Prg_DOCP::setup_horizon(int &k0, int &kf)
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::setup_stages()
+void Prg_DTOpt::setup_stages()
 {
   int k, j;
 
   if (_mdl_logging >= If_LogInfo)
-    If_Log("Info", "Prg_DOCP::setup_stages");
+    If_Log("Info", "Prg_DTOpt::setup_stages");
 
   // setup model
   if (_mdl_needs_setup)
@@ -307,8 +307,8 @@ void Prg_DOCP::setup_stages()
 
   // get model structure
   if (_mdl_nx > _mdl_nd)
-    m_error(E_FORMAT, "Prg_DOCP::setup_stages: "
-            "prg_name DOCP requires model without continuous states");
+    m_error(E_FORMAT, "Prg_DTOpt::setup_stages: "
+            "prg_name DTOpt requires model without continuous states");
 
   // setup optimization program
   v_resize(_ts, _K + 1);
@@ -336,10 +336,10 @@ void Prg_DOCP::setup_stages()
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::setup_vars(int k,
-			  VECP x, VECP x_min, VECP x_max, IVECP x_int,
-			  VECP u, VECP u_min, VECP u_max, IVECP u_int,
-			  VECP c, VECP c_min, VECP c_max)
+void Prg_DTOpt::setup_vars(int k,
+			   VECP x, VECP x_min, VECP x_max, IVECP x_int,
+			   VECP u, VECP u_min, VECP u_max, IVECP u_int,
+			   VECP c, VECP c_min, VECP c_max)
 {
   int i, idx, isc, iscf, j;
 
@@ -393,7 +393,7 @@ void Prg_DOCP::setup_vars(int k,
       _t_active = _mdl_u.active[_t_scale_idx];
       _t_scale_nominal = _mdl_u_nominal[_t_scale_idx];
       if (_mdl_u_order[_t_scale_idx] != 0)
-	  m_error(E_FORMAT, "Prg_DOCP::setup: "
+	  m_error(E_FORMAT, "Prg_DTOpt::setup: "
 		  "mdl_u_order[mdl_t_scale_idx] must be 0 (zero order hold)");
     }
     else
@@ -494,7 +494,7 @@ void Prg_DOCP::setup_vars(int k,
   // setup states and control inputs
   for (i = _mdl_nd, j = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (k == 0 && _mdl_u_order[idx] < 0 || _mdl_u_order[idx] > 1)
-      m_error(E_FORMAT, "Prg_DOCP::setup: "
+      m_error(E_FORMAT, "Prg_DTOpt::setup: "
               "mdl_u_order must be 0 or 1");
     if (_mdl_u.active[idx]) {
       if (_mdl_der_u.active[idx] || _K == 0) {
@@ -734,11 +734,11 @@ void Prg_DOCP::setup_vars(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::setup_struct(int k, const VECP x, const VECP u,
-			    MATP fx, MATP fu, IVECP f_lin,
-			    VECP f0x, VECP f0u, int &f0_lin,
-			    MATP cx, MATP cu, IVECP c_lin,
-			    MATP Lxx, MATP Luu, MATP Lxu)
+void Prg_DTOpt::setup_struct(int k, const VECP x, const VECP u,
+			     MATP fx, MATP fu, IVECP f_lin,
+			     VECP f0x, VECP f0u, int &f0_lin,
+			     MATP cx, MATP cu, IVECP c_lin,
+			     MATP Lxx, MATP Luu, MATP Lxu)
 {
   int i, j, idx, jdx, offs;
   SimStruct *S = _SS[0];
@@ -762,13 +762,13 @@ void Prg_DOCP::setup_struct(int k, const VECP x, const VECP u,
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::init_simulation(int k,
-			       VECP x, VECP u)
+void Prg_DTOpt::init_simulation(int k,
+				VECP x, VECP u)
 {
   int i, idx;
 
   if (_mdl_logging >= If_LogInfo)
-    If_Log("Info", "Prg_DOCP::init_simulation at k = %d", k);
+    If_Log("Info", "Prg_DTOpt::init_simulation at k = %d", k);
 
   // initial states
   if (k == 0) {
@@ -789,8 +789,8 @@ void Prg_DOCP::init_simulation(int k,
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
-			   VECP f, Real &f0, VECP c)
+void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
+			    VECP f, Real &f0, VECP c)
 {
   int i, j, idx, is, isc, isf, iscf;
   int nxk = k < _K? _nx: _nu - _ndu + _nx;
@@ -805,7 +805,7 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
   bool with_lambda = (k == 0 && _c_lambda != VNULL);
 
   if (_mdl_logging >= If_LogInfo)
-    If_Log("Info", "Prg_DOCP::update_vals at k = %d, tn = %d", k, tn);
+    If_Log("Info", "Prg_DTOpt::update_vals at k = %d, tn = %d", k, tn);
 
   if (with_lambda)
     v_zero(_mdl_y_lambda);
@@ -1172,12 +1172,12 @@ void Prg_DOCP::update_vals(int k, const VECP x, const VECP u,
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::update_stage(int k, const VECP x, const VECP u,
-			    VECP f, Real &f0, VECP c,
-			    MATP fx, MATP fu, VECP f0x, VECP f0u,
-			    MATP cx, MATP cu,
-			    const VECP rf, const VECP rc,
-			    MATP Lxx, MATP Luu, MATP Lxu)
+void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
+			     VECP f, Real &f0, VECP c,
+			     MATP fx, MATP fu, VECP f0x, VECP f0u,
+			     MATP cx, MATP cu,
+			     const VECP rf, const VECP rc,
+			     MATP Lxx, MATP Luu, MATP Lxu)
 {
   int i, iu, idx, ii, iidx0, iidx, isc, iscdx, is, j, ju, jdx, rdx;
   int isf, iscf, iscfdx, ixf;
@@ -1195,7 +1195,7 @@ void Prg_DOCP::update_stage(int k, const VECP x, const VECP u,
   SimStruct *S = _SS[tn];
 
   if (_mdl_logging >= If_LogInfo)
-    If_Log("Info", "Prg_DOCP::update_stage at k = %d, tn = %d", k, tn);
+    If_Log("Info", "Prg_DTOpt::update_stage at k = %d, tn = %d", k, tn);
 
   if (!_ad || !_mdl_jac || ssGetmdlJacobian(S) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
@@ -1466,9 +1466,9 @@ void Prg_DOCP::update_stage(int k, const VECP x, const VECP u,
 }
 
 //--------------------------------------------------------------------------
-void Prg_DOCP::fetch_jac(SimStruct *S,
-                         int k, double tscale, const VECP x, const VECP u,
-                         MATP fx, MATP fu, MATP cx, MATP cu)
+void Prg_DTOpt::fetch_jac(SimStruct *S,
+                          int k, double tscale, const VECP x, const VECP u,
+                          MATP fx, MATP fu, MATP cx, MATP cu)
 {
   int i, iu, idx, ii, iidx0, iidx, isc, iscdx, is, j, ju, jdx, rdx;
   int isf, iscf, iscfdx, ixf;
