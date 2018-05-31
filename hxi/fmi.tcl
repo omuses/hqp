@@ -42,7 +42,7 @@ proc ::fmi::getResourcesURI {fmuPath} {
 proc ::fmi::getBinaryPath {fmuPath} {
     set dirPath [::fmi::getDirPath $fmuPath]
     set sysName $::fmi::platformSubDir($::tcl_platform(os))
-    set binPath ${dirPath}/binaries/$sysName[expr 8*$::tcl_platform(wordSize)]
+    set binPath ${dirPath}/binaries/$sysName[expr 8*$::tcl_platform(pointerSize)]
     set fmuName [file rootname [file tail $fmuPath]]
     # export binPath under win to get optional supplementary dll's loaded
     if {$sysName == "win"} {

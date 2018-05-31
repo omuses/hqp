@@ -1,3 +1,10 @@
+2018-05-31  <rfranke>
+
+	* hxi/fmi.tcl:
+	  - fix binary path for 64 bit Windows
+	* configure, configure.in:
+	  - use regular LPSolve package under Linux
+
 2018-04-17  <rfranke>
 
 	* omu/Prg_DTOpt.[hC], omu/Omu_Init.C, omu/Makefile,

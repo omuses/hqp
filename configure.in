@@ -865,11 +865,18 @@ AC_ARG_ENABLE(lpsolve,
 AC_MSG_RESULT($hqp_lpsolve)
 
 if test "$hqp_lpsolve" != no; then
-  LPSOLVE_INCDIR="-I../lp_solve_5.5"
   LPSOLVE_SRCS="Hqp_LPSolve.C"
   HQP_DEFS="$HQP_DEFS -DHQP_WITH_LPSOLVE=1"
-  HQP_MACH_OBJS="$HQP_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
-  OMU_MACH_OBJS="$OMU_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+  if test "$target" = CL; then
+    # place into directory hqp/lp_solve_5.5 besides hqp/hqp and hqp/omu
+    LPSOLVE_INCDIR="-I../lp_solve_5.5"
+    HQP_MACH_OBJS="$HQP_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+    OMU_MACH_OBJS="$OMU_MACH_OBJS -LIBPATH:../lp_solve_5.5 lpsolve55.lib"
+  else
+    # install regular package
+    LPSOLVE_INCDIR="-I/usr/include/lpsolve"
+    HQP_MACH_OBJS="$HQP_MACH_OBJS -Wl,-rpath,\"/usr/lib/lp_solve\" /usr/lib/lp_solve/liblpsolve55.so"
+  fi
 else
   LPSOLVE_INCDIR=""
   LPSOLVE_SRCS=""
