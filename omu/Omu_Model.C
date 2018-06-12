@@ -111,7 +111,7 @@ Omu_Model::~Omu_Model()
 {
   int i, tn;
 
-  for (tn = 0; tn < _mdl_ncpu; tn++) {
+  for (tn = 0; tn < (int)_mdl_needs_init->dim; tn++) {
     if (_SS[tn]) {
       SMETHOD_CALL_HOLD(mdlTerminate, _SS[tn]);
       Hxi_SimStruct_destroy(_SS[tn]);
@@ -266,9 +266,13 @@ void Omu_Model::setSampleTime(SimStruct *S, double val)
 }
 
 //--------------------------------------------------------------------------
-void Omu_Model::setup_model(double t0)
+void Omu_Model::setup_model(double t0, int ncpu)
 {
   int i, tn;
+
+  if (ncpu < 1 || ncpu > (int)_mdl_needs_init->dim)
+    m_error(E_SIZES, "ncpu must not exceed constructor value");
+  _mdl_ncpu = ncpu;
 
   for (tn = 0; tn < _mdl_ncpu; tn++) {
     // setup S-function

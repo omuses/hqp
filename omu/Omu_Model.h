@@ -125,7 +125,7 @@ class OMU_API Omu_Model {
 
  protected:
   // methods
-  virtual void setup_model(double t0); 	///< load S-function
+  virtual void setup_model(double t0, int ncpu = 1); 	///< load S-function
 
   void setup_jac();
   void setup_jac_row(const char *category, int idx,

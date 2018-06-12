@@ -282,6 +282,9 @@ void Prg_DynamicOpt::setup_stages(IVECP ks, VECP ts)
 {
   int kk, j;
 
+  if (_mdl_logging >= If_LogInfo)
+    If_Log("Info", "Prg_DynamicOpt::setup_stages");
+
   // setup S-function
   if (_mdl_needs_setup)
     setup_model();

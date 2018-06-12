@@ -120,10 +120,8 @@ Prg_DTOpt::Prg_DTOpt()
   _ts = v_get(_K+1);
   _taus = v_get(_K+1);
 
-  _ifList.append(new If_Cmd("prg_setup_model",
-			    &Prg_DTOpt::setup_model, this));
   _ifList.append(new If_Cmd("prg_setup_stages",
-			    &Prg_DTOpt::setup_stages, this));
+                            &Prg_DTOpt::setup_stages, this));
   _ifList.append(new If_Int(GET_SET_CB(int, "prg_", K)));
   _ifList.append(new If_Real(GET_SET_CB(double, "prg_", t0)));
   _ifList.append(new If_Real(GET_SET_CB(double, "prg_", tf)));
@@ -240,8 +238,12 @@ void Prg_DTOpt::setup_model()
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DTOpt::setup_model");
 
+  // limit number of CPUs to number of stages
+  if (ncpu() > _K + 1)
+    set_ncpu(_K + 1);
+
   // load FMU or S-function
-  Omu_Model::setup_model(_t0);
+  Omu_Model::setup_model(_t0, ncpu());
 
   // no continuous states
   assert(_mdl_nd == _mdl_nx);
