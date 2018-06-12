@@ -854,6 +854,7 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
   real_T *mdl_xd = ssGetDiscStates(S);
   real_T *mdl_xc = ssGetContStates(S);
   bool needs_update = true;
+  bool after_init = false;
   for (i = 0; i < _mdl_nd; i++) {
     mdl_xd[i] = x[i] * _mdl_x_nominal[i];
   }
@@ -869,10 +870,14 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     SMETHOD_CALL(mdlInitializeConditions, S);
     _mdl_needs_init[tn] = 0;
     // call mdlOutputs because implementation may be delayed
+    after_init = true;
+  }
+
+  if (after_init || _mdl_is_fmu && k == 0) {
     // call mdlUpdate and disable continuous task to trigger initial clock
     if (_mdl_is_fmu) {
       setSampleHit(S, true);
-      setContinuousTask(S, false);
+      setContinuousTask(S, k != 0);
     }
     SMETHOD_CALL2(mdlOutputs, S, 0);
     if (ssGetmdlUpdate(S) != NULL) {
@@ -901,18 +906,15 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
   // call mdlOutputs/mdlUpdate to get outputs for current states
   // enable continuous task to not update states here
   if (needs_update) {
-    if (_mdl_is_fmu) {
+    if (_mdl_is_fmu)
       setSampleHit(S, true);
-      setContinuousTask(S, true);
-    }
     // also call mdlOutputs as done by Simulink before each mdlUpdate
     SMETHOD_CALL2(mdlOutputs, S, 0);
     if (ssGetmdlUpdate(S) != NULL) {
       SMETHOD_CALL2(mdlUpdate, S, 0);
     }
-    if (_mdl_is_fmu) {
+    if (_mdl_is_fmu)
       setSampleHit(S, false);
-    }
   }
 
   // obtain model outputs

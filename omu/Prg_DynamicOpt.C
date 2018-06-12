@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2017  Ruediger Franke
+    Copyright (C) 1997--2018  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -1859,13 +1859,18 @@ void Prg_DynamicOpt::consistic(int kk, double t,
     // Note: this is done once at the beginning of a sample interval;
     // no event processing takes place during the integration.
     if (ssGetmdlUpdate(S) != NULL) {
-      if (_mdl_is_fmu)
+      if (_mdl_is_fmu) {
         setSampleHit(S, true);
+        // disable continuous task to trigger initial clock
+        setContinuousTask(S, kk != 0);
+      }
       // also call mdlOutputs as done by Simulink before each mdlUpdate
       SMETHOD_CALL2(mdlOutputs, S, 0);
       SMETHOD_CALL2(mdlUpdate, S, 0);
-      if (_mdl_is_fmu)
+      if (_mdl_is_fmu) {
         setSampleHit(S, false);
+        setContinuousTask(S, true);
+      }
     }
 
     // take over optimized control inputs from optimizer

@@ -1,3 +1,9 @@
+2018-06-12  <rfranke>
+
+	* omu/Omu_Model.[hC], omu/Prg_DTOpt.C, omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - evaluate first tick after initialization of discrete-time models
+	  - limit number of parallel threads to number of stages
+
 2018-05-31  <rfranke>
 
 	* hxi/fmi.tcl:
