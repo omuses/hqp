@@ -338,6 +338,7 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
   int		_nsf;	///< number of slacks for soft constraints at final time
   int		_nscf;	///< number of soft constraints at final time
   int 		_multistage; 	///< treat as multistage problem
+  bool  	_within_grds;	///< calculating derivatives
 
   /**
    * Number of sample periods per stage (default: 1).

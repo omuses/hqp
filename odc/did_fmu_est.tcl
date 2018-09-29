@@ -70,6 +70,9 @@ prg_K [expr $K1+$K2+1]
 prg_nex 2
 prg_setup_stages
 
+# initial guesses for states for all experiments
+mdl_x0s { {1 0} {1 0} }
+
 # model inputs and sample time points
 mdl_us [concat $us1 $us2]
 prg_ts [concat $ts1 $ts2]

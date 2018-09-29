@@ -62,6 +62,7 @@ IF_CLASS_DEFINE("SFunctionEst", Prg_SFunctionEst, Omu_Program);
 Prg_DynamicEst::Prg_DynamicEst()
 {
   _multistage = 1;
+  _within_grds = false;
 
   _mdl_p_active = iv_get(_mdl_np);
   _mdl_p_confidence = v_get(_mdl_np);
@@ -104,8 +105,8 @@ Prg_DynamicEst::Prg_DynamicEst()
   _dydx = m_resize(m_get(1, 1), _ny, _nx);
   _dxdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
   _dydpx0 = m_resize(m_get(1, 1), _ny, _np+_nx0);
-  _dxfdx = m_resize(m_get(1, 1), _nx, _nx);
-  _dxfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
+  _dfdx = m_resize(m_get(1, 1), _nx, _nx);
+  _dfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
 
   _ifList.append(new If_Cmd("prg_setup_model",
 			    &Prg_DynamicEst::setup_model, this));
@@ -149,8 +150,8 @@ Prg_DynamicEst::Prg_DynamicEst()
 //--------------------------------------------------------------------------
 Prg_DynamicEst::~Prg_DynamicEst()
 {
-  m_free(_dxfdpx0);
-  m_free(_dxfdx);
+  m_free(_dfdpx0);
+  m_free(_dfdx);
   m_free(_dydpx0);
   m_free(_dxdpx0);
   m_free(_dydx);
@@ -353,8 +354,8 @@ void Prg_DynamicEst::setup(int k,
     m_resize(_dydx, _ny, _nx);
     m_resize(_dxdpx0, _nx, _np+_nx0);
     m_resize(_dydpx0, _ny, _np+_nx0);
-    m_resize(_dxfdx, _nx, _nx);
-    m_resize(_dxfdpx0, _nx, _np+_nx0);
+    m_resize(_dfdx, _nx, _nx);
+    m_resize(_dfdpx0, _nx, _np+_nx0);
     m_zero(_M2);
     m_zero(_P2);
     m_zero(_COV);
@@ -602,7 +603,11 @@ void Prg_DynamicEst::update(int kk,
   }
 
   // obtain model outputs
+  if (_mdl_is_fmu)
+    setSampleHit(S, true);
   SMETHOD_CALL2(mdlOutputs, S, 0);
+  if (_mdl_is_fmu)
+    setSampleHit(S, false);
 
   // store outputs in constraints
   real_T *mdl_y = NULL;
@@ -637,22 +642,24 @@ void Prg_DynamicEst::update(int kk,
     }
   }
 
-  // store values of model states
-  for (idx = 0; idx < _mdl_nd; idx++)
-    _mdl_xs[kk][idx] = value(mdl_xd[idx]);
-  for (idx = _mdl_nd; idx < _mdl_nx; idx++)
-    _mdl_xs[kk][idx] = value(mdl_xc[idx - _mdl_nd]);
-
-  // store values of model outputs
-  for (idx = 0; idx < _mdl_ny; idx++)
-    _mdl_ys[kk][idx] = value(mdl_y[idx]);
-
-  if (new_experiment) {
-    // store initial model states
+  if (!_within_grds) {
+    // store values of model states
     for (idx = 0; idx < _mdl_nd; idx++)
-      _mdl_x0s[ex][idx] = mdl_xd[idx];
+      _mdl_xs[kk][idx] = value(mdl_xd[idx]);
     for (idx = _mdl_nd; idx < _mdl_nx; idx++)
-      _mdl_x0s[ex][idx] = mdl_xc[idx - _mdl_nd];
+      _mdl_xs[kk][idx] = value(mdl_xc[idx - _mdl_nd]);
+
+    // store values of model outputs
+    for (idx = 0; idx < _mdl_ny; idx++)
+      _mdl_ys[kk][idx] = value(mdl_y[idx]);
+
+    if (new_experiment) {
+      // store initial model states
+      for (idx = 0; idx < _mdl_nd; idx++)
+        _mdl_x0s[ex][idx] = mdl_xd[idx];
+      for (idx = _mdl_nd; idx < _mdl_nx; idx++)
+        _mdl_x0s[ex][idx] = mdl_xc[idx - _mdl_nd];
+    }
   }
 
   if (kk < _KK) {
@@ -695,7 +702,9 @@ void Prg_DynamicEst::update(int kk,
     }
 
     // call predefined update for numerical differentiation
+    _within_grds = true;
     Omu_Program::update_grds(kk, x, u, xf, f, f0, c);
+    _within_grds = false;
 
     // correct gradient of f0 as complete nd gives bad results
     v_zero(f0.gx);
@@ -712,10 +721,6 @@ void Prg_DynamicEst::update(int kk,
     // compute Measurement, Precision and Covariance matrix
     //
 
-    if (_mdl_nd > 0)
-      // no covariance matrix supported yet
-      return;
-
     // build dx/d(p,x0)
     if (kk == 0) {
       m_zero(_dxdpx0);
@@ -728,7 +733,7 @@ void Prg_DynamicEst::update(int kk,
     else {
       if (!new_experiment)
 	// initial states are final states of previous sample period
-	m_copy(_dxfdpx0, _dxdpx0);
+	m_copy(_dfdpx0, _dxdpx0);
       else {
 	// re-initialize initial states for a new experiment
 	for (i = _np, idx = 0; idx < _mdl_nx; idx++) {
@@ -761,22 +766,38 @@ void Prg_DynamicEst::update(int kk,
 
     // consider contribution of continuous-time equations
     if (kk < _KK && ex == _exs[kk+1]) {
-      if (kk == 0 || !new_experiment)
-	m_copy(xf.Sx, _dxfdx);
+      if (kk == 0 || !new_experiment) {
+	//m_copy(xf.Sx, _dfdx);
+	// collect dfdx from xf.Sx and xf.Su
+	for (i = 0; i < _np + _mdl_nd; i++) {
+	  for (j = 0; j < _nx; j++)
+	    _dfdx[i][j] = f.Jx[i][j];
+	}
+	for (; i < _nx; i++) {
+	  for (j = 0; j < _nx; j++)
+	    _dfdx[i][j] = xf.Sx[i][j];
+	}
+      }
       else {
-	// collect dxfdx from xf.Sx and xf.Su
-	for (i = 0; i < _nx; i++) {
+	// collect dfdx from xf.Sx and xf.Su
+	for (i = 0; i < _np + _mdl_nd; i++) {
 	  for (j = 0; j < _np; j++)
-	    _dxfdx[i][j] = xf.Sx[i][j];
-	  for (j = _np; j < _nx; j++)
-	    _dxfdx[i][j] = xf.Su[i][j-_np];
+	    _dfdx[i][j] = f.Jx[i][j];
+	  for (; j < _np + _mdl_nd; j++)
+	    _dfdx[i][j] = f.Ju[i][j-_np];
+	}
+	for (; i < _nx; i++) {
+	  for (j = 0; j < _np; j++)
+	    _dfdx[i][j] = xf.Sx[i][j];
+	  for (; j < _nx; j++)
+	    _dfdx[i][j] = xf.Su[i][j-_np];
 	}
       }
       if (_multistage)
-	m_mlt(_dxfdx, _dxdpx0, _dxfdpx0);
+	m_mlt(_dfdx, _dxdpx0, _dfdpx0);
       else
-	// if not multistage, then dxf/dx == dxf/d(p,x0) as x == (p,x0)
-	m_copy(_dxfdx, _dxfdpx0);
+	// if not multistage, then df/dx == df/d(p,x0) as x == (p,x0)
+	m_copy(_dfdx, _dfdpx0);
     }
 
     // store sum of residuals

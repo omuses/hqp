@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2014  Ruediger Franke
+    Copyright (C) 1997--2018  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -236,6 +236,7 @@ class Prg_DynamicEst: public Omu_Program, public Omu_Model {
   int		_nx0;	///< number of estimated initial states
   int		_ny;	///< number of reference outputs for estimation
   int 		_multistage; 	///< treat as multistage problem
+  bool  	_within_grds;	///< calculating derivatives
 
   int		_nex;	///< number of experiments used for estimation
   MATP 		_mdl_x0s;///< initial states for each experiment
@@ -255,8 +256,8 @@ class Prg_DynamicEst: public Omu_Program, public Omu_Model {
   MATP 	_dydx;		///< help variable dy/dx
   MATP 	_dxdpx0;	///< help variable dx/d(p,x0)
   MATP 	_dydpx0;	///< help variable dy/d(p,x0)
-  MATP 	_dxfdx;		///< help variable dxf/dx
-  MATP 	_dxfdpx0;	///< help variable dxf/d(p,x0)
+  MATP 	_dfdx;		///< help variable df/dx
+  MATP 	_dfdpx0;	///< help variable df/d(p,x0)
 
   /**
    * @name Implementation of predefined methods.

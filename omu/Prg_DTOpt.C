@@ -72,6 +72,7 @@ Prg_DTOpt::Prg_DTOpt()
   _t_scale_i = -1;
   _t_scale_nominal = 1.0;
   _stages_ok = false;
+  _within_grds = false;
   _ad = true;
   _fscale = 1.0;
 
@@ -1086,32 +1087,34 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     }
   }
 
-  // store values of model states
-  for (i = 0; i < _mdl_nd; i++)
-    _mdl_xs[k][i] = value(mdl_xd[i]);
-  for (; i < _mdl_nx; i++)
-    _mdl_xs[k][i] = value(mdl_xc[i - _mdl_nd]);
-
-  // store values of model outputs
-  for (i = 0; i < _mdl_ny; i++)
-    _mdl_ys[k][i] = value(mdl_y[i]);
-
-  // store initial and final values
-  if (k == 0) {
+  if (!_within_grds) {
+    // store values of model states
     for (i = 0; i < _mdl_nd; i++)
-      _mdl_x0[i] = value(mdl_xd[i]);
+      _mdl_xs[k][i] = value(mdl_xd[i]);
     for (; i < _mdl_nx; i++)
-      _mdl_x0[i] = value(mdl_xc[i - _mdl_nd]);
-    for (i = 0; i < _mdl_nu; i++)
-      _mdl_u0[i] = value(mdl_u[i]);
+      _mdl_xs[k][i] = value(mdl_xc[i - _mdl_nd]);
+
+    // store values of model outputs
     for (i = 0; i < _mdl_ny; i++)
-      _mdl_y0[i] = value(mdl_y[i]);
-  }
-  else if (k == _K) {
-    for (i = 0; i < _mdl_nu; i++)
-      _mdl_uf[i] = value(mdl_u[i]);
-    for (i = 0; i < _mdl_ny; i++)
-      _mdl_yf[i] = value(mdl_y[i]);
+      _mdl_ys[k][i] = value(mdl_y[i]);
+
+    // store initial and final values
+    if (k == 0) {
+      for (i = 0; i < _mdl_nd; i++)
+        _mdl_x0[i] = value(mdl_xd[i]);
+      for (; i < _mdl_nx; i++)
+        _mdl_x0[i] = value(mdl_xc[i - _mdl_nd]);
+      for (i = 0; i < _mdl_nu; i++)
+        _mdl_u0[i] = value(mdl_u[i]);
+      for (i = 0; i < _mdl_ny; i++)
+        _mdl_y0[i] = value(mdl_y[i]);
+    }
+    else if (k == _K) {
+      for (i = 0; i < _mdl_nu; i++)
+        _mdl_uf[i] = value(mdl_u[i]);
+      for (i = 0; i < _mdl_ny; i++)
+        _mdl_yf[i] = value(mdl_y[i]);
+    }
   }
 
   // junction conditions for subsequent stage
@@ -1204,8 +1207,11 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
   if (!_ad || !_mdl_jac || ssGetmdlJacobian(S) == NULL || _t_active) {
     // todo: use analytic Jacobian if _t_active
     // call predefined update_stage for numerical differentiation
-    Hqp_Docp::update_stage(k, x, u, f, f0, c, fx, fu, f0x, f0u, cx, cu,
-                           rf, rc, Lxx, Luu, Lxu);
+    update_vals(k, x, u, f, f0, c);
+    _within_grds = true;
+    update_grds(k, x, u, fx, fu, f0x, f0u, cx, cu);
+    update_hela(k, x, u, rf, rc, Lxx, Luu, Lxu);
+    _within_grds = false;
     if (!_ad)
       return;
   }

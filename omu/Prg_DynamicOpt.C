@@ -67,6 +67,7 @@ Prg_DynamicOpt::Prg_DynamicOpt()
 {
   _sps = 1;
   _multistage = 1;
+  _within_grds = false;
   _t_scale_idx = -1;
   _t_active = 0;
   _t_scale_i = -1;
@@ -929,7 +930,11 @@ void Prg_DynamicOpt::update(int kk,
     mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
   // call mdlOutputs
+  if (_mdl_is_fmu)
+    setSampleHit(S, true);
   SMETHOD_CALL2(mdlOutputs, S, 0);
+  if (_mdl_is_fmu)
+    setSampleHit(S, false);
 
   // obtain model outputs
   real_T *mdl_y = NULL;
@@ -1118,32 +1123,34 @@ void Prg_DynamicOpt::update(int kk,
     }
   }
 
-  // store values of model states
-  for (i = 0; i < _mdl_nd; i++)
-    _mdl_xs[kk][i] = value(mdl_xd[i]);
-  for (; i < _mdl_nx; i++)
-    _mdl_xs[kk][i] = value(mdl_xc[i - _mdl_nd]);
-
-  // store values of model outputs
-  for (i = 0; i < _mdl_ny; i++)
-    _mdl_ys[kk][i] = value(mdl_y[i]);
-
-  // store initial and final values
-  if (kk == 0) {
+  if (!_within_grds) {
+    // store values of model states
     for (i = 0; i < _mdl_nd; i++)
-      _mdl_x0[i] = value(mdl_xd[i]);
+      _mdl_xs[kk][i] = value(mdl_xd[i]);
     for (; i < _mdl_nx; i++)
-      _mdl_x0[i] = value(mdl_xc[i - _mdl_nd]);
-    for (i = 0; i < _mdl_nu; i++)
-      _mdl_u0[i] = value(mdl_u[i]);
+      _mdl_xs[kk][i] = value(mdl_xc[i - _mdl_nd]);
+
+    // store values of model outputs
     for (i = 0; i < _mdl_ny; i++)
-      _mdl_y0[i] = value(mdl_y[i]);
-  }
-  else if (kk == _KK) {
-    for (i = 0; i < _mdl_nu; i++)
-      _mdl_uf[i] = value(mdl_u[i]);
-    for (i = 0; i < _mdl_ny; i++)
-      _mdl_yf[i] = value(mdl_y[i]);
+      _mdl_ys[kk][i] = value(mdl_y[i]);
+
+    // store initial and final values
+    if (kk == 0) {
+      for (i = 0; i < _mdl_nd; i++)
+        _mdl_x0[i] = value(mdl_xd[i]);
+      for (; i < _mdl_nx; i++)
+        _mdl_x0[i] = value(mdl_xc[i - _mdl_nd]);
+      for (i = 0; i < _mdl_nu; i++)
+        _mdl_u0[i] = value(mdl_u[i]);
+      for (i = 0; i < _mdl_ny; i++)
+        _mdl_y0[i] = value(mdl_y[i]);
+    }
+    else if (kk == _KK) {
+      for (i = 0; i < _mdl_nu; i++)
+        _mdl_uf[i] = value(mdl_u[i]);
+      for (i = 0; i < _mdl_ny; i++)
+        _mdl_yf[i] = value(mdl_y[i]);
+    }
   }
 
   // junction conditions for subsequent stage
@@ -1203,7 +1210,9 @@ void Prg_DynamicOpt::update(int kk,
 
   // obtain Jacobians if required
   if (with_grds) {
+    _within_grds = true;
     update_grds(kk, x, u, xf, f, f0, c);
+    _within_grds = false;
   }
 }
 

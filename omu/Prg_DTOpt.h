@@ -120,6 +120,7 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
   IVECP 	_mdl_x_periodic;
 
   bool 	_stages_ok;	///< setup_stages() was called separately
+  bool 	_within_grds;	///< calculating derivatives
   bool 	_ad;		///< flag about use of algorithmic differentiation
   double _fscale;	///< scaling of optimization criterion
 
