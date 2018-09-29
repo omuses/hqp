@@ -1,3 +1,12 @@
+2018-09-29  <rfranke>
+
+	* omu/Prg_DTEst.[hC], omu/Omu_Init.C, omu/Makefile, hqp/Hqp_Docp.C, odc/did_dtest.tcl:
+	  - exploit sparse Jacobian of discrete-time FMUs for estimation
+	* omu/Prg_DTOpt.[hC], omu/Prg_DynamicOpt.[hC], omu/Prg_DynamicEst.[hC], did_fmu_est.tcl:
+	  - evaluate clocked partitions during update for numerical differentiation
+	  - don't save results if within_grds to exclude perturbed values
+
+
 2018-06-12  <rfranke>
 
 	* omu/Omu_Model.[hC], omu/Prg_DTOpt.C, omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:

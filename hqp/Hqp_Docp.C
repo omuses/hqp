@@ -1101,7 +1101,7 @@ void Hqp_Docp::update_grds(int k, const VECP x, const VECP u,
 {
   int i, j;
   int nx, nu, nf, nc;
-  Real vi_bak, dvi;
+  Real vj_bak, dvj;
   Real f0, df0;
   VECP f, df;
   VECP c, dc;
@@ -1127,10 +1127,10 @@ void Hqp_Docp::update_grds(int k, const VECP x, const VECP u,
 
   update_vals(k, x, u, f, f0, c);
 
-  for (i = 0; i < nx; i++) {
-    vi_bak = x->ve[i];
-    dvi = 1e-4 * fabs(vi_bak) + 1e-6;
-    x->ve[i] += dvi;
+  for (j = 0; j < nx; j++) {
+    vj_bak = x->ve[j];
+    dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+    x->ve[j] += dvj;
 
     v_zero(df);
     df0 = 0.0;
@@ -1139,21 +1139,21 @@ void Hqp_Docp::update_grds(int k, const VECP x, const VECP u,
     update_vals(k, x, u, df, df0, dc);
 
     v_sub(df, f, df);
-    for (j = 0; j < nf; j++)
-      fx->me[j][i] = df->ve[j] / dvi;
+    for (i = 0; i < nf; i++)
+      fx->me[i][j] = df->ve[i] / dvj;
 
-    f0x->ve[i] = (df0 - f0) / dvi;
+    f0x->ve[j] = (df0 - f0) / dvj;
 
     v_sub(dc, c, dc);
-    for (j = 0; j < nc; j++)
-      cx->me[j][i] = dc->ve[j] / dvi;
+    for (i = 0; i < nc; i++)
+      cx->me[i][j] = dc->ve[i] / dvj;
 
-    x->ve[i] = vi_bak;
+    x->ve[j] = vj_bak;
   }
-  for (i = 0; i < nu; i++) {
-    vi_bak = u->ve[i];
-    dvi = 1e-4 * fabs(vi_bak) + 1e-6;
-    u->ve[i] += dvi;
+  for (j = 0; j < nu; j++) {
+    vj_bak = u->ve[j];
+    dvj = 1e-4 * fabs(vj_bak) + 1e-6;
+    u->ve[j] += dvj;
 
     v_zero(df);
     df0 = 0.0;
@@ -1162,16 +1162,16 @@ void Hqp_Docp::update_grds(int k, const VECP x, const VECP u,
     update_vals(k, x, u, df, df0, dc);
 
     v_sub(df, f, df);
-    for (j = 0; j < nf; j++)
-      fu->me[j][i] = df->ve[j] / dvi;
+    for (i = 0; i < nf; i++)
+      fu->me[i][j] = df->ve[i] / dvj;
 
-    f0u->ve[i] = (df0 - f0) / dvi;
+    f0u->ve[j] = (df0 - f0) / dvj;
 
     v_sub(dc, c, dc);
-    for (j = 0; j < nc; j++)
-      cu->me[j][i] = dc->ve[j] / dvi;
+    for (i = 0; i < nc; i++)
+      cu->me[i][j] = dc->ve[i] / dvj;
 
-    u->ve[i] = vi_bak;
+    u->ve[j] = vj_bak;
   }
 
   v_free(f);

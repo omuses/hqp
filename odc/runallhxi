@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# rf, 09/29/18
+#
+
+for p in cstr_fmu \
+  dic_mex_sfunction dic_fmu did_mex_sfunction did_fmu did_dtopt \
+  dic_mex_sfunction_est dic_fmu_est did_fmu_est did_dtest; \
+do
+  echo "*** $p ***"
+  ./run $p
+  echo ""
+done

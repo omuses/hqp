@@ -31,6 +31,7 @@ SRCS =	Omu_Init.C \
         $(OMU_INTDASPK_C) \
 	adoublev.C \
 	Omu_Model.C \
+	Prg_DTEst.C \
 	Prg_DTOpt.C \
 	Prg_DynamicOpt.C \
 	Prg_DynamicEst.C \
