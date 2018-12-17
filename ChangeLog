@@ -1,3 +1,9 @@
+2018-12-17  <rfranke>
+
+	* omu/Prg_DynamicOpt.[hC], omu/Prg_DTOpt.[hC]:
+	  - introduce mdl_y0_soft_min,max,weight1,weight2
+	  - fix analytic Jacobian for mdl_der_u_soft_min,max
+
 2018-09-29  <rfranke>
 
 	* omu/Prg_DTEst.[hC], omu/Omu_Init.C, omu/Makefile, hqp/Hqp_Docp.C, odc/did_dtest.tcl:

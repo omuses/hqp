@@ -49,6 +49,7 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
   IVECP 	_mdl_x0_active;	///< free initial states (default: 0)
   Omu_VariableVec _mdl_u0;	///< initial inputs
   Omu_OptVarVec _mdl_y0; 	///< model outputs at initial time
+  Omu_OptVarVec _mdl_y0_soft; 	///< relaxed model outputs at initial time
   Omu_OptVarVec _mdl_u; 	///< model inputs
   Omu_OptVarVec _mdl_der_u; 	///< rates of change of inputs
   Omu_OptVarVec _mdl_der_u_soft;///< relaxed rates of change of inputs
@@ -86,6 +87,8 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
   int		_nsu;	///< number of slack variables for soft cns on inputs
   int		_nsuc;	///< number of soft constraints on inputs
   int		_nc0;	///< number of constrained/used outputs at initial time
+  int		_ns0;	///< number of slacks for soft constraints at initial time
+  int		_nsc0;	///< number of soft constraints at initial time
   int		_ncf;	///< number of constrained/used outputs at final time
   int		_nsf;	///< number of slacks for soft constraints at final time
   int		_nscf;	///< number of soft constraints at final time
@@ -287,6 +290,18 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
 
   /// weight for quadratic objective term at initial time (default: 0)
   const VECP mdl_y0_weight2() const {return _mdl_y0.weight2;}
+
+  /// soft lower bounds for model outputs at initial time
+  const VECP mdl_y0_soft_min() const {return _mdl_y0_soft.min;}
+
+  /// soft upper bounds for model outputs at initial time
+  const VECP mdl_y0_soft_max() const {return _mdl_y0_soft.max;}
+
+  /// soft weight for linear objective term at initial time (default: 0)
+  const VECP mdl_y0_soft_weight1() const {return _mdl_y0_soft.weight1;}
+
+  /// soft weight for quadratic objective term at initial time (default: 0)
+  const VECP mdl_y0_soft_weight2() const {return _mdl_y0_soft.weight2;}
 
   /// interpolation order (0 (constant) or 1 (linear), default: 1)
   const IVECP mdl_u_order() const {return _mdl_u_order;}
@@ -490,6 +505,18 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
 
   /// set quadratic weight
   void set_mdl_y0_weight2(const VECP v) {v_copy_elements(v, _mdl_y0.weight2);}
+
+  /// set soft lower bounds for model outputs at initial time
+  void set_mdl_y0_soft_min(const VECP v) {v_copy_elements(v, _mdl_y0_soft.min);}
+
+  /// set soft upper bounds for model outputs at initial time
+  void set_mdl_y0_soft_max(const VECP v) {v_copy_elements(v, _mdl_y0_soft.max);}
+
+  /// set soft weight for linear objective term at initial time (default: 0)
+  void set_mdl_y0_soft_weight1(const VECP v) {v_copy_elements(v, _mdl_y0_soft.weight1);}
+
+  /// set soft weight for quadratic objective term at initial time (default: 0)
+  void set_mdl_y0_soft_weight2(const VECP v) {v_copy_elements(v, _mdl_y0_soft.weight2);}
 
   /// set interpolation order
   void set_mdl_u_order(const IVECP v) {iv_copy_elements(v, _mdl_u_order);}
