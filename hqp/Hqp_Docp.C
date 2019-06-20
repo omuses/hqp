@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright (C) 1994--2017  Ruediger Franke
+    Copyright (C) 1994--2018  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -278,8 +278,7 @@ Hqp_Docp::~Hqp_Docp()
   iv_free(_cns_lin);
   iv_free(_cns_start);
   iv_free(_f0_lin);
-  v_free(_f0);
-  for (int tn = 0; tn < _ncpu; tn++) {
+  for (int tn = 0; tn < (int)_f0->dim; tn++) {
     v_free(_ck[tn]);
     m_free(_fkx[tn]);
     m_free(_fku[tn]);
@@ -291,6 +290,7 @@ Hqp_Docp::~Hqp_Docp()
     v_free(_vfk[tn]);
     v_free(_vck[tn]);
   }
+  v_free(_f0);
   delete [] _xk;
   delete [] _uk;
   delete [] _fk;

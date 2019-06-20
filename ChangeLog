@@ -1,3 +1,9 @@
+2019-06-20  <rfranke>
+
+	* hqp/Hqp_Docp.C:
+	- fix memory leak for parallel multiple shooting
+	  (was introduced on 2018-06-12: limit number of parallel threads)
+
 2018-12-17  <rfranke>
 
 	* omu/Prg_DynamicOpt.[hC], omu/Prg_DTOpt.[hC]:
