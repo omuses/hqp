@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2017  Ruediger Franke
+    Copyright (C) 1997--2019  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -125,7 +125,8 @@ class OMU_API Omu_Model {
 
  protected:
   // methods
-  virtual void setup_model(double t0, int ncpu = 1); 	///< load S-function
+  /// Load FMU or S-function and adapt ncpu. Return true if model was loaded.
+  virtual bool setup_model(double t0, int ncpu = 1);
 
   void setup_jac();
   void setup_jac_row(const char *category, int idx,

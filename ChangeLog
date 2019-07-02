@@ -1,8 +1,15 @@
+
+2019-07-02  <rfranke>
+
+	* omu/Omu_Model.[hC], Prg_DTOpt.C, Prg_DTEst.C:
+	  - fix creation of multiple FMUs for parallel threads
+	    (was introduced on 2018-06-12: limit number of parallel threads)
+
 2019-06-20  <rfranke>
 
 	* hqp/Hqp_Docp.C:
-	- fix memory leak for parallel multiple shooting
-	  (was introduced on 2018-06-12: limit number of parallel threads)
+	  - fix memory leak for parallel multiple shooting
+	    (was introduced on 2018-06-12: limit number of parallel threads)
 
 2018-12-17  <rfranke>
 

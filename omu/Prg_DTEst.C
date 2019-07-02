@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2018  Ruediger Franke
+    Copyright (C) 1997--2019  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -213,40 +213,42 @@ void Prg_DTEst::setup_model()
   if (ncpu() > _K + 1)
     set_ncpu(_K + 1);
 
-  // load FMU or S-function
-  Omu_Model::setup_model(_t0, ncpu());
+  // load FMU or S-function and adapt ncpu
+  // re-allocate model vectors if new model was loaded
+  if (Omu_Model::setup_model(_t0, ncpu())) {
 
-  // no continuous states
-  assert(_mdl_nd == _mdl_nx);
+    // no continuous states
+    assert(_mdl_nd == _mdl_nx);
 
-  // adapt sizes of model vectors
-  _mdl_p.alloc(_mdl_np);
-  v_zero(_mdl_p.min);
+    // adapt sizes of model vectors
+    _mdl_p.alloc(_mdl_np);
+    v_zero(_mdl_p.min);
 
-  _mdl_x0.alloc(_mdl_nx);
-  _mdl_x.alloc(_mdl_nx);
+    _mdl_x0.alloc(_mdl_nx);
+    _mdl_x.alloc(_mdl_nx);
 
-  iv_resize(_mdl_p_active, _mdl_np);
-  v_resize(_mdl_p_confidence, _mdl_np);
-  iv_resize(_mdl_x0_active, _mdl_nx);
-  v_resize(_mdl_x0_confidence, _mdl_nx);
-  iv_resize(_mdl_u_order, _mdl_nu);
-  iv_resize(_mdl_y_active, _mdl_ny);
-  v_resize(_mdl_p_nominal, _mdl_np);
-  iv_zero(_mdl_p_active);
-  v_zero(_mdl_p_confidence);
-  iv_zero(_mdl_x0_active);
-  v_zero(_mdl_x0_confidence);
-  iv_set(_mdl_u_order, 1);
-  iv_zero(_mdl_y_active);
-  if (_mdl_is_fmu) {
-    // take over default values from model description
-    if(Tcl_VarEval(theInterp, "mdl_p_nominal ${::fmu::", _mdl_name,
-                   "::parameterNominalValues}", NULL) != TCL_OK)
-      m_error(E_INTERN, "can't obtain nominal parameter values");
-  }
-  else {
-    v_ones(_mdl_p_nominal);
+    iv_resize(_mdl_p_active, _mdl_np);
+    v_resize(_mdl_p_confidence, _mdl_np);
+    iv_resize(_mdl_x0_active, _mdl_nx);
+    v_resize(_mdl_x0_confidence, _mdl_nx);
+    iv_resize(_mdl_u_order, _mdl_nu);
+    iv_resize(_mdl_y_active, _mdl_ny);
+    v_resize(_mdl_p_nominal, _mdl_np);
+    iv_zero(_mdl_p_active);
+    v_zero(_mdl_p_confidence);
+    iv_zero(_mdl_x0_active);
+    v_zero(_mdl_x0_confidence);
+    iv_set(_mdl_u_order, 1);
+    iv_zero(_mdl_y_active);
+    if (_mdl_is_fmu) {
+      // take over default values from model description
+      if(Tcl_VarEval(theInterp, "mdl_p_nominal ${::fmu::", _mdl_name,
+                     "::parameterNominalValues}", NULL) != TCL_OK)
+        m_error(E_INTERN, "can't obtain nominal parameter values");
+    }
+    else {
+      v_ones(_mdl_p_nominal);
+    }
   }
 }
 
@@ -272,8 +274,7 @@ void Prg_DTEst::setup_stages()
     If_Log("Info", "Prg_DTEst::setup_stages");
 
   // setup model
-  if (_mdl_needs_setup)
-    setup_model();
+  setup_model();
 
   // get model structure
   if (_mdl_nx > _mdl_nd)
