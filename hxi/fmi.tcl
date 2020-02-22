@@ -86,10 +86,9 @@ proc ::fmi::extractModel {fmuPath} {
     file mtime $dirPath $fmuTime
 }
 
-## Parse modelDescription.xml of extracted model and
-#  store infos in namespace array ::fmu::${fmuName}
-#  @return fmiVersion string
-proc ::fmi::readModelDescription {fmuPath} {
+## Parse modelDescription.xml of extracted model
+#  @return fmiModelDescription in list form
+proc ::fmi::parseModelDescription {fmuPath} {
 
     # extract model if not yet done
     if {![::fmi::testExtracted $fmuPath]} {
@@ -103,6 +102,17 @@ proc ::fmi::readModelDescription {fmuPath} {
     set fmiModelDescription [xml2list [read $fp]]
     close $fp
 
+    return $fmiModelDescription
+}
+
+## Parse modelDescription.xml of extracted model and
+#  store infos in namespace array ::fmu::${fmuName}
+#  @return fmiVersion string
+proc ::fmi::readModelDescription {fmuPath} {
+
+    # parse model description
+    set fmiModelDescription [::fmi::parseModelDescription $fmuPath]
+
     # create a namespace for parsed model description
     set fmuName [file rootname [file tail $fmuPath]]
     if [namespace exists ::fmu::$fmuName] {
@@ -111,7 +121,7 @@ proc ::fmi::readModelDescription {fmuPath} {
     namespace eval ::fmu::$fmuName {
     }
 
-    # get model attributes, 
+    # get model attributes,
     # e.g. fmuAttributes(fmiVersion) or fmuAttributes(guid)
     array set fmuAttributes [lindex $fmiModelDescription 1]
     set fmiVersion $fmuAttributes(fmiVersion)
@@ -380,6 +390,152 @@ proc ::fmi::readModelDescription {fmuPath} {
     array set ::fmu::${fmuName}::attributes [array get fmuAttributes]
 
     return $fmiVersion
+}
+
+## Generate list of variables of the form
+#  {category varname value min max unit description ordinal nominal}, e.g.
+#  {parameter A      5.5   0   10  m2   "surface area" 1 10}
+#  @return list of variables
+proc ::fmi::getModelVariables {fmuPath} {
+
+    # parse model description
+    set fmiModelDescription [::fmi::parseModelDescription $fmuPath]
+
+    # get model attributes,
+    # e.g. fmuAttributes(modelIdentifier), fmuAttributes(guid)
+    array set fmuAttributes [lindex $fmiModelDescription 1]
+    set fmiVersion $fmuAttributes(fmiVersion)
+
+    # default values for optional elements of model description
+    set fmiElements(TypeDefinitions) {}
+    # get model description, e.g. fmiElements(ModelVariables)
+    foreach element [lindex $fmiModelDescription 2] {
+        set fmiElements([lindex $element 0]) [lindex $element 2]
+    }
+
+    # collect type definitions
+    array unset typeDefinitions
+    foreach typeDefinition $fmiElements(TypeDefinitions) {
+        set typeName [lindex [lindex $typeDefinition 1] 1]
+        set typeDefinitions($typeName) [lindex [lindex $typeDefinition 2] 0]
+    }
+
+    set stateNames {}
+    if {$fmiVersion < 2.0} {
+	if {$fmuAttributes(numberOfContinuousStates) > 0} {
+	    error "States are not supported in FMI $fmiVersion"
+	}
+    } else {
+        # find states through ModelStructure
+        foreach element $fmiElements(ModelStructure) {
+            if {[lindex $element 0] == "DiscreteStates"} {
+                foreach state [lindex $element 2] {
+                    set attributes [lindex $state 1]
+                    set indexIdx [lsearch $attributes "index"]
+                    set stateIndex [lindex $attributes [incr indexIdx]]
+                    set stateVariable [lindex $fmiElements(ModelVariables) [incr stateIndex -1]]
+                    array set v [lindex $stateVariable 1]
+                    lappend stateNames $v(name)
+                }
+            }
+        }
+        foreach element $fmiElements(ModelStructure) {
+            if {[lindex $element 0] == "Derivatives"} {
+                foreach derivative [lindex $element 2] {
+                    set attributes [lindex $derivative 1]
+                    set indexIdx [lsearch $attributes "index"]
+                    set dIdx [expr [lindex $attributes [incr indexIdx]]-1]
+                    set dVar [lindex $fmiElements(ModelVariables) $dIdx]
+                    set typeAttributes [lindex [lindex [lindex $dVar 2] 0] 1]
+                    set sIdx [lsearch $typeAttributes "derivative"]
+                    set stateIndex [lindex $typeAttributes [incr sIdx]]
+                    set stateVariable [lindex $fmiElements(ModelVariables) [incr stateIndex -1]]
+                    array set v [lindex $stateVariable 1]
+                    lappend stateNames $v(name)
+                }
+            }
+        }
+    }
+
+    set vars {}
+    set ordinal 1
+    foreach category {"parameter" "state" "input" "output"} {
+        set fmuAttributes(${category}References) {}
+        set fmuAttributes(${category}BaseTypes) {}
+    }
+    foreach modelVariable $fmiElements(ModelVariables) {
+        array unset v
+        set v(name) ""
+        set v(causality) ""
+        set v(variability) ""
+        set v(start) {}
+        set v(fixed) "true"
+        set v(min) {}
+        set v(max) {}
+        set v(unit) {}
+        set v(description) {}
+        set v(nominal) {}
+        # fetch attributes from model variable
+        array set v [lindex $modelVariable 1]
+        # complement with attributes from declared variable type
+        set vBaseType [lindex [lindex [lindex $modelVariable 2] 0] 0]
+        #if {$vBaseType != "Real"} continue
+        set vTypeAttributes [lindex [lindex [lindex $modelVariable 2] 0] 1]
+        set idx [lsearch $vTypeAttributes declaredType]
+        if {$idx >= 0} {
+            set declaredType [lindex $vTypeAttributes [incr idx]]
+            array set v [lindex $typeDefinitions($declaredType) 1]
+        }
+        # complement/override with attributes from variable type
+        array set v $vTypeAttributes
+        # FMI 1.0: use start value as indicator for unbound parameters;
+        #          fixed must not be false though
+        if {$fmiVersion < 2.0} {
+            if {$v(variability) == "parameter"
+                && $v(start) != {} && $v(fixed) == "true"} {
+                set v(causality) "parameter"
+            }
+        }
+        # obtain categories (state, parameter, input/output)
+        set categories {}
+        if {[lsearch -exact $stateNames $v(name)] >= 0} {
+            lappend categories "state"
+            lappend fmuAttributes(stateReferences) $v(valueReference)
+            lappend fmuAttributes(stateBaseTypes) $vBaseType
+        }
+        set causality [array get v causality]
+        if {$causality != {}} {
+            set category [lindex $causality 1]
+            if {[regexp ^(parameter|input|output)$ $category]} {
+                lappend categories $category
+                lappend fmuAttributes(${category}References) $v(valueReference)
+                lappend fmuAttributes(${category}BaseTypes) $vBaseType
+            }
+        }
+        # store variable
+        foreach category $categories {
+            # add missing start values
+            # unify booleans values with numbers
+            if {$v(start) == {} || [string tolower $v(start)] == "false"} {
+                set v(start) 0
+            } elseif {[string tolower $v(start)] == "true"} {
+                set v(start) 1
+            }
+            # add quotes to names to force a string
+            set v(name) \"$v(name)\"
+            set var [list $category $v(name) $v(start) $v(min) $v(max) $v(unit) $v(description) $ordinal $v(nominal)]
+            incr ordinal
+            lappend vars $var
+            #puts "$category $v(name) $v(valueReference)"
+            #puts $modelVariable
+        }
+        # keep mapping from valueReference to name
+        set typeId [string tolower [string index $vBaseType 0]]
+        set ${typeId}Names($v(valueReference)) $v(name)
+    }
+
+    # return list of variables
+    return $vars
 }
 
 ## Replace valueReferences of the form #r123# with variable names

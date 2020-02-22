@@ -1,4 +1,9 @@
 
+2020-02-22  <rfranke>
+
+	* hxi/fmi.tcl:
+	  - add function for list of FMI model variables
+
 2019-07-02  <rfranke>
 
 	* omu/Omu_Model.[hC], Prg_DTOpt.C, Prg_DTEst.C:
