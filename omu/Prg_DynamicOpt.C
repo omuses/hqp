@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2018  Ruediger Franke
+    Copyright (C) 1997--2020  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -976,11 +976,11 @@ void Prg_DynamicOpt::update(int kk,
   for (i = _mdl_nd; i < _mdl_nx; i++)
     mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
 
-  // call mdlOutputs
-  if (_mdl_is_fmu)
+  // evaluate model outputs -- also clocked outputs _within_grds
+  if (_within_grds && _mdl_is_fmu)
     setSampleHit(S, true);
   SMETHOD_CALL2(mdlOutputs, S, 0);
-  if (_mdl_is_fmu)
+  if (_within_grds && _mdl_is_fmu)
     setSampleHit(S, false);
 
   // obtain model outputs

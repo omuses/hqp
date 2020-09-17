@@ -1,4 +1,10 @@
 
+2020-09-17  <rfranke>
+
+	* omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
+	  - restrict evaluation of clocked partitions during update
+	    (was introduced on 2018-09-29 for numerical differentiation)
+
 2020-02-22  <rfranke>
 
 	* hxi/fmi.tcl:
