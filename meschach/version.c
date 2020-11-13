@@ -133,6 +133,8 @@ void	m_version()
 	printf("\tmatrix.h, submat.c: make get_row/col macros, similar to set_row/col\n");
 	/* rf, 2017-07-15 */
 	printf("\tmeminfo.c: add pragma omp critical to memory supervision\n");
+	/* rf, 2020-11-12 */
+	printf("\tsymmeig.c, trieig: flip comparison for split to treat NaN\n");
 	printf("\n");
 }
 

@@ -152,9 +152,10 @@ MAT	*Q;
 		    }
 
 		    /* test to see if matrix should be split */
+		    /* rf, 11/12/20: flip comparison to treat NaN */
 		    for ( i = i_min; i < i_max; i++ )
-			if ( fabs(b_ve[i]) < MACHEPS*
-					(fabs(a_ve[i])+fabs(a_ve[i+1])) )
+			if ( !(fabs(b_ve[i]) >= MACHEPS*
+					(fabs(a_ve[i])+fabs(a_ve[i+1]))) )
 			{   b_ve[i] = 0.0;	split = TRUE;	}
 
 		    /* printf("# a =\n");	v_output(a); */

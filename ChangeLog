@@ -1,4 +1,10 @@
 
+2020-11-12  <rfranke>
+
+	* meschach/symmeig.c, meschach/version.c:
+	  - flip comparison for split in trieig to treat numerical overflow
+	    (cf. similar fix in meschach/hessen.c on 11/01/00)
+
 2020-09-17  <rfranke>
 
 	* omu/Prg_DynamicOpt.C, omu/Prg_DynamicEst.C:
