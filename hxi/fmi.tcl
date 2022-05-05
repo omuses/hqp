@@ -719,7 +719,7 @@ proc ::fmi::unzip fmuPath {
 	set p_g [expr (($ea & 0x0380000) >> 19)]
 	set p_o [expr (($ea & 0x0070000) >> 16)]
 	if {$p_u > 0 && $p_g > 0 && $p_o > 0} {
-	    file attributes $pathName -permissions 00$p_u$p_g$p_o
+            catch { file attributes $pathName -permissions 00$p_u$p_g$p_o }
 	}
 	# set file modification time from DOS timestamp
 	# date: |Y|Y|Y|Y|Y|Y|Y|m| |m|m|m|d|d|d|d|d|
