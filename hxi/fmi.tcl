@@ -265,12 +265,13 @@ proc ::fmi::readModelDescription {fmuPath} {
 	    lappend categories $v(causality)
 	}
 	# unify boolean literals to 1 and 0 for easier treatment as numbers
-	# moreover add quotes to strings
+	# moreover add quotes to strings and use empty nominal value
 	if {$categories != {}} {
 	    if {$vBaseType == "Boolean"} {
 		set v(start) [string map {true 1 false 0} $v(start)]
 	    } elseif {$vBaseType == "String"} {
 		set v(start) '$v(start)'
+		set v(nominal) ""
 	    }
 	}
 	# store variable infos

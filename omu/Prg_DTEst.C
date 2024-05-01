@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2019  Ruediger Franke
+    Copyright (C) 1997--2024  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -195,8 +195,8 @@ void Prg_DTEst::write_active_mx_args(VECP p)
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
-	if (_mdl_p_active[idx])
-	  mxGetPr(arg)[i] = p[ip++] * _mdl_p_nominal[idx];
+        if (_mdl_p_active[idx])
+          mxGetPr(arg)[i] = p[ip++] * _mdl_p_nominal[idx];
     }
   }
   assert(idx == _mdl_np); // S-function parameters must not have changed
@@ -242,8 +242,8 @@ void Prg_DTEst::setup_model()
     iv_zero(_mdl_y_active);
     if (_mdl_is_fmu) {
       // take over default values from model description
-      if(Tcl_VarEval(theInterp, "mdl_p_nominal ${::fmu::", _mdl_name,
-                     "::parameterNominalValues}", NULL) != TCL_OK)
+      if (Tcl_VarEval(theInterp, "mdl_p_nominal [lsearch -all -inline -exact -not ${::fmu::",
+                      _mdl_name, "::parameterNominalValues} {}]", NULL) != TCL_OK)
         m_error(E_INTERN, "can't obtain nominal parameter values");
     }
     else {

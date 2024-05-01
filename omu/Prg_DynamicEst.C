@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2020  Ruediger Franke
+    Copyright (C) 1997--2024  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -233,8 +233,8 @@ void Prg_DynamicEst::setup_model()
   iv_zero(_mdl_y_active);
   if (_mdl_is_fmu) {
     // take over default values from model description
-    if(Tcl_VarEval(theInterp, "mdl_p_nominal ${::fmu::", _mdl_name,
-                   "::parameterNominalValues}", NULL) != TCL_OK)
+    if (Tcl_VarEval(theInterp, "mdl_p_nominal [lsearch -all -inline -exact -not ${::fmu::",
+                    _mdl_name, "::parameterNominalValues} {}]", NULL) != TCL_OK)
       m_error(E_INTERN, "can't obtain nominal parameter values");
   }
   else {
