@@ -321,9 +321,9 @@ void Prg_DTEst::setup_stages()
 
 //--------------------------------------------------------------------------
 void Prg_DTEst::setup_vars(int k,
-			   VECP x, VECP x_min, VECP x_max, IVECP x_int,
-			   VECP u, VECP u_min, VECP u_max, IVECP u_int,
-			   VECP c, VECP c_min, VECP c_max)
+                           VECP x, VECP x_min, VECP x_max, IVECP x_int,
+                           VECP u, VECP u_min, VECP u_max, IVECP u_int,
+                           VECP c, VECP c_min, VECP c_max)
 {
   int i, idx;
 
@@ -350,17 +350,17 @@ void Prg_DTEst::setup_vars(int k,
     _np = 0;
     for (i = 0; i < _mdl_np; i++) {
       if (_mdl_p_active[i])
-	++_np;
+        ++_np;
     }
     _nx0 = 0;
     for (i = 0; i < _mdl_nx; i++) {
       if (_mdl_x0_active[i])
-	++_nx0;
+        ++_nx0;
     }
     _ny = 0;
     for (i = 0; i < _mdl_ny; i++) {
       if (_mdl_y_active[i])
-	++_ny;
+        ++_ny;
     }
     _nx = _np + _mdl_nx;
 
@@ -409,16 +409,16 @@ void Prg_DTEst::setup_vars(int k,
     for (i = _np; i < _nx; i++) {
       x[i] = _mdl_xs[0][i-_np] / _mdl_x_nominal[i-_np];
       if (!_mdl_x0_active[i-_np])
-	x_min[i] = x_max[i] = x[i];
+        x_min[i] = x_max[i] = x[i];
       else {
-	if (_mdl_x0.min[i-_np] > _mdl_x.min[i-_np])
-	  x_min[i] = _mdl_x0.min[i-_np] / _mdl_x_nominal[i-_np];
-	else
-	  x_min[i] = _mdl_x.min[i-_np] / _mdl_x_nominal[i-_np];
-	if (_mdl_x0.max[i-_np] < _mdl_x.max[i-_np])
-	  x_max[i] = _mdl_x0.max[i-_np] / _mdl_x_nominal[i-_np];
-	else
-	  x_max[i] = _mdl_x.max[i-_np] / _mdl_x_nominal[i-_np];
+        if (_mdl_x0.min[i-_np] > _mdl_x.min[i-_np])
+          x_min[i] = _mdl_x0.min[i-_np] / _mdl_x_nominal[i-_np];
+        else
+          x_min[i] = _mdl_x.min[i-_np] / _mdl_x_nominal[i-_np];
+        if (_mdl_x0.max[i-_np] < _mdl_x.max[i-_np])
+          x_max[i] = _mdl_x0.max[i-_np] / _mdl_x_nominal[i-_np];
+        else
+          x_max[i] = _mdl_x.max[i-_np] / _mdl_x_nominal[i-_np];
       }
     }
   }
@@ -427,16 +427,16 @@ void Prg_DTEst::setup_vars(int k,
     for (i = 0; i < _mdl_nx; i++) {
       u[i] = _mdl_xs[k][i] / _mdl_x_nominal[i];
       if (!_mdl_x0_active[i])
-	u_min[i] = u_max[i] = u[i];
+        u_min[i] = u_max[i] = u[i];
       else {
-	if (_mdl_x0.min[i] > _mdl_x.min[i])
-	  u_min[i] = _mdl_x0.min[i] / _mdl_x_nominal[i];
-	else
-	  u_min[i] = _mdl_x.min[i] / _mdl_x_nominal[i];
-	if (_mdl_x0.max[i] < _mdl_x.max[i])
-	  u_max[i] = _mdl_x0.max[i] / _mdl_x_nominal[i];
-	else
-	  u_max[i] = _mdl_x.max[i] / _mdl_x_nominal[i];
+        if (_mdl_x0.min[i] > _mdl_x.min[i])
+          u_min[i] = _mdl_x0.min[i] / _mdl_x_nominal[i];
+        else
+          u_min[i] = _mdl_x.min[i] / _mdl_x_nominal[i];
+        if (_mdl_x0.max[i] < _mdl_x.max[i])
+          u_max[i] = _mdl_x0.max[i] / _mdl_x_nominal[i];
+        else
+          u_max[i] = _mdl_x.max[i] / _mdl_x_nominal[i];
       }
     }
   }
@@ -454,10 +454,10 @@ void Prg_DTEst::setup_vars(int k,
 
 //--------------------------------------------------------------------------
 void Prg_DTEst::setup_struct(int k, const VECP x, const VECP u,
-			     MATP fx, MATP fu, IVECP f_lin,
-			     VECP f0x, VECP f0u, int &f0_lin,
-			     MATP cx, MATP cu, IVECP c_lin,
-			     MATP Lxx, MATP Luu, MATP Lxu)
+                             MATP fx, MATP fu, IVECP f_lin,
+                             VECP f0x, VECP f0u, int &f0_lin,
+                             MATP cx, MATP cu, IVECP c_lin,
+                             MATP Lxx, MATP Luu, MATP Lxu)
 {
   int i, j, idx, jdx, offs;
   int ex = _exs[k];
@@ -518,7 +518,7 @@ void Prg_DTEst::init_simulation(int k, VECP x, VECP u)
 
 //--------------------------------------------------------------------------
 void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
-			    VECP f, Real &f0, VECP c)
+                            VECP f, Real &f0, VECP c)
 {
   int i, j, idx;
   int ex = _exs[k];
@@ -704,11 +704,11 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
 
 //--------------------------------------------------------------------------
 void Prg_DTEst::update_stage(int k, const VECP x, const VECP u,
-			     VECP f, Real &f0, VECP c,
-			     MATP fx, MATP fu, VECP f0x, VECP f0u,
-			     MATP cx, MATP cu,
-			     const VECP rf, const VECP rc,
-			     MATP Lxx, MATP Luu, MATP Lxu)
+                             VECP f, Real &f0, VECP c,
+                             MATP fx, MATP fu, VECP f0x, VECP f0u,
+                             MATP cx, MATP cu,
+                             const VECP rf, const VECP rc,
+                             MATP Lxx, MATP Luu, MATP Lxu)
 {
   int i, j, idx;
   int ex = _exs[k];
@@ -848,7 +848,7 @@ void Prg_DTEst::update_stage(int k, const VECP x, const VECP u,
         if (_mdl_x0_active[idx])
           _dxdpx0[_np + idx][i++] = 1.0;
       }
-    }	
+    }
   }
 
   // build dy/d(p,x0)

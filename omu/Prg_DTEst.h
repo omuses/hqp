@@ -103,28 +103,28 @@ class Prg_DTEst: public Hqp_Docp, public Omu_Model {
   void setup_horizon(int &k0, int &kf);
 
   void setup_vars(int k,
-		  VECP x, VECP x_min, VECP x_max, IVECP x_int,
-		  VECP u, VECP u_min, VECP u_max, IVECP u_int,
-		  VECP c, VECP c_min, VECP c_max);
+                  VECP x, VECP x_min, VECP x_max, IVECP x_int,
+                  VECP u, VECP u_min, VECP u_max, IVECP u_int,
+                  VECP c, VECP c_min, VECP c_max);
 
   void setup_struct(int k, const VECP x, const VECP u,
-		    MATP fx, MATP fu, IVECP f_lin,
-		    VECP f0x, VECP f0u, int &f0_lin,
-		    MATP cx, MATP cu, IVECP c_lin,
-		    MATP Lxx, MATP Luu, MATP Lxu);
+                    MATP fx, MATP fu, IVECP f_lin,
+                    VECP f0x, VECP f0u, int &f0_lin,
+                    MATP cx, MATP cu, IVECP c_lin,
+                    MATP Lxx, MATP Luu, MATP Lxu);
 
   void init_simulation(int k,
-		       VECP x, VECP u);
+                       VECP x, VECP u);
 
   void update_vals(int k, const VECP x, const VECP u,
-		   VECP f, Real &f0, VECP c);
+                   VECP f, Real &f0, VECP c);
 
   void update_stage(int k, const VECP x, const VECP u,
-		    VECP f, Real &f0, VECP c,
-		    MATP fx, MATP fu, VECP f0x, VECP f0u,
-		    MATP cx, MATP cu,
-		    const VECP rf, const VECP rc,
-		    MATP Lxx, MATP Luu, MATP Lxu);
+                    VECP f, Real &f0, VECP c,
+                    MATP fx, MATP fu, VECP f0x, VECP f0u,
+                    MATP cx, MATP cu,
+                    const VECP rf, const VECP rc,
+                    MATP Lxx, MATP Luu, MATP Lxu);
   //@}
 
   /// obtain analytic Jacobian wrt model states and inputs
@@ -172,7 +172,7 @@ class Prg_DTEst: public Hqp_Docp, public Omu_Model {
       _t0 = _ts[0];
       _tf = _ts[(int)_ts->dim - 1];
     }
-  }	
+  }
   /// get start time point of sample period k
   double ts(int k) const {return _ts[k];}
   /// scaling of optimization criterion
@@ -330,9 +330,9 @@ class Prg_DTEst: public Hqp_Docp, public Omu_Model {
     int ex = 0;
     for (int k = 0; k <= _K; k++) {
       if (k > 0 && _ts[k] < _ts[k-1])
-	ex++;
+        ex++;
       for (int i = 0; i < _mdl_nx; i++)
-	_mdl_xs[k][i] = v[ex][i];
+        _mdl_xs[k][i] = v[ex][i];
     }
   }
 
@@ -349,9 +349,9 @@ class Prg_DTEst: public Hqp_Docp, public Omu_Model {
     int ex = 0;
     for (int k = 0; k <= _K; k++) {
       if (k == 0 || _ts[k] < _ts[k-1]) {
-	for (int i = 0; i < _mdl_nx; i++)
-	  _mdl_x0s[ex][i] = _mdl_xs[k][i];
-	ex++;
+        for (int i = 0; i < _mdl_nx; i++)
+          _mdl_x0s[ex][i] = _mdl_xs[k][i];
+        ex++;
       }
     }
   }

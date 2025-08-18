@@ -321,7 +321,7 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
 
   /* obtain number of variables */
   if (Tcl_VarEval(m->interp, "llength ${::fmu::", m->fmuName,
-		  "::", category, "References}", NULL) != TCL_OK
+                  "::", category, "References}", NULL) != TCL_OK
       || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
       || Tcl_GetIntFromObj(m->interp, objPtr, &n) != TCL_OK) {
     return NULL;
@@ -343,18 +343,18 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   for (i = 0; i < n; i++) {
     sprintf(index, "%d", i);
     if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
-		    "::", category, "BaseTypes} ", index, NULL) != TCL_OK
-	|| (baseTypeName = Tcl_GetStringResult(m->interp)) == NULL) {
+                    "::", category, "BaseTypes} ", index, NULL) != TCL_OK
+        || (baseTypeName = Tcl_GetStringResult(m->interp)) == NULL) {
       freeVariables(vars);
       return NULL;
     }
     for (j = 0; j < NUM_BASETYPES; j++) {
       if (baseTypeName[0] == BaseTypeNames[j][0]
-	  && strcmp(baseTypeName, BaseTypeNames[j]) == 0) {
-	  vars->btv[i] = j;
-	  vars->n[j] ++;
-	  break;
-	}
+          && strcmp(baseTypeName, BaseTypeNames[j]) == 0) {
+        vars->btv[i] = j;
+        vars->n[j] ++;
+        break;
+      }
     }
     if (j == NUM_BASETYPES) {
       /* unknown base type */
@@ -367,7 +367,7 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   for (j = 0; j < NUM_BASETYPES; j++) {
     if (vars->n[j] > 0)
       vars->vr[j] =
-	(fmi2ValueReference *)malloc((vars->n[j])*sizeof(fmi2ValueReference));
+        (fmi2ValueReference *)malloc((vars->n[j])*sizeof(fmi2ValueReference));
     idx[j] = 0;
   }
   if (vars->n[FMI_REAL] > 0)
@@ -381,9 +381,9 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
   for (i = 0; i < n; i++) {
     sprintf(index, "%d", i);
     if (Tcl_VarEval(m->interp, "lindex ${::fmu::", m->fmuName,
-		    "::", category, "References} ", index, NULL) != TCL_OK
-	|| (objPtr = Tcl_GetObjResult(m->interp)) == NULL
-	|| Tcl_GetIntFromObj(m->interp, objPtr, &ref) != TCL_OK) {
+                    "::", category, "References} ", index, NULL) != TCL_OK
+        || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
+        || Tcl_GetIntFromObj(m->interp, objPtr, &ref) != TCL_OK) {
       freeVariables(vars);
       return NULL;
     }
@@ -393,7 +393,7 @@ static Hxi_ModelVariables *getVariables(Hxi_ModelData *m, const char *category)
       /* inconsistent References vs. BaseTypes */
       freeVariables(vars);
       return NULL;
-    }			
+    }
     vars->vr[j][idx[j]++] = ref;
   }
 
@@ -406,25 +406,25 @@ static fmi2Status setValues(Hxi_ModelData *m, const Hxi_ModelVariables *vars)
   fmi2Status ret;
   if (vars->n[FMI_REAL] > 0) {
     ret = (*m->fmi2SetReal)(m->fmu, vars->vr[FMI_REAL],
-			    vars->n[FMI_REAL], vars->r);
+                            vars->n[FMI_REAL], vars->r);
     if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_BOOLEAN] > 0) {
     ret = (*m->fmi2SetBoolean)(m->fmu, vars->vr[FMI_BOOLEAN],
-			       vars->n[FMI_BOOLEAN], vars->b);
+                               vars->n[FMI_BOOLEAN], vars->b);
     if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_INTEGER] > 0) {
     ret = (*m->fmi2SetInteger)(m->fmu, vars->vr[FMI_INTEGER],
-			       vars->n[FMI_INTEGER], vars->i);
+                               vars->n[FMI_INTEGER], vars->i);
     if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_STRING] > 0) {
     ret = (*m->fmi2SetString)(m->fmu, vars->vr[FMI_STRING],
-			      vars->n[FMI_STRING], vars->s);
+                              vars->n[FMI_STRING], vars->s);
     if (ret != fmi2OK)
       return ret;
   }
@@ -437,19 +437,19 @@ static fmi2Status getValues(Hxi_ModelData *m, Hxi_ModelVariables *vars)
   fmi2Status ret;
   if (vars->n[FMI_REAL] > 0) {
     ret = (*m->fmi2GetReal)(m->fmu, vars->vr[FMI_REAL],
-			    vars->n[FMI_REAL], vars->r);
+                            vars->n[FMI_REAL], vars->r);
     if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_BOOLEAN] > 0) {
     ret = (*m->fmi2GetBoolean)(m->fmu, vars->vr[FMI_BOOLEAN],
-			       vars->n[FMI_BOOLEAN], vars->b);
+                               vars->n[FMI_BOOLEAN], vars->b);
     if (ret != fmi2OK)
       return ret;
   }
   if (vars->n[FMI_INTEGER] > 0) {
     ret = (*m->fmi2GetInteger)(m->fmu, vars->vr[FMI_INTEGER],
-			       vars->n[FMI_INTEGER], vars->i);
+                               vars->n[FMI_INTEGER], vars->i);
     if (ret != fmi2OK)
       return ret;
   }
@@ -580,17 +580,17 @@ static void mdlInitializeSizes(SimStruct *S)
       if (m->vrUnknown != NULL)
         free(m->vrUnknown);
       if (m->civl != NULL)
-	free(m->civl);
+        free(m->civl);
       if (m->csub != NULL)
-	free(m->csub);
+        free(m->csub);
       if (m->ctck != NULL)
-	free(m->ctck);
+        free(m->ctck);
       if (m->cidx != NULL)
-	free(m->cidx);
+        free(m->cidx);
       if (m->pre_z != NULL)
-	free(m->pre_z);
+        free(m->pre_z);
       if (m->z != NULL)
-	free(m->z);
+        free(m->z);
       freeVariables(m->y);
       freeVariables(m->u);
       freeVariables(m->x);
@@ -846,7 +846,7 @@ static void mdlInitializeSizes(SimStruct *S)
     /* support FMI 2.0 with prefix "fmi2" and 2.0 RC1 with prefix "fmi" */
     i = 2;
     if (DLSYM(m->handle, "fmi2Instantiate") == NULL
-	&& DLSYM(m->handle, "fmiInstantiate") != NULL)
+        && DLSYM(m->handle, "fmiInstantiate") != NULL)
       i = 1;
 
     INIT_FUNCTION(S, m, i, Instantiate);
@@ -924,7 +924,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
   /* Setup Jacobian */
   if (Tcl_VarEval(m->interp, "::set ::fmu::", m->fmuName,
-		  "::numberOfDependencies", NULL) != TCL_OK
+                  "::numberOfDependencies", NULL) != TCL_OK
       || (objPtr = Tcl_GetObjResult(m->interp)) == NULL
       || Tcl_GetIntFromObj(m->interp, objPtr, &i) != TCL_OK
       || i < 0) {
@@ -978,9 +978,9 @@ static void mdlInitializeConditions(SimStruct *S)
 
   if (m->fmu == NULL) {
     m->fmu = (*m->fmi2Instantiate)(m->fmuName, fmi2ModelExchange,
-				   m->guid, m->resourcesURI,
-				   &m->fmi2CallbackFunctions,
-				   fmi2False, fmi2False);
+                                   m->guid, m->resourcesURI,
+                                   &m->fmi2CallbackFunctions,
+                                   fmi2False, fmi2False);
     if (m->fmu == NULL) {
       ssSetErrorStatus(S, "can't instantiate FMU");
       return;
@@ -1061,18 +1061,18 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       j = m->p->btv[i];
       switch (j) {
       case FMI_REAL:
-	m->p->r[idx[j]++] = *mxGetPr(param);
-	break;
+        m->p->r[idx[j]++] = *mxGetPr(param);
+        break;
       case FMI_BOOLEAN:
-	m->p->b[idx[j]++] = *mxGetPr(param) == 0.0? fmi2False: fmi2True;
-	break;
+        m->p->b[idx[j]++] = *mxGetPr(param) == 0.0? fmi2False: fmi2True;
+        break;
       case FMI_INTEGER:
-	m->p->i[idx[j]++] = (fmi2Integer)(*mxGetPr(param));
-	break;
+        m->p->i[idx[j]++] = (fmi2Integer)(*mxGetPr(param));
+        break;
       case FMI_STRING:
-	m->p->s[idx[j]++] = mxArrayToString(param);
+        m->p->s[idx[j]++] = mxArrayToString(param);
       default:
-	break;
+        break;
       }
     }
     if (setValues(m, m->p) != fmi2OK)
@@ -1080,7 +1080,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     idx[FMI_STRING] = 0;
     for (i = 0; i < m->p->nv; i++) {
       if (m->p->btv[i] == FMI_STRING)
-	mxFree((void *)m->p->s[idx[FMI_STRING]++]);
+        mxFree((void *)m->p->s[idx[FMI_STRING]++]);
     }
     if (ssGetErrorStatus(S))
       return;
@@ -1103,7 +1103,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
           }
         }
         idx[j]++;
-	break;
+        break;
       case FMI_BOOLEAN:
         if (m->p->b[idx[j]] != (*mxGetPr(param) == 0.0? fmi2False: fmi2True)) {
           m->p->b[idx[j]] = *mxGetPr(param) == 0.0? fmi2False: fmi2True;
@@ -1114,7 +1114,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
           }
         }
         idx[j]++;
-	break;
+        break;
       case FMI_INTEGER:
         if (m->p->i[idx[j]] != (fmi2Integer)(*mxGetPr(param))) {
           m->p->i[idx[j]] = (fmi2Integer)(*mxGetPr(param));
@@ -1125,11 +1125,11 @@ static void mdlOutputs(SimStruct *S, int_T tid)
           }
         }
         idx[j]++;
-	break;
+        break;
       case FMI_STRING:
         /* ToDo: support tunable string parameters */
       default:
-	break;
+        break;
       }
     }
   }
@@ -1221,18 +1221,18 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     if (m->nxc > 0) {
       /* check for time and state event */
       if (m->nextEventTimeDefined && ssGetT(S) >= m->nextEventTime)
-	timeEvent = fmi2True;
+        timeEvent = fmi2True;
       if (m->nz > 0) {
-	if ((*m->fmi2GetEventIndicators)(m->fmu, m->z, m->nz) != fmi2OK) {
-	  ssSetErrorStatus(S, "can't get event indicators of FMU");
-	  return;
-	}
-	for (i = 0; i < m->nz; i++) {
-	  if ((m->z[i] >= 0.0 && m->pre_z[i] < 0.0) ||
-	      (m->z[i] <= 0.0 && m->pre_z[i] > 0.0))
-	    stateEvent = fmi2True;
-	  m->pre_z[i] = m->z[i];
-	}
+        if ((*m->fmi2GetEventIndicators)(m->fmu, m->z, m->nz) != fmi2OK) {
+          ssSetErrorStatus(S, "can't get event indicators of FMU");
+          return;
+        }
+        for (i = 0; i < m->nz; i++) {
+          if ((m->z[i] >= 0.0 && m->pre_z[i] < 0.0) ||
+              (m->z[i] <= 0.0 && m->pre_z[i] > 0.0))
+            stateEvent = fmi2True;
+          m->pre_z[i] = m->z[i];
+        }
       }
       /* complete integrator step and optionally start event update */
       if ((*m->fmi2CompletedIntegratorStep)(m->fmu, fmi2True, &enterEventMode,
@@ -1288,9 +1288,9 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     /* get initial event indicators */
     if (m->initPending) {
       if (m->nz > 0 &&
-	  (*m->fmi2GetEventIndicators)(m->fmu, m->pre_z, m->nz) != fmi2OK) {
-	ssSetErrorStatus(S, "can't get initial event indicators of FMU");
-	return;
+          (*m->fmi2GetEventIndicators)(m->fmu, m->pre_z, m->nz) != fmi2OK) {
+        ssSetErrorStatus(S, "can't get initial event indicators of FMU");
+        return;
       }
       m->initPending = fmi2False;
     }

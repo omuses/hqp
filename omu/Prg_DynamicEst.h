@@ -88,7 +88,7 @@
         us_i^{k_l}, & i \in \mbox{find}(u_{order} = 0) \\[1ex]
         \displaystyle \frac{t^{k_l+1}-t}{t^{k_l+1}-t^{k_l}}\ us^{k_l} 
              + \frac{t-t^{k_l}}{t^{k_l+1}-t^{k_l}}\ us^{k_l+1},
-	& \mbox{else} \end{array}\right. \\[5ex]
+        & \mbox{else} \end{array}\right. \\[5ex]
       & \quad t\in[t^{k_l},t^{k_l+1}), \quad k_l=k_{l,0},\ldots,K_l-1,
         \quad l=1,\ldots,N_{ex},
    \end{array}
@@ -107,7 +107,7 @@
     \displaystyle \left\{ \frac{der\_x^0_{min}}{x_{nominal}} \right.
         &\le& \dot{x}(t^{0,l}) &\le& 
         \displaystyle \left. \frac{der\_x^0_{max}}{x_{nominal}} \right\}_i,
-	\quad & i \in \mbox{find}(x^0_{active}),
+        \quad & i \in \mbox{find}(x^0_{active}),
         \quad l=1,\ldots,N_{ex},  \\[3ex]
     && \{ x(t^{0,l}) &=& \displaystyle \frac{x0s^l}{x_{nominal}}
        \}_i, \quad & i \notin \mbox{find}(x^0_{active}),
@@ -269,30 +269,30 @@ class Prg_DynamicEst: public Omu_Program, public Omu_Model {
   void setup_stages(IVECP ks, VECP ts);
 
   void setup(int k,
-	     Omu_VariableVec &x, Omu_VariableVec &u, Omu_VariableVec &c);
+             Omu_VariableVec &x, Omu_VariableVec &u, Omu_VariableVec &c);
 
   void setup_struct(int k,
-		    const Omu_VariableVec &x, const Omu_VariableVec &u,
-		    Omu_DependentVec &xt, Omu_DependentVec &F,
-		    Omu_DependentVec &f,
-		    Omu_Dependent &f0, Omu_DependentVec &c);
+                    const Omu_VariableVec &x, const Omu_VariableVec &u,
+                    Omu_DependentVec &xt, Omu_DependentVec &F,
+                    Omu_DependentVec &f,
+                    Omu_Dependent &f0, Omu_DependentVec &c);
 
   void init_simulation(int k,
-		       Omu_VariableVec &x, Omu_VariableVec &u);
+                       Omu_VariableVec &x, Omu_VariableVec &u);
 
   void update(int kk,
-	      const Omu_StateVec &x, const Omu_Vec &u,
-	      const Omu_StateVec &xf,
-	      Omu_DependentVec &f, Omu_Dependent &f0,
-	      Omu_DependentVec &c);
+              const Omu_StateVec &x, const Omu_Vec &u,
+              const Omu_StateVec &xf,
+              Omu_DependentVec &f, Omu_Dependent &f0,
+              Omu_DependentVec &c);
 
   void consistic(int kk, double t,
-		 const Omu_StateVec &x, const Omu_Vec &u,
-		 Omu_DependentVec &xt);
+                 const Omu_StateVec &x, const Omu_Vec &u,
+                 Omu_DependentVec &xt);
 
   void continuous(int kk, double t,
-		  const Omu_StateVec &x, const Omu_Vec &u,
-		  const Omu_StateVec &dx, Omu_DependentVec &F);
+                  const Omu_StateVec &x, const Omu_Vec &u,
+                  const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
   /// write active parameters that are packed in p to _mx_args
@@ -471,9 +471,9 @@ class Prg_DynamicEst: public Omu_Program, public Omu_Model {
     int ex = 0;
     for (int kk = 0; kk <= _KK; kk++) {
       if (kk > 0 && ts(kk) < ts(kk-1))
-	ex++;
+        ex++;
       for (int i = 0; i < _mdl_nx; i++)
-	_mdl_xs[kk][i] = v[ex][i];
+        _mdl_xs[kk][i] = v[ex][i];
     }
   }
 
@@ -490,9 +490,9 @@ class Prg_DynamicEst: public Omu_Program, public Omu_Model {
     int ex = 0;
     for (int kk = 0; kk <= _KK; kk++) {
       if (kk == 0 || ts(kk) < ts(kk-1)) {
-	for (int i = 0; i < _mdl_nx; i++)
-	  _mdl_x0s[ex][i] = _mdl_xs[kk][i];
-	ex++;
+        for (int i = 0; i < _mdl_nx; i++)
+          _mdl_x0s[ex][i] = _mdl_xs[kk][i];
+        ex++;
       }
     }
   }

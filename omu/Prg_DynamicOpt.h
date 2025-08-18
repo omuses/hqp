@@ -178,15 +178,15 @@
     \displaystyle \left\{ \frac{x^0_{min}}{x_{nominal}} \right.
         &\le& x(t^{0}) &\le& 
         \displaystyle \left. \frac{x^0_{max}}{x_{nominal}} \right\}_i,
-	\quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
+        \quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
     \displaystyle \left\{ \frac{der\_x^0_{min}}{x_{nominal}} \right.
         &\le& \dot{x}(t^{0}) &\le& 
         \displaystyle \left. \frac{der\_x^0_{max}}{x_{nominal}} \right\}_i,
-	\quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
+        \quad & i\in\mbox{find}(x_{0\_active}), \\[3ex]
     \displaystyle \left\{ \frac{u^0_{min}}{u_{nominal}} \right.
         &\le& u(t^{0}) &\le& 
         \displaystyle \left. \frac{u^0_{max}}{u_{nominal}} \right\}_i,
-	\quad & i\in\mbox{find}(u_{active}\ \mbox{and}\ u_{0,nfixed}=0), \\[3ex]
+        \quad & i\in\mbox{find}(u_{active}\ \mbox{and}\ u_{0,nfixed}=0), \\[3ex]
     \displaystyle && \{ u(t^0) &=& \displaystyle \frac{us^0}{u_{nominal}} \}_i,
         \quad & i \in \mbox{find}(u_{0,nfixed}>1-u_{order}), \\[3ex]
     \displaystyle\left\{\frac{us^0+der\_u_{min}}{u_{nominal}}\right. &\le& u(t^0)
@@ -209,10 +209,10 @@
     \displaystyle\left\{ \frac{u_{min}}{u_{nominal}} \right. &\le& u(t^{k})
         &\le& \displaystyle\left. \frac{u_{max}}{u_{nominal}} \right\}_i, 
         \quad & i \in \mbox{find}(k \ge u_{0,nfixed} + u_{order} - 1), \\[1ex]
-	&& && & k=0,\ldots,K, \\[2ex]
+        && && & k=0,\ldots,K, \\[2ex]
     \displaystyle \frac{{der\_u}_{min}}{u_{nominal}} &\le& du^{k}
         &\le& \displaystyle \frac{{der\_u}_{max}}{u_{nominal}}, \quad &
-	k=0,\ldots,K-1, \\[3ex]
+        k=0,\ldots,K-1, \\[3ex]
     \displaystyle \frac{x_{min}}{x_{nominal}} &\le& x(t^{k})
         &\le& \displaystyle \frac{x_{max}}{x_{nominal}}, \quad &
         k=0,\ldots,K, \\[3ex]
@@ -238,7 +238,7 @@
         i \in \mbox{find}(\mbox{mod}(k+1, u_{decimation}) \ne 0), \\[2ex]
       \displaystyle du^k_{initial,i}, \quad &
         i \in \mbox{find}(\mbox{mod}(k+1, u_{decimation}) = 0\ \mbox{and}\ 
-	k < u_{0,nfixed}+u_{order}-2), \\[2ex]
+        k < u_{0,nfixed}+u_{order}-2), \\[2ex]
       \displaystyle \mbox{free} , \quad & \mbox{else}.
       \end{array}\right.
    @f]
@@ -391,30 +391,30 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
   void setup_stages(IVECP ks, VECP ts);
 
   void setup(int k,
-	     Omu_VariableVec &x, Omu_VariableVec &u, Omu_VariableVec &c);
+             Omu_VariableVec &x, Omu_VariableVec &u, Omu_VariableVec &c);
 
   void setup_struct(int k,
-		    const Omu_VariableVec &x, const Omu_VariableVec &u,
-		    Omu_DependentVec &xt, Omu_DependentVec &F,
-		    Omu_DependentVec &f,
-		    Omu_Dependent &f0, Omu_DependentVec &c);
+                    const Omu_VariableVec &x, const Omu_VariableVec &u,
+                    Omu_DependentVec &xt, Omu_DependentVec &F,
+                    Omu_DependentVec &f,
+                    Omu_Dependent &f0, Omu_DependentVec &c);
 
   void init_simulation(int k,
-		       Omu_VariableVec &x, Omu_VariableVec &u);
+                       Omu_VariableVec &x, Omu_VariableVec &u);
 
   void update(int kk,
-	      const Omu_StateVec &x, const Omu_Vec &u,
-	      const Omu_StateVec &xf,
-	      Omu_DependentVec &f, Omu_Dependent &f0,
-	      Omu_DependentVec &c);
+              const Omu_StateVec &x, const Omu_Vec &u,
+              const Omu_StateVec &xf,
+              Omu_DependentVec &f, Omu_Dependent &f0,
+              Omu_DependentVec &c);
 
   void consistic(int kk, double t,
-		 const Omu_StateVec &x, const Omu_Vec &u,
-		 Omu_DependentVec &xt);
+                 const Omu_StateVec &x, const Omu_Vec &u,
+                 Omu_DependentVec &xt);
 
   void continuous(int kk, double t,
-		  const Omu_StateVec &x, const Omu_Vec &u,
-		  const Omu_StateVec &dx, Omu_DependentVec &F);
+                  const Omu_StateVec &x, const Omu_Vec &u,
+                  const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
   /**
@@ -428,17 +428,17 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
    * Overloaded update routine for obtaining gradients.
    */
   void update_grds(int kk, 
-		   const Omu_StateVec &x, const Omu_Vec &u,
-		   const Omu_StateVec &xf,
-		   Omu_DependentVec &f, Omu_Dependent &f0,
-		   Omu_DependentVec  &c);
+                   const Omu_StateVec &x, const Omu_Vec &u,
+                   const Omu_StateVec &xf,
+                   Omu_DependentVec &f, Omu_Dependent &f0,
+                   Omu_DependentVec  &c);
 
   /**
    * Overloaded continuous routine for obtaining gradients.
    */
   void continuous_grds(int kk, double t,
-		       const Omu_StateVec &x, const Omu_Vec &u,
-		       const Omu_StateVec &dx, Omu_DependentVec &F);
+                       const Omu_StateVec &x, const Omu_Vec &u,
+                       const Omu_StateVec &dx, Omu_DependentVec &F);
   //@}
 
  public:
@@ -486,7 +486,7 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
     // finally take over n_taus
     if (_t_scale_idx >= 0)
       v_copy_elements(n_taus, _taus);
-  }	
+  }
   //@}
 
   /**
@@ -714,7 +714,7 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
     // to achieve multiple shooting behavior when no simulation is performed
     for (int kk = 0; kk <= _KK; kk++)
       for (int i = 0; i < _mdl_nx; i++)
-	_mdl_xs[kk][i] = v[i];
+        _mdl_xs[kk][i] = v[i];
   }
 
   /// set free initial states
@@ -737,7 +737,7 @@ class Prg_DynamicOpt: public Omu_Program, public Omu_Model {
     v_copy_elements(v, _mdl_u0);
     for (int kk = 0; kk <= _KK; kk++)
       for (int i = 0; i < _mdl_nu; i++)
-	_mdl_us[kk][i] = v[i];
+        _mdl_us[kk][i] = v[i];
   }
 
   /// set lower bounds for initial model inputs

@@ -168,18 +168,18 @@ Prg_DTOpt::Prg_DTOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_u_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_der_u_ref)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
-					   mdl_der_u_weight1)));
+                                           mdl_der_u_weight1)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
-					   mdl_der_u_weight2)));
+                                           mdl_der_u_weight2)));
 
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
                                            mdl_der_u_soft_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
                                            mdl_der_u_soft_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
-					   mdl_der_u_soft_weight1)));
+                                           mdl_der_u_soft_weight1)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
-					   mdl_der_u_soft_weight2)));
+                                           mdl_der_u_soft_weight2)));
 
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_integer)));
   _ifList.append(new If_IntVec(GET_SET_CB(const IVECP, "", mdl_x_periodic)));
@@ -198,9 +198,9 @@ Prg_DTOpt::Prg_DTOpt()
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_soft_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_y_soft_max)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
-					   mdl_y_soft_weight1)));
+                                           mdl_y_soft_weight1)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "",
-					   mdl_y_soft_weight2)));
+                                           mdl_y_soft_weight2)));
 
   _ifList.append(new If_RealVec(GET_CB(const VECP, "", mdl_uf)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_uf_min)));
@@ -348,9 +348,9 @@ void Prg_DTOpt::setup_stages()
 
 //--------------------------------------------------------------------------
 void Prg_DTOpt::setup_vars(int k,
-			   VECP x, VECP x_min, VECP x_max, IVECP x_int,
-			   VECP u, VECP u_min, VECP u_max, IVECP u_int,
-			   VECP c, VECP c_min, VECP c_max)
+                           VECP x, VECP x_min, VECP x_max, IVECP x_int,
+                           VECP u, VECP u_min, VECP u_max, IVECP u_int,
+                           VECP c, VECP c_min, VECP c_max)
 {
   int i, i_end, idx, isc, isc0, iscf, j;
 
@@ -368,7 +368,7 @@ void Prg_DTOpt::setup_vars(int k,
       if (idx == _t_scale_idx)
         _t_scale_i = _nu;
       if (_mdl_u.active[idx]) {
-	_nu++;
+        _nu++;
         if (true || _mdl_der_u.min[idx] > -Inf || _mdl_der_u.max[idx] < Inf ||
             _mdl_der_u.weight1[idx] != 0.0 || _mdl_der_u.weight2[idx] != 0.0 ||
             (_mdl_der_u_soft.min[idx] > -Inf || _mdl_der_u_soft.max[idx] < Inf) 
@@ -383,11 +383,11 @@ void Prg_DTOpt::setup_vars(int k,
       }
       // count soft constraints for u, i.e. rate-of-change
       if (_K > 0 && (_mdl_der_u_soft.min[idx] > -Inf || _mdl_der_u_soft.max[idx] < Inf)
-	  && (_mdl_der_u_soft.weight1[idx] != 0.0
+          && (_mdl_der_u_soft.weight1[idx] != 0.0
               || _mdl_der_u_soft.weight2[idx] != 0.0)
           && _mdl_u.active[idx]) {
-	_mdl_der_u_soft.active[idx] = 1;
-	_nsu++;
+        _mdl_der_u_soft.active[idx] = 1;
+        _nsu++;
         if (_mdl_der_u_soft.min[idx] > -Inf) {
           _nsuc++;
         }
@@ -404,8 +404,8 @@ void Prg_DTOpt::setup_vars(int k,
       _t_active = _mdl_u.active[_t_scale_idx];
       _t_scale_nominal = _mdl_u_nominal[_t_scale_idx];
       if (_mdl_u_order[_t_scale_idx] != 0)
-	  m_error(E_FORMAT, "Prg_DTOpt::setup: "
-		  "mdl_u_order[mdl_t_scale_idx] must be 0 (zero order hold)");
+          m_error(E_FORMAT, "Prg_DTOpt::setup: "
+                  "mdl_u_order[mdl_t_scale_idx] must be 0 (zero order hold)");
     }
     else
       _t_active = 0;
@@ -422,16 +422,16 @@ void Prg_DTOpt::setup_vars(int k,
     _nscf = 0;
     for (idx = 0; idx < _mdl_ny; idx++) {
       if (_mdl_y.min[idx] > -Inf || _mdl_y.max[idx] < Inf
-	  || _mdl_y.weight1[idx] != 0.0 || _mdl_y.weight2[idx] != 0.0) {
-	_mdl_y.active[idx] = 1;
-	_nc++;
+          || _mdl_y.weight1[idx] != 0.0 || _mdl_y.weight2[idx] != 0.0) {
+        _mdl_y.active[idx] = 1;
+        _nc++;
       }
       else
         _mdl_y.active[idx] = 0;
       if ((_mdl_y_soft.min[idx] > -Inf || _mdl_y_soft.max[idx] < Inf) 
-	  && (_mdl_y_soft.weight1[idx] != 0.0 || _mdl_y_soft.weight2[idx] != 0.0)) {
-	_mdl_y_soft.active[idx] = 1;
-	_ns++;
+          && (_mdl_y_soft.weight1[idx] != 0.0 || _mdl_y_soft.weight2[idx] != 0.0)) {
+        _mdl_y_soft.active[idx] = 1;
+        _ns++;
         if (_mdl_y_soft.min[idx] > -Inf) {
           _nsc++;
         }
@@ -442,16 +442,16 @@ void Prg_DTOpt::setup_vars(int k,
       else
         _mdl_y_soft.active[idx] = 0;
       if (_mdl_y0.min[idx] > -Inf || _mdl_y0.max[idx] < Inf
-	  || _mdl_y0.weight1[idx] != 0.0 || _mdl_y0.weight2[idx] != 0.0) {
-	_mdl_y0.active[idx] = 1;
-	_nc0++;
+          || _mdl_y0.weight1[idx] != 0.0 || _mdl_y0.weight2[idx] != 0.0) {
+        _mdl_y0.active[idx] = 1;
+        _nc0++;
       }
       else
         _mdl_y0.active[idx] = 0;
       if ((_mdl_y0_soft.min[idx] > -Inf || _mdl_y0_soft.max[idx] < Inf)
-	  && (_mdl_y0_soft.weight1[idx] != 0.0 || _mdl_y0_soft.weight2[idx] != 0.0)) {
-	_mdl_y0_soft.active[idx] = 1;
-	_ns0++;
+          && (_mdl_y0_soft.weight1[idx] != 0.0 || _mdl_y0_soft.weight2[idx] != 0.0)) {
+        _mdl_y0_soft.active[idx] = 1;
+        _ns0++;
         if (_mdl_y0_soft.min[idx] > -Inf) {
           _nsc0++;
         }
@@ -465,15 +465,15 @@ void Prg_DTOpt::setup_vars(int k,
       //       as not both: initial and final constraints are treated for _K == 0
       if (_K > 0 && (_mdl_yf.min[idx] > -Inf || _mdl_yf.max[idx] < Inf
                      || _mdl_yf.weight1[idx] != 0.0 || _mdl_yf.weight2[idx] != 0.0)) {
-	_mdl_yf.active[idx] = 1;
-	_ncf++;
+        _mdl_yf.active[idx] = 1;
+        _ncf++;
       }
       else
         _mdl_yf.active[idx] = 0;
       if (_K > 0 && (_mdl_yf_soft.min[idx] > -Inf || _mdl_yf_soft.max[idx] < Inf) 
-	  && (_mdl_yf_soft.weight1[idx] != 0.0 || _mdl_yf_soft.weight2[idx] != 0.0)) {
-	_mdl_yf_soft.active[idx] = 1;
-	_nsf++;
+          && (_mdl_yf_soft.weight1[idx] != 0.0 || _mdl_yf_soft.weight2[idx] != 0.0)) {
+        _mdl_yf_soft.active[idx] = 1;
+        _nsf++;
         if (_mdl_yf_soft.min[idx] > -Inf) {
           _nscf++;
         }
@@ -618,7 +618,7 @@ void Prg_DTOpt::setup_vars(int k,
         x_int[i] = _mdl_x.integer[idx];
       }
       else
-	x_min[i] = x_max[i] = x[i];
+        x_min[i] = x_max[i] = x[i];
     }
     else {
       x_min[i] = _mdl_x.min[idx] / _mdl_x_nominal[idx];
@@ -632,17 +632,17 @@ void Prg_DTOpt::setup_vars(int k,
   for (i = 0, isc = 0, idx = 0; idx < _mdl_nu; idx++) {
     if (_mdl_der_u.active[idx]) {
       if (k < _K) {
-	// rate of change bounds
-	if (_mdl_der_u.min[idx] > -Inf) {
-	  for (j = 0; j < upsk; j++)
-	    u_min[i+j] =
-	      _mdl_der_u.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
-	}
-	if (_mdl_der_u.max[idx] < Inf) {
-	  for (j = 0; j < upsk; j++)
-	    u_max[i+j] =
-	      _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
-	}
+        // rate of change bounds
+        if (_mdl_der_u.min[idx] > -Inf) {
+          for (j = 0; j < upsk; j++)
+            u_min[i+j] =
+              _mdl_der_u.min[idx] / _mdl_u_nominal[idx]*_t_nominal;
+        }
+        if (_mdl_der_u.max[idx] < Inf) {
+          for (j = 0; j < upsk; j++)
+            u_max[i+j] =
+              _mdl_der_u.max[idx] / _mdl_u_nominal[idx]*_t_nominal;
+        }
         // rate of change soft bounds
         if (_mdl_der_u_soft.active[idx]) {
           if (_mdl_der_u_soft.min[idx] > -Inf) {
@@ -658,17 +658,17 @@ void Prg_DTOpt::setup_vars(int k,
             isc += upsk;
           }
         }
-	// initial guess
+        // initial guess
         u[i] =
           (_mdl_us[k+1][idx] - _mdl_us[k][idx])
           / (ts(k+1) - ts(k))
           / _mdl_u_nominal[idx]*_t_nominal;
-	// override rate of change bounds for fixed controls
-	if (k < _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 2) {
-	  u_min[i] = u_max[i] = u[i];
-	}
-	// override rate of change bounds for joined controls
-	if (_mdl_u_decimation[idx] == 0 ||
+        // override rate of change bounds for fixed controls
+        if (k < _mdl_u0_nfixed[idx] + _mdl_u_order[idx] - 2) {
+          u_min[i] = u_max[i] = u[i];
+        }
+        // override rate of change bounds for joined controls
+        if (_mdl_u_decimation[idx] == 0 ||
             (k + 1) % _mdl_u_decimation[idx] != 0) {
           u_min[i] = u_max[i] = 0.0;
         }
@@ -688,10 +688,10 @@ void Prg_DTOpt::setup_vars(int k,
   for (i = 0, isc = 0, idx = 0; idx < _mdl_ny; idx++) {
     if (_mdl_y.min[idx] > -Inf)
       for (j = 0; j < spsk; j++)
-	c_min[i+j] = _mdl_y.min[idx] / _mdl_y_nominal[idx];
+        c_min[i+j] = _mdl_y.min[idx] / _mdl_y_nominal[idx];
     if (_mdl_y.max[idx] < Inf)
       for (j = 0; j < spsk; j++)
-	c_max[i+j] = _mdl_y.max[idx] / _mdl_y_nominal[idx];
+        c_max[i+j] = _mdl_y.max[idx] / _mdl_y_nominal[idx];
     if (_mdl_y.active[idx])
       i += spsk;
     if (_mdl_y_soft.active[idx]) {
@@ -732,7 +732,7 @@ void Prg_DTOpt::setup_vars(int k,
           c_min[i] = _mdl_y0.min[idx] / _mdl_y_nominal[idx];
         if (_mdl_y0.max[idx] < Inf)
           c_max[i] = _mdl_y0.max[idx] / _mdl_y_nominal[idx];
-	i++;
+        i++;
       }
       // soft constraints at initial time
       if (_mdl_y0_soft.active[idx]) {
@@ -779,10 +779,10 @@ void Prg_DTOpt::setup_vars(int k,
 
 //--------------------------------------------------------------------------
 void Prg_DTOpt::setup_struct(int k, const VECP x, const VECP u,
-			     MATP fx, MATP fu, IVECP f_lin,
-			     VECP f0x, VECP f0u, int &f0_lin,
-			     MATP cx, MATP cu, IVECP c_lin,
-			     MATP Lxx, MATP Luu, MATP Lxu)
+                             MATP fx, MATP fu, IVECP f_lin,
+                             VECP f0x, VECP f0u, int &f0_lin,
+                             MATP cx, MATP cu, IVECP c_lin,
+                             MATP Lxx, MATP Luu, MATP Lxu)
 {
   int i, j, idx, jdx, offs;
   SimStruct *S = _SS[0];
@@ -807,7 +807,7 @@ void Prg_DTOpt::setup_struct(int k, const VECP x, const VECP u,
 
 //--------------------------------------------------------------------------
 void Prg_DTOpt::init_simulation(int k,
-				VECP x, VECP u)
+                                VECP x, VECP u)
 {
   int i, idx;
 
@@ -834,7 +834,7 @@ void Prg_DTOpt::init_simulation(int k,
 
 //--------------------------------------------------------------------------
 void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
-			    VECP f, Real &f0, VECP c)
+                            VECP f, Real &f0, VECP c)
 {
   int i, j, idx, is, isc, is0, isc0, isf, iscf;
   int nxk = k < _K? _nx: _nu - _ndu + _nx;
@@ -1002,10 +1002,10 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
       // rates of change
       if (k < _K) {
         _mdl_der_u[idx] = u[i*upsk + k%upsk]*_mdl_u_nominal[idx]/_t_nominal;
-	help = u[i*upsk + k%upsk]/_t_nominal - _mdl_der_u.ref[idx]
-	  / _mdl_u_nominal[idx];
-	f0 += dt0 * _mdl_der_u.weight1[idx] * help;
-	f0 += dt0 * _mdl_der_u.weight2[idx] * help*help;
+        help = u[i*upsk + k%upsk]/_t_nominal - _mdl_der_u.ref[idx]
+          / _mdl_u_nominal[idx];
+        f0 += dt0 * _mdl_der_u.weight1[idx] * help;
+        f0 += dt0 * _mdl_der_u.weight2[idx] * help*help;
         // soft constraints on rates of change
         if (_mdl_der_u_soft.active[idx]) {
           help = u[upsk*_nu + is + k%upsk]/_t_nominal;
@@ -1044,24 +1044,24 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     // consider soft constraints
     if (_mdl_y_soft.active[idx] == 1) {
       if (k < _K)
-	help = u[upsk*(_nu+_nsu) + is + k%spsk];
+        help = u[upsk*(_nu+_nsu) + is + k%spsk];
       else
-	help = x[nxk + is + k%spsk];
+        help = x[nxk + is + k%spsk];
 
       f0 += dty * (_mdl_y_soft.weight1[idx]*help
-		   + _mdl_y_soft.weight2[idx]*help*help);
+                   + _mdl_y_soft.weight2[idx]*help*help);
 
       if (_mdl_y_soft.min[idx] > -Inf) {
-	c[spsk*_nc + isc + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
-	if (with_lambda)
-	  _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*_nc + isc + k%spsk], _mdl_y_lambda[idx]);
-	isc += spsk;
+        c[spsk*_nc + isc + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] + help;
+        if (with_lambda)
+          _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*_nc + isc + k%spsk], _mdl_y_lambda[idx]);
+        isc += spsk;
       }
       if (_mdl_y_soft.max[idx] < Inf) {
-	c[spsk*_nc + isc + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] - help;
-	if (with_lambda)
-	  _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*_nc + isc + k%spsk], _mdl_y_lambda[idx]);
-	isc += spsk;
+        c[spsk*_nc + isc + k%spsk] = mdl_y[idx] / _mdl_y_nominal[idx] - help;
+        if (with_lambda)
+          _mdl_y_lambda[idx] = absmax(_c_lambda[spsk*_nc + isc + k%spsk], _mdl_y_lambda[idx]);
+        isc += spsk;
       }
       is += spsk;
     }
@@ -1074,17 +1074,17 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     for (is0 = 0, isc0 = 0, idx = 0; idx < _mdl_ny; idx++) {
       // assign used outputs to constraints
       if (_mdl_y0.active[idx]) {
-	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
-	if (with_lambda)
-	  _mdl_y_lambda[idx] = absmax(_c_lambda[i], _mdl_y_lambda[idx]);
-	i++;
+        c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
+        if (with_lambda)
+          _mdl_y_lambda[idx] = absmax(_c_lambda[i], _mdl_y_lambda[idx]);
+        i++;
       }
       // initial objective terms
       help = (mdl_y[idx] - _mdl_y.ref[idx]) / _mdl_y_nominal[idx];
       if (_mdl_y0.weight1[idx] != 0.0)
-	f0 += _mdl_y0.weight1[idx] * help;
+        f0 += _mdl_y0.weight1[idx] * help;
       if (_mdl_y0.weight2[idx] != 0.0)
-	f0 += _mdl_y0.weight2[idx] * help*help;
+        f0 += _mdl_y0.weight2[idx] * help*help;
       // soft constraints at initial time
       if (_mdl_y0_soft.active[idx] == 1) {
         if (k < _K)
@@ -1117,17 +1117,17 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     for (i = _nc+_nsc, isf = 0, iscf = 0, idx = 0; idx < _mdl_ny; idx++) {
       // assign used outputs to constraints
       if (_mdl_yf.active[idx]) {
-	c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
-	if (with_lambda)
-	  _mdl_y_lambda[idx] = absmax(_c_lambda[i], _mdl_y_lambda[idx]);
-	i++;
+        c[i] = mdl_y[idx] / _mdl_y_nominal[idx];
+        if (with_lambda)
+          _mdl_y_lambda[idx] = absmax(_c_lambda[i], _mdl_y_lambda[idx]);
+        i++;
       }
       // final objective terms
       help = (mdl_y[idx] - _mdl_y.ref[idx]) / _mdl_y_nominal[idx];
       if (_mdl_yf.weight1[idx] != 0.0)
-	f0 += _mdl_yf.weight1[idx] * help;
+        f0 += _mdl_yf.weight1[idx] * help;
       if (_mdl_yf.weight2[idx] != 0.0)
-	f0 += _mdl_yf.weight2[idx] * help*help;
+        f0 += _mdl_yf.weight2[idx] * help*help;
       // soft constraints at final time
       if (_mdl_yf_soft.active[idx] == 1) {
         help = x[nxk + spsk*_ns + isf];
@@ -1206,9 +1206,9 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     // update controlled inputs from optimizer
     for (i = _mdl_nd, idx = 0; idx < _mdl_nu; idx++) {
       if (_mdl_der_u.active[idx]) {
-	if (true || _mdl_u_order[idx] == 0 && (k+1)%spsk == 0) {
-	  // zero order hold at end of stage:
-	  // apply step in u for subsequent stage
+        if (true || _mdl_u_order[idx] == 0 && (k+1)%spsk == 0) {
+          // zero order hold at end of stage:
+          // apply step in u for subsequent stage
           help = ((ts(k+1) - ts(k-spsk/upsk+1))/_t_nominal
                   * u[(i-_mdl_nd)*upsk + k%upsk]);
           if (_t_active && i-_mdl_nd != _t_scale_i)
@@ -1216,10 +1216,10 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
           else
             f[i] = x[i] + help;
         }
-	//else
-	  // piecewise linear interpolation or within stage with zoh
-	  //f[i] = xf[i];
-	i++;
+        //else
+          // piecewise linear interpolation or within stage with zoh
+          //f[i] = xf[i];
+        i++;
       }
       else if (_mdl_u.active[idx] && k == _K - 1) {
         // propagate control inputs to final time
@@ -1235,9 +1235,9 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     if (k == _K-1) {
       int nxK = _nx + _nu - _ndu; // nxk of final stage
       for (; i < nxK + _ns; i++)
-	f[i] = u[upsk*(_nu+_nsu) + (i-nxK+1)*spsk-1];
+        f[i] = u[upsk*(_nu+_nsu) + (i-nxK+1)*spsk-1];
       for (; i < nxK + _ns + _nsf; i++)
-	f[i] = u[upsk*(_nu+_nsu) + spsk*_ns + i - nxK - _ns];
+        f[i] = u[upsk*(_nu+_nsu) + spsk*_ns + i - nxK - _ns];
     }
   }
   f0 *= _fscale;
@@ -1245,11 +1245,11 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
 
 //--------------------------------------------------------------------------
 void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
-			     VECP f, Real &f0, VECP c,
-			     MATP fx, MATP fu, VECP f0x, VECP f0u,
-			     MATP cx, MATP cu,
-			     const VECP rf, const VECP rc,
-			     MATP Lxx, MATP Luu, MATP Lxu)
+                             VECP f, Real &f0, VECP c,
+                             MATP fx, MATP fu, VECP f0x, VECP f0u,
+                             MATP cx, MATP cu,
+                             const VECP rf, const VECP rc,
+                             MATP Lxx, MATP Luu, MATP Lxu)
 {
   int i, iu, idx, is, j;
   int is0, isf;
@@ -1370,10 +1370,10 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
       }
       // rates of change
       if (k < _K) {
-	help = u[(i-_mdl_nd)*upsk + k%upsk]/_t_nominal - _mdl_der_u.ref[idx]
-	  / _mdl_u_nominal[idx];
-	f0u[(i-_mdl_nd)*upsk + k%upsk] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
-	f0u[(i-_mdl_nd)*upsk + k%upsk] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal * 2.0 * help;
+        help = u[(i-_mdl_nd)*upsk + k%upsk]/_t_nominal - _mdl_der_u.ref[idx]
+          / _mdl_u_nominal[idx];
+        f0u[(i-_mdl_nd)*upsk + k%upsk] += dt0 * _mdl_der_u.weight1[idx]/_t_nominal;
+        f0u[(i-_mdl_nd)*upsk + k%upsk] += dt0 * _mdl_der_u.weight2[idx]/_t_nominal * 2.0 * help;
         if (_t_active) {
           f0x[t_scale_ix] += ddt0 * _mdl_der_u.weight1[idx] * help;
           f0x[t_scale_ix] += ddt0 * _mdl_der_u.weight2[idx] * help*help;
@@ -1444,15 +1444,15 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
     if (_mdl_y_soft.active[idx] == 1) {
       if (k < _K) {
         help = u[upsk*(_nu+_nsu) + is + k%spsk];
-	f0u[upsk*(_nu+_nsu) + is + k%spsk]
-	  += dty * (_mdl_y_soft.weight1[idx]
-		    + 2.0*_mdl_y_soft.weight2[idx]*help);
+        f0u[upsk*(_nu+_nsu) + is + k%spsk]
+          += dty * (_mdl_y_soft.weight1[idx]
+                    + 2.0*_mdl_y_soft.weight2[idx]*help);
       }
       else {
         help = x[nxk + is + k%spsk];
-	f0x[nxk + is + k%spsk]
-	  += dty * (_mdl_y_soft.weight1[idx]
-		    + 2.0*_mdl_y_soft.weight2[idx]*help);
+        f0x[nxk + is + k%spsk]
+          += dty * (_mdl_y_soft.weight1[idx]
+                    + 2.0*_mdl_y_soft.weight2[idx]*help);
         
       }
       if (_t_active) {
@@ -1489,7 +1489,7 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
                 2.0 * (c[i] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
                 cu[i][j];
         }
-	i++;
+        i++;
       }
       // contribution of soft constraints at initial time
       if (_mdl_y0_soft.active[idx] == 1) {
@@ -1524,7 +1524,7 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
               2.0 * (c[i] - _mdl_y.ref[idx]/_mdl_y_nominal[idx]) *
               cx[i][j];
         }
-	i++;
+        i++;
       }
       // contribution of soft constraints
       if (_mdl_yf_soft.active[idx] == 1) {
@@ -1611,7 +1611,7 @@ void Prg_DTOpt::fetch_jac(SimStruct *S,
           }
           if (_mdl_y_soft.min[mdl_y_idx] > -Inf) {
             isc -= spsk;
-	  }
+          }
         }
         // constraints (used model outputs) at initial time
         if (k == 0 && _mdl_y0.active[mdl_y_idx]) {
@@ -1623,13 +1623,13 @@ void Prg_DTOpt::fetch_jac(SimStruct *S,
           cx[ii + _nsuc][j] = pr[rdx] /
             _mdl_y_nominal[mdl_y_idx] * _mdl_x_nominal[mdl_x_idx];
         }
-	// soft constraints at initial time
-	if (k == 0 && _mdl_y0_soft.active[mdl_y_idx] == 1) {
-	  // need to loop to obtain isc0 considering active outputs
-	  for (; isc0dx < ir[rdx]; isc0dx++) {
-	    if (_mdl_y0_soft.active[isc0dx - _mdl_nx] == 1) {
-	      if (_mdl_y0_soft.min[isc0dx - _mdl_nx] > -Inf)
-		isc0++;
+        // soft constraints at initial time
+        if (k == 0 && _mdl_y0_soft.active[mdl_y_idx] == 1) {
+          // need to loop to obtain isc0 considering active outputs
+          for (; isc0dx < ir[rdx]; isc0dx++) {
+            if (_mdl_y0_soft.active[isc0dx - _mdl_nx] == 1) {
+              if (_mdl_y0_soft.min[isc0dx - _mdl_nx] > -Inf)
+                isc0++;
               if (_mdl_y0_soft.max[isc0dx - _mdl_nx] < Inf)
                 isc0++;
             }

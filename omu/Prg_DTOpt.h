@@ -139,28 +139,28 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
   void setup_horizon(int &k0, int &kf);
 
   void setup_vars(int k,
-		  VECP x, VECP x_min, VECP x_max, IVECP x_int,
-		  VECP u, VECP u_min, VECP u_max, IVECP u_int,
-		  VECP c, VECP c_min, VECP c_max);
+                  VECP x, VECP x_min, VECP x_max, IVECP x_int,
+                  VECP u, VECP u_min, VECP u_max, IVECP u_int,
+                  VECP c, VECP c_min, VECP c_max);
 
   void setup_struct(int k, const VECP x, const VECP u,
-		    MATP fx, MATP fu, IVECP f_lin,
-		    VECP f0x, VECP f0u, int &f0_lin,
-		    MATP cx, MATP cu, IVECP c_lin,
-		    MATP Lxx, MATP Luu, MATP Lxu);
+                    MATP fx, MATP fu, IVECP f_lin,
+                    VECP f0x, VECP f0u, int &f0_lin,
+                    MATP cx, MATP cu, IVECP c_lin,
+                    MATP Lxx, MATP Luu, MATP Lxu);
 
   void init_simulation(int k,
-		       VECP x, VECP u);
+                       VECP x, VECP u);
 
   void update_vals(int k, const VECP x, const VECP u,
-		   VECP f, Real &f0, VECP c);
+                   VECP f, Real &f0, VECP c);
 
   void update_stage(int k, const VECP x, const VECP u,
-		    VECP f, Real &f0, VECP c,
-		    MATP fx, MATP fu, VECP f0x, VECP f0u,
-		    MATP cx, MATP cu,
-		    const VECP rf, const VECP rc,
-		    MATP Lxx, MATP Luu, MATP Lxu);
+                    VECP f, Real &f0, VECP c,
+                    MATP fx, MATP fu, VECP f0x, VECP f0u,
+                    MATP cx, MATP cu,
+                    const VECP rf, const VECP rc,
+                    MATP Lxx, MATP Luu, MATP Lxu);
 
   //@}
 
@@ -246,7 +246,7 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
     // finally take over n_taus
     if (_t_scale_idx >= 0)
       v_copy_elements(n_taus, _taus);
-  }	
+  }
   //@}
 
   /**
@@ -468,7 +468,7 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
     // to achieve multiple shooting behavior when no simulation is performed
     for (int k = 0; k <= _K; k++)
       for (int i = 0; i < _mdl_nx; i++)
-	_mdl_xs[k][i] = v[i];
+        _mdl_xs[k][i] = v[i];
   }
 
   /// set free initial states
@@ -485,7 +485,7 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
     v_copy_elements(v, _mdl_u0);
     for (int k = 0; k <= _K; k++)
       for (int i = 0; i < _mdl_nu; i++)
-	_mdl_us[k][i] = v[i];
+        _mdl_us[k][i] = v[i];
   }
 
   /// set lower bounds for initial model inputs

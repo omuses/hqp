@@ -109,7 +109,7 @@ Prg_DynamicEst::Prg_DynamicEst()
   _dfdpx0 = m_resize(m_get(1, 1), _nx, _np+_nx0);
 
   _ifList.append(new If_Cmd("prg_setup_model",
-			    &Prg_DynamicEst::setup_model, this));
+                            &Prg_DynamicEst::setup_model, this));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_min)));
   _ifList.append(new If_RealVec(GET_SET_CB(const VECP, "", mdl_p_max)));
@@ -186,12 +186,12 @@ void Prg_DynamicEst::write_active_mx_args(VECP p)
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
-	if (_mdl_p_active[idx])
-	  mxGetPr(arg)[i] = p[ip++] * _mdl_p_nominal[idx];
+        if (_mdl_p_active[idx])
+          mxGetPr(arg)[i] = p[ip++] * _mdl_p_nominal[idx];
     }
   }
   assert(idx == _mdl_np); // S-function parameters must not have changed
-  assert(ip == _np);	  // _np must not have changed since setup_stages
+  assert(ip == _np);          // _np must not have changed since setup_stages
 }
 
 //--------------------------------------------------------------------------
@@ -260,7 +260,7 @@ void Prg_DynamicEst::setup_stages(IVECP ks, VECP ts)
   else {
     if (_nex > 1) {
       m_error(E_FORMAT, "Prg_DynamicEst::setup_stages: "
-	      "prg_nex>1 requires prg_multistage=true");
+              "prg_nex>1 requires prg_multistage=true");
     }
     _KK = max(_K, _KK); // assume that one of both has been specified
     _K = 1;
@@ -299,8 +299,8 @@ void Prg_DynamicEst::setup_stages(IVECP ks, VECP ts)
 
 //--------------------------------------------------------------------------
 void Prg_DynamicEst::setup(int k,
-			   Omu_VariableVec &x, Omu_VariableVec &u,
-			   Omu_VariableVec &c)
+                           Omu_VariableVec &x, Omu_VariableVec &u,
+                           Omu_VariableVec &c)
 {
   int i, idx, kk;
 
@@ -331,17 +331,17 @@ void Prg_DynamicEst::setup(int k,
     _np = 0;
     for (i = 0; i < _mdl_np; i++) {
       if (_mdl_p_active[i])
-	++_np;
+        ++_np;
     }
     _nx0 = 0;
     for (i = 0; i < _mdl_nx; i++) {
       if (_mdl_x0_active[i])
-	++_nx0;
+        ++_nx0;
     }
     _ny = 0;
     for (i = 0; i < _mdl_ny; i++) {
       if (_mdl_y_active[i])
-	++_ny;
+        ++_ny;
     }
     _nx = _np + _mdl_nx;
 
@@ -364,7 +364,7 @@ void Prg_DynamicEst::setup(int k,
 
   if (!_multistage && _nx0 > 0)
     m_error(E_FORMAT, "Prg_DynamicEst::setup: "
-	    "estimation of initial states requires prg_multistage=true");
+            "estimation of initial states requires prg_multistage=true");
 
   // allocate optimization variables
   if (k > 0 && new_experiment) {
@@ -390,23 +390,23 @@ void Prg_DynamicEst::setup(int k,
       ++ip;
     }
   }
-  assert(ip == _np);	// _np must not have changed since setup_stages
+  assert(ip == _np);        // _np must not have changed since setup_stages
 
   if (k == 0) {
     // setup initial states
     for (i = _np; i < _nx; i++) {
       x.initial[i] = _mdl_xs[ks(0)][i-_np] / _mdl_x_nominal[i-_np];
       if (!_mdl_x0_active[i-_np])
-	x.min[i] = x.max[i] = x.initial[i];
+        x.min[i] = x.max[i] = x.initial[i];
       else {
-	if (_mdl_x0.min[i-_np] > _mdl_x.min[i-_np])
-	  x.min[i] = _mdl_x0.min[i-_np] / _mdl_x_nominal[i-_np];
-	else
-	  x.min[i] = _mdl_x.min[i-_np] / _mdl_x_nominal[i-_np];
-	if (_mdl_x0.max[i-_np] < _mdl_x.max[i-_np])
-	  x.max[i] = _mdl_x0.max[i-_np] / _mdl_x_nominal[i-_np];
-	else
-	  x.max[i] = _mdl_x.max[i-_np] / _mdl_x_nominal[i-_np];
+        if (_mdl_x0.min[i-_np] > _mdl_x.min[i-_np])
+          x.min[i] = _mdl_x0.min[i-_np] / _mdl_x_nominal[i-_np];
+        else
+          x.min[i] = _mdl_x.min[i-_np] / _mdl_x_nominal[i-_np];
+        if (_mdl_x0.max[i-_np] < _mdl_x.max[i-_np])
+          x.max[i] = _mdl_x0.max[i-_np] / _mdl_x_nominal[i-_np];
+        else
+          x.max[i] = _mdl_x.max[i-_np] / _mdl_x_nominal[i-_np];
       }
     }
   }
@@ -415,16 +415,16 @@ void Prg_DynamicEst::setup(int k,
     for (i = 0; i < _mdl_nx; i++) {
       u.initial[i] = _mdl_xs[ks(k)][i] / _mdl_x_nominal[i];
       if (!_mdl_x0_active[i])
-	u.min[i] = u.max[i] = u.initial[i];
+        u.min[i] = u.max[i] = u.initial[i];
       else {
-	if (_mdl_x0.min[i] > _mdl_x.min[i])
-	  u.min[i] = _mdl_x0.min[i] / _mdl_x_nominal[i];
-	else
-	  u.min[i] = _mdl_x.min[i] / _mdl_x_nominal[i];
-	if (_mdl_x0.max[i] < _mdl_x.max[i])
-	  u.max[i] = _mdl_x0.max[i] / _mdl_x_nominal[i];
-	else
-	  u.max[i] = _mdl_x.max[i] / _mdl_x_nominal[i];
+        if (_mdl_x0.min[i] > _mdl_x.min[i])
+          u.min[i] = _mdl_x0.min[i] / _mdl_x_nominal[i];
+        else
+          u.min[i] = _mdl_x.min[i] / _mdl_x_nominal[i];
+        if (_mdl_x0.max[i] < _mdl_x.max[i])
+          u.max[i] = _mdl_x0.max[i] / _mdl_x_nominal[i];
+        else
+          u.max[i] = _mdl_x.max[i] / _mdl_x_nominal[i];
       }
     }
   }
@@ -443,7 +443,7 @@ void Prg_DynamicEst::setup(int k,
     for (idx = 0; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
-	++nc;
+        ++nc;
     }
   }
   c.alloc(nc);
@@ -463,14 +463,14 @@ void Prg_DynamicEst::setup(int k,
 
 //--------------------------------------------------------------------------
 void Prg_DynamicEst::setup_struct(int k,
-				  const Omu_VariableVec &x,
-				  const Omu_VariableVec &u,
-				  Omu_DependentVec &xt, Omu_DependentVec &F,
-				  Omu_DependentVec &f,
-				  Omu_Dependent &f0, Omu_DependentVec &c)
+                                  const Omu_VariableVec &x,
+                                  const Omu_VariableVec &u,
+                                  Omu_DependentVec &xt, Omu_DependentVec &F,
+                                  Omu_DependentVec &f,
+                                  Omu_Dependent &f0, Omu_DependentVec &c)
 {
   int i, j;
-  int ex = _exs[ks(k)]; 	// experiment of current stage
+  int ex = _exs[ks(k)];         // experiment of current stage
   bool new_experiment = k == 0 || ex != _exs[ks(k)-1];
 
   // consistic just takes states from optimizer
@@ -490,18 +490,18 @@ void Prg_DynamicEst::setup_struct(int k,
   xt.set_linear();
 
   if (k < _K) {
-    int ex1 = _exs[ks(k+1)]; 	// experiment of subsequent stage
+    int ex1 = _exs[ks(k+1)];         // experiment of subsequent stage
 
     if (ex == ex1) {
       // explicit ODE for continuous-time equations
       for (i = 0; i < _np + _mdl_nd; i++) {
-	for (j = 0; j < _nx; j++)
-	  F.Jx[i][j] = 0.0;
+        for (j = 0; j < _nx; j++)
+          F.Jx[i][j] = 0.0;
       }
 
       m_zero(F.Jdx);
       for (i = _np + _mdl_nd; i < _nx; i++)
-	F.Jdx[i][i] = -1.0;
+        F.Jdx[i][i] = -1.0;
       F.set_linear(Omu_Dependent::WRT_dx);
     }
     else {
@@ -538,7 +538,7 @@ void Prg_DynamicEst::setup_struct(int k,
 
 //--------------------------------------------------------------------------
 void Prg_DynamicEst::init_simulation(int k,
-				     Omu_VariableVec &x, Omu_VariableVec &u)
+                                     Omu_VariableVec &x, Omu_VariableVec &u)
 {
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DynamicEst::init_simulation at k = %d", k);
@@ -550,10 +550,10 @@ void Prg_DynamicEst::init_simulation(int k,
 
 //--------------------------------------------------------------------------
 void Prg_DynamicEst::update(int kk,
-			    const Omu_StateVec &x, const Omu_Vec &u,
-			    const Omu_StateVec &xf,
-			    Omu_DependentVec &f, Omu_Dependent &f0,
-			    Omu_DependentVec &c)
+                            const Omu_StateVec &x, const Omu_Vec &u,
+                            const Omu_StateVec &xf,
+                            Omu_DependentVec &f, Omu_Dependent &f0,
+                            Omu_DependentVec &c)
 {
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DynamicEst::update at kk = %d", kk);
@@ -618,7 +618,7 @@ void Prg_DynamicEst::update(int kk,
       c[i++] = mdl_y[idx] / _mdl_y_nominal[idx];
     }
   }
-  assert(i == _ny);	// _ny must not have changed since setup_stages
+  assert(i == _ny);        // _ny must not have changed since setup_stages
 
   // calculate objective term
   f0 = 0.0;
@@ -638,7 +638,7 @@ void Prg_DynamicEst::update(int kk,
     for (i = _ny, idx = _mdl_nd; idx < _mdl_nx; idx++) {
       if (_mdl_x0_active[idx]
           && (_mdl_der_x0_min[idx] > -Inf || _mdl_der_x0_max[idx] < Inf))
-	c[i++] = mdl_dx[idx - _mdl_nd] / _mdl_x_nominal[idx];
+        c[i++] = mdl_dx[idx - _mdl_nd] / _mdl_x_nominal[idx];
     }
   }
 
@@ -688,7 +688,7 @@ void Prg_DynamicEst::update(int kk,
       }
       // junction conditions for continuous-time state equations
       for (i = _np + _mdl_nd; i < _nx; i++)
-	f[i] = xf[i];
+        f[i] = xf[i];
     }
   }
 
@@ -710,10 +710,10 @@ void Prg_DynamicEst::update(int kk,
     v_zero(f0.gx);
     for (i = 0, idx = 0; idx < _mdl_ny; idx++) {
       if (_mdl_y_active[idx]) {
-	for (j = 0; j < _nx; j++)
-	  f0.gx[j] += 
-	    2.0 * (c[i] - _ys_ref[kk][i]/_mdl_y_nominal[idx]) * c.Jx[i][j];
-	++i;
+        for (j = 0; j < _nx; j++)
+          f0.gx[j] += 
+            2.0 * (c[i] - _ys_ref[kk][i]/_mdl_y_nominal[idx]) * c.Jx[i][j];
+        ++i;
       }
     }
 
@@ -725,24 +725,24 @@ void Prg_DynamicEst::update(int kk,
     if (kk == 0) {
       m_zero(_dxdpx0);
       for (i = 0; i < _np; i++)
-	_dxdpx0[i][i] = 1.0;
+        _dxdpx0[i][i] = 1.0;
       for (i = _np, idx = 0; idx < _mdl_nx; idx++)
-	if (_mdl_x0_active[idx])
-	  _dxdpx0[_np + idx][i++] = 1.0;
+        if (_mdl_x0_active[idx])
+          _dxdpx0[_np + idx][i++] = 1.0;
     }
     else {
       if (!new_experiment)
-	// initial states are final states of previous sample period
-	m_copy(_dfdpx0, _dxdpx0);
+        // initial states are final states of previous sample period
+        m_copy(_dfdpx0, _dxdpx0);
       else {
-	// re-initialize initial states for a new experiment
-	for (i = _np, idx = 0; idx < _mdl_nx; idx++) {
-	  for (j = 0; j < _np+_nx0; j++)
-	    _dxdpx0[_np + idx][j] = 0.0;
-	  if (_mdl_x0_active[idx])
-	    _dxdpx0[_np + idx][i++] = 1.0;
-	}
-      }	
+        // re-initialize initial states for a new experiment
+        for (i = _np, idx = 0; idx < _mdl_nx; idx++) {
+          for (j = 0; j < _np+_nx0; j++)
+            _dxdpx0[_np + idx][j] = 0.0;
+          if (_mdl_x0_active[idx])
+            _dxdpx0[_np + idx][i++] = 1.0;
+        }
+      }        
     }
 
     // build dy/d(p,x0)
@@ -751,10 +751,10 @@ void Prg_DynamicEst::update(int kk,
     else {
       // collect dydx from c.Jx and c.Ju
       for (i = 0; i < _ny; i++) {
-	for (j = 0; j < _np; j++)
-	  _dydx[i][j] = c.Jx[i][j];
-	for (j = _np; j < _nx; j++)
-	  _dydx[i][j] = c.Ju[i][j-_np];
+        for (j = 0; j < _np; j++)
+          _dydx[i][j] = c.Jx[i][j];
+        for (j = _np; j < _nx; j++)
+          _dydx[i][j] = c.Ju[i][j-_np];
       }
     }
     m_mlt(_dydx, _dxdpx0, _dydpx0);
@@ -762,42 +762,42 @@ void Prg_DynamicEst::update(int kk,
     // store results in M
     for (i = 0; i < _ny; i++)
       for (j = 0; j < _np + _nx0; j++)
-	_M2[kk*_ny + i][j] = _dydpx0[i][j];
+        _M2[kk*_ny + i][j] = _dydpx0[i][j];
 
     // consider contribution of continuous-time equations
     if (kk < _KK && ex == _exs[kk+1]) {
       if (kk == 0 || !new_experiment) {
-	//m_copy(xf.Sx, _dfdx);
-	// collect dfdx from xf.Sx and xf.Su
-	for (i = 0; i < _np + _mdl_nd; i++) {
-	  for (j = 0; j < _nx; j++)
-	    _dfdx[i][j] = f.Jx[i][j];
-	}
-	for (; i < _nx; i++) {
-	  for (j = 0; j < _nx; j++)
-	    _dfdx[i][j] = xf.Sx[i][j];
-	}
+        //m_copy(xf.Sx, _dfdx);
+        // collect dfdx from xf.Sx and xf.Su
+        for (i = 0; i < _np + _mdl_nd; i++) {
+          for (j = 0; j < _nx; j++)
+            _dfdx[i][j] = f.Jx[i][j];
+        }
+        for (; i < _nx; i++) {
+          for (j = 0; j < _nx; j++)
+            _dfdx[i][j] = xf.Sx[i][j];
+        }
       }
       else {
-	// collect dfdx from xf.Sx and xf.Su
-	for (i = 0; i < _np + _mdl_nd; i++) {
-	  for (j = 0; j < _np; j++)
-	    _dfdx[i][j] = f.Jx[i][j];
-	  for (; j < _np + _mdl_nd; j++)
-	    _dfdx[i][j] = f.Ju[i][j-_np];
-	}
-	for (; i < _nx; i++) {
-	  for (j = 0; j < _np; j++)
-	    _dfdx[i][j] = xf.Sx[i][j];
-	  for (; j < _nx; j++)
-	    _dfdx[i][j] = xf.Su[i][j-_np];
-	}
+        // collect dfdx from xf.Sx and xf.Su
+        for (i = 0; i < _np + _mdl_nd; i++) {
+          for (j = 0; j < _np; j++)
+            _dfdx[i][j] = f.Jx[i][j];
+          for (; j < _np + _mdl_nd; j++)
+            _dfdx[i][j] = f.Ju[i][j-_np];
+        }
+        for (; i < _nx; i++) {
+          for (j = 0; j < _np; j++)
+            _dfdx[i][j] = xf.Sx[i][j];
+          for (; j < _nx; j++)
+            _dfdx[i][j] = xf.Su[i][j-_np];
+        }
       }
       if (_multistage)
-	m_mlt(_dfdx, _dxdpx0, _dfdpx0);
+        m_mlt(_dfdx, _dxdpx0, _dfdpx0);
       else
-	// if not multistage, then df/dx == df/d(p,x0) as x == (p,x0)
-	m_copy(_dfdx, _dfdpx0);
+        // if not multistage, then df/dx == df/d(p,x0) as x == (p,x0)
+        m_copy(_dfdx, _dfdpx0);
     }
 
     // store sum of residuals
@@ -809,22 +809,22 @@ void Prg_DynamicEst::update(int kk,
     // Note: skip if nothing is estimated as m_inverse crashes for dim=0
     if (kk == _KK && _M2->n > 0) {
       static double tn[] = {1, 5, 10, 15, 20, 30, 40,
-			    50, 60, 80, 100, 200, 500, 100000};
+                            50, 60, 80, 100, 200, 500, 100000};
       static double tv[] = {12.706, 2.571, 2.228, 2.131, 2.086, 2.042, 2.021,
-			    2.009, 2.000, 1.990,  1.984, 1.972, 1.965, 1.960};
+                            2.009, 2.000, 1.990,  1.984, 1.972, 1.965, 1.960};
       double n = _ny*(_KK+1) - _np - _nex*_nx0 - 1;
       double t_f2_95;
       if (n < 1)
-	t_f2_95 = Inf;
+        t_f2_95 = Inf;
       else if (n >= tn[sizeof(tn)/sizeof(double)-1])
-	t_f2_95 = tv[sizeof(tv)/sizeof(double)-1];
+        t_f2_95 = tv[sizeof(tv)/sizeof(double)-1];
       else {
-	for (i = 0; i < (int)(sizeof(tn)/sizeof(double)-1); i++) {
-	  if (tn[i] <= n && n <= tn[i+1])
-	    break;
-	}
-	double rn = (n - tn[i]) / (tn[i+1] - tn[i]);
-	t_f2_95 = tv[i] * (1.0 - rn) + tv[i+1] * rn;
+        for (i = 0; i < (int)(sizeof(tn)/sizeof(double)-1); i++) {
+          if (tn[i] <= n && n <= tn[i+1])
+            break;
+        }
+        double rn = (n - tn[i]) / (tn[i+1] - tn[i]);
+        t_f2_95 = tv[i] * (1.0 - rn) + tv[i+1] * rn;
       }
       mtrm_mlt(_M2, _M2, _COV);
       m_catchall(// try
@@ -835,18 +835,18 @@ void Prg_DynamicEst::update(int kk,
                  );
       sm_mlt(_ssr/n, _P2, _COV);
       for (i = 0, idx = 0; idx < _mdl_np; idx++) {
-	if (_mdl_p_active[idx]) {
-	  _mdl_p_confidence[idx]
-	    = t_f2_95 * sqrt(_COV[i][i]) * _mdl_p_nominal[idx];
-	  i++;
-	}
+        if (_mdl_p_active[idx]) {
+          _mdl_p_confidence[idx]
+            = t_f2_95 * sqrt(_COV[i][i]) * _mdl_p_nominal[idx];
+          i++;
+        }
       }
       for (idx = 0; idx < _mdl_nx; idx++) {
-	if (_mdl_x0_active[idx]) {
-	  _mdl_x0_confidence[idx]
-	    = t_f2_95 * sqrt(_COV[i][i]) * _mdl_x_nominal[idx];
-	  i++;
-	}
+        if (_mdl_x0_active[idx]) {
+          _mdl_x0_confidence[idx]
+            = t_f2_95 * sqrt(_COV[i][i]) * _mdl_x_nominal[idx];
+          i++;
+        }
       }
     }
   }
@@ -854,8 +854,8 @@ void Prg_DynamicEst::update(int kk,
 
 //--------------------------------------------------------------------------
 void Prg_DynamicEst::consistic(int kk, double t,
-			       const Omu_StateVec &x, const Omu_Vec &u,
-			       Omu_DependentVec &xt)
+                               const Omu_StateVec &x, const Omu_Vec &u,
+                               Omu_DependentVec &xt)
 {
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DynamicEst::consistic at kk = %d, t = %.3f", kk, t);
@@ -978,8 +978,8 @@ void Prg_DynamicEst::consistic(int kk, double t,
 
 //--------------------------------------------------------------------------
 void Prg_DynamicEst::continuous(int kk, double t,
-				const Omu_StateVec &x, const Omu_Vec &u,
-				const Omu_StateVec &dx, Omu_DependentVec &F)
+                                const Omu_StateVec &x, const Omu_Vec &u,
+                                const Omu_StateVec &dx, Omu_DependentVec &F)
 {
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DynamicEst::continuous at kk = %d, t = %.3f", kk, t);

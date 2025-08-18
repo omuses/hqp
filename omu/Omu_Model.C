@@ -172,7 +172,7 @@ void Omu_Model::set_mdl_args(const char *arg_str)
   if (*str1 != '\0') {
     // did not arrive at the end of the string
     m_error(E_FORMAT, "Omu_Model::set_mdl_args that "
-	    "failed to parse S-function args");
+            "failed to parse S-function args");
   }
   args = new mxArray* [nargs];
   for (i = 0; i < nargs; i++) {
@@ -206,7 +206,7 @@ void Omu_Model::read_mx_args(VECP p)
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
-	p[idx] = mxGetPr(arg)[i];
+        p[idx] = mxGetPr(arg)[i];
     }
   }
   assert(idx == _mdl_np); // S-function parameters must not have changed
@@ -223,7 +223,7 @@ void Omu_Model::write_mx_args(VECP p)
     if (mxIsDouble(arg)) {
       nel = mxGetNumberOfElements(arg);
       for (i = 0; i < nel; i++, idx++)
-	mxGetPr(arg)[i] = p[idx];
+        mxGetPr(arg)[i] = p[idx];
     }
   }
   assert(idx == _mdl_np); // S-function parameters must not have changed
