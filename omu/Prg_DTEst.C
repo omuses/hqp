@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2024  Ruediger Franke
+    Copyright (C) 1997--2025  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -69,6 +69,7 @@ Prg_DTEst::Prg_DTEst()
   _within_grds = false;
   _ad = true;
   _fscale = 1.0;
+  _mdl_previous = true; // optimized states represent previous values
 
   _mdl_p_active = iv_get(_mdl_np);
   _mdl_p_confidence = v_get(_mdl_np);
@@ -81,7 +82,7 @@ Prg_DTEst::Prg_DTEst()
   v_zero(_mdl_p_confidence);
   iv_zero(_mdl_x0_active);
   v_zero(_mdl_x0_confidence);
-  iv_set(_mdl_u_order, 1);
+  iv_set(_mdl_u_order, 0);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_p_nominal);
 
@@ -238,7 +239,7 @@ void Prg_DTEst::setup_model()
     v_zero(_mdl_p_confidence);
     iv_zero(_mdl_x0_active);
     v_zero(_mdl_x0_confidence);
-    iv_set(_mdl_u_order, 1);
+    iv_set(_mdl_u_order, 0);
     iv_zero(_mdl_y_active);
     if (_mdl_is_fmu) {
       // take over default values from model description
@@ -523,6 +524,7 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
   int i, j, idx;
   int ex = _exs[k];
   bool new_experiment = k == 0 || ex != _exs[k-1];
+  bool end_experiment = k == _K || ex != _exs[k+1];
   int tn = omp_get_thread_num();
   SimStruct *S = _SS[tn];
 
@@ -537,8 +539,14 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
     else
       mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
-  for (idx = 0; idx < _mdl_nu; idx++)
-    mdl_u[idx] = _mdl_us[k][idx];
+  for (idx = 0; idx < _mdl_nu; idx++) {
+    if (((!new_experiment && _mdl_previous) || (end_experiment && _K > 0)) && _mdl_u_order[idx] == 0)
+      // shift values if mdl_previous in case of zero order hold
+      // hold last but one value in case of zero order hold
+      mdl_u[idx] = _mdl_us[k-1][idx];
+    else
+      mdl_u[idx] = _mdl_us[k][idx];
+  }
 
   // pass optimized parameters to model
   // Note: this is done in any call for numerical approximation of Jacobian
@@ -550,7 +558,9 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
 
   // set simulation time
   ssSetT(S, _ts[k]);
-  if (k < _K)
+  if (_mdl_previous && !new_experiment)
+    setSampleTime(S, ts(k) - ts(k-1));
+  else if (k < _K)
     setSampleTime(S, ts(k+1) - ts(k));
 
   // pass current states to model
@@ -574,7 +584,8 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
 
   // initialize model in first stage
   // Don't initialize if time changed, e.g. for subsequent simulation calls
-  if ((_mdl_needs_init[tn] || k == 0 && ts(k) == _t0_setup_model)
+  // Do initialize subsequent experiments if mdl_previous as model should take no step at start -- it steps at end
+  if ((_mdl_needs_init[tn] || k == 0 && ts(k) == _t0_setup_model || _mdl_previous && k > 0 && new_experiment)
       && ssGetmdlInitializeConditions(S) != NULL) {
     // initialize model
     SMETHOD_CALL(mdlInitializeConditions, S);
@@ -583,11 +594,11 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
     after_init = true;
   }
 
-  if (after_init || _mdl_is_fmu && k == 0) {
+  if (after_init || _mdl_is_fmu && (k == 0 || _mdl_previous)) {
     // call mdlUpdate and disable continuous task to trigger initial clock
     if (_mdl_is_fmu) {
       setSampleHit(S, true);
-      setContinuousTask(S, k != 0);
+      setContinuousTask(S, _mdl_previous? false: k != 0);
     }
     SMETHOD_CALL2(mdlOutputs, S, 0);
     if (ssGetmdlUpdate(S) != NULL) {
@@ -598,18 +609,20 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
       setContinuousTask(S, true);
     }
     needs_update = false;
-    // take over regular and estimated states from optimizer
-    for (i = 0; i < _mdl_nd; i++) {
-      if (k == 0 || !new_experiment) {
-        if (_mdl_x0_active[i] || !new_experiment) {
-          mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
-          needs_update = true;
+    if (!_mdl_previous || new_experiment) {
+      // take over regular and estimated states from optimizer
+      for (i = 0; i < _mdl_nd; i++) {
+        if (k == 0 || !new_experiment) {
+          if (_mdl_x0_active[i] || !new_experiment) {
+            mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
+            needs_update = true;
+          }
         }
-      }
-      else {
-        if (_mdl_x0_active[i]) {
-          mdl_xd[i] = u[i] * _mdl_x_nominal[i];
-          needs_update = true;
+        else {
+          if (_mdl_x0_active[i]) {
+            mdl_xd[i] = u[i] * _mdl_x_nominal[i];
+            needs_update = true;
+          }
         }
       }
     }
@@ -679,18 +692,20 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
       f[i] = x[i];
     if (ex == _exs[k+1]) {
       if (_mdl_nd > 0) {
-        // call mdlUpdate to get discrete events processed
-        if (ssGetmdlUpdate(S) != NULL) {
-          setContinuousTask(S, false);
-          setSampleHit(S, true);
-          if (_mdl_is_fmu) {
-            // obtain discrete states at end of sample interval
-            ssSetT(S, _ts[k + 1]);
-            SMETHOD_CALL2(mdlOutputs, S, 0);
+        if (!_mdl_previous) {
+          // call mdlUpdate to get discrete events processed
+          if (ssGetmdlUpdate(S) != NULL) {
+            setContinuousTask(S, false);
+            setSampleHit(S, true);
+            if (_mdl_is_fmu) {
+              // obtain discrete states at end of sample interval
+              ssSetT(S, _ts[k + 1]);
+              SMETHOD_CALL2(mdlOutputs, S, 0);
+            }
+            SMETHOD_CALL2(mdlUpdate, S, 0);
+            setSampleHit(S, false);
+            setContinuousTask(S, true);
           }
-          SMETHOD_CALL2(mdlUpdate, S, 0);
-          setSampleHit(S, false);
-          setContinuousTask(S, true);
         }
         // read discrete states from model
         for (i = 0; i < _mdl_nd; i++) {
@@ -776,24 +791,28 @@ void Prg_DTEst::update_stage(int k, const VECP x, const VECP u,
     v_free(df);
 
     // obtain Jacobian wrt model states and inputs from model
-    // first restore states after mdlUpdate has been processed
-    // and call mdlOutputs
-    real_T *mdl_xd = ssGetDiscStates(S);
-    real_T *mdl_xc = ssGetContStates(S);
-    if (k == 0 || !new_experiment) {
-      for (i = 0; i < _mdl_nd; i++)
-        mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
-      for (i = _mdl_nd; i < _mdl_nx; i++)
-        mdl_xc[i - _mdl_nd] = x[_np + i] * _mdl_x_nominal[i];
+    if (_mdl_previous) {
+      setContinuousTask(S, false);
+      setSampleHit(S, true);
+    } else {
+      // first restore states after mdlUpdate has been processed
+      // and call mdlOutputs
+      real_T *mdl_xd = ssGetDiscStates(S);
+      real_T *mdl_xc = ssGetContStates(S);
+      if (k == 0 || !new_experiment) {
+        for (i = 0; i < _mdl_nd; i++)
+          mdl_xd[i] = x[_np + i] * _mdl_x_nominal[i];
+        for (i = _mdl_nd; i < _mdl_nx; i++)
+          mdl_xc[i - _mdl_nd] = x[_np + i] * _mdl_x_nominal[i];
+      }
+      else {
+        for (i = 0; i < _mdl_nd; i++)
+          mdl_xd[i] = u[i] * _mdl_x_nominal[i];
+        for (i = _mdl_nd; i < _mdl_nx; i++)
+          mdl_xc[i - _mdl_nd] = u[i] * _mdl_x_nominal[i];
+      }
+      SMETHOD_CALL2(mdlOutputs, S, 0);
     }
-    else {
-      for (i = 0; i < _mdl_nd; i++)
-        mdl_xd[i] = u[i] * _mdl_x_nominal[i];
-      for (i = _mdl_nd; i < _mdl_nx; i++)
-        mdl_xc[i - _mdl_nd] = u[i] * _mdl_x_nominal[i];
-    }
-    SMETHOD_CALL2(mdlOutputs, S, 0); 
-
     SMETHOD_CALL(mdlJacobian, S);
 
     fetch_jacxu(S, k, x, u, fx, fu, cx, cu);

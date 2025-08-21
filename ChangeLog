@@ -1,8 +1,15 @@
+2025-08-18  <rfranke>
+
+	* omu/{Prg_DTOpt.[hC], Prg_DTEst.[hC]}, hxi/sfun_fmu.c:
+	  - introduce mdl_previous for backward differentiation
+	* odc/omc.tcl:
+	  - clean up duplicated passing of options to omc
+
 2024-05-01  <rfranke>
 
 	* hxi/fmi.tcl, omu/{Prg_DTEst.C, Prg_DynamicEst.C}, odc/omu.tcl:
 	  - support string valued parameters
-	* odc/omu.tcl:
+	* odc/omc.tcl:
 	  - adapt to current OpenModelica omc compiler, version 1.22
 
 2022-05-05  <e-arnold>

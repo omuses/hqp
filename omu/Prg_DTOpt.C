@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2019  Ruediger Franke
+    Copyright (C) 1997--2025  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -75,6 +75,7 @@ Prg_DTOpt::Prg_DTOpt()
   _within_grds = false;
   _ad = true;
   _fscale = 1.0;
+  _mdl_previous = true; // optimized states represent previous values
 
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
@@ -89,7 +90,7 @@ Prg_DTOpt::Prg_DTOpt()
   _c_lambda = VNULL;
   v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
-  iv_set(_mdl_u_order, 1);
+  iv_set(_mdl_u_order, 0);
   iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
   iv_set(_mdl_u_periodic, 0);
@@ -281,12 +282,12 @@ void Prg_DTOpt::setup_model()
     v_resize(_mdl_y_bias, _mdl_ny);
     v_resize(_mdl_y_lambda, _mdl_ny);
     iv_set(_mdl_x0_active, 0);
-    iv_set(_mdl_u_order, 1);
+    iv_set(_mdl_u_order, 0);
     iv_set(_mdl_u0_nfixed, 0);
     iv_set(_mdl_u_decimation, 1);
     iv_set(_mdl_u_periodic, 0);
     iv_set(_mdl_x_periodic, 0);
-    iv_set(_mdl_y_order, 1);
+    iv_set(_mdl_y_order, 0);
     v_set(_mdl_y_bias, 0.0);
     v_set(_mdl_y_lambda, 0.0);
   }
@@ -675,7 +676,10 @@ void Prg_DTOpt::setup_vars(int k,
       }
       // for zero order hold: constraint u parameter of last interval to zero
       // as control must not change at final time, compared to last interval
-      if (k == _K-1 && _mdl_u_order[idx] == 0) {
+      if (!_mdl_previous && k == _K-1 && _mdl_u_order[idx] == 0) {
+        u_min[i] = u_max[i] = u[i] = 0.0;
+      }
+      if (_mdl_previous && k == 0 && _K > 0 && _mdl_u_order[idx] == 0) {
         u_min[i] = u_max[i] = u[i] = 0.0;
       }
       i += upsk;
@@ -868,9 +872,17 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
         mdl_u[idx] = x[i++] * _mdl_u_nominal[idx];
       else
         mdl_u[idx] = u[j++] * _mdl_u_nominal[idx];
-      _mdl_us[k][idx] = mdl_u[idx];
+      if (_mdl_u_order[idx] == 0 && _mdl_previous && k > 0) {
+        // first value is held; shift subsequent values
+        _mdl_us[k-1][idx] = mdl_u[idx];
+        if (k == _K)
+          _mdl_us[k][idx] = mdl_u[idx];
+      }
+      else
+        _mdl_us[k][idx] = mdl_u[idx];
     }
-    else if (k == _K && _K > 0 && _mdl_u_order[idx] == 0)
+    if (((k > 0 && _mdl_previous) || (k == _K && _K > 0)) && _mdl_u_order[idx] == 0)
+      // shift values if mdl_previous in case of zero order hold
       // hold last but one value in case of zero order hold
       mdl_u[idx] = _mdl_us[k-1][idx];
     else
@@ -885,7 +897,13 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
 
   // set simulation time
   ssSetT(S, _taus[k]);
-  if (k < _K) {
+  if (_mdl_previous && k > 0) {
+    if (_t_scale_idx < 0)
+      setSampleTime(S, ts(k) - ts(k-1));
+    else
+      setSampleTime(S, mdl_u[_t_scale_idx] * (ts(k) - ts(k-1)));
+  }
+  else if (k < _K) {
     if (_t_scale_idx < 0)
       setSampleTime(S, ts(k+1) - ts(k));
     else
@@ -915,11 +933,11 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     after_init = true;
   }
 
-  if (after_init || _mdl_is_fmu && k == 0) {
+  if (after_init || _mdl_is_fmu && (k == 0 || _mdl_previous)) {
     // call mdlUpdate and disable continuous task to trigger initial clock
     if (_mdl_is_fmu) {
       setSampleHit(S, true);
-      setContinuousTask(S, k != 0);
+      setContinuousTask(S, _mdl_previous? false: k != 0);
     }
     SMETHOD_CALL2(mdlOutputs, S, 0);
     if (ssGetmdlUpdate(S) != NULL) {
@@ -930,17 +948,19 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
       setContinuousTask(S, true);
     }
     needs_update = false;
-    // take active initial states from solver
-    for (i = 0; i < _mdl_nd; i++) {
-      if (_mdl_x0_active[i] || k > 0) {
-        mdl_xd[i] = x[i] * _mdl_x_nominal[i];
-        needs_update = true;
+    if (!_mdl_previous || k == 0) {
+      // take active initial states from solver
+      for (i = 0; i < _mdl_nd; i++) {
+        if (_mdl_x0_active[i] || k > 0) {
+          mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+          needs_update = true;
+        }
       }
-    }
-    for (i = _mdl_nd; i < _mdl_nx; i++) {
-      if (_mdl_x0_active[i] || k > 0) {
-        mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
-        needs_update = true;
+      for (i = _mdl_nd; i < _mdl_nx; i++) {
+        if (_mdl_x0_active[i] || k > 0) {
+          mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
+          needs_update = true;
+        }
       }
     }
   }
@@ -978,14 +998,14 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
   if (k == 0) {
     if (_K > 0) {
       dt = 0.5 * (ts(k+1) - ts(k)) * tscale;
-      dt0 = (ts(k+1) - ts(k)) * tscale;
+      dt0 = _mdl_previous? 0.0: (ts(k+1) - ts(k)) * tscale;
     } else {
       // steady-state problem
       dt = dt0 = 1.0;
     }
   } else if (k == _K) {
     dt = 0.5 * (ts(k) - ts(k-1)) * tscale_1;
-    dt0 = 0.0;
+    dt0 = _mdl_previous? (ts(k) - ts(k-1)) * tscale: 0.0;
   } else {
     dt = 0.5 * ((ts(k) - ts(k-1)) * tscale_1 + (ts(k+1) - ts(k)) * tscale);
     dt0 = (ts(k+1) - ts(k)) * tscale;
@@ -996,7 +1016,7 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
     if (_mdl_u.active[idx]) {
       // control inputs
       dtu = (_mdl_u_order[idx] == 0)? dt0: dt;
-      help = (_mdl_us[k][idx] - _mdl_u.ref[idx]) / _mdl_u_nominal[idx];
+      help = (mdl_u[idx] - _mdl_u.ref[idx]) / _mdl_u_nominal[idx];
       f0 += dtu * _mdl_u.weight1[idx] * help;
       f0 += dtu * _mdl_u.weight2[idx] * help*help;
       // rates of change
@@ -1185,18 +1205,20 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
   // junction conditions for subsequent stage
   if (k < _K) {
     if (_mdl_nd > 0) {
-      // call mdlUpdate to get discrete events processed
-      if (ssGetmdlUpdate(S) != NULL) {
-        setContinuousTask(S, false);
-        setSampleHit(S, true);
-        if (_mdl_is_fmu) {
-          // obtain discrete states at end of sample interval
-          ssSetT(S, _taus[k + 1]);
-          SMETHOD_CALL2(mdlOutputs, S, 0);
+      if (!_mdl_previous) {
+        // call mdlUpdate to get discrete events processed
+        if (ssGetmdlUpdate(S) != NULL) {
+          setContinuousTask(S, false);
+          setSampleHit(S, true);
+          if (_mdl_is_fmu) {
+            // obtain discrete states at end of sample interval
+            ssSetT(S, _taus[k + 1]);
+            SMETHOD_CALL2(mdlOutputs, S, 0);
+          }
+          SMETHOD_CALL2(mdlUpdate, S, 0);
+          setSampleHit(S, false);
+          setContinuousTask(S, true);
         }
-        SMETHOD_CALL2(mdlUpdate, S, 0);
-        setSampleHit(S, false);
-        setContinuousTask(S, true);
       }
       // read discrete states from model
       for (i = 0; i < _mdl_nd; i++) {
@@ -1285,17 +1307,20 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
     update_vals(k, x, u, f, f0, c);
     if (k == 0)
       _c_lambda = VNULL;
-
-    // restore states after mdlUpdate has been processed
-    // call mdlOutputs
-    real_T *mdl_xd = ssGetDiscStates(S);
-    real_T *mdl_xc = ssGetContStates(S);
-    for (i = 0; i < _mdl_nd; i++)
-      mdl_xd[i] = x[i] * _mdl_x_nominal[i];
-    for (i = _mdl_nd; i < _mdl_nx; i++)
-      mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
-    SMETHOD_CALL2(mdlOutputs, S, 0); 
-
+    if (_mdl_previous) {
+      setContinuousTask(S, false);
+      setSampleHit(S, true);
+    } else {
+      // restore states after mdlUpdate has been processed
+      // call mdlOutputs
+      real_T *mdl_xd = ssGetDiscStates(S);
+      real_T *mdl_xc = ssGetContStates(S);
+      for (i = 0; i < _mdl_nd; i++)
+        mdl_xd[i] = x[i] * _mdl_x_nominal[i];
+      for (i = _mdl_nd; i < _mdl_nx; i++)
+        mdl_xc[i - _mdl_nd] = x[_nu + i] * _mdl_x_nominal[i];
+      SMETHOD_CALL2(mdlOutputs, S, 0);
+    }
     SMETHOD_CALL(mdlJacobian, S);
 
     fetch_jac(S, k, tscale, x, u, fx, fu, cx, cu);
@@ -1315,9 +1340,9 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
     if (_K > 0) {
       dt = 0.5 * (ts(k+1) - ts(k)) * tscale;
       ddtx = 0.5 * (ts(k+1) - ts(k)) * _t_scale_nominal;
-      ddtu = 0.5 * (ts(k+1) - ts(k)) * _t_scale_nominal;
-      dt0 = (ts(k+1) - ts(k)) * tscale;
-      ddt0 = (ts(k+1) - ts(k)) * _t_scale_nominal;
+      ddtu = _mdl_previous? 0.0: 0.5 * (ts(k+1) - ts(k)) * _t_scale_nominal;
+      dt0 = _mdl_previous? 0.0: (ts(k+1) - ts(k)) * tscale;
+      ddt0 = _mdl_previous? 0.0: (ts(k+1) - ts(k)) * _t_scale_nominal;
     } else {
       // steady-state problem
       dt = dt0 = 1.0;
@@ -1328,9 +1353,9 @@ void Prg_DTOpt::update_stage(int k, const VECP x, const VECP u,
   } else if (k == _K) {
     dt = 0.5 * (ts(k) - ts(k-1)) * tscale_1;
     ddtx = 0.5 * (ts(k) - ts(k-1)) * _t_scale_nominal;
-    ddtu = 0.0;
-    dt0 = 0.0;
-    ddt0 = 0.0;
+    ddtu = _mdl_previous? 0.5 * (ts(k) - ts(k-1)) * _t_scale_nominal: 0.0;
+    dt0 = _mdl_previous? (ts(k) - ts(k-1)) * tscale: 0.0;
+    ddt0 = _mdl_previous? (ts(k) - ts(k-1)) * _t_scale_nominal: 0.0;
   } else {
     dt = 0.5 * ((ts(k) - ts(k-1)) * tscale_1 + (ts(k+1) - ts(k)) * tscale);
     ddtx = 0.5 * (ts(k+1) - ts(k-1)) * _t_scale_nominal;
