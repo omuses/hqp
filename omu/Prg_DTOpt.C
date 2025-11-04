@@ -926,6 +926,10 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
   // Don't initialize if time changed, e.g. for subsequent simulation calls
   if ((_mdl_needs_init[tn] || k == 0 && ts(k) == _t0_setup_model)
       && ssGetmdlInitializeConditions(S) != NULL) {
+    // decrease model time for initialization of parallel instances to distinguish from actual step
+    if (_mdl_previous && k > 0) {
+      ssSetT(S, _taus[k - 1]);
+    }
     // initialize model
     SMETHOD_CALL(mdlInitializeConditions, S);
     _mdl_needs_init[tn] = 0;
@@ -947,8 +951,12 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
       setSampleHit(S, false);
       setContinuousTask(S, true);
     }
+    // reset model time of parallel instances to actual value
+    if (after_init && _mdl_previous && k > 0) {
+      ssSetT(S, _taus[k]);
+    }
     needs_update = false;
-    if (!_mdl_previous || k == 0) {
+    if (!_mdl_previous || after_init) {
       // take active initial states from solver
       for (i = 0; i < _mdl_nd; i++) {
         if (_mdl_x0_active[i] || k > 0) {
@@ -968,15 +976,19 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
   // call mdlOutputs/mdlUpdate to get outputs for current states
   // enable continuous task to not update states here
   if (needs_update) {
-    if (_mdl_is_fmu)
+    if (_mdl_is_fmu) {
       setSampleHit(S, true);
+      setContinuousTask(S, _mdl_previous? false: true);
+    }
     // also call mdlOutputs as done by Simulink before each mdlUpdate
     SMETHOD_CALL2(mdlOutputs, S, 0);
     if (ssGetmdlUpdate(S) != NULL) {
       SMETHOD_CALL2(mdlUpdate, S, 0);
     }
-    if (_mdl_is_fmu)
+    if (_mdl_is_fmu) {
       setSampleHit(S, false);
+      setContinuousTask(S, true);
+    }
   }
 
   // obtain model outputs
