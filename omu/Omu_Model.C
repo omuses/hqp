@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright (C) 1997--2019  Ruediger Franke
+    Copyright (C) 1997--2025  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -63,6 +63,7 @@ Omu_Model::Omu_Model(int ncpu)
   _mdl_ncpu = ncpu;
   _mdl_logging = If_LogError;
   _mdl_jac = true;
+  _mdl_previous = false;
   _mdl_needs_setup = true;
   _mdl_needs_init = iv_get(_mdl_ncpu);
   iv_set(_mdl_needs_init, 0);
@@ -94,6 +95,7 @@ Omu_Model::Omu_Model(int ncpu)
   _ifList_model.append(new If_Int(GET_CB(int, mdl_ncpu)));
   _ifList_model.append(new If_Int(GET_SET_CB(int, mdl_logging)));
   _ifList_model.append(new If_Bool(GET_SET_CB(bool, mdl_jac)));
+  _ifList_model.append(new If_Bool(GET_SET_CB(bool, mdl_previous)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_p)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_x_start)));
   _ifList_model.append(new If_RealVec(GET_SET_CB(const VECP, mdl_u_start)));

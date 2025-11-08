@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright (C) 1997--2018  Ruediger Franke
+    Copyright (C) 1997--2025  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -204,7 +204,7 @@ class Prg_DTOpt: public Hqp_Docp, public Omu_Model {
       _t0 = _ts[0];
       _tf = _ts[(int)_ts->dim - 1];
     }
-  }	
+  }
   /// get start time point of sample period k
   double ts(int k) const {return _ts[k];}
   /// scaling of optimization criterion

@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright (C) 1997--2019  Ruediger Franke
+    Copyright (C) 1997--2025  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -89,6 +89,7 @@ class OMU_API Omu_Model {
   int 		_mdl_nargs; 	///< number of S-function arguments
   If_LogLevel 	_mdl_logging;	///< log level for debugging
   bool 		_mdl_jac; 	///< use Jacobian provided by model
+  bool 		_mdl_previous; 	///< model uses previous instead of next state
 
   double 	_t0_setup_model;///< time used for initialization of model
   int		_mdl_np_total;	///< number of model parameters (incl. strings)
@@ -195,6 +196,11 @@ class OMU_API Omu_Model {
   bool mdl_jac() const {return _mdl_jac;}
   /** set flag about use of model provided Jacobian */
   void set_mdl_jac(bool val) {_mdl_jac = val;}
+
+  /** flag about use of previous state in model */
+  bool mdl_previous() const {return _mdl_previous;}
+  /** Set flag about use of previous state in model */
+  void set_mdl_previous(bool val) {_mdl_previous = val;}
 
   /** parameters */
   const VECP mdl_p() const {return _mdl_p;}

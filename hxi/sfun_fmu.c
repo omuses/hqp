@@ -11,7 +11,7 @@
  */
 
 /*
-    Copyright (C) 1994--2017  Ruediger Franke
+    Copyright (C) 1994--2025  Ruediger Franke
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -1407,6 +1407,7 @@ static void mdlDerivatives(SimStruct *S)
 #define MDL_JACOBIAN
 /**
  *  Obtain Jacobian J = d(dxc(t),xd(k),y)/d(xc(t),xd(k-1),u)
+ *  either analytically or with finite differences if not providesDirectionalDerivative
  */
 static void mdlJacobian(SimStruct *S)
 {
@@ -1421,11 +1422,12 @@ static void mdlJacobian(SimStruct *S)
   fmi2ValueReference vrKnown[1];
   fmi2Real dvKnown[1];
   size_t nUnknown;
+  int noPrevious = ssIsContinuousTask(S, 0); /* restore states similar to finite differences */
 
   GET_MODELDATA(S, m);
 
   /* get previous states */
-  if (m->nxd > 0) {
+  if ((noPrevious || !m->providesDirectionalDerivative) && m->nxd > 0) {
     if (getValues(m, m->pre_x) != fmi2OK) {
       ssSetErrorStatus(S, "can't get previous states of FMU");
       return;
@@ -1455,32 +1457,39 @@ static void mdlJacobian(SimStruct *S)
   ir = ssGetJacobianIr(S);
   jc = ssGetJacobianJc(S);
 
-  /* activate all clocks */
-  for (i = 1; i <= m->nc; i++) {
-    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 1;
+  if (noPrevious) {
+    /* activate all clocks */
+    for (i = 1; i <= m->nc; i++) {
+      ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 1;
+    }
   }
 
   /* obtain partial derivatives for state derivatives and outputs */
   if (m->nxc + m->ny > 0) {
-    /* set clocks to subactive, i.e. no evaluation of states */
-    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
-
-    /* initialize current values */
-    if (m->nxd > 0)
-      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-    mdlOutputs(S, 0);
-    if (m->nxc > 0)
-      mdlDerivatives(S);
-    if (m->nxd > 0)
-      mdlUpdate(S, 0);
+    if (noPrevious) {
+      /* set clocks to subactive, i.e. no evaluation of states */
+      ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
+    }
+    if (noPrevious || !m->providesDirectionalDerivative) {
+      /* initialize current values */
+      if (m->nxd > 0)
+        memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      mdlOutputs(S, 0);
+      if (m->nxc > 0)
+        mdlDerivatives(S);
+      if (m->nxd > 0)
+        mdlUpdate(S, 0);
+    }
 
     if (m->providesDirectionalDerivative) {
-      /* set all clocks and mark them subactive */
-      for (i = 0; i < m->nc; i++)
-        m->csub[i] = 1;
-      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
-        ssSetErrorStatus(S, "can't set clock of FMU");
-        return;
+      if (noPrevious) {
+        /* set all clocks and mark them subactive */
+        for (i = 0; i < m->nc; i++)
+          m->csub[i] = 1;
+        if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
+          ssSetErrorStatus(S, "can't set clock of FMU");
+          return;
+        }
       }
       dvKnown[0] = 1.0;
       offs = m->nxc + m->nxd;
@@ -1605,21 +1614,26 @@ static void mdlJacobian(SimStruct *S)
 
   /* obtain partial derivatives for discrete-time states */
   if (m->nxd > 0) {
-    /* set clocks to active, i.e. evaluation of states */
-    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 0;
-
-    /* initialize current values */
-    memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-    mdlOutputs(S, 0);
-    mdlUpdate(S, 0);
+    if (noPrevious) {
+      /* set clocks to active, i.e. evaluation of states */
+      ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 0;
+    }
+    if (noPrevious || !m->providesDirectionalDerivative) {
+      /* initialize current values */
+      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+      mdlOutputs(S, 0);
+      mdlUpdate(S, 0);
+    }
 
     if (m->providesDirectionalDerivative) {
-      /* set all clocks and mark them active */
-      for (i = 0; i < m->nc; i++)
-        m->csub[i] = 0;
-      if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
-        ssSetErrorStatus(S, "can't set clock of FMU");
-        return;
+      if (noPrevious) {
+        /* set all clocks and mark them active */
+        for (i = 0; i < m->nc; i++)
+          m->csub[i] = 0;
+        if ((*m->fmi2SetClock)(m->fmu, m->cidx, m->nc, m->ctck, m->csub) != fmi2OK) {
+          ssSetErrorStatus(S, "can't set clock of FMU");
+          return;
+        }
       }
       dvKnown[0] = 1.0;
       offs = m->nxc + m->nxd;
@@ -1718,20 +1732,23 @@ static void mdlJacobian(SimStruct *S)
     }
   }
 
-  /* reset current values */
-  /* set clocks to subactive, i.e. get outputs for previous states */
-  ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
-  if (m->nxd > 0)
-    memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
-  mdlOutputs(S, 0);
-  if (m->nxc > 0)
-    mdlDerivatives(S);
-  if (m->nxd > 0)
-    mdlUpdate(S, 0);
-
-  /* deactivate all clocks */
-  for (i = 1; i <= m->nc; i++) {
-    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 0;
+  if (noPrevious || !m->providesDirectionalDerivative) {
+    /* reset current values */
+    /* set clocks to subactive, i.e. get outputs for previous states */
+    ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, 0)] = 1;
+    if (m->nxd > 0)
+      memcpy(ssGetRealDiscStates(S), m->pre_x_vals, m->nxd*sizeof(fmi2Real));
+    mdlOutputs(S, 0);
+    if (m->nxc > 0)
+      mdlDerivatives(S);
+    if (m->nxd > 0)
+      mdlUpdate(S, 0);
+  }
+  if (noPrevious) {
+    /* deactivate all clocks */
+    for (i = 1; i <= m->nc; i++) {
+      ssGetSampleHitPtr(S)[ssGetSampleTimeTaskID(S, i)] = 0;
+    }
   }
 }
 

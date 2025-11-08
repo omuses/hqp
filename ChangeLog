@@ -1,6 +1,13 @@
 2025-11-08  <rfranke>
 
-	* omu/Prg_DynamicOpt.[hC], omu/Prg_DynamicEst.[hC]:
+	* omu/{Prg_DTOpt.[hC], Prg_DTEst.[hC]}, hxi/sfun_fmu.c:
+	  - introduce mdl_previous for backward differentiation
+	* odc/omc.tcl:
+	  - clean up duplicated passing of options to omc
+
+2025-11-08  <rfranke>
+
+  * omu/Prg_DynamicOpt.[hC], omu/Prg_DynamicEst.[hC]:
 	  - revert "restrict evaluation of clocked partitions during update"
 	    from 2020-09-17
 
@@ -8,7 +15,7 @@
 
 	* hxi/fmi.tcl, omu/{Prg_DTEst.C, Prg_DynamicEst.C}, odc/omu.tcl:
 	  - support string valued parameters
-	* odc/omu.tcl:
+	* odc/omc.tcl:
 	  - adapt to current OpenModelica omc compiler, version 1.22
 
 2022-05-05  <e-arnold>

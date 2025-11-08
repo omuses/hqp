@@ -2,7 +2,7 @@
 # OpenModelica Compiler utility routines
 #
 
-# configuration settings -- may add installation path
+# configuration settings -- may add installation path of omc
 set omc {omc -d=-disableDirectionalDerivatives --simCodeTarget=Cpp --exportClocksInModelDescription}
 
 # load Modelica file and translate contained model to FMU
@@ -20,9 +20,6 @@ proc compileFMU {mo_file} {
     # create script file for omc
     set fp [open "omc_tcl_commands.mos" w]
     puts $fp "// temporary file with omc commands"
-    puts $fp "setCommandLineOptions(\"--std=3.3\");"
-    puts $fp "setCommandLineOptions(\"+simCodeTarget=Cpp\");"
-    puts $fp "setCommandLineOptions(\"-d=-disableDirectionalDerivatives\");"
     puts $fp "loadFile(\"$mo_file_normalized\");"
     puts $fp "getErrorString();"
     puts $fp "buildModelFMU($model_name, version=\"2.0\");"
