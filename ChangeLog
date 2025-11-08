@@ -5,6 +5,12 @@
 	* odc/omc.tcl:
 	  - clean up duplicated passing of options to omc
 
+2025-11-08  <rfranke>
+
+  * omu/Prg_DynamicOpt.[hC], omu/Prg_DynamicEst.[hC]:
+	  - revert "restrict evaluation of clocked partitions during update"
+	    from 2020-09-17
+
 2024-05-01  <rfranke>
 
 	* hxi/fmi.tcl, omu/{Prg_DTEst.C, Prg_DynamicEst.C}, odc/omu.tcl:
