@@ -75,7 +75,7 @@ Prg_DTOpt::Prg_DTOpt()
   _within_grds = false;
   _ad = true;
   _fscale = 1.0;
-  _mdl_previous = true; // optimized states represent previous values
+  //_mdl_previous = true; // optimized states represent previous values
 
   _mdl_x0_active = iv_get(_mdl_nx);
   _mdl_u_order = iv_get(_mdl_nu);
@@ -90,7 +90,7 @@ Prg_DTOpt::Prg_DTOpt()
   _c_lambda = VNULL;
   v_set(_mdl_x0, 0.0);
   iv_set(_mdl_x0_active, 0);
-  iv_set(_mdl_u_order, 0);
+  iv_set(_mdl_u_order, 1);
   iv_set(_mdl_u0_nfixed, 0);
   iv_set(_mdl_u_decimation, 1);
   iv_set(_mdl_u_periodic, 0);
@@ -282,12 +282,12 @@ void Prg_DTOpt::setup_model()
     v_resize(_mdl_y_bias, _mdl_ny);
     v_resize(_mdl_y_lambda, _mdl_ny);
     iv_set(_mdl_x0_active, 0);
-    iv_set(_mdl_u_order, 0);
+    iv_set(_mdl_u_order, 1);
     iv_set(_mdl_u0_nfixed, 0);
     iv_set(_mdl_u_decimation, 1);
     iv_set(_mdl_u_periodic, 0);
     iv_set(_mdl_x_periodic, 0);
-    iv_set(_mdl_y_order, 0);
+    iv_set(_mdl_y_order, 1);
     v_set(_mdl_y_bias, 0.0);
     v_set(_mdl_y_lambda, 0.0);
   }
@@ -881,7 +881,7 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
       else
         _mdl_us[k][idx] = mdl_u[idx];
     }
-    if (((k > 0 && _mdl_previous) || (k == _K && _K > 0)) && _mdl_u_order[idx] == 0)
+    else if (((k > 0 && _mdl_previous) || (k == _K && _K > 0)) && _mdl_u_order[idx] == 0)
       // shift values if mdl_previous in case of zero order hold
       // hold last but one value in case of zero order hold
       mdl_u[idx] = _mdl_us[k-1][idx];

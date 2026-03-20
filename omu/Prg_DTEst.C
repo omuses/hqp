@@ -69,7 +69,7 @@ Prg_DTEst::Prg_DTEst()
   _within_grds = false;
   _ad = true;
   _fscale = 1.0;
-  _mdl_previous = true; // optimized states represent previous values
+  //_mdl_previous = true; // optimized states represent previous values
 
   _mdl_p_active = iv_get(_mdl_np);
   _mdl_p_confidence = v_get(_mdl_np);
@@ -82,7 +82,7 @@ Prg_DTEst::Prg_DTEst()
   v_zero(_mdl_p_confidence);
   iv_zero(_mdl_x0_active);
   v_zero(_mdl_x0_confidence);
-  iv_set(_mdl_u_order, 0);
+  iv_set(_mdl_u_order, 1);
   iv_zero(_mdl_y_active);
   v_ones(_mdl_p_nominal);
 
@@ -239,7 +239,7 @@ void Prg_DTEst::setup_model()
     v_zero(_mdl_p_confidence);
     iv_zero(_mdl_x0_active);
     v_zero(_mdl_x0_confidence);
-    iv_set(_mdl_u_order, 0);
+    iv_set(_mdl_u_order, 1);
     iv_zero(_mdl_y_active);
     if (_mdl_is_fmu) {
       // take over default values from model description
