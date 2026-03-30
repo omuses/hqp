@@ -1,3 +1,8 @@
+2026-03-30  <rfranke>
+
+	* omu/Prg_DTOpt.C, Prg_DynamicOpt.C:
+	  - fix rate of change soft bounds if they are not equal zero
+
 2025-11-08  <rfranke>
 
 	* omu/{Prg_DTOpt.[hC], Prg_DTEst.[hC]}, hxi/sfun_fmu.c:

@@ -1044,11 +1044,11 @@ void Prg_DTOpt::update_vals(int k, const VECP x, const VECP u,
           f0 += dt0 * (_mdl_der_u_soft.weight1[idx]*help
                        + _mdl_der_u_soft.weight2[idx]*help*help);
           if (_mdl_der_u_soft.min[idx] > -Inf) {
-            c[spsk*(_nc+_nsc) + isc + k%upsk] = u[i*upsk + k%upsk]/_t_nominal + help;
+            c[spsk*(_nc+_nsc) + isc + k%upsk] = u[i*upsk + k%upsk] + help*_t_nominal;
             isc += upsk;
           }
           if (_mdl_der_u_soft.max[idx] < Inf) {
-            c[spsk*(_nc+_nsc) + isc + k%upsk] = u[i*upsk + k%upsk]/_t_nominal - help;
+            c[spsk*(_nc+_nsc) + isc + k%upsk] = u[i*upsk + k%upsk] - help*_t_nominal;
             isc += upsk;
           }
           is += upsk;
@@ -1947,16 +1947,16 @@ void Prg_DTOpt::fetch_jac(SimStruct *S,
         if (_mdl_der_u_soft.active[idx]) {
           if (_mdl_der_u_soft.min[idx] > -Inf) {
             cu[spsk*(_nc+_nsc) + isc + k%upsk][i*upsk + k%upsk]
-              += 1.0/_t_nominal;
+              += 1.0;
             cu[spsk*(_nc+_nsc) + isc + k%upsk][upsk*_nu + is + k%upsk]
-              += 1.0/_t_nominal;
+              += 1.0;
             isc += upsk;
           }
           if (_mdl_der_u_soft.max[idx] < Inf) {
             cu[spsk*(_nc+_nsc) + isc + k%upsk][i*upsk + k%upsk]
-              += 1.0/_t_nominal;
+              += 1.0;
             cu[spsk*(_nc+_nsc) + isc + k%upsk][upsk*_nu + is + k%upsk]
-              -= 1.0/_t_nominal;
+              -= 1.0;
             isc += upsk;
           }
           is += upsk;

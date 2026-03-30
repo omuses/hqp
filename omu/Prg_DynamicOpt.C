@@ -1036,11 +1036,11 @@ void Prg_DynamicOpt::update(int kk,
           f0 += dt0 * (_mdl_der_u_soft.weight1[idx]*help
                        + _mdl_der_u_soft.weight2[idx]*help*help);
           if (_mdl_der_u_soft.min[idx] > -Inf) {
-            c[spsk*(_nc+_nsc) + isc + kk%upsk] = u[i*upsk + kk%upsk]/_t_nominal + help;
+            c[spsk*(_nc+_nsc) + isc + kk%upsk] = u[i*upsk + kk%upsk] + help*_t_nominal;
             isc += upsk;
           }
           if (_mdl_der_u_soft.max[idx] < Inf) {
-            c[spsk*(_nc+_nsc) + isc + kk%upsk] = u[i*upsk + kk%upsk]/_t_nominal - help;
+            c[spsk*(_nc+_nsc) + isc + kk%upsk] = u[i*upsk + kk%upsk] - help*_t_nominal;
             isc += upsk;
           }
           is += upsk;
@@ -1625,16 +1625,16 @@ void Prg_DynamicOpt::update_grds(int kk,
           if (_mdl_der_u_soft.active[idx]) {
             if (_mdl_der_u_soft.min[idx] > -Inf) {
               c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][i*upsk + kk%upsk]
-                += 1.0/_t_nominal;
+                += 1.0;
               c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][upsk*_nu + is + kk%upsk]
-                += 1.0/_t_nominal;
+                += 1.0;
               isc += upsk;
             }
             if (_mdl_der_u_soft.max[idx] < Inf) {
               c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][i*upsk + kk%upsk]
-                += 1.0/_t_nominal;
+                += 1.0;
               c.Ju[spsk*(_nc+_nsc) + isc + kk%upsk][upsk*_nu + is + kk%upsk]
-                -= 1.0/_t_nominal;
+                -= 1.0;
               isc += upsk;
             }
             is += upsk;
