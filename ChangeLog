@@ -1,3 +1,10 @@
+2026-09-01  <rfranke>
+
+	* omu/Prg_DynamicEst.C:
+	  - hold last but one input in case of u_order 0 (cf. DTEst)
+	* omu/Prg_DTEst.C, Prg_DynamicEst.C:
+	  - read estimated model parameters along with initial states to also work with prg_ad 0
+
 2026-03-30  <rfranke>
 
 	* omu/Prg_DTOpt.C, Prg_DynamicOpt.C:
