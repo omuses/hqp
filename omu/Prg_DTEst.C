@@ -684,6 +684,12 @@ void Prg_DTEst::update_vals(int k, const VECP x, const VECP u,
       for (idx = _mdl_nd; idx < _mdl_nx; idx++)
         _mdl_x0s[ex][idx] = mdl_xc[idx - _mdl_nd];
     }
+
+    // store current model parameters
+    if (k == 0) {
+      // store model parameters
+      read_mx_args(_mdl_p);
+    }
   }
 
   if (k < _K) {
@@ -733,12 +739,6 @@ void Prg_DTEst::update_stage(int k, const VECP x, const VECP u,
 
   if (_mdl_logging >= If_LogInfo)
     If_Log("Info", "Prg_DTEst::update_stage at k = %d, tn = %d", k, tn);
-
-  // store current model parameters and states
-  if (k == 0) {
-    // store model parameters
-    read_mx_args(_mdl_p);
-  }
 
   if (!_ad || !_mdl_jac || ssGetmdlJacobian(S) == NULL) {
     // call predefined update for numerical differentiation

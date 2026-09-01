@@ -561,6 +561,7 @@ void Prg_DynamicEst::update(int kk,
   int i, j, idx;
   int ex = _exs[kk];
   bool new_experiment = kk == 0 || ex != _exs[kk-1];
+  bool end_experiment = kk == _KK || ex != _exs[kk+1];
   SimStruct *S = _SS[omp_get_thread_num()];
 
   // set simulation time
@@ -574,8 +575,13 @@ void Prg_DynamicEst::update(int kk,
     else
       mdl_u = (real_T *)*ssGetInputPortRealSignalPtrs(S, 0);
   }
-  for (idx = 0; idx < _mdl_nu; idx++)
-    mdl_u[idx] = _mdl_us[kk][idx];
+  for (idx = 0; idx < _mdl_nu; idx++) {
+    if (end_experiment && _KK > 0 && _mdl_u_order[idx] == 0)
+      // hold last but one value in case of zero order hold
+      mdl_u[idx] = _mdl_us[kk-1][idx];
+    else
+      mdl_u[idx] = _mdl_us[kk][idx];
+  }
 
   // pass optimized parameters to model
   // Note: this is done in any call for numerical approximation of Jacobian
@@ -660,6 +666,12 @@ void Prg_DynamicEst::update(int kk,
       for (idx = _mdl_nd; idx < _mdl_nx; idx++)
         _mdl_x0s[ex][idx] = mdl_xc[idx - _mdl_nd];
     }
+
+    // store current model parameters
+    if (kk == 0) {
+      // store model parameters
+      read_mx_args(_mdl_p);
+    }
   }
 
   if (kk < _KK) {
@@ -694,12 +706,6 @@ void Prg_DynamicEst::update(int kk,
 
   // obtain Jacobians if required
   if (f.is_required_J() || f0.is_required_g() || c.is_required_J()) {
-
-    // store current model parameters and states
-    if (kk == 0) {
-      // store model parameters
-      read_mx_args(_mdl_p);
-    }
 
     // call predefined update for numerical differentiation
     _within_grds = true;
